@@ -1,0 +1,66 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --bg-canvas: #F7F6F3;
+    --bg-card: #FFFFFF;
+    --border-light: #EAEAEA;
+    --text-primary: #111111;
+    --text-secondary: #787774;
+    --accent-black: #111111;
+  }
+
+  body {
+    background-color: var(--bg-canvas);
+    color: var(--text-primary);
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Helvetica Neue', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* Monospace for numbers, codes, and keystrokes */
+  code, kbd, .font-mono {
+    font-family: 'SF Mono', 'JetBrains Mono', 'Menlo', monospace;
+  }
+
+  kbd {
+    border: 1px solid #EAEAEA;
+    border-radius: 4px;
+    background-color: #F7F6F3;
+    padding: 2px 6px;
+    font-size: 11px;
+    color: #444444;
+  }
+}
+
+/* Minimalist Micro-Animations */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp 300ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Custom Minimalist Scrollbar */
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #E0E0DE;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #C4C4C2;
+}

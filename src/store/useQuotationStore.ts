@@ -1,0 +1,334 @@
+import { create } from 'zustand';
+import type { ForgingInput, CastingInput, MachiningOperation } from '../lib/calculation-engine/types';
+import type { CurrencyType } from '../types/quote';
+import { calculateForgingPrice } from '../lib/calculation-engine/forging-calculator';
+import { calculateCastingPrice } from '../lib/calculation-engine/casting-calculator';
+import { calculateLiquidMetalPrice } from '../lib/calculation-engine/liquid-metal-calculator';
+import {
+  INITIAL_MATERIALS,
+  INITIAL_PRICE_HISTORY,
+  INITIAL_CASTING_GRADES,
+  INITIAL_BOM_ITEMS,
+  INITIAL_PRESSING_RATES,
+  INITIAL_HAMMER_RATES,
+  INITIAL_SYSTEM_RATES,
+} from '../lib/master-data-service';
+
+export type SegmentType = 'forging' | 'casting';
+export type TradeTermType = 'EXW' | 'FOB' | 'CIF' | 'DAP';
+
+export interface RfqHeaderState {
+  customer_name: string;
+  product_name: string;
+  annual_volume: number;
+  trade_terms: TradeTermType;
+  target_price: number;
+}
+
+export interface QuotationStoreState {
+  // 1. RFQ Header Info & Currency Settings
+  rfq: RfqHeaderState;
+  segment: SegmentType;
+  currency: CurrencyType;
+  exchange_rate: number;
+
+  // 2. Forging State
+  forgingInput: ForgingInput & {
+    selected_material_id: string;
+    selected_press_rate_id: string;
+    selected_hammer_rate_id: string;
+  };
+
+  // 3. Casting State
+  castingInput: CastingInput & {
+    selected_casting_grade_id: string;
+  };
+
+  // Actions
+  setRfqField: (field: keyof RfqHeaderState, value: any) => void;
+  resetRfq: () => void;
+  setSegment: (segment: SegmentType) => void;
+  setCurrency: (currency: CurrencyType) => void;
+  setExchangeRate: (rate: number) => void;
+
+  // Forging Actions
+  setForgingField: (field: string, value: any) => void;
+  addForgingMachiningOp: (op: MachiningOperation) => void;
+  updateForgingMachiningOp: (index: number, op: MachiningOperation) => void;
+  removeForgingMachiningOp: (index: number) => void;
+  selectForgingMaterial: (materialId: string) => void;
+  selectForgingMachineRate: (rateId: string, type: 'press' | 'hammer') => void;
+
+  // Casting Actions
+  setCastingField: (field: string, value: any) => void;
+  addCastingMachiningOp: (op: MachiningOperation) => void;
+  updateCastingMachiningOp: (index: number, op: MachiningOperation) => void;
+  removeCastingMachiningOp: (index: number) => void;
+  selectCastingGrade: (gradeId: string) => void;
+
+  // Computed Getters
+  getForgingResult: () => ReturnType<typeof calculateForgingPrice>;
+  getCastingResult: () => ReturnType<typeof calculateCastingPrice>;
+}
+
+// Initial Forging Defaults
+const defaultForgingMaterial = INITIAL_MATERIALS.find((m) => m.category === 'Thép cán - Rèn') || INITIAL_MATERIALS[5];
+const defaultPressRate = INITIAL_PRESSING_RATES[1]; // 300-630T (750k/h)
+const defaultElecRate = INITIAL_SYSTEM_RATES.find((r) => r.rate_key === 'elec_kwh')?.value || 2200;
+const defaultTransRate = INITIAL_SYSTEM_RATES.find((r) => r.rate_key === 'trans_kg')?.value || 1500;
+
+// Initial Casting Defaults
+const defaultCastingGrade = INITIAL_CASTING_GRADES[0]; // FCD450
+const defaultSintoRate = INITIAL_SYSTEM_RATES.find((r) => r.rate_key === 'sinto_molding')?.value || 10000;
+
+const DEFAULT_EXCHANGE_RATES: Record<CurrencyType, number> = {
+  VND: 1,
+  USD: 25400,
+  JPY: 165,
+  EUR: 27500,
+};
+
+export const useQuotationStore = create<QuotationStoreState>((set, get) => ({
+  // 1. RFQ Initial State
+  rfq: {
+    customer_name: 'Công ty Cổ phần Cơ khí DISOCO',
+    product_name: 'Bánh Răng Truyền Động D450',
+    annual_volume: 12000,
+    trade_terms: 'FOB',
+    target_price: 95000,
+  },
+  segment: 'forging',
+  currency: 'VND',
+  exchange_rate: 1,
+
+  // 2. Forging Initial Input State
+  forgingInput: {
+    m_tinh: 1.2,
+    m_bavia: 0.3,
+    k_loss: 2.0,
+    selected_material_id: defaultForgingMaterial.id,
+    DG_steel: defaultForgingMaterial.latest_price || 22000,
+    DG_scrap: defaultForgingMaterial.scrap_price || 8000,
+
+    forging_machine_type: 'press',
+    selected_press_rate_id: defaultPressRate.id,
+    selected_hammer_rate_id: INITIAL_HAMMER_RATES[0].id,
+    DG_forging_machine_hour: defaultPressRate.rate_per_hour,
+
+    t_cut_sec: 15,
+    DG_sawing_machine_hour: 120000,
+    w_elec_kwh_per_kg: 0.45,
+    DG_elec_kwh: defaultElecRate,
+    t_forging_sec: 12,
+    t_trim_sec: 8,
+    DG_trim_machine_hour: 180000,
+    DG_heat_treat_kg: 4500,
+    DG_clean_kg: 1200,
+
+    machining_operations: [
+      { name: 'Tiện thô CNC mặt đầu & đường kính', t_prep_min: 15, t_man_min: 2.5, DG_machine_hour: 210000, C_tooling: 1500 },
+      { name: 'Phay rãnh keyway CNC', t_prep_min: 10, t_man_min: 1.8, DG_machine_hour: 270000, C_tooling: 2000 },
+    ],
+
+    C_die_total: 85000000,
+    L_die_life: 10000,
+    N_order: 1000,
+    die_cost_treatment: 'amortized',
+
+    k_mgmt: 8,
+    DG_trans_kg: defaultTransRate,
+    k_profit_forging: 15,
+  },
+
+  // 3. Casting Initial Input State
+  castingInput: {
+    selected_casting_grade_id: defaultCastingGrade.id,
+    DG_liquid: 13500,
+    DG_cast_scrap: 10000,
+
+    m_cast: 4.5,
+    Y_yield: 60,
+
+    DG_sinto_op: defaultSintoRate,
+    n_cavity_per_mold: 2,
+    m_core: 1.2,
+    DG_core_sand_kg: 3500,
+    DG_finish_kg: 1800,
+
+    machining_operations: [
+      { name: 'Tiện mặt đúc CNC', t_prep_min: 15, t_man_min: 3.0, DG_machine_hour: 210000, C_tooling: 1800 },
+      { name: 'Khoan lỗ gá CNC', t_prep_min: 10, t_man_min: 1.5, DG_machine_hour: 180000, C_tooling: 1000 },
+    ],
+    C_coating: 1200,
+    C_QA: 1500,
+
+    C_pattern_total: 45000000,
+    L_pattern_life: 15000,
+    N_order: 1000,
+    pattern_cost_treatment: 'amortized',
+
+    k_mgmt_cast: 10,
+    DG_trans_kg: defaultTransRate,
+    k_profit_casting: 12,
+  },
+
+  // Actions
+  setRfqField: (field, value) =>
+    set((state) => ({
+      rfq: { ...state.rfq, [field]: value },
+    })),
+
+  resetRfq: () =>
+    set({
+      rfq: {
+        customer_name: '',
+        product_name: '',
+        annual_volume: 1000,
+        trade_terms: 'FOB',
+        target_price: 0,
+      },
+    }),
+
+  setSegment: (segment) => set({ segment }),
+
+  setCurrency: (currency) =>
+    set({
+      currency,
+      exchange_rate: DEFAULT_EXCHANGE_RATES[currency] || 1,
+    }),
+
+  setExchangeRate: (rate) => set({ exchange_rate: Math.max(0.0001, rate) }),
+
+  // Forging Actions
+  setForgingField: (field, value) =>
+    set((state) => ({
+      forgingInput: { ...state.forgingInput, [field]: value },
+    })),
+
+  addForgingMachiningOp: (op) =>
+    set((state) => ({
+      forgingInput: {
+        ...state.forgingInput,
+        machining_operations: [...(state.forgingInput.machining_operations || []), op],
+      },
+    })),
+
+  updateForgingMachiningOp: (index, op) =>
+    set((state) => {
+      const ops = [...(state.forgingInput.machining_operations || [])];
+      ops[index] = op;
+      return {
+        forgingInput: { ...state.forgingInput, machining_operations: ops },
+      };
+    }),
+
+  removeForgingMachiningOp: (index) =>
+    set((state) => ({
+      forgingInput: {
+        ...state.forgingInput,
+        machining_operations: (state.forgingInput.machining_operations || []).filter((_, i) => i !== index),
+      },
+    })),
+
+  selectForgingMaterial: (materialId) => {
+    const mat = INITIAL_MATERIALS.find((m) => m.id === materialId);
+    if (mat) {
+      set((state) => ({
+        forgingInput: {
+          ...state.forgingInput,
+          selected_material_id: materialId,
+          DG_steel: mat.latest_price || state.forgingInput.DG_steel,
+          DG_scrap: mat.scrap_price || state.forgingInput.DG_scrap,
+        },
+      }));
+    }
+  },
+
+  selectForgingMachineRate: (rateId, type) => {
+    if (type === 'press') {
+      const rateObj = INITIAL_PRESSING_RATES.find((r) => r.id === rateId);
+      if (rateObj) {
+        set((state) => ({
+          forgingInput: {
+            ...state.forgingInput,
+            forging_machine_type: 'press',
+            selected_press_rate_id: rateId,
+            DG_forging_machine_hour: rateObj.rate_per_hour,
+          },
+        }));
+      }
+    } else {
+      const rateObj = INITIAL_HAMMER_RATES.find((r) => r.id === rateId);
+      if (rateObj) {
+        set((state) => ({
+          forgingInput: {
+            ...state.forgingInput,
+            forging_machine_type: 'hammer',
+            selected_hammer_rate_id: rateId,
+            DG_forging_machine_hour: rateObj.rate_per_hour,
+          },
+        }));
+      }
+    }
+  },
+
+  // Casting Actions
+  setCastingField: (field, value) =>
+    set((state) => ({
+      castingInput: { ...state.castingInput, [field]: value },
+    })),
+
+  addCastingMachiningOp: (op) =>
+    set((state) => ({
+      castingInput: {
+        ...state.castingInput,
+        machining_operations: [...(state.castingInput.machining_operations || []), op],
+      },
+    })),
+
+  updateCastingMachiningOp: (index, op) =>
+    set((state) => {
+      const ops = [...(state.castingInput.machining_operations || [])];
+      ops[index] = op;
+      return {
+        castingInput: { ...state.castingInput, machining_operations: ops },
+      };
+    }),
+
+  removeCastingMachiningOp: (index) =>
+    set((state) => ({
+      castingInput: {
+        ...state.castingInput,
+        machining_operations: (state.castingInput.machining_operations || []).filter((_, i) => i !== index),
+      },
+    })),
+
+  selectCastingGrade: (gradeId) => {
+    const liquidMetalResult = calculateLiquidMetalPrice(
+      gradeId,
+      INITIAL_BOM_ITEMS,
+      INITIAL_PRICE_HISTORY,
+      INITIAL_MATERIALS
+    );
+
+    set((state) => ({
+      castingInput: {
+        ...state.castingInput,
+        selected_casting_grade_id: gradeId,
+        DG_liquid: Math.round(liquidMetalResult.DG_liquid),
+        DG_cast_scrap: Math.round(liquidMetalResult.DG_cast_scrap),
+      },
+    }));
+  },
+
+  // Real-time Calculation Getters using Calculation Engine (Phase 1)
+  getForgingResult: () => {
+    const input = get().forgingInput;
+    return calculateForgingPrice(input);
+  },
+
+  getCastingResult: () => {
+    const input = get().castingInput;
+    return calculateCastingPrice(input);
+  },
+}));
