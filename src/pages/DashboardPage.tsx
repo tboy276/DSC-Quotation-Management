@@ -16,6 +16,8 @@ import {
   Lock,
 } from 'lucide-react';
 
+import { SystemHealthCheck } from '../components/analytics/SystemHealthCheck';
+
 export const DashboardPage = () => {
   const { user, profile, refreshProfile } = useAuth();
   const [activeTab, setActiveTab] = useState('quotations');
@@ -48,6 +50,8 @@ export const DashboardPage = () => {
         return 'Quản Lý Master Data (Dữ Liệu Cơ Sở)';
       case 'analytics':
         return 'Báo Cáo Thống Kê Tổng Hợp RFQ (RFQ Analytics Report)';
+      case 'health_check':
+        return 'Kiểm Tra Tình Trạng Kết Nối Database Supabase (Health Check)';
       case 'users':
         return 'Quản Lý Quyền & Tài Khoản Hệ Thống';
       default:
@@ -70,6 +74,22 @@ export const DashboardPage = () => {
     }
     if (activeTab === 'analytics') {
       return <RfqAnalyticsReport />;
+    }
+    if (activeTab === 'health_check') {
+      if (!isEstimator) {
+        return (
+          <div className="bg-white border border-[#EAEAEA] rounded-[10px] p-8 text-center space-y-3 max-w-md mx-auto my-12 shadow-xs">
+            <div className="w-12 h-12 rounded-full bg-[#FDEBEC] text-[#9F2F2D] flex items-center justify-center mx-auto">
+              <Lock className="w-6 h-6" />
+            </div>
+            <h3 className="text-base font-bold text-[#111111]">Giới Hạn Quyền Truy Cập</h3>
+            <p className="text-xs text-[#787774]">
+              Mục kiểm tra tình trạng kết nối DB chỉ dành riêng cho vai trò Cán bộ Kỹ thuật Báo giá (Estimator).
+            </p>
+          </div>
+        );
+      }
+      return <SystemHealthCheck />;
     }
 
     // User Administration Tab (Accessible only to Estimator)

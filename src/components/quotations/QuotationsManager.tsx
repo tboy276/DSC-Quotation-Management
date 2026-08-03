@@ -390,26 +390,30 @@ export const QuotationsManager = ({ onNavigateToCalculator }: QuotationsManagerP
       is_feasible: true,
     }));
 
-    await createRfqDossierWithItems(
-      {
-        customer_name: newCustomerName.trim(),
-        customer_address: newCustomerAddress.trim() || undefined,
-        rfq_code: newRfqCode,
-        customer_contact_person: newCustomerContactPerson.trim() || undefined,
-        rfq_received_date: newRfqReceivedDate,
-        customer_deadline: newCustomerDeadline,
-        trade_terms: newTradeTerms as 'EXW' | 'FOB' | 'CIF' | 'DAP',
-        delivery_address: newTradeTerms !== 'EXW' ? newDeliveryAddress.trim() : undefined,
-        special_requirements: newSpecialRequirements.trim() || undefined,
-        notes: newNotes.trim() || undefined,
-      },
-      formattedItems,
-      currentUserEmail
-    );
+    try {
+      await createRfqDossierWithItems(
+        {
+          customer_name: newCustomerName.trim(),
+          customer_address: newCustomerAddress.trim() || undefined,
+          rfq_code: newRfqCode,
+          customer_contact_person: newCustomerContactPerson.trim() || undefined,
+          rfq_received_date: newRfqReceivedDate,
+          customer_deadline: newCustomerDeadline,
+          trade_terms: newTradeTerms as 'EXW' | 'FOB' | 'CIF' | 'DAP',
+          delivery_address: newTradeTerms !== 'EXW' ? newDeliveryAddress.trim() : undefined,
+          special_requirements: newSpecialRequirements.trim() || undefined,
+          notes: newNotes.trim() || undefined,
+        },
+        formattedItems,
+        currentUserEmail
+      );
 
-    setShowNewRfqModal(false);
-    setNewCustomerName('');
-    loadQuotes();
+      setShowNewRfqModal(false);
+      setNewCustomerName('');
+      loadQuotes();
+    } catch (err: any) {
+      alert(`❌ LỖI GHI DỮ LIỆU TẠO RFQ THẤT BẠI TRÊN SUPABASE:\n${err.message || err}`);
+    }
   };
 
   const handleApplyPasteText = () => {

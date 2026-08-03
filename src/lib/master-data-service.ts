@@ -1,4 +1,4 @@
-import { supabase, isSupabaseConfigured } from './supabase';
+import { supabase } from './supabase';
 import type {
   Material,
   MaterialPriceHistory,
@@ -10,10 +10,10 @@ import type {
 } from '../types/master-data';
 
 // ----------------------------------------------------------------------
-// INITIAL SEED MOCK DATA (Fallback khi offline hoặc Supabase chưa sync)
+// INITIAL SEED MOCK DATA (Fallback khi fetch lần đầu nếu DB hoàn toàn mới)
 // ----------------------------------------------------------------------
 
-export let INITIAL_MATERIALS: Material[] = [
+export const INITIAL_MATERIALS: Material[] = [
   { id: 'mat-1', name: 'Gang thỏi F1', unit: 'kg', category: 'Gang thỏi', notes: 'Nhập khẩu chất lượng cao', latest_price: 15500, latest_effective_date: '2026-01-01' },
   { id: 'mat-2', name: 'Thép phế đúc chọn lọc', unit: 'kg', category: 'Thép phế đúc', notes: 'Hao hụt thấp', latest_price: 11800, latest_effective_date: '2026-01-01' },
   { id: 'mat-3', name: 'Hồi liệu FCD450', unit: 'kg', category: 'Hồi liệu', notes: 'Hồi liệu đúc nội bộ FCD450', latest_price: 10000, latest_effective_date: '2026-01-01' },
@@ -24,7 +24,7 @@ export let INITIAL_MATERIALS: Material[] = [
   { id: 'mat-8', name: '20CrMnTi - HBIS', unit: 'kg', category: 'Thép cán - Rèn', scrap_price: 8000, notes: 'Thép thấm cacbon bánh răng', latest_price: 26000, latest_effective_date: '2026-01-01' },
 ];
 
-export let INITIAL_PRICE_HISTORY: MaterialPriceHistory[] = [
+export const INITIAL_PRICE_HISTORY: MaterialPriceHistory[] = [
   { id: 'ph-1', material_id: 'mat-1', price: 15000, effective_date: '2025-06-01', updated_by: 'estimator@disoco.vn' },
   { id: 'ph-2', material_id: 'mat-1', price: 15500, effective_date: '2026-01-01', updated_by: 'estimator@disoco.vn' },
   { id: 'ph-3', material_id: 'mat-6', price: 21000, scrap_price: 8000, effective_date: '2025-09-01', updated_by: 'estimator@disoco.vn' },
@@ -37,14 +37,14 @@ export const INITIAL_CASTING_GRADES: CastingGrade[] = [
   { id: 'grade-3', name: 'FCD600 (Gang Cầu Cường Độ Cao)', code: 'FCD600', notes: 'Gang cầu chịu lực cao 600 MPa' },
 ];
 
-export let INITIAL_BOM_ITEMS: CastingBomItem[] = [
+export const INITIAL_BOM_ITEMS: CastingBomItem[] = [
   { id: 'bom-1', casting_grade_id: 'grade-1', material_id: 'mat-1', weight_kg: 350, is_return_scrap: false },
   { id: 'bom-2', casting_grade_id: 'grade-1', material_id: 'mat-2', weight_kg: 250, is_return_scrap: false },
-  { id: 'bom-3', casting_grade_id: 'grade-1', material_id: 'mat-3', weight_kg: 380, is_return_scrap: true }, // Hồi liệu
+  { id: 'bom-3', casting_grade_id: 'grade-1', material_id: 'mat-3', weight_kg: 380, is_return_scrap: true },
   { id: 'bom-4', casting_grade_id: 'grade-1', material_id: 'mat-5', weight_kg: 20, is_return_scrap: false },
   { id: 'bom-5', casting_grade_id: 'grade-2', material_id: 'mat-1', weight_kg: 300, is_return_scrap: false },
   { id: 'bom-6', casting_grade_id: 'grade-2', material_id: 'mat-2', weight_kg: 280, is_return_scrap: false },
-  { id: 'bom-7', casting_grade_id: 'grade-2', material_id: 'mat-4', weight_kg: 400, is_return_scrap: true }, // Hồi liệu
+  { id: 'bom-7', casting_grade_id: 'grade-2', material_id: 'mat-4', weight_kg: 400, is_return_scrap: true },
   { id: 'bom-8', casting_grade_id: 'grade-2', material_id: 'mat-5', weight_kg: 20, is_return_scrap: false },
 ];
 
@@ -74,46 +74,80 @@ export const INITIAL_SYSTEM_RATES: SystemUnitRate[] = [
   { id: 'sr-8', rate_key: 'trans_kg', rate_name: 'Đơn giá vận chuyển (DG_trans_kg)', category: 'Hệ thống', unit: 'VNĐ/kg', value: 1500 },
 ];
 
+// In-memory local caches used for fast rendering, strictly synced with Supabase
+let localMaterials = [...INITIAL_MATERIALS];
+let localPriceHistory = [...INITIAL_PRICE_HISTORY];
+let localCastingGrades = [...INITIAL_CASTING_GRADES];
+let localBomItems = [...INITIAL_BOM_ITEMS];
+let localPressingRates = [...INITIAL_PRESSING_RATES];
+let localHammerRates = [...INITIAL_HAMMER_RATES];
+let localSystemRates = [...INITIAL_SYSTEM_RATES];
+
 // ----------------------------------------------------------------------
-// SERVICE FUNCTIONS (SUPABASE + LOCAL CACHE FALLBACK)
+// SERVICE FUNCTIONS (STRICT SUPABASE PERSISTENCE)
 // ----------------------------------------------------------------------
 
 export async function fetchMaterials(): Promise<Material[]> {
-  if (isSupabaseConfigured) {
-    try {
-      const { data, error } = await supabase.from('materials').select('*').order('created_at', { ascending: false });
-      if (!error && data && data.length > 0) {
-        return data as Material[];
-      }
-    } catch (err) {
-      console.warn('Fallback to local materials:', err);
-    }
+  const { data, error } = await supabase.from('materials').select('*').order('created_at', { ascending: false });
+  if (error) {
+    console.warn('Fetching materials from Supabase failed, using cache:', error.message);
+    return localMaterials;
   }
-  return INITIAL_MATERIALS;
+  if (data) {
+    localMaterials = data as Material[];
+    return localMaterials;
+  }
+  return localMaterials;
 }
 
 export async function saveMaterial(mat: Partial<Material>): Promise<Material> {
   if (mat.id) {
-    INITIAL_MATERIALS = INITIAL_MATERIALS.map((m) =>
-      m.id === mat.id ? { ...m, ...mat } : m
-    );
-    return INITIAL_MATERIALS.find((m) => m.id === mat.id)!;
+    const { data, error } = await supabase
+      .from('materials')
+      .update({
+        name: mat.name,
+        category: mat.category,
+        unit: mat.unit,
+        scrap_price: mat.scrap_price,
+        notes: mat.notes,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', mat.id)
+      .select()
+      .single();
+
+    if (error) {
+      throw new Error(`Lỗi cập nhật vật tư Supabase: ${error.message}`);
+    }
+    await fetchMaterials();
+    return data as Material;
   } else {
-    const newMat: Material = {
-      id: `mat-${Date.now()}`,
-      name: mat.name || 'Vật tư mới',
-      category: mat.category || 'Gang thỏi',
-      unit: mat.unit || 'kg',
-      notes: mat.notes || '',
-      latest_price: 0,
-    };
-    INITIAL_MATERIALS.unshift(newMat);
-    return newMat;
+    const { data, error } = await supabase
+      .from('materials')
+      .insert({
+        name: mat.name || 'Vật tư mới',
+        category: mat.category || 'Gang thỏi',
+        unit: mat.unit || 'kg',
+        scrap_price: mat.scrap_price || 0,
+        notes: mat.notes || '',
+      })
+      .select()
+      .single();
+
+    if (error) {
+      throw new Error(`Lỗi thêm vật tư Supabase: ${error.message}`);
+    }
+    await fetchMaterials();
+    return data as Material;
   }
 }
 
 export async function deleteMaterials(ids: string[]): Promise<void> {
-  INITIAL_MATERIALS = INITIAL_MATERIALS.filter((m) => !ids.includes(m.id));
+  const { error } = await supabase.from('materials').delete().in('id', ids);
+  if (error) {
+    throw new Error(`Lỗi xóa vật tư Supabase: ${error.message}`);
+  }
+  await fetchMaterials();
 }
 
 export async function fetchMaterialPriceHistory(materialId?: string): Promise<MaterialPriceHistory[]> {
@@ -121,88 +155,128 @@ export async function fetchMaterialPriceHistory(materialId?: string): Promise<Ma
 }
 
 export async function fetchPriceHistory(materialId?: string): Promise<MaterialPriceHistory[]> {
-  if (isSupabaseConfigured) {
-    try {
-      let query = supabase.from('material_price_history').select('*').order('effective_date', { ascending: false });
-      if (materialId) query = query.eq('material_id', materialId);
-      const { data, error } = await query;
-      if (!error && data && data.length > 0) {
-        return data as MaterialPriceHistory[];
-      }
-    } catch (err) {
-      console.warn('Fallback to local price history:', err);
-    }
+  let query = supabase.from('material_price_history').select('*').order('effective_date', { ascending: false });
+  if (materialId) query = query.eq('material_id', materialId);
+  const { data, error } = await query;
+  if (error) {
+    console.warn('Fetching price history from Supabase failed, using cache:', error.message);
+    return materialId ? localPriceHistory.filter((p) => p.material_id === materialId) : localPriceHistory;
   }
-  return materialId
-    ? INITIAL_PRICE_HISTORY.filter((p) => p.material_id === materialId)
-    : INITIAL_PRICE_HISTORY;
+  if (data) {
+    localPriceHistory = data as MaterialPriceHistory[];
+    return localPriceHistory;
+  }
+  return localPriceHistory;
 }
 
 export async function addMaterialPrice(
   materialId: string,
   price: number,
   effectiveDate: string,
-  scrapPrice?: number
+  scrapPrice?: number,
+  userEmail: string = 'estimator@disoco.vn'
 ): Promise<MaterialPriceHistory> {
-  const newHist: MaterialPriceHistory = {
-    id: `ph-${Date.now()}`,
-    material_id: materialId,
-    price,
-    scrap_price: scrapPrice,
-    effective_date: effectiveDate,
-    updated_by: 'estimator@disoco.vn',
-  };
-  INITIAL_PRICE_HISTORY.unshift(newHist);
+  const { data, error } = await supabase
+    .from('material_price_history')
+    .insert({
+      material_id: materialId,
+      price,
+      scrap_price: scrapPrice || 0,
+      effective_date: effectiveDate,
+      updated_by: userEmail,
+    })
+    .select()
+    .single();
 
-  // Update latest_price in material
-  INITIAL_MATERIALS = INITIAL_MATERIALS.map((m) =>
-    m.id === materialId
-      ? {
-          ...m,
-          latest_price: price,
-          scrap_price: scrapPrice !== undefined ? scrapPrice : m.scrap_price,
-          latest_effective_date: effectiveDate,
-        }
-      : m
-  );
+  if (error) {
+    throw new Error(`Lỗi thêm lịch sử giá Supabase: ${error.message}`);
+  }
 
-  return newHist;
+  // Sync latest price in materials table
+  await supabase
+    .from('materials')
+    .update({
+      latest_price: price,
+      scrap_price: scrapPrice,
+      latest_effective_date: effectiveDate,
+      updated_at: new Date().toISOString(),
+    })
+    .eq('id', materialId);
+
+  await fetchMaterials();
+  await fetchPriceHistory();
+  return data as MaterialPriceHistory;
 }
 
 export async function updatePriceHistoryItem(historyId: string, updates: Partial<MaterialPriceHistory>): Promise<void> {
-  INITIAL_PRICE_HISTORY = INITIAL_PRICE_HISTORY.map((h) =>
-    h.id === historyId ? { ...h, ...updates } : h
-  );
+  const { error } = await supabase.from('material_price_history').update(updates).eq('id', historyId);
+  if (error) {
+    throw new Error(`Lỗi cập nhật lịch sử giá Supabase: ${error.message}`);
+  }
+  await fetchPriceHistory();
 }
 
 export async function deletePriceHistoryItem(historyId: string): Promise<void> {
-  INITIAL_PRICE_HISTORY = INITIAL_PRICE_HISTORY.filter((h) => h.id !== historyId);
+  const { error } = await supabase.from('material_price_history').delete().eq('id', historyId);
+  if (error) {
+    throw new Error(`Lỗi xóa lịch sử giá Supabase: ${error.message}`);
+  }
+  await fetchPriceHistory();
 }
 
 export async function fetchCastingGrades(): Promise<CastingGrade[]> {
-  if (isSupabaseConfigured) {
-    try {
-      const { data, error } = await supabase.from('casting_grades').select('*').order('name', { ascending: true });
-      if (!error && data && data.length > 0) {
-        return data as CastingGrade[];
-      }
-    } catch (err) {
-      console.warn('Fallback to local casting grades:', err);
-    }
+  const { data, error } = await supabase.from('casting_grades').select('*').order('name', { ascending: true });
+  if (error) {
+    console.warn('Fetching casting grades from Supabase failed, using cache:', error.message);
+    return localCastingGrades;
   }
-  return INITIAL_CASTING_GRADES;
+  if (data) {
+    localCastingGrades = data as CastingGrade[];
+    return localCastingGrades;
+  }
+  return localCastingGrades;
+}
+
+export async function saveCastingGrade(grade: Partial<CastingGrade>): Promise<CastingGrade> {
+  if (grade.id) {
+    const { data, error } = await supabase
+      .from('casting_grades')
+      .update({ name: grade.name, code: grade.code, notes: grade.notes })
+      .eq('id', grade.id)
+      .select()
+      .single();
+    if (error) throw new Error(`Lỗi cập nhật Mác gang Supabase: ${error.message}`);
+    await fetchCastingGrades();
+    return data as CastingGrade;
+  } else {
+    const { data, error } = await supabase
+      .from('casting_grades')
+      .insert({ name: grade.name || 'Mác gang mới', code: grade.code || '', notes: grade.notes || '' })
+      .select()
+      .single();
+    if (error) throw new Error(`Lỗi thêm Mác gang Supabase: ${error.message}`);
+    await fetchCastingGrades();
+    return data as CastingGrade;
+  }
 }
 
 export async function fetchCastingBomItems(gradeId?: string): Promise<CastingBomItem[]> {
-  const materials = await fetchMaterials();
-  const rawItems = gradeId
-    ? INITIAL_BOM_ITEMS.filter((b) => b.casting_grade_id === gradeId)
-    : INITIAL_BOM_ITEMS;
-
-  return rawItems.map((item) => ({
-    ...item,
-    material: materials.find((m) => m.id === item.material_id),
-  }));
+  let query = supabase.from('casting_bom_items').select('*');
+  if (gradeId) query = query.eq('casting_grade_id', gradeId);
+  const { data, error } = await query;
+  if (error) {
+    console.warn('Fetching BOM items from Supabase failed, using cache:', error.message);
+    const materials = await fetchMaterials();
+    return localBomItems.map((b) => ({ ...b, material: materials.find((m) => m.id === b.material_id) }));
+  }
+  if (data) {
+    const materials = await fetchMaterials();
+    return (data as CastingBomItem[]).map((b) => ({
+      ...b,
+      material: materials.find((m) => m.id === b.material_id),
+    }));
+  }
+  return localBomItems;
 }
 
 export async function addBomItem(
@@ -211,70 +285,77 @@ export async function addBomItem(
   weightKg: number,
   isReturnScrap: boolean
 ): Promise<CastingBomItem> {
+  const { data, error } = await supabase
+    .from('casting_bom_items')
+    .insert({
+      casting_grade_id: gradeId,
+      material_id: materialId,
+      weight_kg: weightKg,
+      is_return_scrap: isReturnScrap,
+    })
+    .select()
+    .single();
+
+  if (error) {
+    throw new Error(`Lỗi thêm BOM item Supabase: ${error.message}`);
+  }
   const materials = await fetchMaterials();
-  const newItem: CastingBomItem = {
-    id: `bom-${Date.now()}`,
-    casting_grade_id: gradeId,
-    material_id: materialId,
-    weight_kg: weightKg,
-    is_return_scrap: isReturnScrap,
-    material: materials.find((m) => m.id === materialId),
-  };
-  INITIAL_BOM_ITEMS.push(newItem);
-  return newItem;
+  return { ...data, material: materials.find((m) => m.id === materialId) } as CastingBomItem;
 }
 
 export async function updateBomItem(
   itemId: string,
   updates: Partial<CastingBomItem>
 ): Promise<void> {
-  INITIAL_BOM_ITEMS = INITIAL_BOM_ITEMS.map((item) =>
-    item.id === itemId ? { ...item, ...updates } : item
-  );
+  const { error } = await supabase.from('casting_bom_items').update(updates).eq('id', itemId);
+  if (error) {
+    throw new Error(`Lỗi cập nhật BOM item Supabase: ${error.message}`);
+  }
 }
 
 export async function deleteBomItem(itemId: string): Promise<void> {
-  INITIAL_BOM_ITEMS = INITIAL_BOM_ITEMS.filter((item) => item.id !== itemId);
+  const { error } = await supabase.from('casting_bom_items').delete().eq('id', itemId);
+  if (error) {
+    throw new Error(`Lỗi xóa BOM item Supabase: ${error.message}`);
+  }
 }
 
 export async function fetchPressingRates(): Promise<PressingMachineRate[]> {
-  if (isSupabaseConfigured) {
-    try {
-      const { data, error } = await supabase.from('pressing_machine_rates').select('*').order('tonnage_min', { ascending: true });
-      if (!error && data && data.length > 0) {
-        return data as PressingMachineRate[];
-      }
-    } catch (err) {
-      console.warn('Fallback to local pressing rates:', err);
-    }
+  const { data, error } = await supabase.from('pressing_machine_rates').select('*').order('tonnage_min', { ascending: true });
+  if (error) {
+    return localPressingRates;
   }
-  return INITIAL_PRESSING_RATES;
+  if (data && data.length > 0) {
+    localPressingRates = data as PressingMachineRate[];
+  }
+  return localPressingRates;
 }
 
 export async function fetchHammerRates(): Promise<HydraulicHammerRate[]> {
-  if (isSupabaseConfigured) {
-    try {
-      const { data, error } = await supabase.from('hydraulic_hammer_rates').select('*').order('energy_min', { ascending: true });
-      if (!error && data && data.length > 0) {
-        return data as HydraulicHammerRate[];
-      }
-    } catch (err) {
-      console.warn('Fallback to local hammer rates:', err);
-    }
+  const { data, error } = await supabase.from('hydraulic_hammer_rates').select('*').order('energy_min', { ascending: true });
+  if (error) {
+    return localHammerRates;
   }
-  return INITIAL_HAMMER_RATES;
+  if (data && data.length > 0) {
+    localHammerRates = data as HydraulicHammerRate[];
+  }
+  return localHammerRates;
 }
 
 export async function fetchSystemUnitRates(): Promise<SystemUnitRate[]> {
-  if (isSupabaseConfigured) {
-    try {
-      const { data, error } = await supabase.from('system_unit_rates').select('*');
-      if (!error && data && data.length > 0) {
-        return data as SystemUnitRate[];
-      }
-    } catch (err) {
-      console.warn('Fallback to local system unit rates:', err);
-    }
+  const { data, error } = await supabase.from('system_unit_rates').select('*');
+  if (error) {
+    return localSystemRates;
   }
-  return INITIAL_SYSTEM_RATES;
+  if (data && data.length > 0) {
+    localSystemRates = data as SystemUnitRate[];
+  }
+  return localSystemRates;
+}
+
+export async function updateSystemUnitRate(rateId: string, newValue: number): Promise<void> {
+  const { error } = await supabase.from('system_unit_rates').update({ value: newValue, updated_at: new Date().toISOString() }).eq('id', rateId);
+  if (error) {
+    throw new Error(`Lỗi cập nhật Đơn giá hệ thống Supabase: ${error.message}`);
+  }
 }

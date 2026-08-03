@@ -88,7 +88,7 @@ export const PricingCalculatorPage = ({ onNavigateToQuotations }: PricingCalcula
         text: `Đã lưu bản nháp tính giá cho sản phẩm "${rfqPayload.product_name}" thành công! (Mã quote: #${record.id.substring(0, 8)})`,
       });
     } catch (err: any) {
-      setMsg({ type: 'error', text: 'Có lỗi xảy ra khi lưu bản nháp.' });
+      setMsg({ type: 'error', text: `❌ LỖI LƯU TÍNH GIÁ THẤT BẠI TRÊN SUPABASE: ${err?.message || err}` });
     } finally {
       setSaving(false);
     }
@@ -124,7 +124,7 @@ export const PricingCalculatorPage = ({ onNavigateToQuotations }: PricingCalcula
         }
       }, 1200);
     } catch (err: any) {
-      setMsg({ type: 'error', text: 'Có lỗi xảy ra khi hoàn thành tính giá.' });
+      setMsg({ type: 'error', text: `❌ LỖI HOÀN THÀNH TÍNH GIÁ THẤT BẠI TRÊN SUPABASE: ${err?.message || err}` });
     } finally {
       setSaving(false);
     }

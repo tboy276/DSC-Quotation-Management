@@ -5,27 +5,27 @@ import type {
   RfqItemRecord,
   RfqItemStatus,
   QuotationFilterOptions,
-  PaginatedQuotationResponse,
   CurrencyType,
 } from '../types/quote';
 import type { ForgingInput, CastingInput, ForgingResult, CastingResult } from './calculation-engine/types';
-import type { SegmentType, TradeTermType } from '../store/useQuotationStore';
+import type { SegmentType } from '../store/useQuotationStore';
+import { resetQuotationDocumentsCache } from './quotation-document-service';
 
 // ----------------------------------------------------------------------
-// CLEAN INITIAL DATA (Bắt đầu với 0 dữ liệu mẫu để thử nghiệm dữ liệu mới)
+// INITIAL MOCK DATA SEED (Clean default state)
 // ----------------------------------------------------------------------
 
 export const INITIAL_DOSSIERS: RfqDossier[] = [];
 export const INITIAL_RFQ_ITEMS: RfqItemRecord[] = [];
 export const INITIAL_QUOTES: QuoteRecord[] = [];
 
-// Memory caches
-let localDossiersCache = [...INITIAL_DOSSIERS];
-let localItemsCache = [...INITIAL_RFQ_ITEMS];
-let localQuotesCache = [...INITIAL_QUOTES];
+// Local memory caches strictly used as read buffer for UI
+let localDossiersCache: RfqDossier[] = [];
+let localItemsCache: RfqItemRecord[] = [];
+let localQuotesCache: QuoteRecord[] = [];
 
 /**
- * Fetch all RFQ Items joined with Quote calculations & Dossier Headers
+ * Fetch all RFQ Items joined with Quote calculations & Dossier Headers from Supabase
  */
 export const fetchQuotes = async (filter?: QuotationFilterOptions): Promise<QuoteRecord[]> => {
   try {
@@ -34,14 +34,14 @@ export const fetchQuotes = async (filter?: QuotationFilterOptions): Promise<Quot
       .select('*, rfq:rfqs(*), quote:quotes(*)')
       .order('created_at', { ascending: false });
 
-    if (!error && dbItems && dbItems.length > 0) {
+    if (!error && dbItems) {
       localItemsCache = dbItems as any[];
     }
   } catch (err) {
-    console.warn('Supabase DB fallback to memory cache:', err);
+    console.warn('Fetching rfq_items from Supabase error:', err);
   }
 
-  // Construct complete QuoteRecord list from localItemsCache
+  // Construct complete QuoteRecord list
   let list: QuoteRecord[] = localItemsCache.map((item) => {
     const parentDossier = localDossiersCache.find((d) => d.id === item.rfq_id) || item.rfq;
     const existingQuote = localQuotesCache.find((q) => q.rfq_item_id === item.id) || item.quote;
@@ -101,20 +101,24 @@ export const fetchQuotes = async (filter?: QuotationFilterOptions): Promise<Quot
 };
 
 /**
- * Server-side Paginated Fetch for RFQ Dossiers & Product Items
+ * Fetch Paginated Quote Records for Data Table
  */
 export const fetchPaginatedQuotes = async (
   filter?: QuotationFilterOptions
-): Promise<PaginatedQuotationResponse> => {
+): Promise<{
+  data: QuoteRecord[];
+  totalCount: number;
+  totalPages: number;
+  currentPage: number;
+  pageSize: number;
+}> => {
+  const allQuotes = await fetchQuotes(filter);
   const page = filter?.page || 1;
   const pageSize = filter?.pageSize || 10;
-
-  const fullList = await fetchQuotes(filter);
-  const totalCount = fullList.length;
+  const totalCount = allQuotes.length;
   const totalPages = Math.ceil(totalCount / pageSize) || 1;
-
-  const startIndex = (page - 1) * pageSize;
-  const paginatedData = fullList.slice(startIndex, startIndex + pageSize);
+  const start = (page - 1) * pageSize;
+  const paginatedData = allQuotes.slice(start, start + pageSize);
 
   return {
     data: paginatedData,
@@ -126,7 +130,8 @@ export const fetchPaginatedQuotes = async (
 };
 
 /**
- * Create a new RFQ Dossier Header + Product Line Items
+ * Create a new RFQ Dossier Header with child Items — Strictly Inserts into Supabase DB
+ * Throws explicit error if Supabase write fails! NO silent fallback.
  */
 export const createRfqDossierWithItems = async (
   dossier: {
@@ -136,14 +141,14 @@ export const createRfqDossierWithItems = async (
     customer_contact_person?: string;
     rfq_received_date: string;
     customer_deadline: string;
-    trade_terms?: TradeTermType;
+    trade_terms?: any;
     delivery_address?: string;
     special_requirements?: string;
     notes?: string;
   },
   items: Array<{
     product_name: string;
-    part_number: string;
+    part_number?: string;
     annual_volume: number;
     quantity_unit?: any;
     target_price: number;
@@ -153,94 +158,71 @@ export const createRfqDossierWithItems = async (
   }>,
   userEmail: string = 'sales@disoco.vn'
 ): Promise<RfqDossier> => {
-  const now = new Date().toISOString();
-  const dossierId = `rfq-dos-${Date.now()}`;
   const dateStr = new Date().toISOString().slice(0, 10).replace(/-/g, '');
   const rawCode = dossier.rfq_code || `${dateStr}-${String(localDossiersCache.length + 1).padStart(3, '0')}`;
   const rfqCode = rawCode.startsWith('RFQ-') ? rawCode.replace('RFQ-', '') : rawCode;
 
-  const createdItems: RfqItemRecord[] = items.map((it, idx) => {
-    const itemIndexStr = String(idx + 1).padStart(2, '0');
-    const itemCode = `${rfqCode}-${itemIndexStr}`;
-    return {
-      id: `item-${Date.now()}-${idx + 1}`,
-      rfq_id: dossierId,
-      item_code: itemCode,
-      product_name: it.product_name,
-      part_number: it.part_number || `PN-${Date.now()}-${idx + 1}`,
-      annual_volume: it.annual_volume,
-      quantity_unit: it.quantity_unit || 'pcs/năm',
-      target_price: it.target_price,
-      technology_requirement: it.technology_requirement || 'Rèn+Gia công',
-      status: it.is_feasible ? 'IN_COSTING' : 'CANCELLED_NOT_FEASIBLE',
-      cancel_reason: it.is_feasible ? undefined : it.cancel_reason,
-      created_at: now,
-    };
-  });
+  // 1. Insert Header into Supabase 'rfqs' table
+  const { data: dbDossier, error: dosErr } = await supabase
+    .from('rfqs')
+    .insert({
+      customer_name: dossier.customer_name,
+      customer_address: dossier.customer_address,
+      rfq_code: rfqCode,
+      customer_contact_person: dossier.customer_contact_person,
+      rfq_received_date: dossier.rfq_received_date,
+      customer_deadline: dossier.customer_deadline,
+      trade_terms: dossier.trade_terms,
+      delivery_address: dossier.delivery_address,
+      special_requirements: dossier.special_requirements,
+      notes: dossier.notes,
+      created_by_email: userEmail,
+    })
+    .select()
+    .single();
 
-  const newDossier: RfqDossier = {
-    id: dossierId,
-    customer_name: dossier.customer_name,
-    customer_address: dossier.customer_address,
-    rfq_code: rfqCode,
-    customer_contact_person: dossier.customer_contact_person,
-    rfq_received_date: dossier.rfq_received_date,
-    customer_deadline: dossier.customer_deadline,
-    trade_terms: dossier.trade_terms || 'FOB',
-    delivery_address: dossier.delivery_address,
-    special_requirements: dossier.special_requirements,
-    notes: dossier.notes,
-    created_by_email: userEmail,
-    created_at: now,
-    items: createdItems,
-  };
-
-  try {
-    const { data: dbDossier, error: dosErr } = await supabase
-      .from('rfqs')
-      .insert({
-        customer_name: dossier.customer_name,
-        customer_address: dossier.customer_address,
-        rfq_code: rfqCode,
-        customer_contact_person: dossier.customer_contact_person,
-        rfq_received_date: dossier.rfq_received_date,
-        customer_deadline: dossier.customer_deadline,
-        trade_terms: dossier.trade_terms,
-        delivery_address: dossier.delivery_address,
-        special_requirements: dossier.special_requirements,
-        notes: dossier.notes,
-        created_by_email: userEmail,
-      })
-      .select()
-      .single();
-
-    if (!dosErr && dbDossier) {
-      const itemsToInsert = items.map((it) => ({
-        rfq_id: dbDossier.id,
-        product_name: it.product_name,
-        part_number: it.part_number,
-        annual_volume: it.annual_volume,
-        quantity_unit: it.quantity_unit || 'pcs/năm',
-        target_price: it.target_price,
-        technology_requirement: it.technology_requirement || 'Rèn+Gia công',
-        status: it.is_feasible ? 'IN_COSTING' : 'CANCELLED_NOT_FEASIBLE',
-        cancel_reason: it.is_feasible ? null : it.cancel_reason,
-      }));
-
-      await supabase.from('rfq_items').insert(itemsToInsert);
-    }
-  } catch (err) {
-    console.warn('Saving dossier to Supabase failed, using memory cache:', err);
+  if (dosErr || !dbDossier) {
+    throw new Error(`Lỗi tạo Hồ sơ RFQ trên Supabase: ${dosErr?.message || 'Không có dữ liệu trả về'}`);
   }
 
-  localDossiersCache.unshift(newDossier);
-  localItemsCache.unshift(...createdItems);
+  // 2. Insert child items into Supabase 'rfq_items' table
+  const itemsToInsert = items.map((it, idx) => ({
+    rfq_id: dbDossier.id,
+    item_code: `${rfqCode}-${String(idx + 1).padStart(2, '0')}`,
+    product_name: it.product_name,
+    part_number: it.part_number || `PN-${Date.now()}-${idx + 1}`,
+    annual_volume: it.annual_volume,
+    quantity_unit: it.quantity_unit || 'pcs/năm',
+    target_price: it.target_price,
+    technology_requirement: it.technology_requirement || 'Rèn+Gia công',
+    status: it.is_feasible ? 'IN_COSTING' : 'CANCELLED_NOT_FEASIBLE',
+    cancel_reason: it.is_feasible ? null : it.cancel_reason,
+  }));
 
-  return newDossier;
+  const { data: dbItems, error: itemsErr } = await supabase
+    .from('rfq_items')
+    .insert(itemsToInsert)
+    .select();
+
+  if (itemsErr) {
+    throw new Error(`Lỗi tạo Mã sản phẩm RFQ trên Supabase: ${itemsErr.message}`);
+  }
+
+  const createdDossier: RfqDossier = {
+    ...dbDossier,
+    items: dbItems as RfqItemRecord[],
+  };
+
+  localDossiersCache.unshift(createdDossier);
+  if (dbItems) localItemsCache.unshift(...(dbItems as RfqItemRecord[]));
+
+  return createdDossier;
 };
 
 /**
  * Save RFQ & Quote Calculation (IN_COSTING / READY_FOR_QUOTE status)
+ * Inserts/Upserts into Supabase 'quotes' and updates 'rfq_items.status'
+ * Throws explicit error if Supabase write fails! NO silent fallback.
  */
 export const saveQuoteDraft = async (
   rfqItem: {
@@ -260,47 +242,41 @@ export const saveQuoteDraft = async (
 ): Promise<QuoteRecord> => {
   const finalPrice = segment === 'forging' ? (results as ForgingResult).P_FORGING : (results as CastingResult).P_CASTING;
   const dieTreatment = segment === 'forging' ? (inputs as ForgingInput).die_cost_treatment : (inputs as CastingInput).pattern_cost_treatment;
-  const now = new Date().toISOString();
 
   let itemId = rfqItem.id;
   if (!itemId) {
-    // Create new item & dossier fallback
-    const dossierId = `rfq-dos-${Date.now()}`;
-    itemId = `item-${Date.now()}`;
-
-    const newDos: RfqDossier = {
-      id: dossierId,
-      customer_name: rfqItem.customer_name || 'Khách hàng mới',
-      rfq_received_date: now.slice(0, 10),
-      customer_deadline: now.slice(0, 10),
-      created_by_email: userEmail,
-      created_at: now,
-    };
-    const newItem: RfqItemRecord = {
-      id: itemId,
-      rfq_id: dossierId,
-      product_name: rfqItem.product_name,
-      part_number: `PN-${Date.now()}`,
-      annual_volume: rfqItem.annual_volume,
-      target_price: rfqItem.target_price,
-      status: 'READY_FOR_QUOTE',
-      created_at: now,
-      rfq: newDos,
-    };
-    localDossiersCache.unshift(newDos);
-    localItemsCache.unshift(newItem);
-  } else {
-    // Update existing item status to READY_FOR_QUOTE
-    localItemsCache = localItemsCache.map((it) =>
-      it.id === itemId ? { ...it, status: 'READY_FOR_QUOTE' } : it
+    // If rfqItem doesn't exist yet, create dossier & item first
+    const dossier = await createRfqDossierWithItems(
+      {
+        customer_name: rfqItem.customer_name || 'Khách hàng mới',
+        rfq_received_date: new Date().toISOString().slice(0, 10),
+        customer_deadline: new Date().toISOString().slice(0, 10),
+      },
+      [
+        {
+          product_name: rfqItem.product_name,
+          annual_volume: rfqItem.annual_volume,
+          target_price: rfqItem.target_price,
+          is_feasible: true,
+        },
+      ],
+      userEmail
     );
+    itemId = dossier.items![0].id;
   }
 
-  const quoteId = existingQuoteId || `quote-${itemId}`;
-  const targetItem = localItemsCache.find((it) => it.id === itemId)!;
+  // Update item status on Supabase rfq_items
+  const { error: itemErr } = await supabase
+    .from('rfq_items')
+    .update({ status: 'READY_FOR_QUOTE' })
+    .eq('id', itemId);
 
-  const newQuote: QuoteRecord = {
-    id: quoteId,
+  if (itemErr) {
+    throw new Error(`Lỗi cập nhật trạng thái RFQ Item trên Supabase: ${itemErr.message}`);
+  }
+
+  // Insert/Upsert into Supabase 'quotes' table
+  const quotePayload = {
     rfq_item_id: itemId,
     segment,
     status: 'READY_FOR_QUOTE',
@@ -308,16 +284,33 @@ export const saveQuoteDraft = async (
     exchange_rate: exchangeRate,
     die_cost_treatment: dieTreatment,
     final_quoted_price: finalPrice,
-    created_at: now,
     created_by_email: userEmail,
-    rfqItem: targetItem,
-    rfq: targetItem.rfq || localDossiersCache.find((d) => d.id === targetItem.rfq_id),
     inputs_json: JSON.parse(JSON.stringify(inputs)),
     results_json: JSON.parse(JSON.stringify(results)),
   };
 
-  localQuotesCache = [newQuote, ...localQuotesCache.filter((q) => q.id !== quoteId)];
-  return newQuote;
+  let dbQuote: any = null;
+  if (existingQuoteId) {
+    const { data, error } = await supabase
+      .from('quotes')
+      .update(quotePayload)
+      .eq('id', existingQuoteId)
+      .select()
+      .single();
+    if (error) throw new Error(`Lỗi lưu bản tính giá Supabase: ${error.message}`);
+    dbQuote = data;
+  } else {
+    const { data, error } = await supabase
+      .from('quotes')
+      .insert(quotePayload)
+      .select()
+      .single();
+    if (error) throw new Error(`Lỗi lưu bản tính giá Supabase: ${error.message}`);
+    dbQuote = data;
+  }
+
+  await fetchQuotes();
+  return dbQuote as QuoteRecord;
 };
 
 /**
@@ -340,31 +333,36 @@ export const sendQuote = async (
   userEmail: string = 'estimator@disoco.vn'
 ): Promise<QuoteRecord> => {
   const record = await saveQuoteDraft(rfqItem, segment, currency, exchangeRate, inputs, results, existingQuoteId, userEmail);
+  const now = new Date().toISOString();
 
-  record.status = 'QUOTED_SENT';
-  record.sent_at = new Date().toISOString();
-  if (record.rfqItem) {
-    record.rfqItem.status = 'QUOTED_SENT';
-    record.rfqItem.quoted_sent_at = record.sent_at;
+  // Update item status & quoted_sent_at on Supabase
+  const { error: itemErr } = await supabase
+    .from('rfq_items')
+    .update({ status: 'QUOTED_SENT', quoted_sent_at: now })
+    .eq('id', record.rfq_item_id);
+
+  if (itemErr) {
+    throw new Error(`Lỗi gửi báo giá Supabase: ${itemErr.message}`);
   }
 
-  localItemsCache = localItemsCache.map((it) =>
-    it.id === record.rfq_item_id ? { ...it, status: 'QUOTED_SENT', quoted_sent_at: record.sent_at } : it
-  );
+  await supabase
+    .from('quotes')
+    .update({ status: 'QUOTED_SENT' })
+    .eq('id', record.id);
 
-  localQuotesCache = localQuotesCache.map((q) => (q.id === record.id ? record : q));
+  await fetchQuotes();
   return record;
 };
 
 /**
  * Update RFQ Item Status (SUCCESSFUL / CANCELLED_AFTER_QUOTE / QUOTED_SENT)
+ * Strictly updates Supabase DB!
  */
 export const updateQuoteStatus = async (
   quoteId: string,
   newStatus: RfqItemStatus | string,
   cancelReason?: string
 ): Promise<void> => {
-  // Map status to 7-status enum
   let itemStatus: RfqItemStatus = 'QUOTED_SENT';
   if (newStatus === 'SUCCESSFUL' || newStatus === 'APPROVED') itemStatus = 'SUCCESSFUL';
   else if (newStatus === 'CANCELLED' || newStatus === 'REJECTED' || newStatus === 'CANCELLED_AFTER_QUOTE') itemStatus = 'CANCELLED_AFTER_QUOTE';
@@ -372,32 +370,39 @@ export const updateQuoteStatus = async (
   else if (newStatus === 'READY_FOR_QUOTE') itemStatus = 'READY_FOR_QUOTE';
   else if (newStatus === 'IN_COSTING' || newStatus === 'DRAFT') itemStatus = 'IN_COSTING';
 
-  const targetQuote = localQuotesCache.find((q) => q.id === quoteId || q.rfq_item_id === quoteId);
-  const itemId = targetQuote?.rfq_item_id || quoteId;
   const now = new Date().toISOString();
 
-  localItemsCache = localItemsCache.map((it) => {
-    if (it.id === itemId) {
-      return {
-        ...it,
-        status: itemStatus,
-        cancel_reason: itemStatus.startsWith('CANCELLED') ? cancelReason : it.cancel_reason,
-        resolved_at: (itemStatus === 'SUCCESSFUL' || itemStatus.startsWith('CANCELLED')) ? now : it.resolved_at,
-      };
-    }
-    return it;
-  });
+  // Find target item ID
+  let targetItemId = quoteId;
+  const targetQuote = localQuotesCache.find((q) => q.id === quoteId || q.rfq_item_id === quoteId);
+  if (targetQuote) targetItemId = targetQuote.rfq_item_id;
 
-  localQuotesCache = localQuotesCache.map((q) => {
-    if (q.id === quoteId || q.rfq_item_id === itemId) {
-      return {
-        ...q,
-        status: itemStatus,
-        cancel_reason: itemStatus.startsWith('CANCELLED') ? cancelReason : q.cancel_reason,
-      };
-    }
-    return q;
-  });
+  const updateFields: any = {
+    status: itemStatus,
+  };
+  if (itemStatus.startsWith('CANCELLED') && cancelReason) {
+    updateFields.cancel_reason = cancelReason;
+  }
+  if (itemStatus === 'SUCCESSFUL' || itemStatus.startsWith('CANCELLED')) {
+    updateFields.resolved_at = now;
+  }
+
+  const { error: itemErr } = await supabase
+    .from('rfq_items')
+    .update(updateFields)
+    .eq('id', targetItemId);
+
+  if (itemErr) {
+    throw new Error(`Lỗi cập nhật trạng thái Supabase: ${itemErr.message}`);
+  }
+
+  // Update quotes table status
+  await supabase
+    .from('quotes')
+    .update({ status: itemStatus })
+    .eq('rfq_item_id', targetItemId);
+
+  await fetchQuotes();
 };
 
 /**
@@ -437,31 +442,27 @@ export const cancelRfqImmediately = async (
   return list.find((q) => q.rfq_item_id === createdItem.id)!;
 };
 
-import { resetQuotationDocumentsCache } from './quotation-document-service';
-
 /**
- * Reset System Data to initial seed state (Admin-only action for tuan.vuongdinh@disoco.net)
- * Executes DELETE queries on Supabase DB tables + clears memory caches
+ * Reset System Data to initial seed state
+ * Strictly executes DELETE queries on Supabase DB tables in Foreign Key order
  */
 export const resetSystemData = async (): Promise<void> => {
-  try {
-    // Clear custom local storage settings
-    localStorage.removeItem('rfq_flat_table_hidden_cols');
-    localStorage.removeItem('rfq_items_hidden_cols');
+  localStorage.removeItem('rfq_flat_table_hidden_cols');
+  localStorage.removeItem('rfq_items_hidden_cols');
 
-    // Execute DELETE on Supabase Database tables in foreign key order
-    await supabase.from('quotation_document_items').delete().neq('id', '00000000-0000-0000-0000-000000000000');
-    await supabase.from('quotation_documents').delete().neq('id', '00000000-0000-0000-0000-000000000000');
-    await supabase.from('quotes').delete().neq('id', '00000000-0000-0000-0000-000000000000');
-    await supabase.from('rfq_items').delete().neq('id', '00000000-0000-0000-0000-000000000000');
-    await supabase.from('rfqs').delete().neq('id', '00000000-0000-0000-0000-000000000000');
-  } catch (e) {
-    console.warn('Supabase DB reset error:', e);
+  const { error: e1 } = await supabase.from('quotation_document_items').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+  const { error: e2 } = await supabase.from('quotation_documents').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+  const { error: e3 } = await supabase.from('quotes').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+  const { error: e4 } = await supabase.from('rfq_items').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+  const { error: e5 } = await supabase.from('rfqs').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+
+  if (e1 || e2 || e3 || e4 || e5) {
+    const msg = [e1, e2, e3, e4, e5].filter(Boolean).map((err) => err?.message).join('; ');
+    throw new Error(`Lỗi reset dữ liệu Supabase: ${msg}`);
   }
 
-  // Clear memory caches
-  localDossiersCache = [...INITIAL_DOSSIERS];
-  localItemsCache = [...INITIAL_RFQ_ITEMS];
-  localQuotesCache = [...INITIAL_QUOTES];
+  localDossiersCache = [];
+  localItemsCache = [];
+  localQuotesCache = [];
   resetQuotationDocumentsCache();
 };

@@ -178,8 +178,9 @@ export const CreateDocumentModal = ({
       setShowConfirmSendDialog(false);
       onSuccess();
       onClose();
-    } catch (err) {
+    } catch (err: any) {
       console.error('Error creating quotation document:', err);
+      alert(`❌ LỖI GHI VĂN BẢN BÁO GIÁ THẤT BẠI TRÊN SUPABASE:\n${err?.message || err}`);
     } finally {
       setSubmitting(false);
     }

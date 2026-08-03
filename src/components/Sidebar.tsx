@@ -9,6 +9,7 @@ import {
   Layers,
   BarChart3,
   TrendingUp,
+  Activity,
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -35,6 +36,7 @@ export const Sidebar = ({
 
   const adminNavItems = [
     { id: 'users', label: 'Quản Lý Quyền & Tài Khoản', icon: Users, shortcut: '⌘U' },
+    { id: 'health_check', label: 'Kiểm Tra Kết Nối DB (Health)', icon: Activity, shortcut: '⌘H' },
   ];
 
   return (
