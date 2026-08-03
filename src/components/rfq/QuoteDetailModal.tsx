@@ -3,7 +3,9 @@ import type { QuoteRecord, CurrencyType } from '../../types/quote';
 import type { ForgingInput, CastingInput, ForgingResult, CastingResult } from '../../lib/calculation-engine/types';
 import { QuoteStatusBadge } from './QuoteStatusBadge';
 import { formatCurrencyValue } from './RealtimeSummaryPanel';
-import { FileText, X, Layers, ListFilter } from 'lucide-react';
+import { formatDate } from '../../lib/format-date';
+import { Modal } from '../ui/Modal';
+import { FileText, Layers, ListFilter } from 'lucide-react';
 
 interface QuoteDetailModalProps {
   quote: QuoteRecord | null;
@@ -17,10 +19,11 @@ export const QuoteDetailModal = ({ quote, onClose }: QuoteDetailModalProps) => {
 
   const isForging = quote.segment === 'forging';
   const rfq = quote.rfq;
+  const rfqItem = quote.rfqItem;
 
-  // Snapshot Isolation Enforcement: Read directly from frozen JSON snapshots for SENT/SUCCESSFUL/CANCELLED
-  const statusStr = (rfq?.status || quote.status) as string;
-  const isSnapshotFrozen = statusStr === 'SENT' || statusStr === 'SUCCESSFUL' || statusStr === 'CANCELLED' || statusStr === 'APPROVED' || statusStr === 'REJECTED';
+  // Snapshot Isolation Enforcement: Read directly from frozen JSON snapshots
+  const statusStr = String(rfqItem?.status || quote.status);
+  const isSnapshotFrozen = statusStr === 'QUOTED_SENT' || statusStr === 'SUCCESSFUL' || statusStr === 'CANCELLED_AFTER_QUOTE' || statusStr === 'SENT' || statusStr === 'APPROVED' || statusStr === 'REJECTED';
 
   const res = quote.results_json as any;
   const inp = quote.inputs_json as any;
@@ -158,71 +161,69 @@ export const QuoteDetailModal = ({ quote, onClose }: QuoteDetailModalProps) => {
   };
 
   return (
-    <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4 z-50 animate-fade-in-up">
-      <div className="bg-white rounded-[12px] border border-[#EAEAEA] shadow-xl max-w-3xl w-full max-h-[90vh] overflow-y-auto p-6 space-y-5 text-xs text-[#111111]">
-        {/* Header Modal */}
-        <div className="flex items-center justify-between border-b border-[#EAEAEA] pb-3">
-          <div className="flex items-center space-x-2.5">
-            <div className="w-8 h-8 rounded-[6px] bg-[#111111] text-white flex items-center justify-center font-bold">
-              <FileText className="w-4 h-4" />
-            </div>
-            <div>
-              <div className="flex items-center space-x-2">
-                <h3 className="text-sm font-bold text-[#111111]">
-                  Chi Tiết Báo Giá #{quote.id.substring(0, 10)} ({currency})
-                </h3>
-                <QuoteStatusBadge status={rfq?.status || quote.status} size="sm" />
-              </div>
-              <p className="text-[10px] text-[#787774]">
-                {isSnapshotFrozen ? (
-                  <span className="text-[#346538] font-bold">
-                    ✓ Snapshot Đóng Băng (Dữ liệu cố định tại thời điểm gửi, không bị đổi theo Master Data)
-                  </span>
-                ) : (
-                  <span className="text-[#956400]">⚡ Bản nháp DRAFT (Đang tính toán Real-time)</span>
-                )}
-              </p>
-            </div>
-          </div>
-
-          {/* Sub-Tab Navigation Header */}
-          <div className="flex items-center space-x-1 bg-[#F0F0EE] p-1 rounded-[6px] border border-[#EAEAEA]">
-            <button
-              onClick={() => setActiveSubTab('summary')}
-              className={`px-3 py-1 text-xs font-bold rounded-[4px] transition-all cursor-pointer ${
-                activeSubTab === 'summary'
-                  ? 'bg-white text-[#111111] shadow-xs'
-                  : 'text-[#787774] hover:text-[#111111]'
-              }`}
-            >
-              <Layers className="w-3.5 h-3.5 inline mr-1" />
-              <span>Tổng Quan</span>
-            </button>
-            <button
-              onClick={() => setActiveSubTab('breakdown')}
-              className={`px-3 py-1 text-xs font-bold rounded-[4px] transition-all cursor-pointer ${
-                activeSubTab === 'breakdown'
-                  ? 'bg-white text-[#111111] shadow-xs'
-                  : 'text-[#787774] hover:text-[#111111]'
-              }`}
-            >
-              <ListFilter className="w-3.5 h-3.5 inline mr-1" />
-              <span>Chi Tiết Bóc Tách (5 Section)</span>
-            </button>
-            <button
-              onClick={onClose}
-              className="text-[#787774] hover:text-[#111111] p-1 rounded-md cursor-pointer ml-1"
-            >
-              <X className="w-4 h-4" />
-            </button>
-          </div>
+    <Modal
+      isOpen={true}
+      onClose={onClose}
+      size="2xl"
+      icon={<FileText className="w-4 h-4" />}
+      title={
+        <div className="flex items-center space-x-2">
+          <h3 className="text-sm font-bold text-[#111111]">
+            Chi Tiết Báo Giá #{quote.id.substring(0, 10)} ({currency})
+          </h3>
+          <QuoteStatusBadge status={rfqItem?.status || quote.status} size="sm" />
         </div>
+      }
+      subtitle={
+        isSnapshotFrozen ? (
+          <span className="text-[#346538] font-bold">
+            ✓ Snapshot Đóng Băng (Dữ liệu cố định tại thời điểm gửi, không bị đổi theo Master Data)
+          </span>
+        ) : (
+          <span className="text-[#956400]">⚡ Bản nháp DRAFT (Đang tính toán Real-time)</span>
+        )
+      }
+      headerExtra={
+        <div className="flex items-center space-x-1 bg-[#F0F0EE] p-1 rounded-[6px] border border-[#EAEAEA] mr-2">
+          <button
+            onClick={() => setActiveSubTab('summary')}
+            className={`px-3 py-1 text-xs font-bold rounded-[4px] transition-all cursor-pointer ${
+              activeSubTab === 'summary'
+                ? 'bg-white text-[#111111] shadow-xs'
+                : 'text-[#787774] hover:text-[#111111]'
+            }`}
+          >
+            <Layers className="w-3.5 h-3.5 inline mr-1" />
+            <span>Tổng Quan</span>
+          </button>
+          <button
+            onClick={() => setActiveSubTab('breakdown')}
+            className={`px-3 py-1 text-xs font-bold rounded-[4px] transition-all cursor-pointer ${
+              activeSubTab === 'breakdown'
+                ? 'bg-white text-[#111111] shadow-xs'
+                : 'text-[#787774] hover:text-[#111111]'
+            }`}
+          >
+            <ListFilter className="w-3.5 h-3.5 inline mr-1" />
+            <span>Chi Tiết Bóc Tách (5 Section)</span>
+          </button>
+        </div>
+      }
+      footer={
+        <button
+          onClick={onClose}
+          className="px-4 py-1.5 bg-[#111111] hover:bg-[#333333] text-white font-bold rounded-[6px] cursor-pointer text-xs"
+        >
+          Đóng Cửa Sổ
+        </button>
+      }
+    >
 
         {/* 1. Thông Tin RFQ */}
         <div className="bg-[#FBFBFA] border border-[#EAEAEA] rounded-[8px] p-3.5 space-y-2">
           <div className="flex items-center justify-between">
             <h4 className="text-[11px] font-bold text-[#787774] uppercase tracking-wider">
-              Thông Tin RFQ Khách Hàng
+              Thông Tin Hồ Sơ & Mã Sản Phẩm RFQ
             </h4>
             <span className="text-[11px] font-mono font-bold text-[#111111] bg-white px-2 py-0.5 border border-[#EAEAEA] rounded">
               Tiền tệ: {currency} {currency !== 'VND' && `(Tỷ giá: 1 ${currency} = ${exchangeRate.toLocaleString('vi-VN')} VNĐ)`}
@@ -231,30 +232,64 @@ export const QuoteDetailModal = ({ quote, onClose }: QuoteDetailModalProps) => {
 
           <div className="grid grid-cols-2 gap-2 text-xs">
             <div>
-              <span className="text-[#787774]">Khách hàng:</span>{' '}
+              <span className="text-[#787774]">Mã Dòng Sản Phẩm:</span>{' '}
+              <strong className="font-mono font-extrabold text-[#111111]">{rfqItem?.item_code || `${rfq?.rfq_code || '20260803-001'}-01`}</strong>
+            </div>
+            <div>
+              <span className="text-[#787774]">Mã Hồ Sơ RFQ:</span>{' '}
+              <strong className="font-mono text-[#111111]">{rfq?.rfq_code || 'N/A'}</strong>
+            </div>
+            <div>
+              <span className="text-[#787774]">Khách hàng (Dossier):</span>{' '}
               <strong className="text-[#111111]">{rfq?.customer_name || 'N/A'}</strong>
             </div>
             <div>
-              <span className="text-[#787774]">Sản phẩm:</span>{' '}
-              <strong className="text-[#111111]">{rfq?.product_name || 'N/A'}</strong>
+              <span className="text-[#787774]">Người gửi (Attn):</span>{' '}
+              <strong className="text-[#111111]">{rfq?.customer_contact_person || 'N/A'}</strong>
+            </div>
+            <div>
+              <span className="text-[#787774]">Địa chỉ khách hàng:</span>{' '}
+              <strong className="text-[#111111]">{rfq?.customer_address || 'N/A'}</strong>
+            </div>
+            <div>
+              <span className="text-[#787774]">Tên sản phẩm / Part No:</span>{' '}
+              <strong className="text-[#111111]">{rfqItem?.product_name || 'N/A'} ({rfqItem?.part_number || 'No PN'})</strong>
             </div>
             <div>
               <span className="text-[#787774]">Sản lượng dự kiến:</span>{' '}
-              <strong className="font-mono text-[#111111]">{(rfq?.annual_volume || 0).toLocaleString('vi-VN')} Pcs/năm</strong>
+              <strong className="font-mono text-[#111111]">{(rfqItem?.annual_volume || 0).toLocaleString('vi-VN')} {rfqItem?.quantity_unit || 'pcs/năm'}</strong>
             </div>
             <div>
-              <span className="text-[#787774]">Trade Terms / Target Price:</span>{' '}
+              <span className="text-[#787774]">Trade Terms / Địa chỉ giao:</span>{' '}
               <strong className="font-mono text-[#111111]">
-                {rfq?.trade_terms} | {formatCurrencyValue(rfq?.target_price || 0, currency, exchangeRate)}
+                {rfq?.trade_terms || 'FOB'} {rfq?.delivery_address ? `(${rfq.delivery_address})` : ''}
               </strong>
             </div>
+            <div>
+              <span className="text-[#787774]">Target Price:</span>{' '}
+              <strong className="font-mono text-[#111111]">
+                {formatCurrencyValue(rfqItem?.target_price || 0, currency, exchangeRate)}
+              </strong>
+            </div>
+            {rfq?.special_requirements && (
+              <div className="col-span-2 text-[11px]">
+                <span className="text-[#787774]">Yêu cầu đặc biệt:</span>{' '}
+                <span className="font-bold text-[#111111]">{rfq.special_requirements}</span>
+              </div>
+            )}
+            {rfq?.notes && (
+              <div className="col-span-2 text-[11px]">
+                <span className="text-[#787774]">Ghi chú hồ sơ:</span>{' '}
+                <span className="text-[#787774] italic">{rfq.notes}</span>
+              </div>
+            )}
             <div className="col-span-2 border-t border-[#EAEAEA] pt-1 mt-1 text-[11px]">
               <span className="text-[#787774]">Người tạo RFQ:</span>{' '}
               <strong className="text-[#111111] font-mono">{rfq?.created_by_email || quote.created_by_email || 'N/A'}</strong>
             </div>
-            {(rfq?.cancel_reason || quote.cancel_reason) && (
+            {(quote.cancel_reason || rfqItem?.cancel_reason) && (
               <div className="col-span-2 p-2 bg-[#FDEBEC] border border-[#FADBDC] rounded text-[#9F2F2D] font-mono font-semibold text-[11px]">
-                💬 Lý do huỷ bỏ: "{rfq?.cancel_reason || quote.cancel_reason}"
+                💬 Lý do huỷ bỏ: "{quote.cancel_reason || rfqItem?.cancel_reason}"
               </div>
             )}
           </div>
@@ -307,7 +342,7 @@ export const QuoteDetailModal = ({ quote, onClose }: QuoteDetailModalProps) => {
             <div className="bg-[#111111] text-white p-4 rounded-[10px] space-y-1">
               <div className="flex items-center justify-between text-slate-400 text-[10px] uppercase font-semibold">
                 <span>Đơn Giá Báo Giá ({currency})</span>
-                <span>Ngày tạo: {new Date(quote.created_at).toLocaleDateString('vi-VN')}</span>
+                <span>Ngày tạo: {formatDate(quote.created_at)}</span>
               </div>
 
               <div className="flex items-baseline justify-between pt-1">
@@ -327,15 +362,6 @@ export const QuoteDetailModal = ({ quote, onClose }: QuoteDetailModalProps) => {
         {/* Tab 2: Chi Tiết Bóc Tách (In-App Breakdown Table) */}
         {activeSubTab === 'breakdown' && renderBreakdownTable()}
 
-        <div className="flex justify-end pt-2 border-t border-[#EAEAEA]">
-          <button
-            onClick={onClose}
-            className="px-4 py-1.5 bg-[#111111] hover:bg-[#333333] text-white font-bold rounded-[6px] cursor-pointer text-xs"
-          >
-            Đóng Cửa Sổ
-          </button>
-        </div>
-      </div>
-    </div>
+    </Modal>
   );
 };

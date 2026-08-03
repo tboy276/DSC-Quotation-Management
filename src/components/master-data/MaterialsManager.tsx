@@ -11,7 +11,8 @@ import {
 } from '../../lib/master-data-service';
 import { INITIAL_QUOTES } from '../../lib/quotation-service';
 import { DataTable, type DataTableColumn, type DataTableAction } from '../ui/DataTable';
-import { Plus, Edit2, Trash2, TrendingUp, History, X, Check, AlertTriangle } from 'lucide-react';
+import { Modal } from '../ui/Modal';
+import { Plus, Edit2, Trash2, TrendingUp, History, Check, AlertTriangle } from 'lucide-react';
 
 interface MaterialsManagerProps {
   isEstimator: boolean;
@@ -253,40 +254,45 @@ export const MaterialsManager = ({ isEstimator }: MaterialsManagerProps) => {
   const toolbarActions: DataTableAction<Material>[] = [
     {
       key: 'create',
-      label: 'Thêm Vật Tư Mới',
+      label: 'Thêm Mới',
       icon: <Plus className="w-3.5 h-3.5" />,
+      tooltip: 'Thêm vật tư mới',
       variant: 'primary',
       enabled: () => isEstimator,
       onClick: () => handleOpenMaterialModal(),
     },
     {
       key: 'edit',
-      label: 'Sửa Thông Tin',
+      label: 'Sửa',
       icon: <Edit2 className="w-3.5 h-3.5" />,
+      tooltip: 'Sửa thông tin vật tư đã chọn',
       variant: 'secondary',
       enabled: (count) => isEstimator && count === 1,
       onClick: (selectedRows) => handleOpenMaterialModal(selectedRows[0]),
     },
     {
       key: 'new_price',
-      label: '+ Cập Nhật Giá Mới',
+      label: 'Cập Nhật Giá',
       icon: <TrendingUp className="w-3.5 h-3.5 text-emerald-400" />,
+      tooltip: 'Cập nhật giá vật tư mới',
       variant: 'primary',
       enabled: (count) => isEstimator && count === 1,
       onClick: (selectedRows) => handleOpenPriceModal(selectedRows[0]),
     },
     {
       key: 'view_history',
-      label: 'Xem Lịch Sử Giá',
+      label: 'Lịch Sử Giá',
       icon: <History className="w-3.5 h-3.5" />,
+      tooltip: 'Xem biến động lịch sử giá',
       variant: 'secondary',
       enabled: (count) => count === 1,
       onClick: (selectedRows) => handleOpenHistoryModal(selectedRows[0]),
     },
     {
       key: 'delete',
-      label: 'Xoá Vật Tư',
+      label: 'Xoá',
       icon: <Trash2 className="w-3.5 h-3.5" />,
+      tooltip: 'Xoá vật tư đã chọn (bắt buộc xác nhận)',
       variant: 'danger',
       enabled: (count) => isEstimator && count >= 1,
       onClick: (selectedRows) => handleDeleteSelectedMaterials(selectedRows),
@@ -337,6 +343,7 @@ export const MaterialsManager = ({ isEstimator }: MaterialsManagerProps) => {
 
       {/* Shared Reusable DataTable */}
       <DataTable
+        tableName="materials_table"
         data={filteredMaterials}
         columns={columns}
         keyExtractor={(m) => m.id}
@@ -348,275 +355,236 @@ export const MaterialsManager = ({ isEstimator }: MaterialsManagerProps) => {
       />
 
       {/* Modal 1: Create / Edit Material */}
-      {showMaterialModal && (
-        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4 z-50 animate-fade-in-up">
-          <div className="bg-white rounded-[12px] border border-[#EAEAEA] shadow-xl max-w-md w-full p-5 space-y-4 text-xs text-[#111111]">
-            <div className="flex items-center justify-between border-b border-[#EAEAEA] pb-3">
-              <h3 className="text-sm font-bold text-[#111111]">
-                {editingMaterial ? 'Sửa Thông Tin Vật Tư' : 'Thêm Vật Tư Mới'}
-              </h3>
-              <button
-                type="button"
-                onClick={() => setShowMaterialModal(false)}
-                className="text-[#787774] hover:text-[#111111]"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            <form onSubmit={handleSaveMaterialSubmit} className="space-y-3">
-              <div>
-                <label className="block text-[10px] font-bold text-[#787774] uppercase mb-1">
-                  Tên Vật Tư / Mác Thép
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={matName}
-                  onChange={(e) => setMatName(e.target.value)}
-                  placeholder="Ví dụ: S45C - JFE (Nhật Bản)"
-                  className="w-full px-3 py-1.5 border border-[#EAEAEA] rounded-[6px] text-xs font-bold text-[#111111]"
-                />
-              </div>
-
-              <div>
-                <label className="block text-[10px] font-bold text-[#787774] uppercase mb-1">
-                  Nhóm Vật Tư
-                </label>
-                <select
-                  value={matCategory}
-                  onChange={(e) => setMatCategory(e.target.value)}
-                  className="w-full px-3 py-1.5 border border-[#EAEAEA] rounded-[6px] bg-white text-xs font-bold text-[#111111]"
-                >
-                  <option value="Thép cán - Rèn">Thép cán - Rèn</option>
-                  <option value="Gang thỏi">Gang thỏi</option>
-                  <option value="Thép phế đúc">Thép phế đúc</option>
-                  <option value="Hồi liệu">Hồi liệu</option>
-                  <option value="Fe-Si">Fe-Si</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-[10px] font-bold text-[#787774] uppercase mb-1">
-                  Đơn Vị Tính (ĐVT)
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={matUnit}
-                  onChange={(e) => setMatUnit(e.target.value)}
-                  className="w-full px-3 py-1.5 border border-[#EAEAEA] rounded-[6px] text-xs font-mono text-[#111111]"
-                />
-              </div>
-
-              <div>
-                <label className="block text-[10px] font-bold text-[#787774] uppercase mb-1">
-                  Ghi Chú
-                </label>
-                <textarea
-                  rows={2}
-                  value={matNotes}
-                  onChange={(e) => setMatNotes(e.target.value)}
-                  className="w-full px-3 py-1.5 border border-[#EAEAEA] rounded-[6px] text-xs text-[#111111]"
-                />
-              </div>
-
-              <div className="flex justify-end space-x-2 pt-3 border-t border-[#EAEAEA]">
-                <button
-                  type="button"
-                  onClick={() => setShowMaterialModal(false)}
-                  className="px-3 py-1.5 bg-[#F0F0EE] hover:bg-[#E0E0DE] text-[#111111] font-semibold rounded-[6px]"
-                >
-                  Hủy
-                </button>
-                <button
-                  type="submit"
-                  className="px-4 py-1.5 bg-[#111111] hover:bg-[#333333] text-white font-bold rounded-[6px] inline-flex items-center space-x-1"
-                >
-                  <Check className="w-4 h-4" />
-                  <span>Lưu Thông Tin</span>
-                </button>
-              </div>
-            </form>
+      <Modal
+        isOpen={showMaterialModal}
+        onClose={() => setShowMaterialModal(false)}
+        size="sm"
+        title={editingMaterial ? 'Sửa Thông Tin Vật Tư' : 'Thêm Vật Tư Mới'}
+        footer={
+          <>
+            <button
+              type="button"
+              onClick={() => setShowMaterialModal(false)}
+              className="px-3.5 py-1.5 bg-[#F0F0EE] hover:bg-[#E0E0DE] text-[#111111] font-semibold rounded-[6px] cursor-pointer"
+            >
+              Hủy
+            </button>
+            <button
+              type="submit"
+              form="save-material-form"
+              className="px-4 py-1.5 bg-[#111111] hover:bg-[#333333] text-white font-bold rounded-[6px] inline-flex items-center space-x-1 cursor-pointer"
+            >
+              <Check className="w-4 h-4" />
+              <span>Lưu Thông Tin</span>
+            </button>
+          </>
+        }
+      >
+        <form id="save-material-form" onSubmit={handleSaveMaterialSubmit} className="space-y-3">
+          <div>
+            <label className="block text-[10px] font-bold text-[#787774] uppercase mb-1">
+              Tên Vật Tư / Mác Thép
+            </label>
+            <input
+              type="text"
+              required
+              value={matName}
+              onChange={(e) => setMatName(e.target.value)}
+              placeholder="Ví dụ: S45C - JFE (Nhật Bản)"
+              className="w-full px-3 py-1.5 border border-[#EAEAEA] rounded-[6px] text-xs font-bold text-[#111111]"
+            />
           </div>
-        </div>
-      )}
+
+          <div>
+            <label className="block text-[10px] font-bold text-[#787774] uppercase mb-1">
+              Nhóm Vật Tư
+            </label>
+            <select
+              value={matCategory}
+              onChange={(e) => setMatCategory(e.target.value)}
+              className="w-full px-3 py-1.5 border border-[#EAEAEA] rounded-[6px] bg-white text-xs font-bold text-[#111111]"
+            >
+              <option value="Thép cán - Rèn">Thép cán - Rèn</option>
+              <option value="Gang thỏi">Gang thỏi</option>
+              <option value="Thép phế đúc">Thép phế đúc</option>
+              <option value="Hồi liệu">Hồi liệu</option>
+              <option value="Fe-Si">Fe-Si</option>
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-[10px] font-bold text-[#787774] uppercase mb-1">
+              Đơn Vị Tính (ĐVT)
+            </label>
+            <input
+              type="text"
+              required
+              value={matUnit}
+              onChange={(e) => setMatUnit(e.target.value)}
+              className="w-full px-3 py-1.5 border border-[#EAEAEA] rounded-[6px] text-xs font-mono text-[#111111]"
+            />
+          </div>
+
+          <div>
+            <label className="block text-[10px] font-bold text-[#787774] uppercase mb-1">
+              Ghi Chú
+            </label>
+            <textarea
+              rows={2}
+              value={matNotes}
+              onChange={(e) => setMatNotes(e.target.value)}
+              className="w-full px-3 py-1.5 border border-[#EAEAEA] rounded-[6px] text-xs text-[#111111]"
+            />
+          </div>
+        </form>
+      </Modal>
 
       {/* Modal 2: Add New Price Entry (+ Giá Mới) */}
-      {showPriceModal && selectedMaterialForPrice && (
-        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4 z-50 animate-fade-in-up">
-          <div className="bg-white rounded-[12px] border border-[#EAEAEA] shadow-xl max-w-md w-full p-5 space-y-4 text-xs text-[#111111]">
-            <div className="flex items-center justify-between border-b border-[#EAEAEA] pb-3">
-              <div>
-                <h3 className="text-sm font-bold text-[#111111]">
-                  Cập Nhật Giá Mới — {selectedMaterialForPrice.name}
-                </h3>
-                <p className="text-[10px] text-[#787774]">Thêm dòng mới vào lịch sử giá</p>
-              </div>
-              <button
-                type="button"
-                onClick={() => setShowPriceModal(false)}
-                className="text-[#787774] hover:text-[#111111]"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            <form onSubmit={handleSavePriceSubmit} className="space-y-3">
-              <div>
-                <label className="block text-[10px] font-bold text-[#787774] uppercase mb-1">
-                  Đơn Giá Mới (VNĐ / {selectedMaterialForPrice.unit})
-                </label>
-                <input
-                  type="number"
-                  required
-                  min="0"
-                  value={newPrice}
-                  onChange={(e) => setNewPrice(Number(e.target.value))}
-                  className="w-full px-3 py-1.5 border border-[#EAEAEA] rounded-[6px] font-mono font-bold text-sm text-[#111111]"
-                />
-              </div>
-
-              {/* Special Field for Forging Steel Category: Scrap Price */}
-              {selectedMaterialForPrice.category === 'Thép cán - Rèn' && (
-                <div className="p-3 bg-[#FBFBFA] border border-[#EAEAEA] rounded-[6px] space-y-1">
-                  <label className="block text-[10px] font-bold text-[#956400] uppercase">
-                    Giá Phế Liệu Kèm Theo (VNĐ / {selectedMaterialForPrice.unit}) *
-                  </label>
-                  <input
-                    type="number"
-                    required
-                    min="0"
-                    value={newScrapPrice}
-                    onChange={(e) => setNewScrapPrice(Number(e.target.value))}
-                    className="w-full px-3 py-1.5 border border-[#EAEAEA] bg-white rounded-[6px] font-mono font-bold text-xs text-[#111111]"
-                  />
-                  <p className="text-[9px] text-[#787774]">
-                    * Áp dụng riêng cho vật tư nhóm "Thép cán - Rèn" để tính trừ thu hồi bavia rèn.
-                  </p>
-                </div>
-              )}
-
-              <div>
-                <label className="block text-[10px] font-bold text-[#787774] uppercase mb-1">
-                  Ngày Hiệu Lực
-                </label>
-                <input
-                  type="date"
-                  required
-                  value={effectiveDate}
-                  onChange={(e) => setEffectiveDate(e.target.value)}
-                  className="w-full px-3 py-1.5 border border-[#EAEAEA] rounded-[6px] font-mono text-xs text-[#111111]"
-                />
-              </div>
-
-              <div className="flex justify-end space-x-2 pt-3 border-t border-[#EAEAEA]">
-                <button
-                  type="button"
-                  onClick={() => setShowPriceModal(false)}
-                  className="px-3 py-1.5 bg-[#F0F0EE] hover:bg-[#E0E0DE] text-[#111111] font-semibold rounded-[6px]"
-                >
-                  Hủy
-                </button>
-                <button
-                  type="submit"
-                  className="px-4 py-1.5 bg-[#111111] hover:bg-[#333333] text-white font-bold rounded-[6px] inline-flex items-center space-x-1"
-                >
-                  <Check className="w-4 h-4" />
-                  <span>Lưu Giá Mới</span>
-                </button>
-              </div>
-            </form>
+      <Modal
+        isOpen={showPriceModal && !!selectedMaterialForPrice}
+        onClose={() => setShowPriceModal(false)}
+        size="sm"
+        title={`Cập Nhật Giá Mới — ${selectedMaterialForPrice?.name}`}
+        subtitle="Thêm dòng mới vào lịch sử giá"
+        footer={
+          <>
+            <button
+              type="button"
+              onClick={() => setShowPriceModal(false)}
+              className="px-3.5 py-1.5 bg-[#F0F0EE] hover:bg-[#E0E0DE] text-[#111111] font-semibold rounded-[6px] cursor-pointer"
+            >
+              Hủy
+            </button>
+            <button
+              type="submit"
+              form="save-price-form"
+              className="px-4 py-1.5 bg-[#111111] hover:bg-[#333333] text-white font-bold rounded-[6px] inline-flex items-center space-x-1 cursor-pointer"
+            >
+              <Check className="w-4 h-4" />
+              <span>Lưu Giá Mới</span>
+            </button>
+          </>
+        }
+      >
+        <form id="save-price-form" onSubmit={handleSavePriceSubmit} className="space-y-3">
+          <div>
+            <label className="block text-[10px] font-bold text-[#787774] uppercase mb-1">
+              Đơn Giá Mới (VNĐ / {selectedMaterialForPrice?.unit})
+            </label>
+            <input
+              type="number"
+              required
+              min="0"
+              value={newPrice}
+              onChange={(e) => setNewPrice(Number(e.target.value))}
+              className="w-full px-3 py-1.5 border border-[#EAEAEA] rounded-[6px] font-mono font-bold text-sm text-[#111111]"
+            />
           </div>
-        </div>
-      )}
+
+          {/* Special Field for Forging Steel Category: Scrap Price */}
+          {selectedMaterialForPrice?.category === 'Thép cán - Rèn' && (
+            <div className="p-3 bg-[#FBFBFA] border border-[#EAEAEA] rounded-[6px] space-y-1">
+              <label className="block text-[10px] font-bold text-[#956400] uppercase">
+                Giá Phế Liệu Kèm Theo (VNĐ / {selectedMaterialForPrice.unit}) *
+              </label>
+              <input
+                type="number"
+                required
+                min="0"
+                value={newScrapPrice}
+                onChange={(e) => setNewScrapPrice(Number(e.target.value))}
+                className="w-full px-3 py-1.5 border border-[#EAEAEA] bg-white rounded-[6px] font-mono font-bold text-xs text-[#111111]"
+              />
+              <p className="text-[9px] text-[#787774]">
+                * Áp dụng riêng cho vật tư nhóm "Thép cán - Rèn" để tính trừ thu hồi bavia rèn.
+              </p>
+            </div>
+          )}
+
+          <div>
+            <label className="block text-[10px] font-bold text-[#787774] uppercase mb-1">
+              Ngày Hiệu Lực
+            </label>
+            <input
+              type="date"
+              required
+              value={effectiveDate}
+              onChange={(e) => setEffectiveDate(e.target.value)}
+              className="w-full px-3 py-1.5 border border-[#EAEAEA] rounded-[6px] font-mono text-xs text-[#111111]"
+            />
+          </div>
+        </form>
+      </Modal>
 
       {/* Modal 3: View & Edit Price History */}
-      {showHistoryModal && historyMaterial && (
-        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4 z-50 animate-fade-in-up">
-          <div className="bg-white rounded-[12px] border border-[#EAEAEA] shadow-xl max-w-2xl w-full max-h-[85vh] overflow-y-auto p-5 space-y-4 text-xs text-[#111111]">
-            <div className="flex items-center justify-between border-b border-[#EAEAEA] pb-3">
-              <div>
-                <h3 className="text-sm font-bold text-[#111111]">
-                  Lịch Sử Đơn Giá — {historyMaterial.name}
-                </h3>
-                <p className="text-[10px] text-[#787774]">
-                  Nhóm: {historyMaterial.category} | ĐVT: {historyMaterial.unit}
-                </p>
-              </div>
-              <button
-                type="button"
-                onClick={() => setShowHistoryModal(false)}
-                className="text-[#787774] hover:text-[#111111]"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            <div className="space-y-2">
-              <table className="w-full border-collapse text-left border border-[#EAEAEA]">
-                <thead>
-                  <tr className="bg-[#FBFBFA] border-b border-[#EAEAEA] text-[10px] font-bold uppercase text-[#787774]">
-                    <th className="p-2">Ngày Hiệu Lực</th>
-                    <th className="p-2 text-right">Đơn Giá (VNĐ)</th>
-                    {historyMaterial.category === 'Thép cán - Rèn' && (
-                      <th className="p-2 text-right">Giá Phế Kèm Theo (VNĐ)</th>
-                    )}
-                    <th className="p-2">Người Cập Nhật</th>
-                    <th className="p-2 text-right">Thao Tác</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-[#EAEAEA]">
-                  {historyList.length === 0 ? (
-                    <tr>
-                      <td colSpan={5} className="p-4 text-center text-[#787774] italic">
-                        Chưa có lịch sử đơn giá.
+      <Modal
+        isOpen={showHistoryModal && !!historyMaterial}
+        onClose={() => setShowHistoryModal(false)}
+        size="lg"
+        title={`Lịch Sử Đơn Giá — ${historyMaterial?.name}`}
+        subtitle={`Nhóm: ${historyMaterial?.category} | ĐVT: ${historyMaterial?.unit}`}
+        footer={
+          <button
+            type="button"
+            onClick={() => setShowHistoryModal(false)}
+            className="px-4 py-1.5 bg-[#111111] hover:bg-[#333333] text-white font-bold rounded-[6px] cursor-pointer"
+          >
+            Đóng
+          </button>
+        }
+      >
+        <div className="space-y-2">
+          <table className="w-full border-collapse text-left border border-[#EAEAEA]">
+            <thead>
+              <tr className="bg-[#FBFBFA] border-b border-[#EAEAEA] text-[10px] font-bold uppercase text-[#787774]">
+                <th className="p-2">Ngày Hiệu Lực</th>
+                <th className="p-2 text-right">Đơn Giá (VNĐ)</th>
+                {historyMaterial?.category === 'Thép cán - Rèn' && (
+                  <th className="p-2 text-right">Giá Phế Kèm Theo (VNĐ)</th>
+                )}
+                <th className="p-2">Người Cập Nhật</th>
+                <th className="p-2 text-right">Thao Tác</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-[#EAEAEA]">
+              {historyList.length === 0 ? (
+                <tr>
+                  <td colSpan={5} className="p-4 text-center text-[#787774] italic">
+                    Chưa có lịch sử đơn giá.
+                  </td>
+                </tr>
+              ) : (
+                historyList.map((h) => (
+                  <tr key={h.id} className="hover:bg-[#FBFBFA]">
+                    <td className="p-2 font-mono font-bold">{h.effective_date}</td>
+                    <td className="p-2 text-right font-mono font-extrabold text-[#111111]">
+                      {h.price.toLocaleString('vi-VN')}
+                    </td>
+                    {historyMaterial?.category === 'Thép cán - Rèn' && (
+                      <td className="p-2 text-right font-mono text-[#787774]">
+                        {h.scrap_price ? h.scrap_price.toLocaleString('vi-VN') : '-'}
                       </td>
-                    </tr>
-                  ) : (
-                    historyList.map((h) => (
-                      <tr key={h.id} className="hover:bg-[#FBFBFA]">
-                        <td className="p-2 font-mono font-bold">{h.effective_date}</td>
-                        <td className="p-2 text-right font-mono font-extrabold text-[#111111]">
-                          {h.price.toLocaleString('vi-VN')}
-                        </td>
-                        {historyMaterial.category === 'Thép cán - Rèn' && (
-                          <td className="p-2 text-right font-mono text-[#787774]">
-                            {h.scrap_price ? h.scrap_price.toLocaleString('vi-VN') : '-'}
-                          </td>
-                        )}
-                        <td className="p-2 text-[#787774]">{h.updated_by || 'Estimator'}</td>
-                        <td className="p-2 text-right">
-                          {isEstimator && (
-                            <button
-                              type="button"
-                              onClick={() => handleDeleteHistoryRow(h.id)}
-                              className="p-1 text-[#9F2F2D] hover:bg-[#FDEBEC] rounded cursor-pointer"
-                              title="Xoá dòng lịch sử này"
-                            >
-                              <Trash2 className="w-3.5 h-3.5" />
-                            </button>
-                          )}
-                        </td>
-                      </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
-            </div>
-
-            <div className="flex justify-end pt-2 border-t border-[#EAEAEA]">
-              <button
-                type="button"
-                onClick={() => setShowHistoryModal(false)}
-                className="px-4 py-1.5 bg-[#111111] hover:bg-[#333333] text-white font-bold rounded-[6px]"
-              >
-                Đóng
-              </button>
-            </div>
-          </div>
+                    )}
+                    <td className="p-2 text-[#787774]">{h.updated_by || 'Estimator'}</td>
+                    <td className="p-2 text-right">
+                      {isEstimator && (
+                        <button
+                          type="button"
+                          onClick={() => handleDeleteHistoryRow(h.id)}
+                          className="p-1 text-[#9F2F2D] hover:bg-[#FDEBEC] rounded cursor-pointer"
+                          title="Xoá dòng lịch sử này"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      )}
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
         </div>
-      )}
+      </Modal>
     </div>
   );
 };

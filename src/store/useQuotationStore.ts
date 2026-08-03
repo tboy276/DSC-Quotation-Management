@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import type { ForgingInput, CastingInput, MachiningOperation } from '../lib/calculation-engine/types';
-import type { CurrencyType } from '../types/quote';
+import type { CurrencyType, QuoteRecord } from '../types/quote';
 import { calculateForgingPrice } from '../lib/calculation-engine/forging-calculator';
 import { calculateCastingPrice } from '../lib/calculation-engine/casting-calculator';
 import { calculateLiquidMetalPrice } from '../lib/calculation-engine/liquid-metal-calculator';
@@ -28,6 +28,7 @@ export interface RfqHeaderState {
 export interface QuotationStoreState {
   // 1. RFQ Header Info & Currency Settings
   rfq: RfqHeaderState;
+  activeRfqItemId: string | null;
   segment: SegmentType;
   currency: CurrencyType;
   exchange_rate: number;
@@ -46,10 +47,12 @@ export interface QuotationStoreState {
 
   // Actions
   setRfqField: (field: keyof RfqHeaderState, value: any) => void;
+  setActiveRfqItemId: (id: string | null) => void;
   resetRfq: () => void;
   setSegment: (segment: SegmentType) => void;
   setCurrency: (currency: CurrencyType) => void;
   setExchangeRate: (rate: number) => void;
+  cloneInputsFromQuote: (quote: QuoteRecord) => void;
 
   // Forging Actions
   setForgingField: (field: string, value: any) => void;
@@ -97,6 +100,7 @@ export const useQuotationStore = create<QuotationStoreState>((set, get) => ({
     trade_terms: 'FOB',
     target_price: 95000,
   },
+  activeRfqItemId: null,
   segment: 'forging',
   currency: 'VND',
   exchange_rate: 1,
@@ -178,6 +182,8 @@ export const useQuotationStore = create<QuotationStoreState>((set, get) => ({
       rfq: { ...state.rfq, [field]: value },
     })),
 
+  setActiveRfqItemId: (id) => set({ activeRfqItemId: id }),
+
   resetRfq: () =>
     set({
       rfq: {
@@ -187,6 +193,7 @@ export const useQuotationStore = create<QuotationStoreState>((set, get) => ({
         trade_terms: 'FOB',
         target_price: 0,
       },
+      activeRfqItemId: null,
     }),
 
   setSegment: (segment) => set({ segment }),
@@ -198,6 +205,32 @@ export const useQuotationStore = create<QuotationStoreState>((set, get) => ({
     }),
 
   setExchangeRate: (rate) => set({ exchange_rate: Math.max(0.0001, rate) }),
+
+  cloneInputsFromQuote: (quote) => {
+    const clonedInputs = JSON.parse(JSON.stringify(quote.inputs_json));
+
+    if (quote.segment === 'forging') {
+      set((state) => ({
+        segment: 'forging',
+        currency: quote.currency || 'VND',
+        exchange_rate: quote.exchange_rate || 1,
+        forgingInput: {
+          ...state.forgingInput,
+          ...clonedInputs,
+        },
+      }));
+    } else {
+      set((state) => ({
+        segment: 'casting',
+        currency: quote.currency || 'VND',
+        exchange_rate: quote.exchange_rate || 1,
+        castingInput: {
+          ...state.castingInput,
+          ...clonedInputs,
+        },
+      }));
+    }
+  },
 
   // Forging Actions
   setForgingField: (field, value) =>

@@ -1,14 +1,16 @@
-import type { QuoteRecord, CurrencyType } from './quote';
+import type { QuoteRecord, CurrencyType, RfqItemRecord } from './quote';
 import type { TradeTermType } from '../store/useQuotationStore';
 
 export interface QuotationDocumentItem {
   id: string;
   quotation_document_id: string;
   quote_id: string;
+  rfq_item_id?: string;
   display_order: number;
   created_at: string;
   // Joined quote snapshot
   quote?: QuoteRecord;
+  rfq_item?: RfqItemRecord;
 }
 
 export interface QuotationDocument {

@@ -4,7 +4,7 @@ import type {
   QuotationDocumentItem,
   CreateQuotationDocumentPayload,
 } from '../types/quotation-document';
-import { INITIAL_QUOTES } from './quotation-service';
+import { INITIAL_QUOTES, updateQuoteStatus } from './quotation-service';
 
 export const DEFAULT_PAYMENT_TERMS =
   'Thanh toán 100% bằng chuyển khoản T/T trong vòng 30 ngày kể từ ngày nhận hàng và hóa đơn hợp lệ.';
@@ -13,56 +13,13 @@ export const DEFAULT_DELIVERY_NOTES =
   'Thời gian giao hàng: 30 - 45 ngày kể từ ngày xác nhận đơn hàng và ký kết hợp đồng.';
 
 // Initial Mock Documents Seed Data
-export const INITIAL_DOCUMENTS: QuotationDocument[] = [
-  {
-    id: 'doc-101',
-    customer_name: 'Tập đoàn Honda Việt Nam',
-    contact_person: 'Mr. Kenji Sato (Trưởng phòng Mua hàng)',
-    contact_email: 'kenji.sato@honda.com.vn',
-    quotation_date: new Date(Date.now() - 3 * 24 * 3600 * 1000).toISOString().slice(0, 10),
-    trade_terms: 'FOB',
-    currency: 'USD',
-    exchange_rate: 25400,
-    payment_terms: DEFAULT_PAYMENT_TERMS,
-    delivery_notes: DEFAULT_DELIVERY_NOTES,
-    created_at: new Date(Date.now() - 3 * 24 * 3600 * 1000).toISOString(),
-    items: [
-      {
-        id: 'doc-item-1',
-        quotation_document_id: 'doc-101',
-        quote_id: 'quote-101',
-        display_order: 1,
-        created_at: new Date(Date.now() - 3 * 24 * 3600 * 1000).toISOString(),
-        quote: INITIAL_QUOTES[0],
-      },
-    ],
-  },
-  {
-    id: 'doc-102',
-    customer_name: 'Công ty Toyota Boshoku Hải Dương',
-    contact_person: 'Bà Nguyễn Thị Minh (P. Khai thác Khách hàng)',
-    contact_email: 'minh.nguyen@toyota-boshoku.com.vn',
-    quotation_date: new Date(Date.now() - 8 * 24 * 3600 * 1000).toISOString().slice(0, 10),
-    trade_terms: 'CIF',
-    currency: 'VND',
-    exchange_rate: 1,
-    payment_terms: DEFAULT_PAYMENT_TERMS,
-    delivery_notes: DEFAULT_DELIVERY_NOTES,
-    created_at: new Date(Date.now() - 8 * 24 * 3600 * 1000).toISOString(),
-    items: [
-      {
-        id: 'doc-item-2',
-        quotation_document_id: 'doc-102',
-        quote_id: 'quote-102',
-        display_order: 1,
-        created_at: new Date(Date.now() - 8 * 24 * 3600 * 1000).toISOString(),
-        quote: INITIAL_QUOTES[1],
-      },
-    ],
-  },
-];
+export const INITIAL_DOCUMENTS: QuotationDocument[] = [];
 
 let localDocumentsCache = [...INITIAL_DOCUMENTS];
+
+export const resetQuotationDocumentsCache = () => {
+  localDocumentsCache = [];
+};
 
 /**
  * Fetch all Quotation Documents from Supabase DB or fallback mock data
@@ -85,12 +42,17 @@ export const fetchQuotationDocuments = async (): Promise<QuotationDocument[]> =>
 };
 
 /**
- * Create a new Quotation Document with grouped quote items
+ * Create a new Quotation Document with grouped quote items and mark items QUOTED_SENT
  */
 export const createQuotationDocument = async (
   payload: CreateQuotationDocumentPayload
 ): Promise<QuotationDocument> => {
   const now = new Date().toISOString();
+
+  // Update status of all selected items to QUOTED_SENT with current timestamp
+  for (const quoteId of payload.selected_quote_ids) {
+    await updateQuoteStatus(quoteId, 'QUOTED_SENT');
+  }
 
   try {
     // 1. Insert into quotation_documents

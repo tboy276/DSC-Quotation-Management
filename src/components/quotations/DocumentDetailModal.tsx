@@ -6,13 +6,14 @@ import { updateQuoteStatus } from '../../lib/quotation-service';
 import { exportDocumentToExcel } from '../../utils/excel-generator';
 import { QuoteStatusBadge } from '../rfq/QuoteStatusBadge';
 import { formatCurrencyValue } from '../rfq/RealtimeSummaryPanel';
+import { formatDate } from '../../lib/format-date';
 import { PdfQuotationModal } from './PdfQuotationModal';
+import { Modal } from '../ui/Modal';
 import {
   FileText,
   FileSpreadsheet,
   ArrowUp,
   ArrowDown,
-  X,
   CheckCircle,
   XCircle,
   Download,
@@ -62,7 +63,7 @@ export const DocumentDetailModal = ({
     onRefresh();
   };
 
-  // Cập nhật trạng thái từng dòng sản phẩm (SUCCESSFUL / CANCELLED)
+  // Cập nhật trạng thái từng dòng sản phẩm (SUCCESSFUL / CANCELLED_AFTER_QUOTE)
   const handleItemStatusChange = async (quoteId: string, newStatus: UnifiedRfqStatus) => {
     await updateQuoteStatus(quoteId, newStatus);
 
@@ -87,53 +88,44 @@ export const DocumentDetailModal = ({
 
   return (
     <>
-      <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4 z-50 animate-fade-in-up">
-        <div className="bg-white rounded-[12px] border border-[#EAEAEA] shadow-xl max-w-3xl w-full max-h-[90vh] overflow-y-auto p-6 space-y-5 text-xs text-[#111111]">
-          {/* Header Modal */}
-          <div className="flex items-center justify-between border-b border-[#EAEAEA] pb-3">
-            <div className="flex items-center space-x-2.5">
-              <div className="w-8 h-8 rounded-[6px] bg-[#111111] text-white flex items-center justify-center font-bold">
-                <FileText className="w-4 h-4" />
-              </div>
-              <div>
-                <h3 className="text-sm font-bold text-[#111111]">
-                  Chi Tiết Văn Bản Báo Giá #{document.id.substring(0, 10)}
-                </h3>
-                <p className="text-[10px] text-[#787774]">
-                  Tên khách hàng: <strong className="text-[#111111]">{document.customer_name}</strong> | Ngày lập: {new Date(document.quotation_date).toLocaleDateString('vi-VN')}
-                </p>
-              </div>
-            </div>
+      <Modal
+        isOpen={true}
+        onClose={onClose}
+        size="2xl"
+        icon={<FileText className="w-4 h-4" />}
+        title={`Chi Tiết Văn Bản Báo Giá #${document.id.substring(0, 10)}`}
+        subtitle={`Tên khách hàng: ${document.customer_name} | Ngày lập: ${formatDate(document.quotation_date)}`}
+        headerExtra={
+          <div className="flex items-center space-x-2 mr-2">
+            <button
+              onClick={() => setShowPdfModal(true)}
+              className="px-3 py-1.5 bg-[#111111] hover:bg-[#333333] active:scale-[0.98] text-white font-bold rounded-[6px] text-xs transition-all cursor-pointer inline-flex items-center space-x-1 shadow-xs"
+              title="Xem trước & In Thư Báo Giá PDF DISOCO"
+            >
+              <Download className="w-3.5 h-3.5 text-sky-300 stroke-[2]" />
+              <span>Xuất PDF</span>
+            </button>
 
-            {/* Real Action Buttons: Xuất PDF & Xuất Excel */}
-            <div className="flex items-center space-x-2">
-              <button
-                onClick={() => setShowPdfModal(true)}
-                className="px-3 py-1.5 bg-[#111111] hover:bg-[#333333] active:scale-[0.98] text-white font-bold rounded-[6px] text-xs transition-all cursor-pointer inline-flex items-center space-x-1 shadow-xs"
-                title="Xem trước & In Thư Báo Giá PDF DISOCO"
-              >
-                <Download className="w-3.5 h-3.5 text-sky-300 stroke-[2]" />
-                <span>Xuất PDF</span>
-              </button>
-
-              <button
-                onClick={() => exportDocumentToExcel(document)}
-                className="px-3 py-1.5 bg-[#F0F0EE] hover:bg-[#E0E0DE] text-[#111111] font-bold rounded-[6px] text-xs transition-colors cursor-pointer inline-flex items-center space-x-1 border border-[#EAEAEA]"
-                title="Tải về file Excel multi-sheet bóc tách 5 section"
-              >
-                <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-600 stroke-[2]" />
-                <span>Xuất Excel</span>
-              </button>
-
-              <button
-                onClick={onClose}
-                className="text-[#787774] hover:text-[#111111] p-1 rounded-md cursor-pointer ml-1"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
+            <button
+              onClick={() => exportDocumentToExcel(document)}
+              className="px-3 py-1.5 bg-[#F0F0EE] hover:bg-[#E0E0DE] text-[#111111] font-bold rounded-[6px] text-xs transition-colors cursor-pointer inline-flex items-center space-x-1 border border-[#EAEAEA]"
+              title="Tải về file Excel multi-sheet bóc tách 5 section"
+            >
+              <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-600 stroke-[2]" />
+              <span>Xuất Excel</span>
+            </button>
           </div>
-
+        }
+        footer={
+          <button
+            onClick={onClose}
+            className="px-4 py-1.5 bg-[#111111] hover:bg-[#333333] text-white font-bold rounded-[6px] cursor-pointer text-xs"
+          >
+            Đóng Cửa Sổ
+          </button>
+        }
+      >
+        <div className="space-y-5 text-xs text-[#111111]">
           {/* Thông Tin Văn Bản Báo Giá */}
           <div className="bg-[#FBFBFA] border border-[#EAEAEA] rounded-[8px] p-3.5 space-y-2">
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 text-xs">
@@ -180,7 +172,7 @@ export const DocumentDetailModal = ({
                 const q = item.quote;
                 if (!q) return null;
 
-                const itemStatus = q.rfq?.status || q.status;
+                const itemStatus = q.rfqItem?.status || q.status;
 
                 return (
                   <div
@@ -216,10 +208,10 @@ export const DocumentDetailModal = ({
 
                       <div>
                         <p className="font-bold text-[#111111] text-xs">
-                          {q.rfq?.product_name || 'Chi tiết sản phẩm'}
+                          {q.rfqItem?.product_name || 'Chi tiết sản phẩm'} ({q.rfqItem?.part_number || 'No PN'})
                         </p>
                         <p className="text-[10px] text-[#787774]">
-                          Sản lượng: {(q.rfq?.annual_volume || 0).toLocaleString('vi-VN')} Pcs/năm | Phân hệ: {q.segment === 'forging' ? 'Rèn Dập' : 'Đúc Gang'}
+                          Sản lượng: {(q.rfqItem?.annual_volume || 0).toLocaleString('vi-VN')} Pcs/năm | Phân hệ: {q.segment === 'forging' ? 'Rèn Dập' : 'Đúc Gang'}
                         </p>
                       </div>
                     </div>
@@ -235,7 +227,7 @@ export const DocumentDetailModal = ({
                       <QuoteStatusBadge status={itemStatus} size="sm" />
 
                       {/* Inline Status Toggle */}
-                      {itemStatus === 'SENT' && (
+                      {(String(itemStatus) === 'QUOTED_SENT' || String(itemStatus) === 'SENT') && (
                         <div className="flex items-center space-x-1">
                           <button
                             onClick={() => handleItemStatusChange(q.id, 'SUCCESSFUL')}
@@ -245,9 +237,9 @@ export const DocumentDetailModal = ({
                             <CheckCircle className="w-3.5 h-3.5" />
                           </button>
                           <button
-                            onClick={() => handleItemStatusChange(q.id, 'CANCELLED')}
+                            onClick={() => handleItemStatusChange(q.id, 'CANCELLED_AFTER_QUOTE')}
                             className="p-1 bg-[#FDEBEC] border border-[#FADBDC] hover:bg-[#F8C9CA] text-[#9F2F2D] rounded cursor-pointer"
-                            title="Đánh dấu Huỷ bỏ (CANCELLED)"
+                            title="Đánh dấu Từ chối (CANCELLED_AFTER_QUOTE)"
                           >
                             <XCircle className="w-3.5 h-3.5" />
                           </button>
@@ -275,16 +267,8 @@ export const DocumentDetailModal = ({
             </div>
           </div>
 
-          <div className="flex justify-end pt-2 border-t border-[#EAEAEA]">
-            <button
-              onClick={onClose}
-              className="px-4 py-1.5 bg-[#111111] hover:bg-[#333333] text-white font-bold rounded-[6px] cursor-pointer text-xs"
-            >
-              Đóng Cửa Sổ
-            </button>
-          </div>
         </div>
-      </div>
+      </Modal>
 
       {/* PDF Quotation Preview Modal */}
       {showPdfModal && (

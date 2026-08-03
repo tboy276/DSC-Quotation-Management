@@ -57,13 +57,13 @@ export const DashboardPage = () => {
 
   const renderContent = () => {
     if (activeTab === 'quotations') {
-      return <QuotationsManager />;
+      return <QuotationsManager onNavigateToCalculator={(seg) => handleTabChange(seg)} />;
     }
     if (activeTab === 'documents') {
       return <QuotationDocumentsManager />;
     }
     if (activeTab === 'forging' || activeTab === 'casting') {
-      return <PricingCalculatorPage />;
+      return <PricingCalculatorPage onNavigateToQuotations={() => handleTabChange('quotations')} />;
     }
     if (activeTab === 'master_data') {
       return <MasterDataContainer />;

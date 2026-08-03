@@ -4,6 +4,7 @@ import { fetchQuotationDocuments } from '../../lib/quotation-document-service';
 import { DocumentDetailModal } from './DocumentDetailModal';
 import { exportDocumentToExcel } from '../../utils/excel-generator';
 import { formatCurrencyValue } from '../rfq/RealtimeSummaryPanel';
+import { formatDate } from '../../lib/format-date';
 import { DataTable, type DataTableColumn, type DataTableAction } from '../ui/DataTable';
 import {
   FileSpreadsheet,
@@ -45,7 +46,7 @@ export const QuotationDocumentsManager = () => {
 
     const counts: Record<string, number> = {};
     doc.items.forEach((item) => {
-      const st = item.quote?.rfq?.status || item.quote?.status || 'DRAFT';
+      const st = item.quote?.rfqItem?.status || item.quote?.status || 'IN_COSTING';
       counts[st] = (counts[st] || 0) + 1;
     });
 
@@ -73,7 +74,7 @@ export const QuotationDocumentsManager = () => {
       header: 'Ngày Báo Giá',
       sortable: true,
       className: 'font-mono text-[11px] text-[#787774]',
-      render: (doc) => new Date(doc.quotation_date).toLocaleDateString('vi-VN'),
+      render: (doc) => formatDate(doc.quotation_date),
     },
     {
       key: 'items_count',
@@ -173,6 +174,7 @@ export const QuotationDocumentsManager = () => {
 
       {/* Shared Reusable DataTable */}
       <DataTable
+        tableName="quotation_documents_table"
         data={filteredDocs}
         columns={columns}
         keyExtractor={(doc) => doc.id}

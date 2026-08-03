@@ -10,7 +10,8 @@ import {
 } from '../../lib/master-data-service';
 import { calculateLiquidMetalPrice } from '../../lib/calculation-engine/liquid-metal-calculator';
 import { DataTable, type DataTableColumn, type DataTableAction } from '../ui/DataTable';
-import { Plus, Edit2, Trash2, RotateCcw, AlertCircle, Check, X } from 'lucide-react';
+import { Modal } from '../ui/Modal';
+import { Plus, Edit2, Trash2, Check, RotateCcw, AlertCircle } from 'lucide-react';
 
 interface CastingBomManagerProps {
   isEstimator: boolean;
@@ -315,6 +316,7 @@ export const CastingBomManager = ({ isEstimator }: CastingBomManagerProps) => {
 
       {/* Shared Reusable DataTable */}
       <DataTable
+        tableName="casting_bom_table"
         data={bomItems}
         columns={columns}
         keyExtractor={(item) => item.id}
@@ -322,149 +324,129 @@ export const CastingBomManager = ({ isEstimator }: CastingBomManagerProps) => {
         selectedIds={selectedIds}
         onSelectionChange={(ids) => setSelectedIds(ids)}
         loading={loading}
-        emptyMessage="Mác gang này chưa có dữ liệu định mức BOM."
+        emptyMessage="Mác gang này chưa có thành phần BOM nào. Bấm '+ Thêm Vật Tư Vào BOM' để bổ sung nguyên liệu."
       />
 
-      {/* Modal 1: Add Item to BOM */}
-      {showAddModal && (
-        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4 z-50 animate-fade-in-up">
-          <div className="bg-white rounded-[12px] border border-[#EAEAEA] shadow-xl max-w-md w-full p-5 space-y-4 text-xs text-[#111111]">
-            <div className="flex items-center justify-between border-b border-[#EAEAEA] pb-3">
-              <h3 className="text-sm font-bold text-[#111111]">
-                Thêm Thành Phần Vào BOM — {currentGrade?.name}
-              </h3>
-              <button
-                type="button"
-                onClick={() => setShowAddModal(false)}
-                className="text-[#787774] hover:text-[#111111]"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            <form onSubmit={handleAddBomItemSubmit} className="space-y-3">
-              <div>
-                <label className="block text-[10px] font-bold text-[#787774] uppercase mb-1">
-                  Chọn Vật Tư Nguyên Liệu
-                </label>
-                <select
-                  value={addMaterialId}
-                  onChange={(e) => setAddMaterialId(e.target.value)}
-                  className="w-full px-3 py-1.5 border border-[#EAEAEA] rounded-[6px] bg-white text-xs font-bold text-[#111111]"
-                >
-                  {materials.map((m) => (
-                    <option key={m.id} value={m.id}>
-                      {m.name} ({m.category}) — {m.latest_price?.toLocaleString('vi-VN')} đ/{m.unit}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-[10px] font-bold text-[#787774] uppercase mb-1">
-                  Khối Lượng Phối Trộn (kg / 1000kg)
-                </label>
-                <input
-                  type="number"
-                  required
-                  min="0.1"
-                  step="0.1"
-                  value={addWeightKg}
-                  onChange={(e) => setAddWeightKg(Number(e.target.value))}
-                  className="w-full px-3 py-1.5 border border-[#EAEAEA] rounded-[6px] font-mono font-bold text-sm text-[#111111]"
-                />
-              </div>
-
-              <div className="flex items-center space-x-2 pt-1">
-                <input
-                  type="checkbox"
-                  id="addReturnScrap"
-                  checked={addIsReturnScrap}
-                  onChange={(e) => setAddIsReturnScrap(e.target.checked)}
-                  className="rounded accent-[#111111] cursor-pointer"
-                />
-                <label htmlFor="addReturnScrap" className="text-xs font-semibold text-[#111111] cursor-pointer">
-                  Đánh dấu là Hồi liệu đúc (is_return_scrap)
-                </label>
-              </div>
-
-              <div className="flex justify-end space-x-2 pt-3 border-t border-[#EAEAEA]">
-                <button
-                  type="button"
-                  onClick={() => setShowAddModal(false)}
-                  className="px-3 py-1.5 bg-[#F0F0EE] hover:bg-[#E0E0DE] text-[#111111] font-semibold rounded-[6px]"
-                >
-                  Hủy
-                </button>
-                <button
-                  type="submit"
-                  className="px-4 py-1.5 bg-[#111111] hover:bg-[#333333] text-white font-bold rounded-[6px] inline-flex items-center space-x-1"
-                >
-                  <Check className="w-4 h-4" />
-                  <span>Thêm Vào BOM</span>
-                </button>
-              </div>
-            </form>
+      {/* Modal 1: Add Component to BOM */}
+      <Modal
+        isOpen={showAddModal}
+        onClose={() => setShowAddModal(false)}
+        size="sm"
+        title={`Thêm Thành Phần Vào BOM — ${currentGrade?.name}`}
+        footer={
+          <>
+            <button
+              type="button"
+              onClick={() => setShowAddModal(false)}
+              className="px-3.5 py-1.5 bg-[#F0F0EE] hover:bg-[#E0E0DE] text-[#111111] font-semibold rounded-[6px] cursor-pointer"
+            >
+              Hủy
+            </button>
+            <button
+              type="submit"
+              form="add-bom-item-form"
+              className="px-4 py-1.5 bg-[#111111] hover:bg-[#333333] text-white font-bold rounded-[6px] inline-flex items-center space-x-1 cursor-pointer"
+            >
+              <Check className="w-4 h-4" />
+              <span>Thêm Vào BOM</span>
+            </button>
+          </>
+        }
+      >
+        <form id="add-bom-item-form" onSubmit={handleAddBomItemSubmit} className="space-y-3">
+          <div>
+            <label className="block text-[10px] font-bold text-[#787774] uppercase mb-1">
+              Chọn Vật Tư Nguyên Liệu
+            </label>
+            <select
+              value={addMaterialId}
+              onChange={(e) => setAddMaterialId(e.target.value)}
+              className="w-full px-3 py-1.5 border border-[#EAEAEA] rounded-[6px] bg-white text-xs font-bold text-[#111111]"
+            >
+              {materials.map((m) => (
+                <option key={m.id} value={m.id}>
+                  {m.name} ({m.category}) — {m.latest_price?.toLocaleString('vi-VN')} đ/{m.unit}
+                </option>
+              ))}
+            </select>
           </div>
-        </div>
-      )}
+
+          <div>
+            <label className="block text-[10px] font-bold text-[#787774] uppercase mb-1">
+              Khối Lượng Phối Trộn (kg / 1000kg)
+            </label>
+            <input
+              type="number"
+              required
+              min="0.1"
+              step="0.1"
+              value={addWeightKg}
+              onChange={(e) => setAddWeightKg(Number(e.target.value))}
+              className="w-full px-3 py-1.5 border border-[#EAEAEA] rounded-[6px] font-mono font-bold text-sm text-[#111111]"
+            />
+          </div>
+
+          <div className="flex items-center space-x-2 pt-1">
+            <input
+              type="checkbox"
+              id="addReturnScrap"
+              checked={addIsReturnScrap}
+              onChange={(e) => setAddIsReturnScrap(e.target.checked)}
+              className="rounded accent-[#111111] cursor-pointer"
+            />
+            <label htmlFor="addReturnScrap" className="text-xs font-semibold text-[#111111] cursor-pointer">
+              Đánh dấu là Hồi liệu đúc (is_return_scrap)
+            </label>
+          </div>
+        </form>
+      </Modal>
 
       {/* Modal 2: Edit Weight of BOM Item */}
-      {showEditWeightModal && editingBomItem && (
-        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4 z-50 animate-fade-in-up">
-          <div className="bg-white rounded-[12px] border border-[#EAEAEA] shadow-xl max-w-md w-full p-5 space-y-4 text-xs text-[#111111]">
-            <div className="flex items-center justify-between border-b border-[#EAEAEA] pb-3">
-              <h3 className="text-sm font-bold text-[#111111]">
-                Sửa Khối Lượng BOM — {editingBomItem.material?.name}
-              </h3>
-              <button
-                type="button"
-                onClick={() => setShowEditWeightModal(false)}
-                className="text-[#787774] hover:text-[#111111]"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            <form onSubmit={handleEditWeightSubmit} className="space-y-3">
-              <div>
-                <label className="block text-[10px] font-bold text-[#787774] uppercase mb-1">
-                  Khối Lượng Mới (kg / 1000kg mẻ nấu)
-                </label>
-                <input
-                  type="number"
-                  required
-                  min="0.1"
-                  step="0.1"
-                  value={editWeightKg}
-                  onChange={(e) => setEditWeightKg(Number(e.target.value))}
-                  className="w-full px-3 py-1.5 border border-[#EAEAEA] rounded-[6px] font-mono font-bold text-base text-[#111111]"
-                />
-                <p className="text-[10px] text-[#787774] pt-1">
-                  * Tỷ lệ (%) và Thành tiền mẻ sẽ được tự động tính lại ngay lập tức.
-                </p>
-              </div>
-
-              <div className="flex justify-end space-x-2 pt-3 border-t border-[#EAEAEA]">
-                <button
-                  type="button"
-                  onClick={() => setShowEditWeightModal(false)}
-                  className="px-3 py-1.5 bg-[#F0F0EE] hover:bg-[#E0E0DE] text-[#111111] font-semibold rounded-[6px]"
-                >
-                  Hủy
-                </button>
-                <button
-                  type="submit"
-                  className="px-4 py-1.5 bg-[#111111] hover:bg-[#333333] text-white font-bold rounded-[6px] inline-flex items-center space-x-1"
-                >
-                  <Check className="w-4 h-4" />
-                  <span>Cập Nhật Khối Lượng</span>
-                </button>
-              </div>
-            </form>
+      <Modal
+        isOpen={showEditWeightModal && !!editingBomItem}
+        onClose={() => setShowEditWeightModal(false)}
+        size="sm"
+        title={`Sửa Khối Lượng BOM — ${editingBomItem?.material?.name}`}
+        footer={
+          <>
+            <button
+              type="button"
+              onClick={() => setShowEditWeightModal(false)}
+              className="px-3.5 py-1.5 bg-[#F0F0EE] hover:bg-[#E0E0DE] text-[#111111] font-semibold rounded-[6px] cursor-pointer"
+            >
+              Hủy
+            </button>
+            <button
+              type="submit"
+              form="edit-weight-form"
+              className="px-4 py-1.5 bg-[#111111] hover:bg-[#333333] text-white font-bold rounded-[6px] inline-flex items-center space-x-1 cursor-pointer"
+            >
+              <Check className="w-4 h-4" />
+              <span>Cập Nhật Khối Lượng</span>
+            </button>
+          </>
+        }
+      >
+        <form id="edit-weight-form" onSubmit={handleEditWeightSubmit} className="space-y-3">
+          <div>
+            <label className="block text-[10px] font-bold text-[#787774] uppercase mb-1">
+              Khối Lượng Mới (kg / 1000kg mẻ nấu)
+            </label>
+            <input
+              type="number"
+              required
+              min="0.1"
+              step="0.1"
+              value={editWeightKg}
+              onChange={(e) => setEditWeightKg(Number(e.target.value))}
+              className="w-full px-3 py-1.5 border border-[#EAEAEA] rounded-[6px] font-mono font-bold text-base text-[#111111]"
+            />
+            <p className="text-[10px] text-[#787774] pt-1">
+              * Tỷ lệ (%) và Thành tiền mẻ sẽ được tự động tính lại ngay lập tức.
+            </p>
           </div>
-        </div>
-      )}
+        </form>
+      </Modal>
     </div>
   );
 };

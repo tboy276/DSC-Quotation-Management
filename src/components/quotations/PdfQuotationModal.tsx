@@ -2,7 +2,8 @@ import type { QuotationDocument } from '../../types/quotation-document';
 import type { CurrencyType } from '../../types/quote';
 import { DISOCO_COMPANY_CONFIG } from '../../config/company-config';
 import { formatCurrencyValue } from '../rfq/RealtimeSummaryPanel';
-import { Printer, X } from 'lucide-react';
+import { Printer } from 'lucide-react';
+import { Modal } from '../ui/Modal';
 
 interface PdfQuotationModalProps {
   document: QuotationDocument | null;
@@ -41,33 +42,22 @@ export const PdfQuotationModal = ({ document, onClose }: PdfQuotationModalProps)
   };
 
   return (
-    <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-2 sm:p-4 z-50 animate-fade-in-up">
-      <div className="bg-white rounded-[12px] border border-[#EAEAEA] shadow-2xl max-w-5xl w-full max-h-[95vh] flex flex-col overflow-hidden">
-        {/* Modal Controls Bar (Hidden during print) */}
-        <div className="print:hidden flex items-center justify-between p-4 border-b border-[#EAEAEA] bg-[#FBFBFA]">
-          <div className="flex items-center space-x-2">
-            <span className="font-bold text-[#111111] text-sm">
-              Xem Trước Thư Báo Giá DISOCO (PDF Quotation Preview)
-            </span>
-            <span className="text-xs text-[#787774] font-mono">#{document.id.substring(0, 8)}</span>
-          </div>
-
-          <div className="flex items-center space-x-2">
-            <button
-              onClick={handlePrint}
-              className="flex items-center space-x-1.5 px-4 py-1.5 bg-[#111111] hover:bg-[#333333] active:scale-[0.98] text-white text-xs font-bold rounded-[6px] transition-all cursor-pointer shadow-xs"
-            >
-              <Printer className="w-4 h-4" />
-              <span>In / Tải PDF</span>
-            </button>
-            <button
-              onClick={onClose}
-              className="text-[#787774] hover:text-[#111111] p-1.5 rounded-md cursor-pointer"
-            >
-              <X className="w-5 h-5" />
-            </button>
-          </div>
-        </div>
+    <Modal
+      isOpen={true}
+      onClose={onClose}
+      size="2xl"
+      title="Xem Trước Thư Báo Giá DISOCO (PDF Quotation Preview)"
+      subtitle={`#${document.id.substring(0, 8)}`}
+      headerExtra={
+        <button
+          onClick={handlePrint}
+          className="flex items-center space-x-1.5 px-4 py-1.5 bg-[#111111] hover:bg-[#333333] active:scale-[0.98] text-white text-xs font-bold rounded-[6px] transition-all cursor-pointer shadow-xs mr-2"
+        >
+          <Printer className="w-4 h-4" />
+          <span>In / Tải PDF</span>
+        </button>
+      }
+    >
 
         {/* Printable PDF Area */}
         <div className="flex-1 overflow-y-auto p-8 sm:p-10 space-y-6 text-[#111111] font-sans text-xs bg-white print:p-0 print:overflow-visible" id="printable-quotation">
@@ -162,7 +152,6 @@ export const PdfQuotationModal = ({ document, onClose }: PdfQuotationModalProps)
                   const q = item.quote;
                   if (!q) return null;
 
-                  const rfq = q.rfq;
                   const isForging = q.segment === 'forging';
                   const inp = q.inputs_json as any;
                   const res = q.results_json as any;
@@ -195,11 +184,11 @@ export const PdfQuotationModal = ({ document, onClose }: PdfQuotationModalProps)
                   return (
                     <tr key={item.id} className="border-b border-black text-center">
                       <td className="border border-black p-1.5 font-bold">{idx + 1}</td>
-                      <td className="border border-black p-1.5 font-bold text-left">{rfq?.product_name}</td>
-                      <td className="border border-black p-1.5 font-mono text-left">{rfq?.product_name}</td>
+                      <td className="border border-black p-1.5 font-bold text-left">{q.rfqItem?.product_name || 'Chi tiết sản phẩm'}</td>
+                      <td className="border border-black p-1.5 font-mono text-left">{q.rfqItem?.part_number || 'No PN'}</td>
                       <td className="border border-black p-1.5 font-mono">{inp.selected_material_id || 'S45C'}</td>
                       <td className="border border-black p-1.5 font-mono">{Number(weightKg).toFixed(2)}</td>
-                      <td className="border border-black p-1.5 font-mono">{inp.N_order || (rfq?.annual_volume ? Math.round(rfq.annual_volume / 12) : 1000)}</td>
+                      <td className="border border-black p-1.5 font-mono">{inp.N_order || (q.rfqItem?.annual_volume ? Math.round(q.rfqItem.annual_volume / 12) : 1000)}</td>
 
                       {/* 5 Cost Columns */}
                       <td className="border border-black p-1.5 font-mono text-right">
@@ -269,7 +258,6 @@ export const PdfQuotationModal = ({ document, onClose }: PdfQuotationModalProps)
             </div>
           </div>
         </div>
-      </div>
-    </div>
+    </Modal>
   );
 };

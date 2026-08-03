@@ -8,6 +8,7 @@ import {
 } from '../../lib/master-data-service';
 import { useAuth } from '../../context/AuthContext';
 import { DataTable, type DataTableColumn, type DataTableAction } from '../ui/DataTable';
+import { Modal } from '../ui/Modal';
 import { Workflow, Plus, Trash2, Shield, Hammer } from 'lucide-react';
 
 export const ForgingRatesManager = () => {
@@ -248,6 +249,7 @@ export const ForgingRatesManager = () => {
       {/* Tab 1: Máy Dập */}
       {activeSubTab === 'press' && (
         <DataTable
+          tableName="press_rates_table"
           data={pressRates}
           columns={pressColumns}
           keyExtractor={(r) => r.id}
@@ -261,6 +263,7 @@ export const ForgingRatesManager = () => {
       {/* Tab 2: Máy Búa Khuỷu Thủy Lực */}
       {activeSubTab === 'hammer' && (
         <DataTable
+          tableName="hammer_rates_table"
           data={hammerRates}
           columns={hammerColumns}
           keyExtractor={(r) => r.id}
@@ -272,152 +275,136 @@ export const ForgingRatesManager = () => {
       )}
 
       {/* Modal 1: Form Thêm dải cước Máy Dập */}
-      {showAddPressModal && (
-        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4 z-50 animate-fade-in-up">
-          <div className="bg-white rounded-[12px] border border-[#EAEAEA] shadow-xl max-w-md w-full p-5 space-y-4 text-xs text-[#111111]">
-            <div className="flex items-center justify-between border-b border-[#EAEAEA] pb-3">
-              <h3 className="text-sm font-bold text-[#111111]">Thêm Dải Tải Trọng Máy Dập</h3>
-              <button
-                type="button"
-                onClick={() => setShowAddPressModal(false)}
-                className="text-[#787774] hover:text-[#111111] text-sm font-bold"
-              >
-                ✕
-              </button>
+      <Modal
+        isOpen={showAddPressModal}
+        onClose={() => setShowAddPressModal(false)}
+        size="sm"
+        title="Thêm Dải Tải Trọng Máy Dập"
+        footer={
+          <>
+            <button
+              type="button"
+              onClick={() => setShowAddPressModal(false)}
+              className="px-3.5 py-1.5 bg-[#F0F0EE] hover:bg-[#E0E0DE] text-[#111111] font-semibold rounded-[6px] cursor-pointer"
+            >
+              Hủy
+            </button>
+            <button
+              type="submit"
+              form="add-press-rate-form"
+              className="px-4 py-1.5 bg-[#111111] hover:bg-[#333333] text-white font-bold rounded-[6px] cursor-pointer"
+            >
+              Lưu Dải Cước
+            </button>
+          </>
+        }
+      >
+        <form id="add-press-rate-form" onSubmit={handleAddPressRate} className="space-y-3">
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block font-bold text-[#787774] text-[10px] uppercase mb-1">Tải Trọng Từ (Tấn)</label>
+              <input
+                type="number"
+                required
+                min="1"
+                value={pressMin}
+                onChange={(e) => setPressMin(Number(e.target.value))}
+                className="w-full px-3 py-1.5 border border-[#EAEAEA] rounded-[6px] text-[#111111] font-mono font-bold"
+              />
             </div>
-
-            <form onSubmit={handleAddPressRate} className="space-y-3">
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block font-bold text-[#787774] text-[10px] uppercase mb-1">Tải Trọng Từ (Tấn)</label>
-                  <input
-                    type="number"
-                    required
-                    min="1"
-                    value={pressMin}
-                    onChange={(e) => setPressMin(Number(e.target.value))}
-                    className="w-full px-3 py-1.5 border border-[#EAEAEA] rounded-[6px] text-[#111111] font-mono font-bold"
-                  />
-                </div>
-                <div>
-                  <label className="block font-bold text-[#787774] text-[10px] uppercase mb-1">Tải Trọng Đến (Tấn)</label>
-                  <input
-                    type="number"
-                    required
-                    min="1"
-                    value={pressMax}
-                    onChange={(e) => setPressMax(Number(e.target.value))}
-                    className="w-full px-3 py-1.5 border border-[#EAEAEA] rounded-[6px] text-[#111111] font-mono font-bold"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block font-bold text-[#787774] text-[10px] uppercase mb-1">Đơn Giá Giờ Máy (VNĐ / Giờ)</label>
-                <input
-                  type="number"
-                  required
-                  min="1"
-                  step="10000"
-                  value={pressRate}
-                  onChange={(e) => setPressRate(Number(e.target.value))}
-                  className="w-full px-3 py-1.5 border border-[#EAEAEA] rounded-[6px] text-[#111111] font-mono font-bold text-sm"
-                />
-              </div>
-
-              <div className="flex justify-end space-x-2 pt-3 border-t border-[#EAEAEA]">
-                <button
-                  type="button"
-                  onClick={() => setShowAddPressModal(false)}
-                  className="px-3 py-1.5 bg-[#F0F0EE] hover:bg-[#E0E0DE] text-[#111111] font-semibold rounded-[6px]"
-                >
-                  Hủy
-                </button>
-                <button
-                  type="submit"
-                  className="px-4 py-1.5 bg-[#111111] hover:bg-[#333333] text-white font-bold rounded-[6px]"
-                >
-                  Lưu Dải Cước
-                </button>
-              </div>
-            </form>
+            <div>
+              <label className="block font-bold text-[#787774] text-[10px] uppercase mb-1">Tải Trọng Đến (Tấn)</label>
+              <input
+                type="number"
+                required
+                min="1"
+                value={pressMax}
+                onChange={(e) => setPressMax(Number(e.target.value))}
+                className="w-full px-3 py-1.5 border border-[#EAEAEA] rounded-[6px] text-[#111111] font-mono font-bold"
+              />
+            </div>
           </div>
-        </div>
-      )}
+
+          <div>
+            <label className="block font-bold text-[#787774] text-[10px] uppercase mb-1">Đơn Giá Giờ Máy (VNĐ / Giờ)</label>
+            <input
+              type="number"
+              required
+              min="1"
+              step="10000"
+              value={pressRate}
+              onChange={(e) => setPressRate(Number(e.target.value))}
+              className="w-full px-3 py-1.5 border border-[#EAEAEA] rounded-[6px] text-[#111111] font-mono font-bold text-sm"
+            />
+          </div>
+        </form>
+      </Modal>
 
       {/* Modal 2: Form Thêm dải cước Máy Búa */}
-      {showAddHammerModal && (
-        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4 z-50 animate-fade-in-up">
-          <div className="bg-white rounded-[12px] border border-[#EAEAEA] shadow-xl max-w-md w-full p-5 space-y-4 text-xs text-[#111111]">
-            <div className="flex items-center justify-between border-b border-[#EAEAEA] pb-3">
-              <h3 className="text-sm font-bold text-[#111111]">Thêm Dải Năng Lượng Máy Búa</h3>
-              <button
-                type="button"
-                onClick={() => setShowAddHammerModal(false)}
-                className="text-[#787774] hover:text-[#111111] text-sm font-bold"
-              >
-                ✕
-              </button>
+      <Modal
+        isOpen={showAddHammerModal}
+        onClose={() => setShowAddHammerModal(false)}
+        size="sm"
+        title="Thêm Dải Năng Lượng Máy Búa"
+        footer={
+          <>
+            <button
+              type="button"
+              onClick={() => setShowAddHammerModal(false)}
+              className="px-3.5 py-1.5 bg-[#F0F0EE] hover:bg-[#E0E0DE] text-[#111111] font-semibold rounded-[6px] cursor-pointer"
+            >
+              Hủy
+            </button>
+            <button
+              type="submit"
+              form="add-hammer-rate-form"
+              className="px-4 py-1.5 bg-[#111111] hover:bg-[#333333] text-white font-bold rounded-[6px] cursor-pointer"
+            >
+              Lưu Dải Cước
+            </button>
+          </>
+        }
+      >
+        <form id="add-hammer-rate-form" onSubmit={handleAddHammerRate} className="space-y-3">
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block font-bold text-[#787774] text-[10px] uppercase mb-1">Năng Lượng Từ (kJ)</label>
+              <input
+                type="number"
+                required
+                min="1"
+                value={hammerMin}
+                onChange={(e) => setHammerMin(Number(e.target.value))}
+                className="w-full px-3 py-1.5 border border-[#EAEAEA] rounded-[6px] text-[#111111] font-mono font-bold"
+              />
             </div>
-
-            <form onSubmit={handleAddHammerRate} className="space-y-3">
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block font-bold text-[#787774] text-[10px] uppercase mb-1">Năng Lượng Từ (kJ)</label>
-                  <input
-                    type="number"
-                    required
-                    min="1"
-                    value={hammerMin}
-                    onChange={(e) => setHammerMin(Number(e.target.value))}
-                    className="w-full px-3 py-1.5 border border-[#EAEAEA] rounded-[6px] text-[#111111] font-mono font-bold"
-                  />
-                </div>
-                <div>
-                  <label className="block font-bold text-[#787774] text-[10px] uppercase mb-1">Năng Lượng Đến (kJ)</label>
-                  <input
-                    type="number"
-                    required
-                    min="1"
-                    value={hammerMax}
-                    onChange={(e) => setHammerMax(Number(e.target.value))}
-                    className="w-full px-3 py-1.5 border border-[#EAEAEA] rounded-[6px] text-[#111111] font-mono font-bold"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block font-bold text-[#787774] text-[10px] uppercase mb-1">Đơn Giá Giờ Máy (VNĐ / Giờ)</label>
-                <input
-                  type="number"
-                  required
-                  min="1"
-                  step="10000"
-                  value={hammerRate}
-                  onChange={(e) => setHammerRate(Number(e.target.value))}
-                  className="w-full px-3 py-1.5 border border-[#EAEAEA] rounded-[6px] text-[#111111] font-mono font-bold text-sm"
-                />
-              </div>
-
-              <div className="flex justify-end space-x-2 pt-3 border-t border-[#EAEAEA]">
-                <button
-                  type="button"
-                  onClick={() => setShowAddHammerModal(false)}
-                  className="px-3 py-1.5 bg-[#F0F0EE] hover:bg-[#E0E0DE] text-[#111111] font-semibold rounded-[6px]"
-                >
-                  Hủy
-                </button>
-                <button
-                  type="submit"
-                  className="px-4 py-1.5 bg-[#111111] hover:bg-[#333333] text-white font-bold rounded-[6px]"
-                >
-                  Lưu Dải Cước
-                </button>
-              </div>
-            </form>
+            <div>
+              <label className="block font-bold text-[#787774] text-[10px] uppercase mb-1">Năng Lượng Đến (kJ)</label>
+              <input
+                type="number"
+                required
+                min="1"
+                value={hammerMax}
+                onChange={(e) => setHammerMax(Number(e.target.value))}
+                className="w-full px-3 py-1.5 border border-[#EAEAEA] rounded-[6px] text-[#111111] font-mono font-bold"
+              />
+            </div>
           </div>
-        </div>
-      )}
+
+          <div>
+            <label className="block font-bold text-[#787774] text-[10px] uppercase mb-1">Đơn Giá Giờ Máy (VNĐ / Giờ)</label>
+            <input
+              type="number"
+              required
+              min="1"
+              step="10000"
+              value={hammerRate}
+              onChange={(e) => setHammerRate(Number(e.target.value))}
+              className="w-full px-3 py-1.5 border border-[#EAEAEA] rounded-[6px] text-[#111111] font-mono font-bold text-sm"
+            />
+          </div>
+        </form>
+      </Modal>
     </div>
   );
 };

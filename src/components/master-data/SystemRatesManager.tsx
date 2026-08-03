@@ -3,7 +3,8 @@ import type { SystemUnitRate } from '../../types/master-data';
 import { fetchSystemUnitRates, INITIAL_SYSTEM_RATES } from '../../lib/master-data-service';
 import { useAuth } from '../../context/AuthContext';
 import { DataTable, type DataTableColumn, type DataTableAction } from '../ui/DataTable';
-import { Cpu, Edit, Zap, Truck, Layers, Check } from 'lucide-react';
+import { Modal } from '../ui/Modal';
+import { Cpu, Edit2, Zap, Truck, Layers, Check } from 'lucide-react';
 
 export const SystemRatesManager = () => {
   const { profile } = useAuth();
@@ -90,7 +91,7 @@ export const SystemRatesManager = () => {
     {
       key: 'edit',
       label: 'Sửa Đơn Giá Mới',
-      icon: <Edit className="w-3.5 h-3.5" />,
+      icon: <Edit2 className="w-3.5 h-3.5" />,
       variant: 'primary',
       enabled: (count) => isEstimator && count === 1,
       onClick: (selectedRows) => {
@@ -196,6 +197,7 @@ export const SystemRatesManager = () => {
 
       {/* Shared Reusable DataTable */}
       <DataTable
+        tableName="system_rates_table"
         data={filteredRates}
         columns={columns}
         keyExtractor={(r) => r.id}
@@ -206,59 +208,49 @@ export const SystemRatesManager = () => {
       />
 
       {/* Edit Rate Modal */}
-      {editingRate && (
-        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4 z-50 animate-fade-in-up">
-          <div className="bg-white rounded-[12px] border border-[#EAEAEA] shadow-xl max-w-md w-full p-5 space-y-4 text-xs text-[#111111]">
-            <div className="flex items-center justify-between border-b border-[#EAEAEA] pb-3">
-              <div>
-                <h3 className="text-sm font-bold text-[#111111]">Chỉnh Sửa Đơn Giá Hệ Thống</h3>
-                <p className="text-[10px] text-[#787774]">{editingRate.rate_name}</p>
-              </div>
-              <button
-                type="button"
-                onClick={() => setEditingRate(null)}
-                className="text-[#787774] hover:text-[#111111] text-sm font-bold"
-              >
-                ✕
-              </button>
-            </div>
-
-            <form onSubmit={handleSaveRate} className="space-y-4">
-              <div>
-                <label className="block text-[10px] font-bold text-[#787774] uppercase mb-1">
-                  Đơn Giá Áp Dụng Mới ({editingRate.unit})
-                </label>
-                <input
-                  type="number"
-                  required
-                  min="0"
-                  step="10"
-                  value={editValue}
-                  onChange={(e) => setEditValue(Number(e.target.value))}
-                  className="w-full px-3 py-1.5 border border-[#EAEAEA] rounded-[6px] font-mono font-bold text-base text-[#111111]"
-                />
-              </div>
-
-              <div className="flex justify-end space-x-2 pt-3 border-t border-[#EAEAEA]">
-                <button
-                  type="button"
-                  onClick={() => setEditingRate(null)}
-                  className="px-3 py-1.5 bg-[#F0F0EE] hover:bg-[#E0E0DE] text-[#111111] font-semibold rounded-[6px]"
-                >
-                  Hủy
-                </button>
-                <button
-                  type="submit"
-                  className="px-4 py-1.5 bg-[#111111] hover:bg-[#333333] text-white font-bold rounded-[6px] inline-flex items-center space-x-1"
-                >
-                  <Check className="w-4 h-4" />
-                  <span>Lưu Đơn Giá Mới</span>
-                </button>
-              </div>
-            </form>
+      <Modal
+        isOpen={!!editingRate}
+        onClose={() => setEditingRate(null)}
+        size="sm"
+        title="Chỉnh Sửa Đơn Giá Hệ Thống"
+        subtitle={editingRate?.rate_name}
+        footer={
+          <>
+            <button
+              type="button"
+              onClick={() => setEditingRate(null)}
+              className="px-3.5 py-1.5 bg-[#F0F0EE] hover:bg-[#E0E0DE] text-[#111111] font-semibold rounded-[6px] cursor-pointer"
+            >
+              Hủy
+            </button>
+            <button
+              type="submit"
+              form="edit-system-rate-form"
+              className="px-4 py-1.5 bg-[#111111] hover:bg-[#333333] text-white font-bold rounded-[6px] inline-flex items-center space-x-1 cursor-pointer"
+            >
+              <Check className="w-4 h-4" />
+              <span>Lưu Đơn Giá Mới</span>
+            </button>
+          </>
+        }
+      >
+        <form id="edit-system-rate-form" onSubmit={handleSaveRate} className="space-y-4">
+          <div>
+            <label className="block text-[10px] font-bold text-[#787774] uppercase mb-1">
+              Đơn Giá Áp Dụng Mới ({editingRate?.unit})
+            </label>
+            <input
+              type="number"
+              required
+              min="0"
+              step="10"
+              value={editValue}
+              onChange={(e) => setEditValue(Number(e.target.value))}
+              className="w-full px-3 py-1.5 border border-[#EAEAEA] rounded-[6px] font-mono font-bold text-base text-[#111111]"
+            />
           </div>
-        </div>
-      )}
+        </form>
+      </Modal>
     </div>
   );
 };

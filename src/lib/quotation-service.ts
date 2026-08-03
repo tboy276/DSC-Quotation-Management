@@ -1,255 +1,76 @@
 import { supabase } from './supabase';
-import type { QuoteRecord, UnifiedRfqStatus, QuotationFilterOptions, CurrencyType, RfqRecord } from '../types/quote';
+import type {
+  QuoteRecord,
+  RfqDossier,
+  RfqItemRecord,
+  RfqItemStatus,
+  QuotationFilterOptions,
+  PaginatedQuotationResponse,
+  CurrencyType,
+} from '../types/quote';
 import type { ForgingInput, CastingInput, ForgingResult, CastingResult } from './calculation-engine/types';
-import type { RfqHeaderState, SegmentType } from '../store/useQuotationStore';
+import type { SegmentType, TradeTermType } from '../store/useQuotationStore';
 
-// Initial Mock Seed Data for Fallback/Offline Mode
-export const INITIAL_QUOTES: QuoteRecord[] = [
-  {
-    id: 'quote-101',
-    rfq_id: 'rfq-101',
-    segment: 'forging',
-    status: 'SENT',
-    currency: 'USD',
-    exchange_rate: 25400,
-    die_cost_treatment: 'amortized',
-    final_quoted_price: 97383,
-    created_at: new Date(Date.now() - 5 * 24 * 3600 * 1000).toISOString(),
-    sent_at: new Date(Date.now() - 4 * 24 * 3600 * 1000).toISOString(),
-    created_by_email: 'sales.honda@disoco.vn',
-    rfq: {
-      id: 'rfq-101',
-      customer_name: 'Tập đoàn Honda Việt Nam',
-      product_name: 'Trục Khuỷu Động Cơ K20',
-      annual_volume: 25000,
-      trade_terms: 'FOB',
-      target_price: 95000,
-      status: 'SENT',
-      created_by_email: 'sales.honda@disoco.vn',
-      created_at: new Date(Date.now() - 5 * 24 * 3600 * 1000).toISOString(),
-    },
-    inputs_json: {
-      m_tinh: 1.5,
-      m_bavia: 0.3,
-      k_loss: 2.0,
-      DG_steel: 22000,
-      DG_scrap: 8000,
-      forging_machine_type: 'press',
-      DG_forging_machine_hour: 750000,
-      t_cut_sec: 15,
-      DG_sawing_machine_hour: 120000,
-      w_elec_kwh_per_kg: 0.45,
-      DG_elec_kwh: 2200,
-      t_forging_sec: 12,
-      t_trim_sec: 8,
-      DG_trim_machine_hour: 180000,
-      DG_heat_treat_kg: 4500,
-      DG_clean_kg: 1200,
-      machining_operations: [
-        { name: 'Tiện thô CNC mặt đầu', t_prep_min: 15, t_man_min: 2.5, DG_machine_hour: 210000, C_tooling: 1500 },
-      ],
-      C_die_total: 85000000,
-      L_die_life: 10000,
-      N_order: 1000,
-      die_cost_treatment: 'amortized',
-      k_mgmt: 8,
-      DG_trans_kg: 1500,
-      k_profit_forging: 15,
-    } as ForgingInput,
-    results_json: {
-      m_phoi: 1.837,
-      C_mat_forging: 38014,
-      C_ops_forging: 12500,
-      C_machining: 15000,
-      C_die_amortization: 8500,
-      COGS: 74014,
-      pre_profit_price: 84681,
-      P_FORGING: 97383,
-    } as ForgingResult,
-  },
-  {
-    id: 'quote-102',
-    rfq_id: 'rfq-102',
-    segment: 'casting',
-    status: 'SUCCESSFUL',
-    currency: 'VND',
-    exchange_rate: 1,
-    die_cost_treatment: 'amortized',
-    final_quoted_price: 282240,
-    created_at: new Date(Date.now() - 12 * 24 * 3600 * 1000).toISOString(),
-    sent_at: new Date(Date.now() - 10 * 24 * 3600 * 1000).toISOString(),
-    created_by_email: 'estimator@disoco.vn',
-    rfq: {
-      id: 'rfq-102',
-      customer_name: 'Công ty Toyota Boshoku Hải Dương',
-      product_name: 'Bơm Nước Đúc Gang FCD450',
-      annual_volume: 18000,
-      trade_terms: 'CIF',
-      target_price: 290000,
-      status: 'SUCCESSFUL',
-      created_by_email: 'estimator@disoco.vn',
-      created_at: new Date(Date.now() - 12 * 24 * 3600 * 1000).toISOString(),
-    },
-    inputs_json: {
-      m_cast: 4.5,
-      Y_yield: 60,
-      DG_liquid: 24000,
-      DG_cast_scrap: 10000,
-      DG_sinto_op: 10000,
-      n_cavity_per_mold: 2,
-      m_core: 1.2,
-      DG_core_sand_kg: 3500,
-      DG_finish_kg: 1800,
-      machining_operations: [
-        { name: 'Tiện mặt đúc CNC', t_prep_min: 15, t_man_min: 3.0, DG_machine_hour: 210000, C_tooling: 1800 },
-      ],
-      C_pattern_total: 45000000,
-      L_pattern_life: 15000,
-      N_order: 1000,
-      pattern_cost_treatment: 'amortized',
-      k_mgmt_cast: 10,
-      DG_trans_kg: 1500,
-      k_profit_casting: 12,
-    } as CastingInput,
-    results_json: {
-      m_liquid: 7.5,
-      m_scrap_cast: 3.0,
-      C_metal_casting: 150000,
-      C_ops_casting: 30000,
-      C_machining_casting: 25000,
-      C_pattern_amortization: 3000,
-      COGS: 208000,
-      pre_profit_price: 252000,
-      P_CASTING: 282240,
-    } as CastingResult,
-  },
-  {
-    id: 'quote-103',
-    rfq_id: 'rfq-103',
-    segment: 'forging',
-    status: 'DRAFT',
-    currency: 'JPY',
-    exchange_rate: 165,
-    die_cost_treatment: 'separate',
-    final_quoted_price: 145000,
-    created_at: new Date(Date.now() - 1 * 24 * 3600 * 1000).toISOString(),
-    created_by_email: 'sales.thaco@disoco.vn',
-    rfq: {
-      id: 'rfq-103',
-      customer_name: 'Công ty Cổ phần Thaco Industries',
-      product_name: 'Cụm Bánh Răng Dập S45C',
-      annual_volume: 30000,
-      trade_terms: 'EXW',
-      target_price: 140000,
-      status: 'DRAFT',
-      created_by_email: 'sales.thaco@disoco.vn',
-      created_at: new Date(Date.now() - 1 * 24 * 3600 * 1000).toISOString(),
-    },
-    inputs_json: {
-      m_tinh: 2.1,
-      m_bavia: 0.45,
-      k_loss: 2.5,
-      DG_steel: 23500,
-      DG_scrap: 8500,
-      forging_machine_type: 'press',
-      DG_forging_machine_hour: 950000,
-      t_cut_sec: 20,
-      t_forging_sec: 15,
-      t_trim_sec: 10,
-      C_die_total: 120000000,
-      L_die_life: 12000,
-      N_order: 1000,
-      die_cost_treatment: 'separate',
-      k_mgmt: 8,
-      DG_trans_kg: 1500,
-      k_profit_forging: 15,
-    } as ForgingInput,
-    results_json: {
-      m_phoi: 2.615,
-      C_mat_forging: 57626,
-      C_ops_forging: 18500,
-      C_machining: 28000,
-      C_die_amortization: 0,
-      COGS: 104126,
-      pre_profit_price: 126086,
-      P_FORGING: 145000,
-      separate_die_cost: 120000000,
-    } as ForgingResult,
-  },
-  {
-    id: 'quote-104',
-    rfq_id: 'rfq-104',
-    segment: 'forging',
-    status: 'CANCELLED',
-    currency: 'VND',
-    exchange_rate: 1,
-    die_cost_treatment: 'amortized',
-    final_quoted_price: 0,
-    cancel_reason: 'Khách hàng thay đổi phương án thiết kế bản vẽ và ngưng dự án',
-    created_at: new Date(Date.now() - 2 * 24 * 3600 * 1000).toISOString(),
-    created_by_email: 'sales.honda@disoco.vn',
-    rfq: {
-      id: 'rfq-104',
-      customer_name: 'Yamaha Motor Việt Nam',
-      product_name: 'Cần Khởi Động Xe Máy NVX',
-      annual_volume: 50000,
-      trade_terms: 'FOB',
-      target_price: 45000,
-      status: 'CANCELLED',
-      cancel_reason: 'Khách hàng thay đổi phương án thiết kế bản vẽ và ngưng dự án',
-      created_by_email: 'sales.honda@disoco.vn',
-      created_at: new Date(Date.now() - 2 * 24 * 3600 * 1000).toISOString(),
-    },
-    inputs_json: {} as any,
-    results_json: {} as any,
-  },
-];
+// ----------------------------------------------------------------------
+// CLEAN INITIAL DATA (Bắt đầu với 0 dữ liệu mẫu để thử nghiệm dữ liệu mới)
+// ----------------------------------------------------------------------
 
-// Memory cache for offline/fallback mode
+export const INITIAL_DOSSIERS: RfqDossier[] = [];
+export const INITIAL_RFQ_ITEMS: RfqItemRecord[] = [];
+export const INITIAL_QUOTES: QuoteRecord[] = [];
+
+// Memory caches
+let localDossiersCache = [...INITIAL_DOSSIERS];
+let localItemsCache = [...INITIAL_RFQ_ITEMS];
 let localQuotesCache = [...INITIAL_QUOTES];
 
 /**
- * Migration helper: Maps old legacy statuses to unified status
- */
-export const mapToUnifiedStatus = (oldStatus: string): UnifiedRfqStatus => {
-  if (oldStatus === 'APPROVED' || oldStatus === 'SUCCESSFUL') return 'SUCCESSFUL';
-  if (oldStatus === 'REJECTED' || oldStatus === 'CANCELLED') return 'CANCELLED';
-  if (oldStatus === 'SENT') return 'SENT';
-  return 'DRAFT'; // DRAFT or PENDING
-};
-
-/**
- * Fetch all RFQs and Quotes from Supabase DB or fallback seed data
+ * Fetch all RFQ Items joined with Quote calculations & Dossier Headers
  */
 export const fetchQuotes = async (filter?: QuotationFilterOptions): Promise<QuoteRecord[]> => {
   try {
-    const { data: dbQuotes, error } = await supabase
-      .from('quotes')
-      .select('*, rfq:rfqs(*)')
+    const { data: dbItems, error } = await supabase
+      .from('rfq_items')
+      .select('*, rfq:rfqs(*), quote:quotes(*)')
       .order('created_at', { ascending: false });
 
-    if (!error && dbQuotes && dbQuotes.length > 0) {
-      localQuotesCache = dbQuotes.map((q) => {
-        const unified = mapToUnifiedStatus(q.rfq?.status || q.status);
-        return {
-          ...q,
-          status: unified,
-          rfq: q.rfq ? { ...q.rfq, status: unified } : undefined,
-        };
-      }) as QuoteRecord[];
+    if (!error && dbItems && dbItems.length > 0) {
+      localItemsCache = dbItems as any[];
     }
   } catch (err) {
-    console.warn('Supabase DB offline or tables not created yet. Using memory cache:', err);
+    console.warn('Supabase DB fallback to memory cache:', err);
   }
 
-  let list = [...localQuotesCache];
+  // Construct complete QuoteRecord list from localItemsCache
+  let list: QuoteRecord[] = localItemsCache.map((item) => {
+    const parentDossier = localDossiersCache.find((d) => d.id === item.rfq_id) || item.rfq;
+    const existingQuote = localQuotesCache.find((q) => q.rfq_item_id === item.id) || item.quote;
+
+    return {
+      id: existingQuote?.id || `quote-${item.id}`,
+      rfq_item_id: item.id,
+      segment: existingQuote?.segment || 'forging',
+      status: item.status,
+      currency: existingQuote?.currency || 'VND',
+      exchange_rate: existingQuote?.exchange_rate || 1,
+      die_cost_treatment: existingQuote?.die_cost_treatment || 'amortized',
+      final_quoted_price: existingQuote?.final_quoted_price || 0,
+      created_at: item.created_at,
+      sent_at: item.quoted_sent_at || existingQuote?.sent_at,
+      cancel_reason: item.cancel_reason,
+      created_by_email: parentDossier?.created_by_email,
+      rfqItem: item,
+      rfq: parentDossier,
+      inputs_json: existingQuote?.inputs_json || ({} as any),
+      results_json: existingQuote?.results_json || ({} as any),
+    };
+  });
 
   if (!filter) return list;
 
-  // Apply status filter (handling mapped statuses)
+  // Apply filters
   if (filter.status && filter.status !== 'ALL') {
-    const targetUnified = mapToUnifiedStatus(filter.status);
-    list = list.filter((q) => mapToUnifiedStatus(q.status) === targetUnified || mapToUnifiedStatus(q.rfq?.status || '') === targetUnified);
+    list = list.filter((q) => q.status === filter.status || q.rfqItem?.status === filter.status);
   }
 
   if (filter.segment && filter.segment !== 'ALL') {
@@ -261,9 +82,10 @@ export const fetchQuotes = async (filter?: QuotationFilterOptions): Promise<Quot
     list = list.filter(
       (item) =>
         item.rfq?.customer_name.toLowerCase().includes(q) ||
-        item.rfq?.product_name.toLowerCase().includes(q) ||
+        item.rfqItem?.product_name.toLowerCase().includes(q) ||
+        item.rfqItem?.part_number.toLowerCase().includes(q) ||
         item.id.toLowerCase().includes(q) ||
-        (item.rfq?.created_by_email && item.rfq.created_by_email.toLowerCase().includes(q))
+        (item.created_by_email && item.created_by_email.toLowerCase().includes(q))
     );
   }
 
@@ -279,10 +101,155 @@ export const fetchQuotes = async (filter?: QuotationFilterOptions): Promise<Quot
 };
 
 /**
- * Save RFQ & Quote Draft (DRAFT status)
+ * Server-side Paginated Fetch for RFQ Dossiers & Product Items
+ */
+export const fetchPaginatedQuotes = async (
+  filter?: QuotationFilterOptions
+): Promise<PaginatedQuotationResponse> => {
+  const page = filter?.page || 1;
+  const pageSize = filter?.pageSize || 10;
+
+  const fullList = await fetchQuotes(filter);
+  const totalCount = fullList.length;
+  const totalPages = Math.ceil(totalCount / pageSize) || 1;
+
+  const startIndex = (page - 1) * pageSize;
+  const paginatedData = fullList.slice(startIndex, startIndex + pageSize);
+
+  return {
+    data: paginatedData,
+    totalCount,
+    totalPages,
+    currentPage: page,
+    pageSize,
+  };
+};
+
+/**
+ * Create a new RFQ Dossier Header + Product Line Items
+ */
+export const createRfqDossierWithItems = async (
+  dossier: {
+    customer_name: string;
+    customer_address?: string;
+    rfq_code?: string;
+    customer_contact_person?: string;
+    rfq_received_date: string;
+    customer_deadline: string;
+    trade_terms?: TradeTermType;
+    delivery_address?: string;
+    special_requirements?: string;
+    notes?: string;
+  },
+  items: Array<{
+    product_name: string;
+    part_number: string;
+    annual_volume: number;
+    quantity_unit?: any;
+    target_price: number;
+    technology_requirement?: any;
+    is_feasible: boolean;
+    cancel_reason?: string;
+  }>,
+  userEmail: string = 'sales@disoco.vn'
+): Promise<RfqDossier> => {
+  const now = new Date().toISOString();
+  const dossierId = `rfq-dos-${Date.now()}`;
+  const dateStr = new Date().toISOString().slice(0, 10).replace(/-/g, '');
+  const rawCode = dossier.rfq_code || `${dateStr}-${String(localDossiersCache.length + 1).padStart(3, '0')}`;
+  const rfqCode = rawCode.startsWith('RFQ-') ? rawCode.replace('RFQ-', '') : rawCode;
+
+  const createdItems: RfqItemRecord[] = items.map((it, idx) => {
+    const itemIndexStr = String(idx + 1).padStart(2, '0');
+    const itemCode = `${rfqCode}-${itemIndexStr}`;
+    return {
+      id: `item-${Date.now()}-${idx + 1}`,
+      rfq_id: dossierId,
+      item_code: itemCode,
+      product_name: it.product_name,
+      part_number: it.part_number || `PN-${Date.now()}-${idx + 1}`,
+      annual_volume: it.annual_volume,
+      quantity_unit: it.quantity_unit || 'pcs/năm',
+      target_price: it.target_price,
+      technology_requirement: it.technology_requirement || 'Rèn+Gia công',
+      status: it.is_feasible ? 'IN_COSTING' : 'CANCELLED_NOT_FEASIBLE',
+      cancel_reason: it.is_feasible ? undefined : it.cancel_reason,
+      created_at: now,
+    };
+  });
+
+  const newDossier: RfqDossier = {
+    id: dossierId,
+    customer_name: dossier.customer_name,
+    customer_address: dossier.customer_address,
+    rfq_code: rfqCode,
+    customer_contact_person: dossier.customer_contact_person,
+    rfq_received_date: dossier.rfq_received_date,
+    customer_deadline: dossier.customer_deadline,
+    trade_terms: dossier.trade_terms || 'FOB',
+    delivery_address: dossier.delivery_address,
+    special_requirements: dossier.special_requirements,
+    notes: dossier.notes,
+    created_by_email: userEmail,
+    created_at: now,
+    items: createdItems,
+  };
+
+  try {
+    const { data: dbDossier, error: dosErr } = await supabase
+      .from('rfqs')
+      .insert({
+        customer_name: dossier.customer_name,
+        customer_address: dossier.customer_address,
+        rfq_code: rfqCode,
+        customer_contact_person: dossier.customer_contact_person,
+        rfq_received_date: dossier.rfq_received_date,
+        customer_deadline: dossier.customer_deadline,
+        trade_terms: dossier.trade_terms,
+        delivery_address: dossier.delivery_address,
+        special_requirements: dossier.special_requirements,
+        notes: dossier.notes,
+        created_by_email: userEmail,
+      })
+      .select()
+      .single();
+
+    if (!dosErr && dbDossier) {
+      const itemsToInsert = items.map((it) => ({
+        rfq_id: dbDossier.id,
+        product_name: it.product_name,
+        part_number: it.part_number,
+        annual_volume: it.annual_volume,
+        quantity_unit: it.quantity_unit || 'pcs/năm',
+        target_price: it.target_price,
+        technology_requirement: it.technology_requirement || 'Rèn+Gia công',
+        status: it.is_feasible ? 'IN_COSTING' : 'CANCELLED_NOT_FEASIBLE',
+        cancel_reason: it.is_feasible ? null : it.cancel_reason,
+      }));
+
+      await supabase.from('rfq_items').insert(itemsToInsert);
+    }
+  } catch (err) {
+    console.warn('Saving dossier to Supabase failed, using memory cache:', err);
+  }
+
+  localDossiersCache.unshift(newDossier);
+  localItemsCache.unshift(...createdItems);
+
+  return newDossier;
+};
+
+/**
+ * Save RFQ & Quote Calculation (IN_COSTING / READY_FOR_QUOTE status)
  */
 export const saveQuoteDraft = async (
-  rfq: RfqHeaderState,
+  rfqItem: {
+    id?: string;
+    product_name: string;
+    annual_volume: number;
+    target_price: number;
+    customer_name: string;
+  },
   segment: SegmentType,
   currency: CurrencyType,
   exchangeRate: number,
@@ -293,91 +260,77 @@ export const saveQuoteDraft = async (
 ): Promise<QuoteRecord> => {
   const finalPrice = segment === 'forging' ? (results as ForgingResult).P_FORGING : (results as CastingResult).P_CASTING;
   const dieTreatment = segment === 'forging' ? (inputs as ForgingInput).die_cost_treatment : (inputs as CastingInput).pattern_cost_treatment;
-
   const now = new Date().toISOString();
 
-  // Try DB insert/update
-  try {
-    const { data: rfqData, error: rfqErr } = await supabase
-      .from('rfqs')
-      .insert({
-        customer_name: rfq.customer_name,
-        product_name: rfq.product_name,
-        annual_volume: rfq.annual_volume,
-        trade_terms: rfq.trade_terms,
-        target_price: rfq.target_price,
-        status: 'DRAFT',
-        created_by_email: userEmail,
-      })
-      .select()
-      .single();
+  let itemId = rfqItem.id;
+  if (!itemId) {
+    // Create new item & dossier fallback
+    const dossierId = `rfq-dos-${Date.now()}`;
+    itemId = `item-${Date.now()}`;
 
-    if (!rfqErr && rfqData) {
-      const { data: quoteData, error: quoteErr } = await supabase
-        .from('quotes')
-        .insert({
-          rfq_id: rfqData.id,
-          segment,
-          currency,
-          exchange_rate: exchangeRate,
-          inputs_json: inputs,
-          results_json: results,
-          status: 'DRAFT',
-          die_cost_treatment: dieTreatment,
-          final_quoted_price: finalPrice,
-          created_by_email: userEmail,
-        })
-        .select('*, rfq:rfqs(*)')
-        .single();
-
-      if (!quoteErr && quoteData) {
-        localQuotesCache.unshift(quoteData as QuoteRecord);
-        return quoteData as QuoteRecord;
-      }
-    }
-  } catch (err) {
-    console.warn('Saving to Supabase failed, using memory cache:', err);
+    const newDos: RfqDossier = {
+      id: dossierId,
+      customer_name: rfqItem.customer_name || 'Khách hàng mới',
+      rfq_received_date: now.slice(0, 10),
+      customer_deadline: now.slice(0, 10),
+      created_by_email: userEmail,
+      created_at: now,
+    };
+    const newItem: RfqItemRecord = {
+      id: itemId,
+      rfq_id: dossierId,
+      product_name: rfqItem.product_name,
+      part_number: `PN-${Date.now()}`,
+      annual_volume: rfqItem.annual_volume,
+      target_price: rfqItem.target_price,
+      status: 'READY_FOR_QUOTE',
+      created_at: now,
+      rfq: newDos,
+    };
+    localDossiersCache.unshift(newDos);
+    localItemsCache.unshift(newItem);
+  } else {
+    // Update existing item status to READY_FOR_QUOTE
+    localItemsCache = localItemsCache.map((it) =>
+      it.id === itemId ? { ...it, status: 'READY_FOR_QUOTE' } : it
+    );
   }
 
-  // Fallback memory cache save
-  const newRfqId = `rfq-${Date.now()}`;
-  const newQuoteId = existingQuoteId || `quote-${Date.now()}`;
+  const quoteId = existingQuoteId || `quote-${itemId}`;
+  const targetItem = localItemsCache.find((it) => it.id === itemId)!;
 
-  const newRecord: QuoteRecord = {
-    id: newQuoteId,
-    rfq_id: newRfqId,
+  const newQuote: QuoteRecord = {
+    id: quoteId,
+    rfq_item_id: itemId,
     segment,
-    status: 'DRAFT',
+    status: 'READY_FOR_QUOTE',
     currency,
     exchange_rate: exchangeRate,
     die_cost_treatment: dieTreatment,
     final_quoted_price: finalPrice,
     created_at: now,
     created_by_email: userEmail,
-    rfq: {
-      id: newRfqId,
-      customer_name: rfq.customer_name,
-      product_name: rfq.product_name,
-      annual_volume: rfq.annual_volume,
-      trade_terms: rfq.trade_terms,
-      target_price: rfq.target_price,
-      status: 'DRAFT',
-      created_by_email: userEmail,
-      created_at: now,
-    },
+    rfqItem: targetItem,
+    rfq: targetItem.rfq || localDossiersCache.find((d) => d.id === targetItem.rfq_id),
     inputs_json: JSON.parse(JSON.stringify(inputs)),
     results_json: JSON.parse(JSON.stringify(results)),
   };
 
-  localQuotesCache = [newRecord, ...localQuotesCache.filter((q) => q.id !== newQuoteId)];
-  return newRecord;
+  localQuotesCache = [newQuote, ...localQuotesCache.filter((q) => q.id !== quoteId)];
+  return newQuote;
 };
 
 /**
- * Send Quote (SENT status) - Freezes JSON Snapshots & sets sent_at
+ * Send Quote (QUOTED_SENT status) - Freezes JSON Snapshots
  */
 export const sendQuote = async (
-  rfq: RfqHeaderState,
+  rfqItem: {
+    id?: string;
+    product_name: string;
+    annual_volume: number;
+    target_price: number;
+    customer_name: string;
+  },
   segment: SegmentType,
   currency: CurrencyType,
   exchangeRate: number,
@@ -386,167 +339,129 @@ export const sendQuote = async (
   existingQuoteId?: string,
   userEmail: string = 'estimator@disoco.vn'
 ): Promise<QuoteRecord> => {
-  const record = await saveQuoteDraft(rfq, segment, currency, exchangeRate, inputs, results, existingQuoteId, userEmail);
+  const record = await saveQuoteDraft(rfqItem, segment, currency, exchangeRate, inputs, results, existingQuoteId, userEmail);
 
-  record.status = 'SENT';
-  if (record.rfq) record.rfq.status = 'SENT';
+  record.status = 'QUOTED_SENT';
   record.sent_at = new Date().toISOString();
-  // Freeze JSON snapshots
-  record.inputs_json = JSON.parse(JSON.stringify(inputs));
-  record.results_json = JSON.parse(JSON.stringify(results));
-
-  try {
-    await supabase.from('rfqs').update({ status: 'SENT' }).eq('id', record.rfq_id);
-    await supabase
-      .from('quotes')
-      .update({
-        status: 'SENT',
-        sent_at: record.sent_at,
-        currency,
-        exchange_rate: exchangeRate,
-        inputs_json: record.inputs_json,
-        results_json: record.results_json,
-      })
-      .eq('id', record.id);
-  } catch (err) {
-    console.warn('Updating SENT status to Supabase failed, using memory cache:', err);
+  if (record.rfqItem) {
+    record.rfqItem.status = 'QUOTED_SENT';
+    record.rfqItem.quoted_sent_at = record.sent_at;
   }
+
+  localItemsCache = localItemsCache.map((it) =>
+    it.id === record.rfq_item_id ? { ...it, status: 'QUOTED_SENT', quoted_sent_at: record.sent_at } : it
+  );
 
   localQuotesCache = localQuotesCache.map((q) => (q.id === record.id ? record : q));
   return record;
 };
 
 /**
- * Cancel RFQ Immediately without calculation (CANCELLED status + cancel_reason)
- */
-export const cancelRfqImmediately = async (
-  rfq: RfqHeaderState,
-  cancelReason: string,
-  userEmail: string = 'sales@disoco.vn'
-): Promise<QuoteRecord> => {
-  const now = new Date().toISOString();
-  const newRfqId = `rfq-cancelled-${Date.now()}`;
-  const newQuoteId = `quote-cancelled-${Date.now()}`;
-
-  const newRfq: RfqRecord = {
-    id: newRfqId,
-    customer_name: rfq.customer_name,
-    product_name: rfq.product_name,
-    annual_volume: rfq.annual_volume,
-    trade_terms: rfq.trade_terms,
-    target_price: rfq.target_price,
-    status: 'CANCELLED',
-    cancel_reason: cancelReason,
-    is_feasible: false,
-    created_by_email: userEmail,
-    created_at: now,
-  };
-
-  const newRecord: QuoteRecord = {
-    id: newQuoteId,
-    rfq_id: newRfqId,
-    segment: 'forging',
-    status: 'CANCELLED',
-    currency: 'VND',
-    exchange_rate: 1,
-    die_cost_treatment: 'amortized',
-    final_quoted_price: 0,
-    cancel_reason: cancelReason,
-    created_at: now,
-    created_by_email: userEmail,
-    rfq: newRfq,
-    inputs_json: {} as any,
-    results_json: {} as any,
-  };
-
-  try {
-    const { data: rfqData, error: rfqErr } = await supabase
-      .from('rfqs')
-      .insert({
-        customer_name: rfq.customer_name,
-        product_name: rfq.product_name,
-        annual_volume: rfq.annual_volume,
-        trade_terms: rfq.trade_terms,
-        target_price: rfq.target_price,
-        status: 'CANCELLED',
-        cancel_reason: cancelReason,
-        is_feasible: false,
-        created_by_email: userEmail,
-      })
-      .select()
-      .single();
-
-    if (!rfqErr && rfqData) {
-      await supabase.from('quotes').insert({
-        rfq_id: rfqData.id,
-        segment: 'forging',
-        status: 'CANCELLED',
-        currency: 'VND',
-        exchange_rate: 1,
-        inputs_json: {},
-        results_json: {},
-        die_cost_treatment: 'amortized',
-        final_quoted_price: 0,
-        cancel_reason: cancelReason,
-        created_by_email: userEmail,
-      });
-    }
-  } catch (err) {
-    console.warn('Saving cancelled RFQ to Supabase failed, using memory cache:', err);
-  }
-
-  localQuotesCache = [newRecord, ...localQuotesCache];
-  return newRecord;
-};
-
-/**
- * Update Quote/RFQ Unified Status (SUCCESSFUL / CANCELLED / SENT / DRAFT)
+ * Update RFQ Item Status (SUCCESSFUL / CANCELLED_AFTER_QUOTE / QUOTED_SENT)
  */
 export const updateQuoteStatus = async (
   quoteId: string,
-  newStatus: UnifiedRfqStatus,
+  newStatus: RfqItemStatus | string,
   cancelReason?: string
 ): Promise<void> => {
-  const targetQuote = localQuotesCache.find((q) => q.id === quoteId);
-  const rfqId = targetQuote?.rfq_id;
+  // Map status to 7-status enum
+  let itemStatus: RfqItemStatus = 'QUOTED_SENT';
+  if (newStatus === 'SUCCESSFUL' || newStatus === 'APPROVED') itemStatus = 'SUCCESSFUL';
+  else if (newStatus === 'CANCELLED' || newStatus === 'REJECTED' || newStatus === 'CANCELLED_AFTER_QUOTE') itemStatus = 'CANCELLED_AFTER_QUOTE';
+  else if (newStatus === 'CANCELLED_NOT_FEASIBLE') itemStatus = 'CANCELLED_NOT_FEASIBLE';
+  else if (newStatus === 'READY_FOR_QUOTE') itemStatus = 'READY_FOR_QUOTE';
+  else if (newStatus === 'IN_COSTING' || newStatus === 'DRAFT') itemStatus = 'IN_COSTING';
 
-  try {
-    if (rfqId) {
-      await supabase
-        .from('rfqs')
-        .update({
-          status: newStatus,
-          cancel_reason: newStatus === 'CANCELLED' ? cancelReason : null,
-        })
-        .eq('id', rfqId);
+  const targetQuote = localQuotesCache.find((q) => q.id === quoteId || q.rfq_item_id === quoteId);
+  const itemId = targetQuote?.rfq_item_id || quoteId;
+  const now = new Date().toISOString();
+
+  localItemsCache = localItemsCache.map((it) => {
+    if (it.id === itemId) {
+      return {
+        ...it,
+        status: itemStatus,
+        cancel_reason: itemStatus.startsWith('CANCELLED') ? cancelReason : it.cancel_reason,
+        resolved_at: (itemStatus === 'SUCCESSFUL' || itemStatus.startsWith('CANCELLED')) ? now : it.resolved_at,
+      };
     }
-
-    await supabase
-      .from('quotes')
-      .update({
-        status: newStatus,
-        cancel_reason: newStatus === 'CANCELLED' ? cancelReason : null,
-      })
-      .eq('id', quoteId);
-  } catch (err) {
-    console.warn('Updating unified status in Supabase failed, using memory cache:', err);
-  }
+    return it;
+  });
 
   localQuotesCache = localQuotesCache.map((q) => {
-    if (q.id === quoteId) {
+    if (q.id === quoteId || q.rfq_item_id === itemId) {
       return {
         ...q,
-        status: newStatus,
-        cancel_reason: newStatus === 'CANCELLED' ? cancelReason : q.cancel_reason,
-        rfq: q.rfq
-          ? {
-              ...q.rfq,
-              status: newStatus,
-              cancel_reason: newStatus === 'CANCELLED' ? cancelReason : q.rfq.cancel_reason,
-            }
-          : undefined,
+        status: itemStatus,
+        cancel_reason: itemStatus.startsWith('CANCELLED') ? cancelReason : q.cancel_reason,
       };
     }
     return q;
   });
+};
+
+/**
+ * Cancel RFQ Item Immediately without calculation
+ */
+export const cancelRfqImmediately = async (
+  rfqHeader: {
+    customer_name: string;
+    product_name: string;
+    annual_volume: number;
+    target_price: number;
+  },
+  cancelReason: string,
+  userEmail: string = 'sales@disoco.vn'
+): Promise<QuoteRecord> => {
+  const dossier = await createRfqDossierWithItems(
+    {
+      customer_name: rfqHeader.customer_name,
+      rfq_received_date: new Date().toISOString().slice(0, 10),
+      customer_deadline: new Date().toISOString().slice(0, 10),
+    },
+    [
+      {
+        product_name: rfqHeader.product_name,
+        part_number: `PN-${Date.now()}`,
+        annual_volume: rfqHeader.annual_volume,
+        target_price: rfqHeader.target_price,
+        is_feasible: false,
+        cancel_reason: cancelReason,
+      },
+    ],
+    userEmail
+  );
+
+  const createdItem = dossier.items![0];
+  const list = await fetchQuotes();
+  return list.find((q) => q.rfq_item_id === createdItem.id)!;
+};
+
+import { resetQuotationDocumentsCache } from './quotation-document-service';
+
+/**
+ * Reset System Data to initial seed state (Admin-only action for tuan.vuongdinh@disoco.net)
+ * Executes DELETE queries on Supabase DB tables + clears memory caches
+ */
+export const resetSystemData = async (): Promise<void> => {
+  try {
+    // Clear custom local storage settings
+    localStorage.removeItem('rfq_flat_table_hidden_cols');
+    localStorage.removeItem('rfq_items_hidden_cols');
+
+    // Execute DELETE on Supabase Database tables in foreign key order
+    await supabase.from('quotation_document_items').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+    await supabase.from('quotation_documents').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+    await supabase.from('quotes').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+    await supabase.from('rfq_items').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+    await supabase.from('rfqs').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+  } catch (e) {
+    console.warn('Supabase DB reset error:', e);
+  }
+
+  // Clear memory caches
+  localDossiersCache = [...INITIAL_DOSSIERS];
+  localItemsCache = [...INITIAL_RFQ_ITEMS];
+  localQuotesCache = [...INITIAL_QUOTES];
+  resetQuotationDocumentsCache();
 };

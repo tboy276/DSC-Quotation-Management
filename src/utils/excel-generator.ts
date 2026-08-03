@@ -20,19 +20,20 @@ export const exportDocumentToExcel = (document: QuotationDocument) => {
   // ----------------------------------------------------
   const summaryRows = document.items.map((item, idx) => {
     const q = item.quote;
-    const rfq = q?.rfq;
+    const rfqItem = q?.rfqItem;
     return {
       'STT / No.': idx + 1,
-      'Tên Sản Phẩm / Part Name': rfq?.product_name || 'N/A',
+      'Tên Sản Phẩm / Part Name': rfqItem?.product_name || 'N/A',
+      'Part Number': rfqItem?.part_number || 'N/A',
       'Phân Hệ Công Nghệ': q?.segment === 'forging' ? 'Rèn Dập' : 'Đúc Gang',
-      'Sản Lượng (Pcs/năm)': rfq?.annual_volume || 0,
+      'Sản Lượng (Pcs/năm)': rfqItem?.annual_volume || 0,
       'Điều Kiện Giao Hàng': document.trade_terms || 'FOB',
       'Tiền Tệ': currency,
       'Tỷ Giá Quy Đổi': exchangeRate,
       'Đơn Giá Báo Giá (VNĐ)': Math.round(q?.final_quoted_price || 0),
       'Đơn Giá Báo Giá Quy Đổi': formatCurrencyValue(q?.final_quoted_price || 0, currency, exchangeRate),
       'Cơ Chế Tiền Khuôn/Mẫu': q?.die_cost_treatment || 'amortized',
-      'Trạng Thái Dòng': q?.status || 'DRAFT',
+      'Trạng Thái Dòng': rfqItem?.status || q?.status || 'IN_COSTING',
     };
   });
 
@@ -46,7 +47,7 @@ export const exportDocumentToExcel = (document: QuotationDocument) => {
     const q = item.quote;
     if (!q) return;
 
-    const rfq = q.rfq;
+    const rfqItem = q.rfqItem;
     const isForging = q.segment === 'forging';
     const inp = q.inputs_json as any;
     const res = q.results_json as any;
@@ -55,7 +56,7 @@ export const exportDocumentToExcel = (document: QuotationDocument) => {
 
     // Header info block
     sheetData.push(['BÓC TÁCH CHI TIẾT NỘI BỘ NĂNG LỰC TÍNH GIÁ DISOCO', '']);
-    sheetData.push(['Sản phẩm / Part Name:', rfq?.product_name || 'N/A']);
+    sheetData.push(['Sản phẩm / Part Name:', `${rfqItem?.product_name || 'N/A'} (${rfqItem?.part_number || 'No PN'})`]);
     sheetData.push(['Khách hàng:', document.customer_name]);
     sheetData.push(['Phân hệ công nghệ:', isForging ? 'Rèn Dập (Forging)' : 'Đúc Gang (Iron Casting)']);
     sheetData.push(['Tiền tệ / Tỷ giá:', `${currency} (1 ${currency} = ${exchangeRate} VNĐ)`]);
@@ -141,7 +142,7 @@ export const exportDocumentToExcel = (document: QuotationDocument) => {
     detailSheet['!cols'] = [{ wch: 45 }, { wch: 55 }];
 
     // Sheet name: safe sheet name up to 30 chars
-    let rawSheetName = rfq?.product_name || `SP_${idx + 1}`;
+    let rawSheetName = rfqItem?.product_name || `SP_${idx + 1}`;
     let safeSheetName = rawSheetName.replace(/[:\\/?*\[\]]/g, '_').slice(0, 30);
     if (workbook.SheetNames.includes(safeSheetName)) {
       safeSheetName = `${safeSheetName.slice(0, 26)}_${idx + 1}`;
