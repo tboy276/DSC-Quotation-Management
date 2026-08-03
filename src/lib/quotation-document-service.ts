@@ -68,6 +68,7 @@ export const createQuotationDocument = async (
         exchange_rate: payload.exchange_rate,
         payment_terms: payload.payment_terms,
         delivery_notes: payload.delivery_notes,
+        display_config: payload.display_config,
       })
       .select()
       .single();
@@ -119,6 +120,7 @@ export const createQuotationDocument = async (
     exchange_rate: payload.exchange_rate,
     payment_terms: payload.payment_terms,
     delivery_notes: payload.delivery_notes,
+    display_config: payload.display_config,
     created_at: now,
     items: newItems,
   };
@@ -152,5 +154,26 @@ export const updateDocumentItemsOrder = async (
 
   localDocumentsCache = localDocumentsCache.map((doc) =>
     doc.id === documentId ? { ...doc, items: updatedItems } : doc
+  );
+};
+
+/**
+ * Update display_config for an existing document
+ */
+export const updateDocumentDisplayConfig = async (
+  documentId: string,
+  displayConfig: NonNullable<QuotationDocument['display_config']>
+): Promise<void> => {
+  try {
+    await supabase
+      .from('quotation_documents')
+      .update({ display_config: displayConfig })
+      .eq('id', documentId);
+  } catch (err) {
+    console.warn('Updating display_config in Supabase failed, using memory cache:', err);
+  }
+
+  localDocumentsCache = localDocumentsCache.map((doc) =>
+    doc.id === documentId ? { ...doc, display_config: displayConfig } : doc
   );
 };

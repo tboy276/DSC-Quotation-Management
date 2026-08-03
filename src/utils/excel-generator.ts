@@ -1,5 +1,6 @@
 import * as XLSX from 'xlsx';
 import type { QuotationDocument } from '../types/quotation-document';
+import { DEFAULT_DISPLAY_CONFIG } from '../types/quotation-document';
 import type { ForgingInput, CastingInput, ForgingResult, CastingResult } from '../lib/calculation-engine/types';
 import { formatCurrencyValue } from '../components/rfq/RealtimeSummaryPanel';
 
@@ -14,6 +15,8 @@ export const exportDocumentToExcel = (document: QuotationDocument) => {
   const workbook = XLSX.utils.book_new();
   const currency = document.currency || 'VND';
   const exchangeRate = document.exchange_rate || 1;
+  const config = document.display_config || DEFAULT_DISPLAY_CONFIG;
+  const lang = config.language || 'both';
 
   // ----------------------------------------------------
   // SHEET 1: TỔNG HỢP VĂN BẢN BÁO GIÁ (Summary Sheet)
@@ -21,23 +24,89 @@ export const exportDocumentToExcel = (document: QuotationDocument) => {
   const summaryRows = document.items.map((item, idx) => {
     const q = item.quote;
     const rfqItem = q?.rfqItem;
-    return {
+    const isForging = q?.segment === 'forging';
+    const inp = q?.inputs_json as any || {};
+    const res = q?.results_json as any || {};
+
+    const weightKg = isForging ? res.m_phoi || inp.m_tinh : inp.m_cast;
+    const formingCostVnd = isForging
+      ? (res.C_mat_forging || 0) + (res.C_ops_forging || 0)
+      : (res.C_metal_casting || 0) + (res.C_ops_casting || 0);
+
+    const machiningCostVnd = isForging ? res.C_machining || 0 : res.C_machining_casting || 0;
+    const packageCostVnd = inp.C_pack || 0;
+    const deliveryCostVnd = (weightKg || 0) * (inp.DG_trans_kg || 0);
+    const unitPriceVnd = q?.final_quoted_price || (isForging ? res.P_FORGING : res.P_CASTING) || 0;
+    const sgaAndPVnd = unitPriceVnd - (formingCostVnd + machiningCostVnd + packageCostVnd + deliveryCostVnd);
+
+    const isSeparateTooling = q?.die_cost_treatment === 'separate';
+    const toolingPriceVnd = isForging ? inp.C_die_total : inp.C_pattern_total;
+    const toolingLife = isForging ? inp.L_die_life : inp.L_pattern_life;
+
+    const rowData: Record<string, any> = {
       'STT / No.': idx + 1,
       'Tên Sản Phẩm / Part Name': rfqItem?.product_name || 'N/A',
       'Part Number': rfqItem?.part_number || 'N/A',
-      'Phân Hệ Công Nghệ': q?.segment === 'forging' ? 'Rèn Dập' : 'Đúc Gang',
+      'Phân Hệ Công Nghệ': isForging ? 'Rèn Dập' : 'Đúc Gang',
       'Sản Lượng (Pcs/năm)': rfqItem?.annual_volume || 0,
-      'Điều Kiện Giao Hàng': document.trade_terms || 'FOB',
-      'Tiền Tệ': currency,
-      'Tỷ Giá Quy Đổi': exchangeRate,
-      'Đơn Giá Báo Giá (VNĐ)': Math.round(q?.final_quoted_price || 0),
-      'Đơn Giá Báo Giá Quy Đổi': formatCurrencyValue(q?.final_quoted_price || 0, currency, exchangeRate),
-      'Cơ Chế Tiền Khuôn/Mẫu': q?.die_cost_treatment || 'amortized',
-      'Trạng Thái Dòng': rfqItem?.status || q?.status || 'IN_COSTING',
     };
+
+    if (config.showWeight) {
+      rowData['Trọng lượng phôi (Kg)'] = weightKg ? Number(weightKg).toFixed(2) : '-';
+    }
+
+    if (config.showMOQ) {
+      rowData['MOQ (pcs/lô)'] = inp.N_order || (rfqItem?.annual_volume ? Math.round(rfqItem.annual_volume / 12) : 1000);
+    }
+
+    if (config.showFormingCost) {
+      rowData[`Tạo phôi (${currency})`] = formatCurrencyValue(formingCostVnd, currency, exchangeRate);
+    }
+    if (config.showMachiningCost) {
+      rowData[`Gia công (${currency})`] = formatCurrencyValue(machiningCostVnd, currency, exchangeRate);
+    }
+    if (config.showPackageCost) {
+      rowData[`Bao gói (${currency})`] = packageCostVnd > 0 ? formatCurrencyValue(packageCostVnd, currency, exchangeRate) : '-';
+    }
+    if (config.showDeliveryCost) {
+      rowData[`Vận chuyển (${currency})`] = deliveryCostVnd > 0 ? formatCurrencyValue(deliveryCostVnd, currency, exchangeRate) : '-';
+    }
+    if (config.showSgaP) {
+      rowData[`Quản lý & LN (${currency})`] = formatCurrencyValue(sgaAndPVnd, currency, exchangeRate);
+    }
+
+    rowData[`Đơn Giá Báo (${currency})`] = formatCurrencyValue(unitPriceVnd, currency, exchangeRate);
+
+    if (config.showToolingPrice) {
+      rowData[`Tiền Khuôn (${currency})`] = isSeparateTooling ? formatCurrencyValue(toolingPriceVnd || 0, currency, exchangeRate) : 'Đã phân bổ';
+    }
+    if (config.showToolingUsage) {
+      rowData['Tuổi Thọ Khuôn (Lần)'] = toolingLife || '-';
+    }
+
+    rowData['Điều Kiện Giao Hàng'] = document.trade_terms || 'FOB';
+    rowData['Trạng Thái Dòng'] = rfqItem?.status || q?.status || 'IN_COSTING';
+
+    return rowData;
   });
 
   const summarySheet = XLSX.utils.json_to_sheet(summaryRows);
+
+  // Add Remarks to bottom of Summary Sheet
+  if (config.remarks && config.remarks.length > 0) {
+    const remarkHeaderRow = summaryRows.length + 3;
+    XLSX.utils.sheet_add_aoa(
+      summarySheet,
+      [
+        ['GHI CHÚ / REMARKS:'],
+        ...config.remarks.map((r, i) => [
+          `${i + 1}. ${lang === 'vi' ? r.vi : lang === 'en' ? r.en : `${r.vi} / ${r.en}`}`,
+        ]),
+      ],
+      { origin: `A${remarkHeaderRow}` }
+    );
+  }
+
   XLSX.utils.book_append_sheet(workbook, summarySheet, 'Tong_Hop_Bao_Gia');
 
   // ----------------------------------------------------

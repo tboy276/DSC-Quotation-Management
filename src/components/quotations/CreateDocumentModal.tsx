@@ -1,11 +1,13 @@
 import { useState, useEffect } from 'react';
 import type { QuoteRecord, CurrencyType } from '../../types/quote';
 import type { TradeTermType } from '../../store/useQuotationStore';
+import type { QuotationDocument, DocumentDisplayConfig } from '../../types/quotation-document';
 import { fetchQuotes } from '../../lib/quotation-service';
 import { createQuotationDocument, DEFAULT_PAYMENT_TERMS, DEFAULT_DELIVERY_NOTES } from '../../lib/quotation-document-service';
 import { formatCurrencyValue } from '../rfq/RealtimeSummaryPanel';
 import { Modal } from '../ui/Modal';
-import { FileText, Check, Building2 } from 'lucide-react';
+import { QuotationPreviewPanel } from './QuotationPreviewPanel';
+import { FileText, Check, Building2, ArrowRight, AlertTriangle } from 'lucide-react';
 
 interface CreateDocumentModalProps {
   selectedQuotes: QuoteRecord[];
@@ -18,10 +20,12 @@ export const CreateDocumentModal = ({
   onClose,
   onSuccess,
 }: CreateDocumentModalProps) => {
+  const [step, setStep] = useState<'form' | 'preview'>('form');
   const [allReadyQuotes, setAllReadyQuotes] = useState<QuoteRecord[]>([]);
   const [customerOptions, setCustomerOptions] = useState<string[]>([]);
   const [selectedCustomer, setSelectedCustomer] = useState<string>('');
   const [selectedQuoteIds, setSelectedQuoteIds] = useState<string[]>([]);
+  const [tradeTermWarning, setTradeTermWarning] = useState<string | null>(null);
 
   // Form State
   const [contactPerson, setContactPerson] = useState<string>('Mr. Attn (Phòng Mua Hàng)');
@@ -37,6 +41,7 @@ export const CreateDocumentModal = ({
 
   const [submitting, setSubmitting] = useState<boolean>(false);
   const [showConfirmSendDialog, setShowConfirmSendDialog] = useState<boolean>(false);
+  const [finalConfig, setFinalConfig] = useState<DocumentDisplayConfig | undefined>(undefined);
 
   useEffect(() => {
     loadReadyQuotes();
@@ -66,12 +71,20 @@ export const CreateDocumentModal = ({
       initialSelectedQuotes[0]?.rfq?.customer_name || customers[0] || '';
     setSelectedCustomer(initialCustomer);
 
-    // Default selected IDs matching selected customer
-    const matchingIds = initialSelectedQuotes
-      .filter((q) => (q.rfq?.customer_name || '') === initialCustomer)
-      .map((q) => q.id);
+    // Default selected IDs matching selected customer & same Trade Term
+    const matchingQuotes = initialSelectedQuotes.filter(
+      (q) => (q.rfq?.customer_name || '') === initialCustomer
+    );
 
-    setSelectedQuoteIds(matchingIds);
+    if (matchingQuotes.length > 0) {
+      const firstTerm = matchingQuotes[0].rfq?.trade_terms;
+      const validQuotes = firstTerm
+        ? matchingQuotes.filter((q) => !q.rfq?.trade_terms || q.rfq.trade_terms === firstTerm)
+        : matchingQuotes;
+
+      setSelectedQuoteIds(validQuotes.map((q) => q.id));
+      if (firstTerm) setTradeTerms(firstTerm);
+    }
   };
 
   // Filter available items for the selected customer ONLY
@@ -79,19 +92,70 @@ export const CreateDocumentModal = ({
     (q) => (q.rfq?.customer_name || '') === selectedCustomer
   );
 
+  const selectedQuoteObjects = allReadyQuotes.filter((q) =>
+    selectedQuoteIds.includes(q.id)
+  );
+
   const handleCustomerChange = (cust: string) => {
     setSelectedCustomer(cust);
-    const firstMatching = availableItemsForCustomer.map((q) => q.id);
-    setSelectedQuoteIds(firstMatching.slice(0, 5));
+    setTradeTermWarning(null);
+    const matching = allReadyQuotes.filter((q) => (q.rfq?.customer_name || '') === cust);
+    if (matching.length > 0) {
+      const firstTerm = matching[0].rfq?.trade_terms;
+      const validQuotes = firstTerm
+        ? matching.filter((q) => !q.rfq?.trade_terms || q.rfq.trade_terms === firstTerm)
+        : matching;
+      setSelectedQuoteIds(validQuotes.map((q) => q.id));
+      if (firstTerm) setTradeTerms(firstTerm);
+    } else {
+      setSelectedQuoteIds([]);
+    }
   };
 
   const toggleSelectQuote = (id: string) => {
-    setSelectedQuoteIds((prev) =>
-      prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id]
-    );
+    setTradeTermWarning(null);
+
+    // If unchecking
+    if (selectedQuoteIds.includes(id)) {
+      setSelectedQuoteIds((prev) => prev.filter((i) => i !== id));
+      return;
+    }
+
+    // Checking new quote: Check Trade Term consistency (A0)
+    const targetQuote = allReadyQuotes.find((q) => q.id === id);
+    if (!targetQuote) return;
+
+    const targetTerm = targetQuote.rfq?.trade_terms;
+
+    // Check currently selected items' trade terms
+    const currentSelectedTerms = selectedQuoteObjects
+      .map((q) => q.rfq?.trade_terms)
+      .filter(Boolean) as TradeTermType[];
+
+    if (currentSelectedTerms.length > 0 && targetTerm) {
+      const existingTerm = currentSelectedTerms[0];
+      if (targetTerm !== existingTerm) {
+        const prodName = targetQuote.rfqItem?.product_name || 'Chi tiết';
+        setTradeTermWarning(
+          `Không thể gộp: "${prodName}" có Trade Term [${targetTerm}] khác với các sản phẩm khác trong văn bản ([${existingTerm}]).`
+        );
+        return;
+      }
+    }
+
+    setSelectedQuoteIds((prev) => [...prev, id]);
+    if (targetTerm) {
+      setTradeTerms(targetTerm);
+    }
   };
 
-  const handleConfirmFinalSubmit = async () => {
+  const handleGoToPreview = (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    if (selectedQuoteIds.length === 0 || !selectedCustomer.trim()) return;
+    setStep('preview');
+  };
+
+  const handleConfirmFinalSubmit = async (customConfig?: DocumentDisplayConfig) => {
     if (selectedQuoteIds.length === 0 || !selectedCustomer.trim()) return;
 
     setSubmitting(true);
@@ -107,6 +171,7 @@ export const CreateDocumentModal = ({
         exchange_rate: exchangeRate,
         payment_terms: paymentTerms,
         delivery_notes: deliveryNotes,
+        display_config: customConfig || finalConfig,
         selected_quote_ids: selectedQuoteIds,
       });
 
@@ -120,246 +185,303 @@ export const CreateDocumentModal = ({
     }
   };
 
-  const selectedQuoteObjects = allReadyQuotes.filter((q) =>
-    selectedQuoteIds.includes(q.id)
-  );
-
   const tradeTermOptions: TradeTermType[] = ['EXW', 'FOB', 'CIF', 'DAP'];
   const currencyOptions: CurrencyType[] = ['VND', 'USD', 'JPY', 'EUR'];
+
+  // Construct temp document object for preview panel
+  const tempDocument: QuotationDocument = {
+    id: `PREVIEW-${Date.now()}`,
+    customer_name: selectedCustomer || 'Tên Khách Hàng',
+    contact_person: contactPerson,
+    contact_email: contactEmail,
+    quotation_date: quotationDate,
+    trade_terms: tradeTerms,
+    currency,
+    exchange_rate: exchangeRate,
+    payment_terms: paymentTerms,
+    delivery_notes: deliveryNotes,
+    created_at: new Date().toISOString(),
+    items: selectedQuoteObjects.map((q, idx) => ({
+      id: `preview-item-${idx}`,
+      quotation_document_id: 'PREVIEW',
+      quote_id: q.id,
+      display_order: idx + 1,
+      created_at: new Date().toISOString(),
+      quote: q,
+      rfq_item: q.rfqItem,
+    })),
+  };
 
   return (
     <>
       <Modal
         isOpen={true}
         onClose={onClose}
-        size="2xl"
+        size={step === 'preview' ? '2xl' : 'xl'}
         icon={<FileText className="w-4 h-4 stroke-[2]" />}
-        title="Xây Dựng Văn Bản Báo Giá Gộp Gửi Khách Hàng (Phase 6/10)"
-        subtitle="Chọn 1 khách hàng → Gộp các mã sản phẩm READY_FOR_QUOTE → Xuất Thư Báo Giá"
+        title={
+          step === 'form'
+            ? 'Xây Dựng Văn Bản Báo Giá Gộp Gửi Khách Hàng'
+            : 'Xem Trước & Tùy Chỉnh Thư Báo Giá DISOCO'
+        }
+        subtitle={
+          step === 'form'
+            ? 'Bước 1/2: Chọn mã sản phẩm cùng Khách hàng & Trade Term'
+            : `Bước 2/2: Bật/tắt cột chi phí & dòng ghi chú trước khi phát hành cho ${selectedCustomer}`
+        }
         footer={
-          <>
-            <button
-              type="button"
-              onClick={onClose}
-              className="px-3.5 py-1.5 bg-[#F0F0EE] hover:bg-[#E0E0DE] text-[#111111] font-semibold rounded-[6px] cursor-pointer"
-            >
-              Hủy
-            </button>
-            <button
-              type="button"
-              disabled={submitting || selectedQuoteIds.length === 0}
-              onClick={() => setShowConfirmSendDialog(true)}
-              className="px-4 py-2 bg-[#111111] hover:bg-[#333333] active:scale-[0.98] text-white font-bold rounded-[6px] transition-all cursor-pointer disabled:opacity-40 inline-flex items-center space-x-1.5 shadow-sm text-xs"
-            >
-              <Check className="w-4 h-4 text-emerald-400 stroke-[2.5]" />
-              <span>Đã hoàn thành báo giá — Gửi cho khách hàng?</span>
-            </button>
-          </>
+          step === 'form' ? (
+            <>
+              <button
+                type="button"
+                onClick={onClose}
+                className="px-3.5 py-1.5 bg-[#F0F0EE] hover:bg-[#E0E0DE] text-[#111111] font-semibold rounded-[6px] cursor-pointer"
+              >
+                Hủy
+              </button>
+              <button
+                type="button"
+                disabled={selectedQuoteIds.length === 0}
+                onClick={() => handleGoToPreview()}
+                className="px-4 py-2 bg-[#111111] hover:bg-[#333333] active:scale-[0.98] text-white font-bold rounded-[6px] transition-all cursor-pointer disabled:opacity-40 inline-flex items-center space-x-1.5 shadow-sm text-xs"
+              >
+                <span>Tiếp theo — Xem trước & Tuỳ chỉnh</span>
+                <ArrowRight className="w-4 h-4 text-emerald-400 stroke-[2.5]" />
+              </button>
+            </>
+          ) : null
         }
       >
-        <form id="create-document-form" onSubmit={(e) => { e.preventDefault(); setShowConfirmSendDialog(true); }} className="space-y-4">
-          {/* Step 1: Customer Selection Dropdown */}
-          <div className="p-3.5 bg-[#FBFBFA] border border-[#EAEAEA] rounded-[8px] space-y-2">
-            <div className="flex items-center space-x-2">
-              <Building2 className="w-3.5 h-3.5 text-[#111111]" />
-              <h4 className="text-[11px] font-bold text-[#787774] uppercase tracking-wider">
-                Bước 1: Chọn Khách Hàng (Bắt Buộc Nhất Quán)
-              </h4>
-            </div>
+        {step === 'form' ? (
+          <form id="create-document-form" onSubmit={handleGoToPreview} className="space-y-4">
+            {/* Warning Banner for Trade Term Mismatch */}
+            {tradeTermWarning && (
+              <div className="p-3 bg-amber-50 border border-amber-200 rounded-[8px] flex items-center space-x-2 text-amber-800 text-xs font-semibold animate-fade-in-up">
+                <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0" />
+                <span>{tradeTermWarning}</span>
+              </div>
+            )}
 
-            <select
-              value={selectedCustomer}
-              onChange={(e) => handleCustomerChange(e.target.value)}
-              className="w-full p-2 border border-[#EAEAEA] bg-white rounded-[6px] text-xs font-bold text-[#111111] focus:outline-none focus:border-[#111111]"
-            >
-              <option value="">-- Chọn khách hàng có sản phẩm READY_FOR_QUOTE --</option>
-              {customerOptions.map((cust) => (
-                <option key={cust} value={cust}>
-                  {cust}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          {/* Step 2: Select Items for Quote Document */}
-          {selectedCustomer && (
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
+            {/* Step 1: Customer Selection Dropdown */}
+            <div className="p-3.5 bg-[#FBFBFA] border border-[#EAEAEA] rounded-[8px] space-y-2">
+              <div className="flex items-center space-x-2">
+                <Building2 className="w-3.5 h-3.5 text-[#111111]" />
                 <h4 className="text-[11px] font-bold text-[#787774] uppercase tracking-wider">
-                  Bước 2: Chọn Đa Sản Phẩm Thuộc "{selectedCustomer}" ({availableItemsForCustomer.length} sẵn sàng)
+                  Bước 1: Chọn Khách Hàng (Bắt Buộc Nhất Quán)
                 </h4>
-                <span className="text-[10px] text-[#787774] font-mono">
-                  Đã chọn {selectedQuoteIds.length}/{availableItemsForCustomer.length} sản phẩm
-                </span>
               </div>
 
-              {availableItemsForCustomer.length === 0 ? (
-                <p className="text-xs text-[#787774] italic p-4 bg-[#FBFBFA] rounded-[6px] border border-[#EAEAEA] text-center">
-                  Không có mã sản phẩm nào của khách hàng này ở trạng thái Sẵn Sàng Báo Giá (READY_FOR_QUOTE).
-                </p>
-              ) : (
-                <div className="divide-y divide-[#EAEAEA] border border-[#EAEAEA] rounded-[8px] overflow-hidden bg-white">
-                  {availableItemsForCustomer.map((q) => {
-                    const isChecked = selectedQuoteIds.includes(q.id);
-                    const item = q.rfqItem;
-                    return (
-                      <label
-                        key={q.id}
-                        className={`flex items-center justify-between p-3 cursor-pointer transition-colors ${
-                          isChecked ? 'bg-[#F7F6F3]' : 'hover:bg-[#FBFBFA]'
-                        }`}
-                      >
-                        <div className="flex items-center space-x-3">
-                          <input
-                            type="checkbox"
-                            checked={isChecked}
-                            onChange={() => toggleSelectQuote(q.id)}
-                            className="rounded accent-[#111111] w-4 h-4 cursor-pointer"
-                          />
-                          <div>
-                            <p className="font-bold text-[#111111]">
-                              {item?.product_name} ({item?.part_number || 'No PN'})
-                            </p>
-                            <p className="text-[10px] text-[#787774] font-mono">
-                              Công nghệ: {item?.technology_requirement || 'N/A'} | SL: {(item?.annual_volume || 0).toLocaleString('vi-VN')} {item?.quantity_unit || 'pcs/năm'}
+              <select
+                value={selectedCustomer}
+                onChange={(e) => handleCustomerChange(e.target.value)}
+                className="w-full p-2 border border-[#EAEAEA] bg-white rounded-[6px] text-xs font-bold text-[#111111] focus:outline-none focus:border-[#111111]"
+              >
+                <option value="">-- Chọn khách hàng có sản phẩm READY_FOR_QUOTE --</option>
+                {customerOptions.map((cust) => (
+                  <option key={cust} value={cust}>
+                    {cust}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Step 2: Select Items for Quote Document */}
+            {selectedCustomer && (
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <h4 className="text-[11px] font-bold text-[#787774] uppercase tracking-wider">
+                    Bước 2: Chọn Đa Sản Phẩm Thuộc "{selectedCustomer}" ({availableItemsForCustomer.length} sẵn sàng)
+                  </h4>
+                  <span className="text-[10px] text-[#787774] font-mono">
+                    Đã chọn {selectedQuoteIds.length}/{availableItemsForCustomer.length} sản phẩm
+                  </span>
+                </div>
+
+                {availableItemsForCustomer.length === 0 ? (
+                  <p className="text-xs text-[#787774] italic p-4 bg-[#FBFBFA] rounded-[6px] border border-[#EAEAEA] text-center">
+                    Không có mã sản phẩm nào của khách hàng này ở trạng thái Sẵn Sàng Báo Giá (READY_FOR_QUOTE).
+                  </p>
+                ) : (
+                  <div className="divide-y divide-[#EAEAEA] border border-[#EAEAEA] rounded-[8px] overflow-hidden bg-white max-h-56 overflow-y-auto">
+                    {availableItemsForCustomer.map((q) => {
+                      const isChecked = selectedQuoteIds.includes(q.id);
+                      const item = q.rfqItem;
+                      const qTradeTerm = q.rfq?.trade_terms || item?.rfq?.trade_terms || 'N/A';
+
+                      return (
+                        <label
+                          key={q.id}
+                          className={`flex items-center justify-between p-3 cursor-pointer transition-colors ${
+                            isChecked ? 'bg-[#F7F6F3]' : 'hover:bg-[#FBFBFA]'
+                          }`}
+                        >
+                          <div className="flex items-center space-x-3">
+                            <input
+                              type="checkbox"
+                              checked={isChecked}
+                              onChange={() => toggleSelectQuote(q.id)}
+                              className="rounded accent-[#111111] w-4 h-4 cursor-pointer"
+                            />
+                            <div>
+                              <div className="flex items-center space-x-2">
+                                <p className="font-bold text-[#111111]">
+                                  {item?.product_name} ({item?.part_number || 'No PN'})
+                                </p>
+                                <span className="px-1.5 py-0.2 text-[9px] font-bold font-mono bg-slate-100 text-slate-700 rounded border border-slate-200">
+                                  {qTradeTerm}
+                                </span>
+                              </div>
+                              <p className="text-[10px] text-[#787774] font-mono mt-0.5">
+                                Công nghệ: {item?.technology_requirement || 'N/A'} | SL: {(item?.annual_volume || 0).toLocaleString('vi-VN')} {item?.quantity_unit || 'pcs/năm'}
+                              </p>
+                            </div>
+                          </div>
+
+                          <div className="text-right">
+                            <p className="font-mono font-extrabold text-[#111111]">
+                              {formatCurrencyValue(q.final_quoted_price, currency, exchangeRate)}
                             </p>
                           </div>
-                        </div>
+                        </label>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            )}
 
-                        <div className="text-right">
-                          <p className="font-mono font-extrabold text-[#111111]">
-                            {formatCurrencyValue(q.final_quoted_price, currency, exchangeRate)}
-                          </p>
-                        </div>
-                      </label>
-                    );
-                  })}
+            {/* Step 3: Quotation Document Information & Trade Terms */}
+            {selectedCustomer && (
+              <div className="p-4 bg-[#FBFBFA] border border-[#EAEAEA] rounded-[8px] space-y-3">
+                <h4 className="text-[11px] font-bold text-[#787774] uppercase tracking-wider">
+                  Bước 3: Thông Tin Người Nhận & Điều Khoản Thương Mại
+                </h4>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-[10px] font-bold text-[#787774] uppercase mb-1">
+                      Người Nhận (Attn Person) *
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={contactPerson}
+                      onChange={(e) => setContactPerson(e.target.value)}
+                      placeholder="Ví dụ: Mr. Kenji Sato (P. Mua hàng)"
+                      className="w-full p-2 border border-[#EAEAEA] bg-white rounded-[6px] text-xs font-semibold text-[#111111]"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-[10px] font-bold text-[#787774] uppercase mb-1">
+                      Email Liên Hệ Người Nhận
+                    </label>
+                    <input
+                      type="email"
+                      value={contactEmail}
+                      onChange={(e) => setContactEmail(e.target.value)}
+                      placeholder="kenji.sato@honda.com.vn"
+                      className="w-full p-2 border border-[#EAEAEA] bg-white rounded-[6px] text-xs text-[#111111]"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-[10px] font-bold text-[#787774] uppercase mb-1">
+                      Ngày Lập Văn Bản *
+                    </label>
+                    <input
+                      type="date"
+                      required
+                      value={quotationDate}
+                      onChange={(e) => setQuotationDate(e.target.value)}
+                      className="w-full p-2 border border-[#EAEAEA] bg-white rounded-[6px] text-xs font-mono text-[#111111]"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-[10px] font-bold text-[#787774] uppercase mb-1">
+                      Incoterms / Trade Terms (Đồng nhất theo Items)
+                    </label>
+                    <select
+                      value={tradeTerms}
+                      onChange={(e) => setTradeTerms(e.target.value as TradeTermType)}
+                      className="w-full p-2 border border-[#EAEAEA] bg-white rounded-[6px] text-xs font-bold text-[#111111]"
+                    >
+                      {tradeTermOptions.map((term) => (
+                        <option key={term} value={term}>
+                          {term}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-[10px] font-bold text-[#787774] uppercase mb-1">
+                      Tiền Tệ Văn Bản Báo Giá
+                    </label>
+                    <div className="flex space-x-2">
+                      <select
+                        value={currency}
+                        onChange={(e) => setCurrency(e.target.value as CurrencyType)}
+                        className="w-1/2 p-2 border border-[#EAEAEA] bg-white rounded-[6px] text-xs font-bold text-[#111111]"
+                      >
+                        {currencyOptions.map((c) => (
+                          <option key={c} value={c}>
+                            {c}
+                          </option>
+                        ))}
+                      </select>
+                      {currency !== 'VND' && (
+                        <input
+                          type="number"
+                          min="1"
+                          value={exchangeRate}
+                          onChange={(e) => setExchangeRate(Number(e.target.value))}
+                          placeholder="Tỷ giá"
+                          className="w-1/2 p-2 border border-[#EAEAEA] bg-white rounded-[6px] font-mono text-xs text-[#111111]"
+                        />
+                      )}
+                    </div>
+                  </div>
                 </div>
-              )}
-            </div>
-          )}
 
-          {/* Step 3: Quotation Document Information & Trade Terms */}
-          {selectedCustomer && (
-            <div className="p-4 bg-[#FBFBFA] border border-[#EAEAEA] rounded-[8px] space-y-3">
-              <h4 className="text-[11px] font-bold text-[#787774] uppercase tracking-wider">
-                Bước 3: Thông Tin Người Nhận & Điều Khoản Thương Mại
-              </h4>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="block text-[10px] font-bold text-[#787774] uppercase mb-1">
-                    Người Nhận (Attn Person) *
+                    Điều Khoản Thanh Toán (Payment Terms)
                   </label>
-                  <input
-                    type="text"
-                    required
-                    value={contactPerson}
-                    onChange={(e) => setContactPerson(e.target.value)}
-                    placeholder="Ví dụ: Mr. Kenji Sato (P. Mua hàng)"
-                    className="w-full p-2 border border-[#EAEAEA] bg-white rounded-[6px] text-xs font-semibold text-[#111111]"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-[10px] font-bold text-[#787774] uppercase mb-1">
-                    Email Liên Hệ Người Nhận
-                  </label>
-                  <input
-                    type="email"
-                    value={contactEmail}
-                    onChange={(e) => setContactEmail(e.target.value)}
-                    placeholder="kenji.sato@honda.com.vn"
+                  <textarea
+                    rows={2}
+                    value={paymentTerms}
+                    onChange={(e) => setPaymentTerms(e.target.value)}
                     className="w-full p-2 border border-[#EAEAEA] bg-white rounded-[6px] text-xs text-[#111111]"
                   />
                 </div>
 
                 <div>
                   <label className="block text-[10px] font-bold text-[#787774] uppercase mb-1">
-                    Ngày Lập Văn Bản *
+                    Ghi Chú Giao Hàng (Delivery Notes)
                   </label>
-                  <input
-                    type="date"
-                    required
-                    value={quotationDate}
-                    onChange={(e) => setQuotationDate(e.target.value)}
-                    className="w-full p-2 border border-[#EAEAEA] bg-white rounded-[6px] text-xs font-mono text-[#111111]"
+                  <textarea
+                    rows={2}
+                    value={deliveryNotes}
+                    onChange={(e) => setDeliveryNotes(e.target.value)}
+                    className="w-full p-2 border border-[#EAEAEA] bg-white rounded-[6px] text-xs text-[#111111]"
                   />
                 </div>
-
-                <div>
-                  <label className="block text-[10px] font-bold text-[#787774] uppercase mb-1">
-                    Incoterms / Trade Terms
-                  </label>
-                  <select
-                    value={tradeTerms}
-                    onChange={(e) => setTradeTerms(e.target.value as TradeTermType)}
-                    className="w-full p-2 border border-[#EAEAEA] bg-white rounded-[6px] text-xs font-bold text-[#111111]"
-                  >
-                    {tradeTermOptions.map((term) => (
-                      <option key={term} value={term}>
-                        {term}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-[10px] font-bold text-[#787774] uppercase mb-1">
-                    Tiền Tệ Văn Bản Báo Giá
-                  </label>
-                  <div className="flex space-x-2">
-                    <select
-                      value={currency}
-                      onChange={(e) => setCurrency(e.target.value as CurrencyType)}
-                      className="w-1/2 p-2 border border-[#EAEAEA] bg-white rounded-[6px] text-xs font-bold text-[#111111]"
-                    >
-                      {currencyOptions.map((c) => (
-                        <option key={c} value={c}>
-                          {c}
-                        </option>
-                      ))}
-                    </select>
-                    {currency !== 'VND' && (
-                      <input
-                        type="number"
-                        min="1"
-                        value={exchangeRate}
-                        onChange={(e) => setExchangeRate(Number(e.target.value))}
-                        placeholder="Tỷ giá"
-                        className="w-1/2 p-2 border border-[#EAEAEA] bg-white rounded-[6px] font-mono text-xs text-[#111111]"
-                      />
-                    )}
-                  </div>
-                </div>
               </div>
-
-              <div>
-                <label className="block text-[10px] font-bold text-[#787774] uppercase mb-1">
-                  Điều Khoản Thanh Toán (Payment Terms)
-                </label>
-                <textarea
-                  rows={2}
-                  value={paymentTerms}
-                  onChange={(e) => setPaymentTerms(e.target.value)}
-                  className="w-full p-2 border border-[#EAEAEA] bg-white rounded-[6px] text-xs text-[#111111]"
-                />
-              </div>
-
-              <div>
-                <label className="block text-[10px] font-bold text-[#787774] uppercase mb-1">
-                  Ghi Chú Giao Hàng (Delivery Notes)
-                </label>
-                <textarea
-                  rows={2}
-                  value={deliveryNotes}
-                  onChange={(e) => setDeliveryNotes(e.target.value)}
-                  className="w-full p-2 border border-[#EAEAEA] bg-white rounded-[6px] text-xs text-[#111111]"
-                />
-              </div>
-            </div>
-          )}
-        </form>
+            )}
+          </form>
+        ) : (
+          <QuotationPreviewPanel
+            document={tempDocument}
+            onBack={() => setStep('form')}
+            onSaveAndSend={(customConfig) => {
+              setFinalConfig(customConfig);
+              setShowConfirmSendDialog(true);
+            }}
+            isSubmitting={submitting}
+          />
+        )}
       </Modal>
 
       {/* Confirmation Dialog before Final Sending */}
@@ -381,7 +503,7 @@ export const CreateDocumentModal = ({
             <button
               type="button"
               disabled={submitting}
-              onClick={handleConfirmFinalSubmit}
+              onClick={() => handleConfirmFinalSubmit()}
               className="px-4 py-1.5 bg-[#111111] hover:bg-[#333333] text-white font-bold rounded-[6px] inline-flex items-center space-x-1 cursor-pointer disabled:opacity-40"
             >
               <Check className="w-4 h-4 text-emerald-400" />

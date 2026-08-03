@@ -1,13 +1,14 @@
 import { useState, useEffect } from 'react';
 import type { QuotationDocument, QuotationDocumentItem } from '../../types/quotation-document';
 import type { UnifiedRfqStatus } from '../../types/quote';
-import { updateDocumentItemsOrder } from '../../lib/quotation-document-service';
+import { updateDocumentItemsOrder, updateDocumentDisplayConfig } from '../../lib/quotation-document-service';
 import { updateQuoteStatus } from '../../lib/quotation-service';
 import { exportDocumentToExcel } from '../../utils/excel-generator';
 import { QuoteStatusBadge } from '../rfq/QuoteStatusBadge';
 import { formatCurrencyValue } from '../rfq/RealtimeSummaryPanel';
 import { formatDate } from '../../lib/format-date';
 import { PdfQuotationModal } from './PdfQuotationModal';
+import { QuotationPreviewPanel } from './QuotationPreviewPanel';
 import { Modal } from '../ui/Modal';
 import {
   FileText,
@@ -17,6 +18,7 @@ import {
   CheckCircle,
   XCircle,
   Download,
+  Sliders,
 } from 'lucide-react';
 
 interface DocumentDetailModalProps {
@@ -34,6 +36,7 @@ export const DocumentDetailModal = ({
 
   const [items, setItems] = useState<QuotationDocumentItem[]>([]);
   const [showPdfModal, setShowPdfModal] = useState<boolean>(false);
+  const [showCustomizeModal, setShowCustomizeModal] = useState<boolean>(false);
 
   useEffect(() => {
     if (document.items) {
@@ -97,6 +100,15 @@ export const DocumentDetailModal = ({
         subtitle={`Tên khách hàng: ${document.customer_name} | Ngày lập: ${formatDate(document.quotation_date)}`}
         headerExtra={
           <div className="flex items-center space-x-2 mr-2">
+            <button
+              onClick={() => setShowCustomizeModal(true)}
+              className="px-3 py-1.5 bg-[#F0F0EE] hover:bg-[#E0E0DE] text-[#111111] font-bold rounded-[6px] text-xs transition-colors cursor-pointer inline-flex items-center space-x-1 border border-[#EAEAEA]"
+              title="Xem trước & Tuỳ chỉnh hiển thị (Cột / Ghi chú / Ngôn ngữ)"
+            >
+              <Sliders className="w-3.5 h-3.5 text-[#111111] stroke-[2]" />
+              <span>Tuỳ Chỉnh Hiển Thị</span>
+            </button>
+
             <button
               onClick={() => setShowPdfModal(true)}
               className="px-3 py-1.5 bg-[#111111] hover:bg-[#333333] active:scale-[0.98] text-white font-bold rounded-[6px] text-xs transition-all cursor-pointer inline-flex items-center space-x-1 shadow-xs"
@@ -269,6 +281,29 @@ export const DocumentDetailModal = ({
 
         </div>
       </Modal>
+
+      {/* Customize Display Config Modal */}
+      {showCustomizeModal && (
+        <Modal
+          isOpen={true}
+          onClose={() => setShowCustomizeModal(false)}
+          size="2xl"
+          icon={<Sliders className="w-4 h-4" />}
+          title="Tuỳ Chỉnh Hiển Thị Văn Bản Báo Giá"
+          subtitle={`Văn bản #${document.id.substring(0, 10)} - ${document.customer_name}`}
+        >
+          <QuotationPreviewPanel
+            document={document}
+            readOnly={false}
+            onBack={() => setShowCustomizeModal(false)}
+            onSaveAndSend={async (newConfig) => {
+              await updateDocumentDisplayConfig(document.id, newConfig);
+              setShowCustomizeModal(false);
+              onRefresh();
+            }}
+          />
+        </Modal>
+      )}
 
       {/* PDF Quotation Preview Modal */}
       {showPdfModal && (
