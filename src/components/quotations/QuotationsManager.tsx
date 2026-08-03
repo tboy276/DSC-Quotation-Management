@@ -167,7 +167,7 @@ export const QuotationsManager = ({ onNavigateToCalculator }: QuotationsManagerP
   const [newCustomerDeadline, setNewCustomerDeadline] = useState<string>(
     new Date(Date.now() + 7 * 24 * 3600 * 1000).toISOString().slice(0, 10)
   );
-  const [newTradeTerms, setNewTradeTerms] = useState<'EXW' | 'FOB' | 'CIF' | 'DAP'>('FOB');
+  const [newTradeTerms, setNewTradeTerms] = useState<'' | 'EXW' | 'FOB' | 'CIF' | 'DAP'>();
   const [newDeliveryAddress, setNewDeliveryAddress] = useState<string>('');
   const [newSpecialRequirements, setNewSpecialRequirements] = useState<string>('');
   const [newNotes, setNewNotes] = useState<string>('');
@@ -182,32 +182,22 @@ export const QuotationsManager = ({ onNavigateToCalculator }: QuotationsManagerP
       target_price: number;
       technology_requirement: TechnologyRequirementType;
     }>
-  >([
-    {
-      id: '1',
-      product_name: 'Bánh Răng D450',
-      part_number: 'BR-D450-01',
-      annual_volume: 10000,
-      quantity_unit: 'pcs/năm',
-      target_price: 95000,
-      technology_requirement: 'Rèn+Gia công',
-    },
-    {
-      id: '2',
-      product_name: 'Trục Truyền Động CNC',
-      part_number: 'TRUC-CNC-02',
-      annual_volume: 5000,
-      quantity_unit: 'pcs/năm',
-      target_price: 150000,
-      technology_requirement: 'Đúc+Gia công',
-    },
-  ]);
+  >([{
+    id: '1',
+    product_name: '',
+    part_number: '',
+    annual_volume: 0,
+    quantity_unit: 'pcs/năm',
+    target_price: 0,
+    technology_requirement: 'Rèn+Gia công',
+  }]);
 
   // Generate RFQ Code automatically on opening modal
   useEffect(() => {
     if (showNewRfqModal) {
       const dateStr = new Date().toISOString().slice(0, 10).replace(/-/g, '');
-      const generatedCode = `RFQ-${dateStr}-${String(totalCount + 1).padStart(3, '0')}`;
+      // Format: YYYYMMDD-XXX — NO "RFQ-" prefix per Phase 10.5 spec
+      const generatedCode = `${dateStr}-${String(totalCount + 1).padStart(3, '0')}`;
       setNewRfqCode(generatedCode);
     }
   }, [showNewRfqModal, totalCount]);
@@ -380,6 +370,15 @@ export const QuotationsManager = ({ onNavigateToCalculator }: QuotationsManagerP
   const handleCreateNewDossierSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newCustomerName.trim() || newMultiItems.length === 0) return;
+    if (!newTradeTerms) {
+      alert('Vui lòng chọn Trade Terms trước khi lưu.');
+      return;
+    }
+    const hasEmptyName = newMultiItems.some((it) => !it.product_name.trim());
+    if (hasEmptyName) {
+      alert('Vui lòng nhập tên sản phẩm cho tất cả các dòng.');
+      return;
+    }
 
     const formattedItems = newMultiItems.map((it) => ({
       product_name: it.product_name.trim(),
@@ -399,7 +398,7 @@ export const QuotationsManager = ({ onNavigateToCalculator }: QuotationsManagerP
         customer_contact_person: newCustomerContactPerson.trim() || undefined,
         rfq_received_date: newRfqReceivedDate,
         customer_deadline: newCustomerDeadline,
-        trade_terms: newTradeTerms,
+        trade_terms: newTradeTerms as 'EXW' | 'FOB' | 'CIF' | 'DAP',
         delivery_address: newTradeTerms !== 'EXW' ? newDeliveryAddress.trim() : undefined,
         special_requirements: newSpecialRequirements.trim() || undefined,
         notes: newNotes.trim() || undefined,
@@ -1271,14 +1270,16 @@ export const QuotationsManager = ({ onNavigateToCalculator }: QuotationsManagerP
                       Trade Terms *
                     </label>
                     <select
-                      value={newTradeTerms}
+                      value={newTradeTerms ?? ''}
+                      required
                       onChange={(e) => setNewTradeTerms(e.target.value as any)}
                       className="w-full px-2 py-1.5 border border-[#EAEAEA] bg-white rounded-[6px] font-bold text-xs text-[#111111]"
                     >
-                      <option value="EXW">EXW (Giao tại xưởng DISOCO)</option>
-                      <option value="FOB">FOB (Giao tại Cảng Hải Phòng)</option>
-                      <option value="CIF">CIF (Giao tại Cảng Đích)</option>
-                      <option value="DAP">DAP (Giao tại kho khách hàng)</option>
+                      <option value="" disabled>— Chọn Trade Terms —</option>
+                      <option value="EXW">EXW</option>
+                      <option value="FOB">FOB</option>
+                      <option value="CIF">CIF</option>
+                      <option value="DAP">DAP</option>
                     </select>
                   </div>
 
