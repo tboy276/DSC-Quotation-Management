@@ -60,7 +60,7 @@ export const Modal: React.FC<ModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-slate-900/60 backdrop-blur-xs animate-fade-in-up">
-      <div className={`bg-white rounded-[12px] border border-[#EAEAEA] shadow-2xl w-full ${chosenWidth} max-h-[88vh] flex flex-col overflow-hidden text-xs text-[#111111] transition-all`}>
+      <div className={`bg-white rounded-[12px] border border-[#EAEAEA] shadow-2xl w-full ${chosenWidth} max-h-[88vh] flex flex-col overflow-hidden text-xs text-[#111111] animate-modal-scale-in`}>
         {/* Fixed Header */}
         {!hideHeader && (title || icon || headerExtra) && (
           <div className="flex items-center justify-between border-b border-[#EAEAEA] p-4 bg-white shrink-0">
