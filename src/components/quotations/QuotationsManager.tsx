@@ -320,21 +320,6 @@ export const QuotationsManager = ({ onNavigateToCalculator }: QuotationsManagerP
     }
   };
 
-  const handleDeleteSingleItem = async (quote: QuoteRecord) => {
-    const itemName = quote.rfqItem?.product_name || quote.rfqItem?.item_code || 'sản phẩm';
-    if (!window.confirm(`XÁC NHẬN XOÁ:\nBạn có chắc chắn muốn xóa mã sản phẩm RFQ "${itemName}" khỏi cơ sở dữ liệu Supabase không?`)) {
-      return;
-    }
-
-    try {
-      await deleteRfqItems([quote.rfq_item_id]);
-      setSelectedQuoteIds((prev) => prev.filter((id) => id !== quote.id));
-      loadQuotes();
-    } catch (err: any) {
-      alert(`❌ LỖI XOÁ DỮ LIỆU THẤT BẠI TRÊN SUPABASE:\n${err.message || err}`);
-    }
-  };
-
   const handleApproveFeasibility = async (quote: QuoteRecord) => {
     await updateQuoteStatus(quote.id, 'IN_COSTING');
     if (quote.rfq && !quote.rfq.technical_review_completed_at) {
@@ -870,22 +855,19 @@ export const QuotationsManager = ({ onNavigateToCalculator }: QuotationsManagerP
                     </th>
                   );
                 })}
-                <th className="py-3 px-4 border-b border-[#EAEAEA] text-center select-none w-28 bg-[#FBFBFA]">
-                  Thao Tác
-                </th>
               </tr>
             </thead>
 
             <tbody className="divide-y divide-[#EAEAEA] text-xs text-[#111111]">
               {loading ? (
                 <tr>
-                  <td colSpan={visibleCols.length + 2} className="py-12 text-center text-[#787774] italic">
+                  <td colSpan={visibleCols.length + 1} className="py-12 text-center text-[#787774] italic">
                     Đang tải danh sách sản phẩm RFQ...
                   </td>
                 </tr>
               ) : sortedQuotes.length === 0 ? (
                 <tr>
-                  <td colSpan={visibleCols.length + 2} className="py-12 text-center text-[#787774] italic">
+                  <td colSpan={visibleCols.length + 1} className="py-12 text-center text-[#787774] italic">
                     Không tìm thấy sản phẩm RFQ nào phù hợp với bộ lọc.
                   </td>
                 </tr>
@@ -1043,39 +1025,6 @@ export const QuotationsManager = ({ onNavigateToCalculator }: QuotationsManagerP
                         }
                         return null;
                       })}
-
-                      {/* Column cuối: Cell Thao Tác (Actions) */}
-                      <td className="py-2.5 px-4 text-center">
-                        <div className="flex items-center justify-center space-x-1">
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setActiveRfqItemId(q.rfq_item_id);
-                              if (onNavigateToCalculator) onNavigateToCalculator(q.segment);
-                            }}
-                            className="p-1.5 text-slate-700 hover:text-slate-950 hover:bg-slate-100 rounded-[5px] transition-colors cursor-pointer"
-                            title="Tính giá sản phẩm này"
-                          >
-                            <Calculator className="w-3.5 h-3.5" />
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => setSelectedQuote(q)}
-                            className="p-1.5 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-[5px] transition-colors cursor-pointer"
-                            title="Xem chi tiết"
-                          >
-                            <Eye className="w-3.5 h-3.5" />
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => handleDeleteSingleItem(q)}
-                            className="p-1.5 text-rose-600 hover:text-rose-800 hover:bg-rose-50 rounded-[5px] transition-colors cursor-pointer"
-                            title="Xóa mã sản phẩm RFQ này khỏi cơ sở dữ liệu Supabase DB"
-                          >
-                            <Trash2 className="w-3.5 h-3.5" />
-                          </button>
-                        </div>
-                      </td>
                     </tr>
                   );
                 })
