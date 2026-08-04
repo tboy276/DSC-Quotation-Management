@@ -167,6 +167,7 @@ export const createRfqDossierWithItems = async (
     .from('rfqs')
     .insert({
       customer_name: dossier.customer_name,
+      product_name: dossier.customer_name,
       customer_address: dossier.customer_address,
       rfq_code: rfqCode,
       customer_contact_person: dossier.customer_contact_person,
@@ -275,8 +276,13 @@ export const saveQuoteDraft = async (
     throw new Error(`Lỗi cập nhật trạng thái RFQ Item trên Supabase: ${itemErr.message}`);
   }
 
+  // Fetch parent rfq_id from rfq_items
+  const { data: itemData } = await supabase.from('rfq_items').select('rfq_id').eq('id', itemId).single();
+  const parentRfqId = itemData?.rfq_id || itemId;
+
   // Insert/Upsert into Supabase 'quotes' table
   const quotePayload = {
+    rfq_id: parentRfqId,
     rfq_item_id: itemId,
     segment,
     status: 'READY_FOR_QUOTE',
