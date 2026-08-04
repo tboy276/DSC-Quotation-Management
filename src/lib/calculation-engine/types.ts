@@ -81,19 +81,31 @@ export interface ForgingResult {
 // ----------------------------------------------------------------------
 
 export interface CastingInput {
-  // Section 1 — Cast Metal (Vật đúc)
+  // Section 1 — Cast Metal (Vật đúc & Hao hụt)
   m_cast: number;            // Khối lượng vật đúc tinh (kg)
-  Y_yield: number;           // Thu hồi kim loại % (VD: 60 = 60%)
+  Y_yield: number;           // Thu hồi kim loại % (VD: 57 = 57%)
+  k_burn_loss?: number;      // Hao hụt cháy % khi nấu không thu hồi (VD: 2.15 = 2.15%)
   DG_liquid: number;         // Đơn giá nước gang lỏng (VNĐ/kg)
   DG_cast_scrap: number;     // Đơn giá thu hồi gang phế (VNĐ/kg)
 
-  // Section 2 — Molding, Core, Finishing (Tạo khuôn, làm ruột, hoàn thiện)
-  DG_sinto_op?: number;       // Đơn giá vận hành máy Sinto (VNĐ/khuôn)
-  n_cavity_per_mold?: number; // Số lòng khuôn (cavities per mold)
-  m_core?: number;            // Khối lượng cát ruột (kg)
-  DG_core_sand_kg?: number;   // Đơn giá cát ruột (VNĐ/kg)
-  DG_finish_kg?: number;      // Đơn giá làm sạch/phun bi (VNĐ/kg)
-  C_ops_override?: number;    // Chi phí công nghệ đúc override
+  // Section 2 — Operations & Molding per 1,000kg Liquid Metal (Công nghệ & Vật tư khuôn)
+  C_furnace_ladle_per_1000kg?: number;    // Chi phí lót Lò & Gầu cho 1,000kg kim loại lỏng (VNĐ)
+  C_molding_recipe_total_1000kg?: number; // Tổng chi phí Công thức vật tư khuôn cho 1,000kg kim loại lỏng (VNĐ)
+  m_core?: number;                        // Khối lượng cát ruột (kg)
+  DG_core_sand_kg?: number;               // Đơn giá cát ruột (VNĐ/kg)
+  C_ops_override?: number;                // Chi phí công nghệ đúc override
+
+  // Section 2 (Deprecated legacy fields kept optional for backward compatibility)
+  DG_sinto_op?: number;
+  n_cavity_per_mold?: number;
+  DG_finish_kg?: number;
+
+  // Part B — Post-Casting Workshop Costs per kg Cast Product (Chi phí sau đúc / kg thành phẩm)
+  DG_finishing_per_kg?: number;     // Đơn giá Vật tư HTSP/kg thành phẩm (VNĐ/kg)
+  DG_utility_per_kg?: number;       // Đơn giá Điện + Nước/kg thành phẩm (VNĐ/kg)
+  DG_labor_per_kg?: number;         // Đơn giá Lương trực tiếp & gián tiếp/kg thành phẩm (VNĐ/kg)
+  DG_workshop_mgmt_per_kg?: number; // Đơn giá Quản lý Phân xưởng/kg thành phẩm (VNĐ/kg)
+  DG_equipment_depr_per_kg?: number;// Đơn giá Khấu hao Thiết bị/kg thành phẩm (VNĐ/kg)
 
   // Section 3 — Machining & QA (Gia công & QC)
   machining_operations?: MachiningOperation[];
@@ -109,7 +121,7 @@ export interface CastingInput {
 
   // Section 5 — Summary Parameters (Tổng hợp)
   N_order?: number;           // Số lượng sản lượng đơn hàng (chi tiết), mặc định 1
-  k_mgmt_cast: number;        // Phần trăm chi phí quản lý đúc % (VD: 10 = 10%)
+  k_mgmt_cast: number;        // Phần trăm chi phí quản lý công ty % (VD: 10 = 10%)
   C_pack?: number;            // Chi phí đóng gói (VNĐ/chi tiết)
   DG_trans_kg: number;        // Đơn giá vận chuyển (VNĐ/kg vật đúc)
   k_profit_casting: number;   // Phần trăm lợi nhuận đúc % (VD: 12 = 12%)
@@ -119,9 +131,27 @@ export interface CastingResult {
   m_liquid: number;               // Khối lượng gang lỏng (kg)
   m_scrap_cast: number;          // Khối lượng gang phế thu hồi (kg)
   C_metal_casting: number;       // Chi phí kim loại đúc (VNĐ)
-  C_ops_casting: number;         // Chi phí tạo khuôn, ruột, làm sạch (VNĐ)
+  
+  // Section 2 Breakdowns
+  C_furnace_ladle: number;       // Chi phí Lò & Gầu (VNĐ)
+  C_molding_materials: number;   // Chi phí Vật tư khuôn (VNĐ)
+  C_core: number;                // Chi phí cát ruột (VNĐ)
+  C_ops_casting: number;         // Chi phí công nghệ đúc tổng (VNĐ)
+
+  // Part B Breakdowns (Phần B — Chi phí sau đúc / kg thành phẩm)
+  C_finishing: number;           // Chi phí vật tư HTSP (VNĐ)
+  C_utility: number;             // Chi phí điện nước (VNĐ)
+  C_labor: number;               // Chi phí nhân công (VNĐ)
+  C_workshop_mgmt: number;       // Chi phí quản lý phân xưởng (VNĐ)
+  C_equipment_depreciation: number; // Chi phí khấu hao thiết bị (VNĐ)
+  C_part_b_total: number;        // Tổng chi phí Phần B (VNĐ)
+  workshop_cost_per_kg: number;  // Giá thành phân xưởng / kg thành phẩm (Part A + Part B / m_cast) (VNĐ/kg)
+
+  // Section 3 & 4
   C_machining_casting: number;   // Tổng chi phí gia công & QA (VNĐ)
   C_pattern_amortization: number;// Chi phí khấu hao mẫu (/chi tiết) (VNĐ)
+
+  // Section 5 & Final Price
   COGS: number;                  // Giá vốn hàng bán (VNĐ)
   pre_profit_price: number;      // Giá trước lợi nhuận (VNĐ)
   P_CASTING: number;             // Giá bán đúc gang cuối cùng (VNĐ/cái)

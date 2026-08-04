@@ -81,3 +81,31 @@ export interface LiquidMetalPriceResult {
   DG_cast_scrap: number;   // Đơn giá hồi liệu gang phế (VNĐ/kg)
   bom_items_calculated: Array<CastingBomItem & { item_cost: number; percentage: number }>;
 }
+
+export interface MoldingRecipeItem {
+  id: string;
+  material_id?: string;
+  material_name: string;
+  unit: string;
+  category: string;
+  quantity_per_1000kg: number;
+  unit_price: number;
+  is_outsourced: boolean;
+  outsourced_cost_per_1000kg: number;
+  notes?: string;
+  created_at?: string;
+}
+
+export interface CastingFactorySettings {
+  furnace_lining_cost: number;        // VNĐ / lần lót lò (mặc định: 50,000,000)
+  furnace_lifespan_batches: number;   // số mẻ / lần lót lò (mặc định: 500 mẻ -> 100,000đ/1000kg)
+  ladle_lining_cost: number;          // VNĐ / lần lót gầu (mặc định: 3,000,000)
+  ladle_lifespan_batches: number;     // số mẻ / lần lót gầu (mặc định: 150 mẻ -> 20,000đ/1000kg)
+  
+  // 5 Đơn giá Phần B (VNĐ / kg thành phẩm)
+  finishing_material_rate: number;    // Vật tư HTSP (mặc định: 771.82 VNĐ/kg)
+  utility_rate: number;               // Điện + Nước xưởng (mặc định: 3,687.6 VNĐ/kg)
+  labor_rate: number;                 // Lương (mặc định: 2,461 VNĐ/kg)
+  workshop_mgmt_rate: number;         // Quản lý Phân xưởng (mặc định: 0 VNĐ/kg)
+  equipment_depreciation_rate: number;// Khấu hao Thiết bị (mặc định: 4,000 VNĐ/kg)
+}

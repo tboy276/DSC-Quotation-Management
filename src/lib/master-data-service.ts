@@ -7,6 +7,8 @@ import type {
   PressingMachineRate,
   HydraulicHammerRate,
   SystemUnitRate,
+  MoldingRecipeItem,
+  CastingFactorySettings,
 } from '../types/master-data';
 
 // ----------------------------------------------------------------------
@@ -358,4 +360,160 @@ export async function updateSystemUnitRate(rateId: string, newValue: number): Pr
   if (error) {
     throw new Error(`Lỗi cập nhật Đơn giá hệ thống Supabase: ${error.message}`);
   }
+}
+
+// ----------------------------------------------------------------------
+// CASTING FACTORY SETTINGS & MOLDING RECIPE (CÔNG THỨC VẬT TƯ KHUÔN & LÓT LÒ/GẦU)
+// ----------------------------------------------------------------------
+
+let localCastingSettings: CastingFactorySettings = {
+  furnace_lining_cost: 50000000,
+  furnace_lifespan_batches: 500,
+  ladle_lining_cost: 3000000,
+  ladle_lifespan_batches: 150,
+  finishing_material_rate: 771.82,
+  utility_rate: 3687.6,
+  labor_rate: 2461,
+  workshop_mgmt_rate: 0,
+  equipment_depreciation_rate: 4000,
+};
+
+let localMoldingRecipe: MoldingRecipeItem[] = [
+  {
+    id: 'rec-1',
+    material_name: 'Bột đất sét',
+    unit: 'kg',
+    category: 'Vật tư khuôn',
+    quantity_per_1000kg: 50,
+    unit_price: 13900,
+    is_outsourced: false,
+    outsourced_cost_per_1000kg: 0,
+    notes: 'Bột đất sét bentonite chuẩn xưởng đúc',
+  },
+  {
+    id: 'rec-2',
+    material_name: 'Cát đúc',
+    unit: 'kg',
+    category: 'Vật tư khuôn',
+    quantity_per_1000kg: 300,
+    unit_price: 1560,
+    is_outsourced: false,
+    outsourced_cost_per_1000kg: 0,
+    notes: 'Cát đúc thạch anh mịn',
+  },
+  {
+    id: 'rec-3',
+    material_name: 'Sơn khuôn',
+    unit: 'kg',
+    category: 'Vật tư khuôn',
+    quantity_per_1000kg: 4,
+    unit_price: 34800,
+    is_outsourced: false,
+    outsourced_cost_per_1000kg: 0,
+    notes: 'Sơn chịu nhiệt chịu áp suất',
+  },
+  {
+    id: 'rec-4',
+    material_name: 'Chi phí thao cát nhựa thuê ngoài',
+    unit: 'mẻ 1000kg',
+    category: 'Thuê ngoài',
+    quantity_per_1000kg: 0,
+    unit_price: 0,
+    is_outsourced: true,
+    outsourced_cost_per_1000kg: 3709831,
+    notes: 'Gia công thao cát nhựa phụ trợ bên ngoài',
+  },
+];
+
+export async function fetchCastingSettings(): Promise<CastingFactorySettings> {
+  try {
+    const { data } = await supabase.from('casting_factory_settings').select('*').maybeSingle();
+    if (data) {
+      localCastingSettings = { ...localCastingSettings, ...data };
+    }
+  } catch (e) {
+    // Graceful fallback to localCastingSettings
+  }
+  return localCastingSettings;
+}
+
+export async function saveCastingSettings(settings: Partial<CastingFactorySettings>): Promise<CastingFactorySettings> {
+  localCastingSettings = { ...localCastingSettings, ...settings };
+  try {
+    await supabase.from('casting_factory_settings').upsert({ id: 1, ...localCastingSettings });
+  } catch (e) {
+    // Saved in local cache
+  }
+  return localCastingSettings;
+}
+
+export async function fetchMoldingRecipe(): Promise<MoldingRecipeItem[]> {
+  try {
+    const { data } = await supabase.from('casting_molding_recipes').select('*');
+    if (data && data.length > 0) {
+      localMoldingRecipe = data as MoldingRecipeItem[];
+    }
+  } catch (e) {
+    // Graceful fallback to localMoldingRecipe
+  }
+  return localMoldingRecipe;
+}
+
+export async function saveMoldingRecipeItem(item: Partial<MoldingRecipeItem>): Promise<MoldingRecipeItem> {
+  if (item.id) {
+    const idx = localMoldingRecipe.findIndex((r) => r.id === item.id);
+    if (idx >= 0) {
+      localMoldingRecipe[idx] = { ...localMoldingRecipe[idx], ...item };
+    }
+  } else {
+    const newItem: MoldingRecipeItem = {
+      id: `rec-${Date.now()}`,
+      material_name: item.material_name || 'Vật tư khuôn mới',
+      unit: item.unit || 'kg',
+      category: item.category || 'Vật tư khuôn',
+      quantity_per_1000kg: item.quantity_per_1000kg || 0,
+      unit_price: item.unit_price || 0,
+      is_outsourced: !!item.is_outsourced,
+      outsourced_cost_per_1000kg: item.outsourced_cost_per_1000kg || 0,
+      notes: item.notes || '',
+    };
+    localMoldingRecipe.push(newItem);
+    item = newItem;
+  }
+
+  try {
+    await supabase.from('casting_molding_recipes').upsert(item);
+  } catch (e) {
+    // Saved in local cache
+  }
+
+  return item as MoldingRecipeItem;
+}
+
+export async function deleteMoldingRecipeItem(itemId: string): Promise<void> {
+  localMoldingRecipe = localMoldingRecipe.filter((r) => r.id !== itemId);
+  try {
+    await supabase.from('casting_molding_recipes').delete().eq('id', itemId);
+  } catch (e) {
+    // Deleted from local cache
+  }
+}
+
+export function getMoldingRecipeTotalCost1000kg(items: MoldingRecipeItem[] = localMoldingRecipe): number {
+  return items.reduce((sum, item) => {
+    if (item.is_outsourced) {
+      return sum + (item.outsourced_cost_per_1000kg || 0);
+    }
+    return sum + (item.quantity_per_1000kg || 0) * (item.unit_price || 0);
+  }, 0);
+}
+
+export function getFurnaceLadleCostPer1000kg(settings: CastingFactorySettings = localCastingSettings): number {
+  const fCost = settings.furnace_lifespan_batches > 0
+    ? settings.furnace_lining_cost / settings.furnace_lifespan_batches
+    : 0;
+  const lCost = settings.ladle_lifespan_batches > 0
+    ? settings.ladle_lining_cost / settings.ladle_lifespan_batches
+    : 0;
+  return fCost + lCost;
 }

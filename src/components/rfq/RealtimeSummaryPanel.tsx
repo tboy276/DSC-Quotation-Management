@@ -188,11 +188,33 @@ export const RealtimeSummaryPanel = () => {
 
           {/* Section 2 */}
           <div className="flex justify-between items-center py-1 border-b border-[#F0F0EE]">
-            <span className="text-[#2F3437] font-sans">2. Công nghệ & Nhiệt luyện/Đúc (C_ops):</span>
+            <span className="text-[#2F3437] font-sans">
+              2. Công nghệ {isForging ? '& Nhiệt luyện' : 'Tạo khuôn & Lò/Gầu (Phần A)'}:
+            </span>
             <span className="font-bold text-[#111111]">
               {formatCurrencyValue(C_ops, currency, exchangeRate)}
             </span>
           </div>
+
+          {/* Section 2.5 Part B for Casting */}
+          {!isForging && castingRes && (
+            <div className="flex justify-between items-center py-1 border-b border-[#F0F0EE] text-emerald-900 bg-emerald-50/50 px-1 rounded">
+              <span className="font-sans font-semibold">Phần B. Chi phí xưởng sau đúc:</span>
+              <span className="font-bold">
+                {formatCurrencyValue((castingRes as CastingResult).C_part_b_total, currency, exchangeRate)}
+              </span>
+            </div>
+          )}
+
+          {/* Workshop cost per kg highlight for Casting */}
+          {!isForging && castingRes && (
+            <div className="flex justify-between items-center py-1 border-b border-amber-200 bg-amber-50/60 px-1 rounded text-amber-950">
+              <span className="font-sans font-bold text-[11px]">➔ Giá thành xưởng A+B / kg:</span>
+              <span className="font-bold font-mono">
+                {Math.round((castingRes as CastingResult).workshop_cost_per_kg).toLocaleString('vi-VN')} VNĐ / kg
+              </span>
+            </div>
+          )}
 
           {/* Section 3 */}
           <div className="flex justify-between items-center py-1 border-b border-[#F0F0EE]">

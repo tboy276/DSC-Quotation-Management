@@ -152,11 +152,24 @@ export const useQuotationStore = create<QuotationStoreState>((set, get) => ({
 
     m_cast: 4.5,
     Y_yield: 60,
+    k_burn_loss: 2.15,
 
-    DG_sinto_op: defaultSintoRate,
-    n_cavity_per_mold: 2,
+    // Section 2 & Part B Workshop Costs
+    C_furnace_ladle_per_1000kg: 120000,
+    C_molding_recipe_total_1000kg: 5012031,
     m_core: 1.2,
     DG_core_sand_kg: 3500,
+
+    // 5 Part B Unit Rates
+    DG_finishing_per_kg: 771.82,
+    DG_utility_per_kg: 3687.6,
+    DG_labor_per_kg: 2461,
+    DG_workshop_mgmt_per_kg: 0,
+    DG_equipment_depr_per_kg: 4000,
+
+    // Deprecated legacy fields
+    DG_sinto_op: defaultSintoRate,
+    n_cavity_per_mold: 2,
     DG_finish_kg: 1800,
 
     machining_operations: [
