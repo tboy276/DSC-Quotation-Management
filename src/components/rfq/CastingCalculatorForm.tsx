@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useQuotationStore } from '../../store/useQuotationStore';
 import { MachiningOpsList } from './MachiningOpsList';
 import { SliderInput } from '../ui/SliderInput';
-import { INITIAL_CASTING_GRADES } from '../../lib/master-data-service';
+import { INITIAL_CASTING_GRADES, fetchCastingGrades } from '../../lib/master-data-service';
+import type { CastingGrade } from '../../types/master-data';
 import { Modal } from '../ui/Modal';
 import { Box, Flame, Layers, Wrench, PieChart, Factory, Eye, Info } from 'lucide-react';
 
@@ -16,6 +17,21 @@ export const CastingCalculatorForm = () => {
   const getCastingResult = useQuotationStore((state) => state.getCastingResult);
 
   const [showRecipeModal, setShowRecipeModal] = useState<boolean>(false);
+  const [grades, setGrades] = useState<CastingGrade[]>(INITIAL_CASTING_GRADES);
+
+  useEffect(() => {
+    const loadMasterDataGrades = async () => {
+      const fetched = await fetchCastingGrades();
+      if (fetched && fetched.length > 0) {
+        setGrades(fetched);
+        // Nếu grade đang chọn không nằm trong danh sách fetched, chọn mác đầu tiên
+        if (!casting.selected_casting_grade_id || !fetched.some((g) => g.id === casting.selected_casting_grade_id)) {
+          selectGrade(fetched[0].id);
+        }
+      }
+    };
+    loadMasterDataGrades();
+  }, []);
 
   // Section 1 Calculations
   const validYield = Math.max(0.01, casting.Y_yield || 57);
@@ -64,16 +80,16 @@ export const CastingCalculatorForm = () => {
           {/* Dropdown Mác Gang */}
           <div>
             <label className="block text-[11px] font-bold text-[#787774] uppercase tracking-wider mb-1">
-              Chọn Mác Gang Đúc (Tự Động Tính Giá Nước Gang & Hồi Liệu Từ BOM Supabase)
+              Chọn Mác Gang Đúc (Danh mục BOM tạo tại Master Data)
             </label>
             <select
               value={casting.selected_casting_grade_id}
               onChange={(e) => selectGrade(e.target.value)}
               className="w-full px-3 py-2 border border-[#EAEAEA] rounded-[6px] bg-white text-[#111111] font-bold text-xs focus:outline-none focus:border-[#111111]"
             >
-              {INITIAL_CASTING_GRADES.map((g) => (
+              {(grades.length > 0 ? grades : INITIAL_CASTING_GRADES).map((g) => (
                 <option key={g.id} value={g.id}>
-                  {g.name} — {g.notes}
+                  {g.name} {g.notes ? `— ${g.notes}` : ''}
                 </option>
               ))}
             </select>

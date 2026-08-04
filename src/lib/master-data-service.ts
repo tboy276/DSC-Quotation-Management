@@ -35,9 +35,10 @@ export const INITIAL_PRICE_HISTORY: MaterialPriceHistory[] = [
 ];
 
 export const INITIAL_CASTING_GRADES: CastingGrade[] = [
-  { id: 'grade-1', name: 'FCD450 (Gang Cầu)', code: 'FCD450', notes: 'Gang cầu độ bền kéo 450 MPa, độ giãn dài 10%' },
-  { id: 'grade-2', name: 'FC250 (Gang Xám)', code: 'FC250', notes: 'Gang xám độ bền kéo 250 MPa, giảm chấn tốt' },
-  { id: 'grade-3', name: 'FCD600 (Gang Cầu Cường Độ Cao)', code: 'FCD600', notes: 'Gang cầu chịu lực cao 600 MPa' },
+  { id: '6ca47b3e-313e-442a-8b5b-f71e0e6e3688', name: 'FCD450-10', code: 'FCD450-10', notes: 'Mác gang cầu FCD 450-10 theo tiêu chuẩn DISOCO' },
+  { id: '1e630083-0215-4d58-ae7e-2dc1dbccc65b', name: 'FCD600-3', code: 'FCD600-3', notes: 'Mác gang cầu FCD 600-3 theo tiêu chuẩn DISOCO' },
+  { id: '890b6849-f35a-4412-b9cc-5740230d7e40', name: 'FCD700-2', code: 'FCD700-2', notes: 'Mác gang cầu FCD 700-2 theo tiêu chuẩn DISOCO' },
+  { id: 'fc200000-0000-4000-a000-000000000200', name: 'FC200 (Gang Xám)', code: 'FC200', notes: 'Mác gang xám FC200 theo tiêu chuẩn DISOCO (BOM 1000kg)' },
 ];
 
 export const INITIAL_BOM_ITEMS: CastingBomItem[] = [
