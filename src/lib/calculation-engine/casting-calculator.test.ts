@@ -12,8 +12,10 @@ describe('Casting Calculation Engine (Đúc Gang FC200 Test Case)', () => {
       DG_cast_scrap: 5500,               // Đơn giá thu hồi gang phế = 5,500đ/kg
 
       // Section 2 — Operations per 1,000kg batch
-      C_furnace_ladle_per_1000kg: 120000,    // Lò (100k) + Gầu (20k) = 120,000đ/1000kg
-      C_molding_recipe_total_1000kg: 5012031, // Tổng vật tư khuôn + thuê ngoài = 5,012,031đ/1000kg
+      C_furnace_ladle_per_1000kg: 120000,     // Lò (100k) + Gầu (20k) = 120,000đ/1000kg
+      C_molding_recipe_total_1000kg: 1302200, // 3 vật tư cố định (Bột đất sét + Cát đúc + Sơn khuôn) = 1,302,200đ/1000kg
+      m_resin_core: 296.78648,               // Thao cát nhựa sản phẩm tính riêng = 296.78648kg @ 12,500đ/kg = 3,709,831đ
+      DG_resin_core_per_kg: 12500,
       m_core: 0,
       DG_core_sand_kg: 0,
 
@@ -37,25 +39,22 @@ describe('Casting Calculation Engine (Đúc Gang FC200 Test Case)', () => {
     expect(res.m_liquid).toBeCloseTo(1000, 2);
     expect(res.m_scrap_cast).toBeCloseTo(408.5, 1);
 
-    // 2. Kiểm tra Phần A (Kim loại + Công nghệ đúc)
+    // 2. Kiểm tra Chi Phí Thao Cát Nhựa & Vật Tư Khuôn
+    // C_resin_core = 296.78648 * 12500 = 3,709,831đ
+    expect(res.C_resin_core).toBeCloseTo(3709831, 0);
+
+    // C_molding = 1,302,200 + 3,709,831 = 5,012,031đ
+    expect(res.C_molding_materials).toBeCloseTo(5012031, 0);
+
     // C_metal = (1000 * 11138.51) - (408.5 * 5500) = 8,891,760đ
     expect(res.C_metal_casting).toBeCloseTo(8891760, 0);
 
     // C_ops = 120,000 + 5,012,031 = 5,132,031đ
     expect(res.C_ops_casting).toBeCloseTo(5132031, 0);
 
-    // Tổng Phần A = 8,891,760 + 5,132,031 = 14,023,791đ cho 1000kg gang lỏng
-    const partA_total = res.C_metal_casting + res.C_ops_casting;
-    expect(partA_total).toBeCloseTo(14023791, 0);
-
-    // Quy đổi Phần A / kg thành phẩm (570kg) = 14,023,791 / 570 ≈ 24,603.14 VNĐ/kg
-    const partA_per_kg = partA_total / 570;
-    expect(partA_per_kg).toBeCloseTo(24603.14, 1);
-
-    // 3. Kiểm tra Phần B (Chi phí sau đúc)
-    // Tổng Phần B / kg = 771.82 + 3687.6 + 2461 + 0 + 4000 = 10,920.42 VNĐ/kg
-    const partB_per_kg = res.C_part_b_total / 570;
-    expect(partB_per_kg).toBeCloseTo(10920.42, 1);
+    // 3. Kiểm tra Đơn Giá Phần A / kg thành phẩm
+    // (8,891,760 + 5,132,031) / 570 = 24,603.14 VNĐ/kg
+    expect(res.partA_per_kg).toBeCloseTo(24603.14, 1);
 
     // 4. Kiểm tra Tổng Giá Thành Phân Xưởng (A + B) / kg thành phẩm
     // 24,603.14 + 10,920.42 = 35,523.56 VNĐ/kg

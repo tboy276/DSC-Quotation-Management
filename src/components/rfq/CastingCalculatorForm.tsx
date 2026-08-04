@@ -4,7 +4,7 @@ import { MachiningOpsList } from './MachiningOpsList';
 import { SliderInput } from '../ui/SliderInput';
 import { INITIAL_CASTING_GRADES } from '../../lib/master-data-service';
 import { Modal } from '../ui/Modal';
-import { Box, Flame, Layers, Wrench, PieChart, Factory, Eye } from 'lucide-react';
+import { Box, Flame, Layers, Wrench, PieChart, Factory, Eye, Info } from 'lucide-react';
 
 export const CastingCalculatorForm = () => {
   const casting = useQuotationStore((state) => state.castingInput);
@@ -13,6 +13,7 @@ export const CastingCalculatorForm = () => {
   const updateOp = useQuotationStore((state) => state.updateCastingMachiningOp);
   const removeOp = useQuotationStore((state) => state.removeCastingMachiningOp);
   const selectGrade = useQuotationStore((state) => state.selectCastingGrade);
+  const getCastingResult = useQuotationStore((state) => state.getCastingResult);
 
   const [showRecipeModal, setShowRecipeModal] = useState<boolean>(false);
 
@@ -26,9 +27,11 @@ export const CastingCalculatorForm = () => {
   // Section 2 Calculations
   const batchRatio = m_liquid / 1000;
   const furnaceLadleCost = (casting.C_furnace_ladle_per_1000kg || 120000) * batchRatio;
-  const moldingMaterialsCost = (casting.C_molding_recipe_total_1000kg || 5012031) * batchRatio;
+  const moldingFixedCost = (casting.C_molding_recipe_total_1000kg || 1302200) * batchRatio;
+  const resinCoreCost = (casting.m_resin_core || 0) * (casting.DG_resin_core_per_kg || 12500);
+  const totalMoldingCost = moldingFixedCost + resinCoreCost;
   const coreSandCost = (casting.m_core || 0) * (casting.DG_core_sand_kg || 0);
-  const totalOpsCasting = furnaceLadleCost + moldingMaterialsCost + coreSandCost;
+  const totalOpsCasting = furnaceLadleCost + totalMoldingCost + coreSandCost;
 
   // Part B Calculations
   const m_cast = casting.m_cast || 0;
@@ -43,6 +46,8 @@ export const CastingCalculatorForm = () => {
     (casting.DG_labor_per_kg || 2461) +
     (casting.DG_workshop_mgmt_per_kg || 0) +
     (casting.DG_equipment_depr_per_kg || 4000);
+
+  const castingRes = getCastingResult();
 
   return (
     <div className="space-y-5 animate-fade-in-up">
@@ -59,7 +64,7 @@ export const CastingCalculatorForm = () => {
           {/* Dropdown Mác Gang */}
           <div>
             <label className="block text-[11px] font-bold text-[#787774] uppercase tracking-wider mb-1">
-              Chọn Mác Gang Đúc (Load BOM & Lịch Sử Giá Mới Nhất)
+              Chọn Mác Gang Đúc (Tự Động Tính Giá Nước Gang & Hồi Liệu Từ BOM Supabase)
             </label>
             <select
               value={casting.selected_casting_grade_id}
@@ -79,7 +84,7 @@ export const CastingCalculatorForm = () => {
             <div className="flex items-center space-x-2">
               <Flame className="w-4 h-4 text-amber-600" />
               <div>
-                <p className="text-[10px] font-semibold text-[#787774]">Đơn Giá Gang Lỏng (DG_liquid)</p>
+                <p className="text-[10px] font-semibold text-[#787774]">Đơn Giá Gang Lỏng Tính Từ BOM (DG_liquid)</p>
                 <p className="text-xs font-mono font-extrabold text-[#111111]">
                   {(casting.DG_liquid || 0).toLocaleString('vi-VN')} VNĐ/kg
                 </p>
@@ -142,7 +147,7 @@ export const CastingCalculatorForm = () => {
           <div className="p-2.5 bg-[#F7F6F3] rounded-[6px] border border-[#EAEAEA] flex items-center justify-between text-[11px] font-mono">
             <span className="text-[#787774]">
               Gang lỏng mẻ đúc (<strong className="text-[#111111]">{m_liquid.toFixed(1)} kg</strong>) |
-              Hao cháy 2.15% (<strong className="text-amber-900">{m_burn_loss.toFixed(1)} kg</strong>)
+              Hao cháy {k_burn_loss}% (<strong className="text-amber-900">{m_burn_loss.toFixed(1)} kg</strong>)
             </span>
             <span className="text-emerald-900 font-bold">
               Hồi liệu thu hồi = {m_scrap_cast.toFixed(1)} kg
@@ -157,7 +162,7 @@ export const CastingCalculatorForm = () => {
           <div className="flex items-center space-x-2">
             <Layers className="w-4 h-4 text-[#111111] stroke-[2]" />
             <h4 className="text-xs font-bold text-[#111111] uppercase tracking-wider">
-              Section 2: Công Nghệ Tạo Khuôn, Ruột & Lót Lò/Gầu (Theo 1,000kg)
+              Section 2: Công Nghệ Tạo Khuôn, Ruột & Lót Lò/Gầu (Phần A)
             </h4>
           </div>
 
@@ -167,7 +172,7 @@ export const CastingCalculatorForm = () => {
             className="px-2.5 py-1 bg-[#F0F0EE] hover:bg-[#E0E0DE] text-[#111111] border border-[#EAEAEA] rounded-[5px] text-[11px] font-bold inline-flex items-center space-x-1 cursor-pointer"
           >
             <Eye className="w-3.5 h-3.5" />
-            <span>Xem Công Thức Vật Tư Khuôn</span>
+            <span>3 Vật Tư Khuôn Cố Định</span>
           </button>
         </div>
 
@@ -186,19 +191,36 @@ export const CastingCalculatorForm = () => {
 
           <div>
             <label className="block text-[11px] font-bold text-[#787774] uppercase tracking-wider mb-1">
-              Chi Phí Vật Tư Khuôn (C_molding_materials - Tự động từ Master Data)
+              3 Vật Tư Khuôn Cố Định (Bột đất sét, Cát đúc, Sơn khuôn)
             </label>
             <div className="px-3 py-1.5 border border-[#EAEAEA] bg-[#FBFBFA] rounded-[6px] font-mono font-extrabold text-xs text-[#111111]">
-              {moldingMaterialsCost.toLocaleString('vi-VN')} VNĐ
+              {moldingFixedCost.toLocaleString('vi-VN')} VNĐ
               <span className="text-[10px] font-normal text-[#787774] ml-2">
-                ({(casting.C_molding_recipe_total_1000kg || 5012031).toLocaleString('vi-VN')}đ / 1000kg)
+                ({(casting.C_molding_recipe_total_1000kg || 1302200).toLocaleString('vi-VN')}đ / 1000kg)
               </span>
             </div>
           </div>
 
+          {/* Product Specific Resin Core Input Field */}
+          <div>
+            <label className="block text-[11px] font-bold text-[#111111] uppercase tracking-wider mb-1">
+              Trọng Lượng Thao Cho 1 Sản Phẩm (m_resin_core - kg) *
+            </label>
+            <input
+              type="number"
+              step="0.1"
+              value={casting.m_resin_core || 0}
+              onChange={(e) => setCastingField('m_resin_core', Number(e.target.value))}
+              className="w-full px-3 py-1.5 border border-[#111111] bg-white rounded-[6px] font-mono font-bold text-xs text-[#111111]"
+            />
+            <span className="text-[10px] text-[#787774] block mt-0.5 font-mono">
+              Thành tiền C_thao = {resinCoreCost.toLocaleString('vi-VN')} VNĐ ({(casting.DG_resin_core_per_kg || 12500).toLocaleString('vi-VN')}đ/kg)
+            </span>
+          </div>
+
           <div>
             <label className="block text-[11px] font-bold text-[#787774] uppercase tracking-wider mb-1">
-              Khối Lượng Cát Ruột (m_core - kg)
+              Khối Lượng Cát Ruột Khác (m_core - kg)
             </label>
             <input
               type="number"
@@ -208,23 +230,29 @@ export const CastingCalculatorForm = () => {
               className="w-full px-3 py-1.5 border border-[#EAEAEA] rounded-[6px] font-mono text-xs text-[#111111]"
             />
           </div>
-
-          <div>
-            <label className="block text-[11px] font-bold text-[#787774] uppercase tracking-wider mb-1">
-              Đơn Giá Cát Ruột (DG_core_sand - VNĐ/kg)
-            </label>
-            <input
-              type="number"
-              value={casting.DG_core_sand_kg}
-              onChange={(e) => setCastingField('DG_core_sand_kg', Number(e.target.value))}
-              className="w-full px-3 py-1.5 border border-[#EAEAEA] rounded-[6px] font-mono text-xs text-[#111111]"
-            />
-          </div>
         </div>
 
         <div className="p-2.5 bg-amber-50/70 border border-amber-200 rounded-[6px] flex items-center justify-between text-xs font-bold text-amber-950">
-          <span>Tổng Chi Phí Tạo Khuôn & Lò/Gầu (Section 2 - Phần A):</span>
+          <span>Tổng Chi Phí Tạo Khuôn, Ruột & Lò/Gầu (Section 2 - Phần A):</span>
           <span className="font-mono text-sm">{totalOpsCasting.toLocaleString('vi-VN')} VNĐ</span>
+        </div>
+      </div>
+
+      {/* Part A Reference Unit Price Banner for Excel Cross-Checking */}
+      <div className="p-3.5 bg-[#111111] text-white rounded-[8px] flex flex-col md:flex-row md:items-center justify-between gap-3 shadow-2xs font-mono text-xs">
+        <div className="flex items-center space-x-2">
+          <Info className="w-4 h-4 text-emerald-400 flex-shrink-0" />
+          <span className="font-sans font-bold uppercase tracking-wider text-slate-200">
+            Đơn giá Phần A (Vật liệu + Tạo khuôn)/kg thành phẩm — đối chiếu bảng Excel gốc:
+          </span>
+        </div>
+        <div className="text-right">
+          <span className="text-base font-extrabold text-emerald-400">
+            {Math.round(castingRes.partA_per_kg || 0).toLocaleString('vi-VN')} VNĐ / kg
+          </span>
+          <span className="text-[10px] text-slate-400 block font-sans">
+            (= Tổng Chi Phí Phần A {Math.round(castingRes.C_metal_casting + castingRes.C_ops_casting).toLocaleString('vi-VN')} VNĐ / {m_cast} kg)
+          </span>
         </div>
       </div>
 
@@ -437,7 +465,7 @@ export const CastingCalculatorForm = () => {
       <Modal
         isOpen={showRecipeModal}
         onClose={() => setShowRecipeModal(false)}
-        title="Công Thức Vật Tư Khuôn Dùng Chung (Mẻ 1,000 kg)"
+        title="Công Thức 3 Vật Tư Khuôn Cố Định (Mẻ 1,000 kg)"
         size="lg"
         footer={
           <button
@@ -451,16 +479,16 @@ export const CastingCalculatorForm = () => {
       >
         <div className="space-y-3 text-xs">
           <div className="p-3 bg-[#FBFBFA] border border-[#EAEAEA] rounded-[6px] flex items-center justify-between">
-            <span className="font-bold text-[#111111]">Tổng Chi Phí Vật Tư Khuôn / 1,000kg:</span>
+            <span className="font-bold text-[#111111]">Tổng 3 Vật Tư Khuôn Cố Định / 1,000kg:</span>
             <span className="font-mono text-sm font-extrabold text-[#111111]">
-              {(casting.C_molding_recipe_total_1000kg || 5012031).toLocaleString('vi-VN')} VNĐ
+              {(casting.C_molding_recipe_total_1000kg || 1302200).toLocaleString('vi-VN')} VNĐ
             </span>
           </div>
 
           <table className="w-full text-left text-xs border border-[#EAEAEA] rounded-[6px] overflow-hidden">
             <thead className="bg-[#FBFBFA] border-b border-[#EAEAEA] font-semibold text-[#787774]">
               <tr>
-                <th className="py-2 px-3">Tên Vật Tư / Dịch Vụ</th>
+                <th className="py-2 px-3">Tên Vật Tư</th>
                 <th className="py-2 px-3 text-right">Định Mức / 1000kg</th>
                 <th className="py-2 px-3 text-right">Đơn Giá</th>
                 <th className="py-2 px-3 text-right">Thành Tiền</th>
@@ -485,17 +513,11 @@ export const CastingCalculatorForm = () => {
                 <td className="py-2 px-3 text-right font-mono">34,800 đ</td>
                 <td className="py-2 px-3 text-right font-mono font-bold">139,200 đ</td>
               </tr>
-              <tr className="bg-amber-50/50">
-                <td className="py-2 px-3 font-bold text-amber-950">Chi phí thao cát nhựa thuê ngoài</td>
-                <td className="py-2 px-3 text-right font-mono text-[#787774]">Thuê ngoài</td>
-                <td className="py-2 px-3 text-right font-mono text-[#787774]">Trọn gói mẻ</td>
-                <td className="py-2 px-3 text-right font-mono font-bold text-amber-900">3,709,831 đ</td>
-              </tr>
             </tbody>
           </table>
 
           <p className="text-[11px] text-[#787774] italic">
-            * Cán bộ Estimator có thể điều chỉnh hoặc thêm bớt các dòng công thức vật tư khuôn trong tab <strong>Master Data ➔ 3. Vật Tư Khuôn Dùng Chung</strong>.
+            * Khoản <strong>Chi Phí Thao Cát Nhựa</strong> được tính riêng cho từng sản phẩm tại trường <code>m_resin_core</code> ngoài form.
           </p>
         </div>
       </Modal>

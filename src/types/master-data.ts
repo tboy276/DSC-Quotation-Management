@@ -102,6 +102,9 @@ export interface CastingFactorySettings {
   ladle_lining_cost: number;          // VNĐ / lần lót gầu (mặc định: 3,000,000)
   ladle_lifespan_batches: number;     // số mẻ / lần lót gầu (mặc định: 150 mẻ -> 20,000đ/1000kg)
   
+  // Đơn giá thao / xử lý cát nhựa (VNĐ / kg thao)
+  resin_core_sand_rate_per_kg: number;// Đơn giá thao cát nhựa (mặc định: 12,500 VNĐ/kg)
+
   // 5 Đơn giá Phần B (VNĐ / kg thành phẩm)
   finishing_material_rate: number;    // Vật tư HTSP (mặc định: 771.82 VNĐ/kg)
   utility_rate: number;               // Điện + Nước xưởng (mặc định: 3,687.6 VNĐ/kg)

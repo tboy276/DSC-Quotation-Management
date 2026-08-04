@@ -12,6 +12,7 @@ import {
   INITIAL_PRESSING_RATES,
   INITIAL_HAMMER_RATES,
   INITIAL_SYSTEM_RATES,
+  fetchLiquidMetalPriceForGrade,
 } from '../lib/master-data-service';
 
 export type SegmentType = 'forging' | 'casting';
@@ -156,7 +157,9 @@ export const useQuotationStore = create<QuotationStoreState>((set, get) => ({
 
     // Section 2 & Part B Workshop Costs
     C_furnace_ladle_per_1000kg: 120000,
-    C_molding_recipe_total_1000kg: 5012031,
+    C_molding_recipe_total_1000kg: 1302200,
+    m_resin_core: 0,
+    DG_resin_core_per_kg: 12500,
     m_core: 1.2,
     DG_core_sand_kg: 3500,
 
@@ -349,22 +352,34 @@ export const useQuotationStore = create<QuotationStoreState>((set, get) => ({
       },
     })),
 
-  selectCastingGrade: (gradeId) => {
-    const liquidMetalResult = calculateLiquidMetalPrice(
-      gradeId,
-      INITIAL_BOM_ITEMS,
-      INITIAL_PRICE_HISTORY,
-      INITIAL_MATERIALS
-    );
+  selectCastingGrade: async (gradeId) => {
+    try {
+      const liquidMetalResult = await fetchLiquidMetalPriceForGrade(gradeId);
+      set((state) => ({
+        castingInput: {
+          ...state.castingInput,
+          selected_casting_grade_id: gradeId,
+          DG_liquid: Math.round(liquidMetalResult.DG_liquid),
+          DG_cast_scrap: Math.round(liquidMetalResult.DG_cast_scrap),
+        },
+      }));
+    } catch (e) {
+      const fallbackResult = calculateLiquidMetalPrice(
+        gradeId,
+        INITIAL_BOM_ITEMS,
+        INITIAL_PRICE_HISTORY,
+        INITIAL_MATERIALS
+      );
 
-    set((state) => ({
-      castingInput: {
-        ...state.castingInput,
-        selected_casting_grade_id: gradeId,
-        DG_liquid: Math.round(liquidMetalResult.DG_liquid),
-        DG_cast_scrap: Math.round(liquidMetalResult.DG_cast_scrap),
-      },
-    }));
+      set((state) => ({
+        castingInput: {
+          ...state.castingInput,
+          selected_casting_grade_id: gradeId,
+          DG_liquid: Math.round(fallbackResult.DG_liquid),
+          DG_cast_scrap: Math.round(fallbackResult.DG_cast_scrap),
+        },
+      }));
+    }
   },
 
   // Real-time Calculation Getters using Calculation Engine (Phase 1)

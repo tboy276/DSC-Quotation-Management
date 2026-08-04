@@ -84,14 +84,14 @@ export const MoldingRecipeManager = () => {
             </h2>
           </div>
           <p className="text-xs text-[#787774] mt-1">
-            Định mức chi phí vật tư tạo khuôn & gia công phụ trợ thuê ngoài tính theo mẻ 1,000 kg kim loại lỏng.
+            Định mức 3 vật tư tạo khuôn cố định (Bột đất sét, Cát đúc, Sơn khuôn) tính theo mẻ 1,000 kg kim loại lỏng. Khoản <em>Chi phí Thao Cát Nhựa</em> được nhập riêng cho từng sản phẩm tại Form Tính Giá.
           </p>
         </div>
 
         <div className="flex items-center space-x-3">
           <div className="bg-[#F7F6F3] border border-[#EAEAEA] px-3.5 py-1.5 rounded-[6px] text-right">
             <span className="text-[10px] text-[#787774] font-semibold uppercase tracking-wider block">
-              Tổng Vật Tư Khuôn / 1000kg
+              Tổng 3 Vật Tư Cố Định / 1000kg
             </span>
             <span className="text-base font-mono font-extrabold text-[#111111]">
               {totalCost1000kg.toLocaleString('vi-VN')} VNĐ

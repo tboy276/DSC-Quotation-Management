@@ -15,6 +15,8 @@ export function calculateCastingPrice(input: CastingInput): CastingResult {
     // Section 2 — Operations & Molding per 1,000kg Liquid Metal
     C_furnace_ladle_per_1000kg = 0,
     C_molding_recipe_total_1000kg = 0,
+    m_resin_core = 0,
+    DG_resin_core_per_kg = 12500,
     m_core = 0,
     DG_core_sand_kg = 0,
     C_ops_override,
@@ -64,6 +66,7 @@ export function calculateCastingPrice(input: CastingInput): CastingResult {
   // Section 2 — Technology & Operations for Liquid Metal Batch (Phần A)
   // ----------------------------------------------------------------------
   let C_furnace_ladle = 0;
+  let C_resin_core = m_resin_core * DG_resin_core_per_kg; // Tính riêng theo 1 sản phẩm
   let C_molding_materials = 0;
   let C_core = m_core * DG_core_sand_kg;
   let C_ops_casting = 0;
@@ -73,7 +76,8 @@ export function calculateCastingPrice(input: CastingInput): CastingResult {
   } else {
     const batchRatio = m_liquid / 1000;
     C_furnace_ladle = C_furnace_ladle_per_1000kg * batchRatio;
-    C_molding_materials = C_molding_recipe_total_1000kg * batchRatio;
+    const C_molding_materials_fixed = C_molding_recipe_total_1000kg * batchRatio;
+    C_molding_materials = C_molding_materials_fixed + C_resin_core;
     C_ops_casting = C_furnace_ladle + C_molding_materials + C_core;
   }
 
@@ -141,9 +145,11 @@ export function calculateCastingPrice(input: CastingInput): CastingResult {
     m_scrap_cast,
     C_metal_casting,
     C_furnace_ladle,
+    C_resin_core,
     C_molding_materials,
     C_core,
     C_ops_casting,
+    partA_per_kg,
     C_finishing,
     C_utility,
     C_labor,

@@ -90,7 +90,9 @@ export interface CastingInput {
 
   // Section 2 — Operations & Molding per 1,000kg Liquid Metal (Công nghệ & Vật tư khuôn)
   C_furnace_ladle_per_1000kg?: number;    // Chi phí lót Lò & Gầu cho 1,000kg kim loại lỏng (VNĐ)
-  C_molding_recipe_total_1000kg?: number; // Tổng chi phí Công thức vật tư khuôn cho 1,000kg kim loại lỏng (VNĐ)
+  C_molding_recipe_total_1000kg?: number; // Tổng chi phí Công thức vật tư khuôn (3 vật tư cố định) cho 1,000kg kim loại lỏng (VNĐ)
+  m_resin_core?: number;                  // Trọng lượng thao cát nhựa cho 1 sản phẩm (kg)
+  DG_resin_core_per_kg?: number;          // Đơn giá thao cát nhựa (VNĐ/kg)
   m_core?: number;                        // Khối lượng cát ruột (kg)
   DG_core_sand_kg?: number;               // Đơn giá cát ruột (VNĐ/kg)
   C_ops_override?: number;                // Chi phí công nghệ đúc override
@@ -134,9 +136,11 @@ export interface CastingResult {
   
   // Section 2 Breakdowns
   C_furnace_ladle: number;       // Chi phí Lò & Gầu (VNĐ)
-  C_molding_materials: number;   // Chi phí Vật tư khuôn (VNĐ)
+  C_resin_core: number;          // Chi phí thao cát nhựa cho 1 sản phẩm (VNĐ)
+  C_molding_materials: number;   // Chi phí Vật tư khuôn tổng (3 vật tư cố định + Thao cát nhựa) (VNĐ)
   C_core: number;                // Chi phí cát ruột (VNĐ)
   C_ops_casting: number;         // Chi phí công nghệ đúc tổng (VNĐ)
+  partA_per_kg: number;          // Đơn giá Phần A / kg thành phẩm (C_metal + C_ops / m_cast) (VNĐ/kg)
 
   // Part B Breakdowns (Phần B — Chi phí sau đúc / kg thành phẩm)
   C_finishing: number;           // Chi phí vật tư HTSP (VNĐ)

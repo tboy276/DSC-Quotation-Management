@@ -196,6 +196,18 @@ export const RealtimeSummaryPanel = () => {
             </span>
           </div>
 
+          {/* Part A unit rate reference for Casting */}
+          {!isForging && castingRes && (
+            <div className="flex justify-between items-center py-1 border-b border-blue-200 bg-blue-50/70 px-1.5 rounded text-blue-950">
+              <span className="font-sans font-bold text-[10px] uppercase">
+                ➔ Đơn giá Phần A / kg (Đối chiếu Excel gốc):
+              </span>
+              <span className="font-bold font-mono text-blue-900">
+                {Math.round((castingRes as CastingResult).partA_per_kg).toLocaleString('vi-VN')} VNĐ / kg
+              </span>
+            </div>
+          )}
+
           {/* Section 2.5 Part B for Casting */}
           {!isForging && castingRes && (
             <div className="flex justify-between items-center py-1 border-b border-[#F0F0EE] text-emerald-900 bg-emerald-50/50 px-1 rounded">

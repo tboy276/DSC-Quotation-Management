@@ -13,6 +13,7 @@ export const CastingSettingsManager = () => {
     furnace_lifespan_batches: 500,
     ladle_lining_cost: 3000000,
     ladle_lifespan_batches: 150,
+    resin_core_sand_rate_per_kg: 12500,
     finishing_material_rate: 771.82,
     utility_rate: 3687.6,
     labor_rate: 2461,
@@ -171,6 +172,25 @@ export const CastingSettingsManager = () => {
                 <div className="text-right text-[11px] font-mono text-[#787774]">
                   = <strong>{ladlePer1000kg.toLocaleString('vi-VN')} VNĐ</strong> / 1,000kg kim loại lỏng
                 </div>
+              </div>
+
+              {/* Đơn Giá Thao Cát Nhựa */}
+              <div className="p-3 bg-[#FBFBFA] border border-[#EAEAEA] rounded-[6px] space-y-1.5">
+                <label className="font-bold text-[#111111] block">
+                  Đơn Giá Thao / Xử Lý Cát Nhựa (Hằng số chung nhà máy):
+                </label>
+                <div className="flex items-center space-x-2">
+                  <input
+                    type="number"
+                    value={settings.resin_core_sand_rate_per_kg || 12500}
+                    onChange={(e) => setSettings({ ...settings, resin_core_sand_rate_per_kg: Number(e.target.value) })}
+                    className="w-full px-2.5 py-1.5 border border-[#EAEAEA] bg-white rounded font-mono font-bold text-xs"
+                  />
+                  <span className="text-xs font-mono font-semibold text-[#787774] whitespace-nowrap">VNĐ / kg</span>
+                </div>
+                <p className="text-[10px] text-[#787774] italic">
+                  * Áp dụng khi tính Chi Phí Thao cho từng sản phẩm: C_thao = (Trọng lượng thao 1 SP) × (Đơn giá thao/kg).
+                </p>
               </div>
 
               {/* Total Furnace/Ladle */}

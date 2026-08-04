@@ -1,4 +1,5 @@
 import { supabase } from './supabase';
+import { calculateLiquidMetalPrice } from './calculation-engine/liquid-metal-calculator';
 import type {
   Material,
   MaterialPriceHistory,
@@ -371,6 +372,7 @@ let localCastingSettings: CastingFactorySettings = {
   furnace_lifespan_batches: 500,
   ladle_lining_cost: 3000000,
   ladle_lifespan_batches: 150,
+  resin_core_sand_rate_per_kg: 12500,
   finishing_material_rate: 771.82,
   utility_rate: 3687.6,
   labor_rate: 2461,
@@ -412,18 +414,15 @@ let localMoldingRecipe: MoldingRecipeItem[] = [
     outsourced_cost_per_1000kg: 0,
     notes: 'Sơn chịu nhiệt chịu áp suất',
   },
-  {
-    id: 'rec-4',
-    material_name: 'Chi phí thao cát nhựa thuê ngoài',
-    unit: 'mẻ 1000kg',
-    category: 'Thuê ngoài',
-    quantity_per_1000kg: 0,
-    unit_price: 0,
-    is_outsourced: true,
-    outsourced_cost_per_1000kg: 3709831,
-    notes: 'Gia công thao cát nhựa phụ trợ bên ngoài',
-  },
 ];
+
+export async function fetchLiquidMetalPriceForGrade(gradeId: string) {
+  const [bomItems, materials] = await Promise.all([
+    fetchCastingBomItems(gradeId),
+    fetchMaterials(),
+  ]);
+  return calculateLiquidMetalPrice(gradeId, bomItems, [], materials);
+}
 
 export async function fetchCastingSettings(): Promise<CastingFactorySettings> {
   try {
