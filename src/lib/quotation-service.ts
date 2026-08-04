@@ -449,13 +449,37 @@ export const cancelRfqImmediately = async (
 };
 
 /**
- * Delete RFQ Items / Dossiers from Supabase DB
+ * Delete RFQ Items / Dossiers from Supabase DB with Cascading Parent Header Cleanup
  */
 export const deleteRfqItems = async (itemIds: string[]): Promise<void> => {
+  if (!itemIds || itemIds.length === 0) return;
+
+  // 1. Fetch parent rfq_ids before deletion
+  const { data: targetItems } = await supabase
+    .from('rfq_items')
+    .select('rfq_id')
+    .in('id', itemIds);
+
+  const parentRfqIds = Array.from(new Set((targetItems || []).map((i) => i.rfq_id).filter(Boolean)));
+
+  // 2. Delete child items from rfq_items
   const { error } = await supabase.from('rfq_items').delete().in('id', itemIds);
   if (error) {
     throw new Error(`Lỗi xóa mã sản phẩm RFQ trên Supabase: ${error.message}`);
   }
+
+  // 3. For each parent rfq_id, check if any remaining items exist. If none, delete parent RFQ header row from rfqs table.
+  for (const rfqId of parentRfqIds) {
+    const { count } = await supabase
+      .from('rfq_items')
+      .select('id', { count: 'exact', head: true })
+      .eq('rfq_id', rfqId);
+
+    if (count === 0 || count === null) {
+      await supabase.from('rfqs').delete().eq('id', rfqId);
+    }
+  }
+
   await fetchQuotes();
 };
 
