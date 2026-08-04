@@ -6,7 +6,6 @@ import {
   Users,
   Database,
   Layers,
-  BarChart3,
   TrendingUp,
   Activity,
 } from 'lucide-react';
@@ -22,7 +21,6 @@ export const Sidebar = ({
   activeTab,
   setActiveTab,
 }: SidebarProps) => {
-  // Trạng thái tự động mở rộng khi rê chuột vào, tự động thu gọn khi rà chuột ra ngoài
   const [isHovered, setIsHovered] = useState<boolean>(false);
 
   const mainNavItems = [
@@ -43,35 +41,35 @@ export const Sidebar = ({
     <aside
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
-      className={`bg-[#FBFBFA] border-r border-[#EAEAEA] flex flex-col h-screen sticky top-0 transition-all duration-300 ease-in-out z-30 select-none shadow-[2px_0_12px_rgba(0,0,0,0.03)] ${
+      className={`bg-[#0F172A] border-r border-[#1E293B] flex flex-col h-screen sticky top-0 transition-all duration-300 ease-in-out z-30 select-none shadow-xl ${
         isHovered ? 'w-[280px]' : 'w-[68px]'
       }`}
     >
       {/* Sidebar Header */}
-      <div className="h-14 px-3.5 flex items-center space-x-2.5 border-b border-[#EAEAEA] flex-shrink-0 overflow-hidden">
-        {/* Logo icon */}
-        <div className="w-8 h-8 rounded-[6px] bg-[#111111] text-white flex items-center justify-center flex-shrink-0 shadow-xs">
-          <BarChart3 className="w-4 h-4 stroke-[2]" />
+      <div className="h-16 px-3.5 flex items-center space-x-3 border-b border-[#1E293B] flex-shrink-0 overflow-hidden">
+        {/* Logo icon 'D' */}
+        <div className="w-8 h-8 rounded-[6px] bg-white text-[#0F172A] flex items-center justify-center flex-shrink-0 font-black text-base shadow-sm">
+          D
         </div>
         {isHovered && (
           <div className="truncate">
-            <span className="font-bold text-[#111111] text-sm tracking-tight block leading-tight truncate">
+            <span className="font-extrabold text-white text-sm tracking-tight block leading-tight truncate">
               DSC Quotation
             </span>
-            <span className="text-[10px] text-[#787774] font-medium block truncate">
-              DISOCO Workspace
+            <span className="text-[10px] text-slate-400 font-semibold uppercase tracking-widest block truncate">
+              DISOCO WORKSPACE
             </span>
           </div>
         )}
       </div>
 
       {/* Navigation List */}
-      <div className="flex-1 py-3 px-2 space-y-1 overflow-y-auto overflow-x-hidden flex flex-col justify-between">
+      <div className="flex-1 py-4 px-2 space-y-1 overflow-y-auto overflow-x-hidden flex flex-col justify-between">
         {/* Main Business Logic Menu Group */}
-        <div className="space-y-0.5">
+        <div className="space-y-1">
           {isHovered && (
-            <p className="px-2.5 text-[10px] font-semibold text-[#787774] uppercase tracking-wider mb-1.5 mt-1">
-              Nghiệp Vụ Báo Giá
+            <p className="px-2.5 text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 mt-1">
+              NGHIỆP VỤ BÁO GIÁ
             </p>
           )}
           {mainNavItems.map((item) => {
@@ -82,21 +80,21 @@ export const Sidebar = ({
                 key={item.id}
                 onClick={() => setActiveTab(item.id)}
                 title={!isHovered ? item.label : undefined}
-                className={`w-full flex items-center h-9 px-2.5 rounded-[6px] text-xs transition-all duration-150 cursor-pointer ${
+                className={`w-full flex items-center h-10 px-2.5 rounded-[6px] text-xs transition-all duration-150 cursor-pointer ${
                   isActive
-                    ? 'bg-[#F0F0EE] text-[#111111] font-bold shadow-2xs'
-                    : 'text-[#787774] hover:bg-[#F7F6F3] hover:text-[#111111] font-medium'
+                    ? 'bg-[#1E293B] text-white font-bold border-l-2 border-blue-500 shadow-xs'
+                    : 'text-slate-300 hover:bg-[#1E293B]/70 hover:text-white font-medium'
                 }`}
               >
                 <Icon
-                  className={`w-4 h-4 flex-shrink-0 stroke-[1.75] ${
-                    isActive ? 'text-[#111111]' : 'text-[#787774]'
-                  } ${!isHovered ? 'mx-auto' : 'mr-2.5'}`}
+                  className={`w-4 h-4 flex-shrink-0 stroke-[2] ${
+                    isActive ? 'text-white' : 'text-slate-400'
+                  } ${!isHovered ? 'mx-auto' : 'mr-3'}`}
                 />
                 {isHovered && (
                   <>
-                    <span className="truncate text-left flex-1">{item.label}</span>
-                    <kbd className="text-[9px] text-[#787774] bg-[#FFFFFF] border border-[#EAEAEA] px-1 py-0.2 rounded-[3px]">
+                    <span className="truncate text-left flex-1 text-slate-200 font-semibold">{item.label}</span>
+                    <kbd className="text-[9px] font-mono text-slate-400 bg-[#0F172A] border border-[#334155] px-1 py-0.5 rounded-[3px]">
                       {item.shortcut}
                     </kbd>
                   </>
@@ -107,10 +105,10 @@ export const Sidebar = ({
         </div>
 
         {/* System Administration Group */}
-        <div className="pt-3 border-t border-[#EAEAEA] space-y-0.5">
+        <div className="pt-4 border-t border-[#1E293B] space-y-1">
           {isHovered && (
-            <p className="px-2.5 text-[10px] font-semibold text-[#787774] uppercase tracking-wider mb-1.5">
-              Hệ Thống
+            <p className="px-2.5 text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">
+              HỆ THỐNG
             </p>
           )}
           {adminNavItems.map((item) => {
@@ -121,21 +119,21 @@ export const Sidebar = ({
                 key={item.id}
                 onClick={() => setActiveTab(item.id)}
                 title={!isHovered ? item.label : undefined}
-                className={`w-full flex items-center h-9 px-2.5 rounded-[6px] text-xs transition-all duration-150 cursor-pointer ${
+                className={`w-full flex items-center h-10 px-2.5 rounded-[6px] text-xs transition-all duration-150 cursor-pointer ${
                   isActive
-                    ? 'bg-[#F0F0EE] text-[#111111] font-bold shadow-2xs'
-                    : 'text-[#787774] hover:bg-[#F7F6F3] hover:text-[#111111] font-medium'
+                    ? 'bg-[#1E293B] text-white font-bold border-l-2 border-blue-500 shadow-xs'
+                    : 'text-slate-300 hover:bg-[#1E293B]/70 hover:text-white font-medium'
                 }`}
               >
                 <Icon
-                  className={`w-4 h-4 flex-shrink-0 stroke-[1.75] ${
-                    isActive ? 'text-[#111111]' : 'text-[#787774]'
-                  } ${!isHovered ? 'mx-auto' : 'mr-2.5'}`}
+                  className={`w-4 h-4 flex-shrink-0 stroke-[2] ${
+                    isActive ? 'text-white' : 'text-slate-400'
+                  } ${!isHovered ? 'mx-auto' : 'mr-3'}`}
                 />
                 {isHovered && (
                   <>
-                    <span className="truncate text-left flex-1">{item.label}</span>
-                    <kbd className="text-[9px] text-[#787774] bg-[#FFFFFF] border border-[#EAEAEA] px-1 py-0.2 rounded-[3px]">
+                    <span className="truncate text-left flex-1 text-slate-200 font-semibold">{item.label}</span>
+                    <kbd className="text-[9px] font-mono text-slate-400 bg-[#0F172A] border border-[#334155] px-1 py-0.5 rounded-[3px]">
                       {item.shortcut}
                     </kbd>
                   </>
