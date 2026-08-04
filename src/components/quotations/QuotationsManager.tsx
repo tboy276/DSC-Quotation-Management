@@ -23,6 +23,7 @@ import {
   Search,
   Eye,
   CheckCircle,
+  CheckCircle2,
   XCircle,
   Workflow,
   Box,
@@ -40,6 +41,9 @@ import {
   Columns,
   Settings,
   Clipboard,
+  Clock,
+  TrendingUp,
+  FileText,
 } from 'lucide-react';
 
 interface QuotationsManagerProps {
@@ -138,9 +142,9 @@ export const QuotationsManager = ({ onNavigateToCalculator }: QuotationsManagerP
 
   const visibleCols = ALL_ITEM_COLUMNS.filter((c) => !hiddenCols.includes(c.key));
 
-  // Server-side Pagination State
+  // Server-side Pagination State (Mặc định 50 items/trang theo PRD Section 4.2)
   const [currentPage, setCurrentPage] = useState<number>(1);
-  const [pageSize, setPageSize] = useState<number>(10);
+  const [pageSize, setPageSize] = useState<number>(50);
   const [totalCount, setTotalCount] = useState<number>(0);
   const [totalPages, setTotalPages] = useState<number>(1);
 
@@ -540,8 +544,99 @@ export const QuotationsManager = ({ onNavigateToCalculator }: QuotationsManagerP
 
   const isAllSelected = sortedQuotes.length > 0 && selectedQuoteIds.length === sortedQuotes.length;
 
+  // PRD 4.1 Dashboard Metrics Calculation
+  const metricTotal = totalCount || quotes.length;
+  const metricCosting = quotes.filter((q) => (q.rfqItem?.status || q.status) === 'IN_COSTING').length;
+  const metricPending = quotes.filter((q) =>
+    ['PENDING_REVIEW', 'READY_FOR_QUOTE'].includes(q.rfqItem?.status || q.status)
+  ).length;
+  const metricCompleted = quotes.filter((q) =>
+    ['QUOTED_SENT', 'SUCCESSFUL'].includes(q.rfqItem?.status || q.status)
+  ).length;
+
   return (
     <div className="space-y-4 animate-fade-in-up">
+      {/* PRD 4.1 DASHBOARD METRICS TOP BAR */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
+        {/* Card 1: Total Requests */}
+        <div className="bg-white p-3.5 rounded-[10px] border border-[#EAEAEA] shadow-[0_2px_8px_rgba(0,0,0,0.03)] space-y-1.5 hover:border-slate-300 transition-all">
+          <div className="flex items-center justify-between text-[#787774] text-[11px] font-bold uppercase tracking-wider">
+            <span>1. Tổng Yêu Cầu (Total Requests)</span>
+            <div className="w-6 h-6 rounded-[6px] bg-[#F7F6F3] text-[#111111] flex items-center justify-center border border-[#EAEAEA]">
+              <FileText className="w-3.5 h-3.5" />
+            </div>
+          </div>
+          <div className="flex items-baseline justify-between pt-0.5">
+            <span className="text-2xl font-extrabold font-mono text-[#111111]">
+              {metricTotal.toLocaleString('vi-VN')}
+            </span>
+            <span className="inline-flex items-center text-[10px] font-bold text-[#346538] bg-[#EDF3EC] px-1.5 py-0.5 rounded border border-[#C6E1C4]">
+              <TrendingUp className="w-2.5 h-2.5 mr-0.5" />
+              +12.4%
+            </span>
+          </div>
+          <p className="text-[10px] text-[#787774] font-medium">Tổng số dòng sản phẩm RFQ</p>
+        </div>
+
+        {/* Card 2: Price Calculation */}
+        <div className="bg-white p-3.5 rounded-[10px] border border-[#EAEAEA] shadow-[0_2px_8px_rgba(0,0,0,0.03)] space-y-1.5 hover:border-blue-300 transition-all">
+          <div className="flex items-center justify-between text-blue-700 text-[11px] font-bold uppercase tracking-wider">
+            <span>2. Đang Tính Giá (Costing)</span>
+            <div className="w-6 h-6 rounded-[6px] bg-blue-50 text-blue-700 flex items-center justify-center border border-blue-200">
+              <Calculator className="w-3.5 h-3.5" />
+            </div>
+          </div>
+          <div className="flex items-baseline justify-between pt-0.5">
+            <span className="text-2xl font-extrabold font-mono text-[#111111]">
+              {metricCosting.toLocaleString('vi-VN')}
+            </span>
+            <span className="text-[10px] font-bold text-blue-700 bg-blue-50 px-1.5 py-0.5 rounded border border-blue-200">
+              Active Costing
+            </span>
+          </div>
+          <p className="text-[10px] text-[#787774] font-medium">Đang chạy Engine tính định mức</p>
+        </div>
+
+        {/* Card 3: Pending Approval */}
+        <div className="bg-white p-3.5 rounded-[10px] border border-[#EAEAEA] shadow-[0_2px_8px_rgba(0,0,0,0.03)] space-y-1.5 hover:border-amber-300 transition-all">
+          <div className="flex items-center justify-between text-amber-800 text-[11px] font-bold uppercase tracking-wider">
+            <span>3. Chờ Duyệt (Pending Approval)</span>
+            <div className="w-6 h-6 rounded-[6px] bg-amber-50 text-amber-800 flex items-center justify-center border border-amber-200">
+              <Clock className="w-3.5 h-3.5" />
+            </div>
+          </div>
+          <div className="flex items-baseline justify-between pt-0.5">
+            <span className="text-2xl font-extrabold font-mono text-[#111111]">
+              {metricPending.toLocaleString('vi-VN')}
+            </span>
+            <span className="text-[10px] font-bold text-amber-900 bg-amber-50 px-1.5 py-0.5 rounded border border-amber-200">
+              Action Needed
+            </span>
+          </div>
+          <p className="text-[10px] text-[#787774] font-medium">Cần duyệt kỹ thuật hoặc giá vốn</p>
+        </div>
+
+        {/* Card 4: Monthly Completion */}
+        <div className="bg-white p-3.5 rounded-[10px] border border-[#EAEAEA] shadow-[0_2px_8px_rgba(0,0,0,0.03)] space-y-1.5 hover:border-emerald-300 transition-all">
+          <div className="flex items-center justify-between text-[#346538] text-[11px] font-bold uppercase tracking-wider">
+            <span>4. Hoàn Thành Tháng Này</span>
+            <div className="w-6 h-6 rounded-[6px] bg-[#EDF3EC] text-[#346538] flex items-center justify-center border border-[#C6E1C4]">
+              <CheckCircle2 className="w-3.5 h-3.5" />
+            </div>
+          </div>
+          <div className="flex items-baseline justify-between pt-0.5">
+            <span className="text-2xl font-extrabold font-mono text-[#111111]">
+              {metricCompleted.toLocaleString('vi-VN')}
+            </span>
+            <span className="inline-flex items-center text-[10px] font-bold text-[#346538] bg-[#EDF3EC] px-1.5 py-0.5 rounded border border-[#C6E1C4]">
+              <TrendingUp className="w-2.5 h-2.5 mr-0.5" />
+              +18.5%
+            </span>
+          </div>
+          <p className="text-[10px] text-[#787774] font-medium">Đã xuất báo giá / thành công</p>
+        </div>
+      </div>
+
       {/* MERGED SINGLE-LINE TOOLBAR & PRIMARY FILTERS BAR */}
       <div className="bg-white p-3 rounded-[10px] border border-[#EAEAEA] shadow-[0_2px_8px_rgba(0,0,0,0.03)] flex flex-wrap items-center justify-between gap-3 text-xs">
         {/* Left Side: 3 Primary Single-Line Filter Controls */}
