@@ -449,6 +449,25 @@ export const cancelRfqImmediately = async (
 };
 
 /**
+ * Delete RFQ Items / Dossiers from Supabase DB
+ */
+export const deleteRfqItems = async (itemIds: string[]): Promise<void> => {
+  const { error } = await supabase.from('rfq_items').delete().in('id', itemIds);
+  if (error) {
+    throw new Error(`Lỗi xóa mã sản phẩm RFQ trên Supabase: ${error.message}`);
+  }
+  await fetchQuotes();
+};
+
+export const deleteRfqDossier = async (dossierId: string): Promise<void> => {
+  const { error } = await supabase.from('rfqs').delete().eq('id', dossierId);
+  if (error) {
+    throw new Error(`Lỗi xóa Hồ sơ RFQ trên Supabase: ${error.message}`);
+  }
+  await fetchQuotes();
+};
+
+/**
  * Reset System Data to initial seed state
  * Strictly executes DELETE queries on Supabase DB tables in Foreign Key order
  */

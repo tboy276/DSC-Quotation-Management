@@ -19,8 +19,9 @@ export const PageHeader = ({ title }: PageHeaderProps) => {
   const role = profile?.role || 'sales';
   const initials = email.charAt(0).toUpperCase();
 
-  // Admin Check: Only tuan.vuongdinh@disoco.net or admin role
-  const isAdmin = email.toLowerCase() === 'tuan.vuongdinh@disoco.net' || role === 'admin';
+  // Reset capability: ONLY accessible when user role is 'estimator' or 'admin'!
+  // Sales role MUST NEVER see or be able to reset system data.
+  const isEstimatorOrAdmin = role === 'estimator' || role === 'admin';
 
   const handleConfirmReset = async () => {
     setIsResetting(true);
@@ -56,12 +57,12 @@ export const PageHeader = ({ title }: PageHeaderProps) => {
             <span className="absolute top-1 right-1 w-1.5 h-1.5 bg-[#9F2F2D] rounded-full" />
           </button>
 
-          {/* Reset System Data Button (Admin Only: tuan.vuongdinh@disoco.net) */}
-          {isAdmin && (
+          {/* Reset System Data Button (Estimator / Admin Only) */}
+          {isEstimatorOrAdmin && (
             <button
               onClick={() => setShowResetModal(true)}
               className="px-2 py-1 rounded-[6px] bg-[#FDEBEC] text-[#9F2F2D] border border-[#FADBDC] hover:bg-[#F8C9CA] transition-colors cursor-pointer text-xs font-bold inline-flex items-center space-x-1.5 shadow-2xs"
-              title="Reset toàn bộ dữ liệu ứng dụng về ban đầu (Chỉ Admin tuan.vuongdinh@disoco.net)"
+              title="Reset toàn bộ dữ liệu ứng dụng về ban đầu (Chỉ Kỹ Thuật Estimator / Admin)"
             >
               <RotateCw className="w-3.5 h-3.5 stroke-[2.5]" />
               <span className="hidden sm:inline">Reset Data</span>
