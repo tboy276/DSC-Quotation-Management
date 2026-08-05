@@ -3,11 +3,11 @@ import { useQuotationStore } from '../../store/useQuotationStore';
 import { MachiningOpsList } from './MachiningOpsList';
 import { ToolingOpsList } from './ToolingOpsList';
 import { ToolingAmortizationSection } from './ToolingAmortizationSection';
-import { SliderInput } from '../ui/SliderInput';
+import { Section5SummaryCard } from './Section5SummaryCard';
 import { INITIAL_CASTING_GRADES, fetchCastingGrades } from '../../lib/master-data-service';
 import type { CastingGrade } from '../../types/master-data';
 import { Modal } from '../ui/Modal';
-import { Layers, PieChart, Factory, Eye } from 'lucide-react';
+import { Layers, Factory, Eye } from 'lucide-react';
 import { CostSectionCard } from '../ui/CostSectionCard';
 
 export const CastingCalculatorForm = () => {
@@ -223,59 +223,23 @@ export const CastingCalculatorForm = () => {
       />
 
       {/* SECTION 5: TỔNG KẾT & BÁO GIÁ */}
-      <CostSectionCard
-        icon={<PieChart className="w-5 h-5" />}
-        title="SECTION 5: TỔNG HỢP & BÁO GIÁ CUỐI CÙNG"
-        topInputs={
-          <>
-            <SliderInput
-              label="Quản Lý Công Ty (k_mgmt_cast %)"
-              value={casting.k_mgmt_cast}
-              onChange={(val) => setCastingField('k_mgmt_cast', val)}
-              min={0}
-              max={30}
-              step={0.5}
-              unit="%"
-              description="Phân bổ chi phí quản lý chung công ty"
-            />
-            <SliderInput
-              label="Vận Chuyển Đúc (DG_trans)"
-              value={casting.DG_trans_kg}
-              onChange={(val) => setCastingField('DG_trans_kg', val)}
-              min={0}
-              max={10000}
-              step={100}
-              unit="VNĐ/kg"
-              description="Tính theo khối lượng vật đúc"
-            />
-            <SliderInput
-              label="Margin Lợi Nhuận (k_profit %)"
-              value={casting.k_profit_casting}
-              onChange={(val) => setCastingField('k_profit_casting', val)}
-              min={0}
-              max={50}
-              step={1}
-              unit="%"
-              description="Tỷ lệ lợi nhuận mục tiêu Đúc"
-            />
-          </>
-        }
-        mainBlockTitle="Tổng Hợp Chi Phí (Cho 1 Sản Phẩm)"
-        breakdownItems={[
-          { label: 'I. Giá Vốn Đúc (COGS):', value: `${res.COGS.toLocaleString('vi-VN')} đ` },
-          { label: `II. Phí Quản Lý Công Ty (${casting.k_mgmt_cast}%):`, value: `${(res.COGS * (casting.k_mgmt_cast || 0) / 100).toLocaleString('vi-VN')} đ` },
-          { label: `III. Phí Vận Chuyển (${(casting.DG_trans_kg || 0).toLocaleString('vi-VN')} đ/kg):`, value: `${((casting.DG_trans_kg || 0) * m_cast).toLocaleString('vi-VN')} đ` },
-          { label: 'IV. Phí Bao Gói:', value: `${(casting.C_pack || 0).toLocaleString('vi-VN')} đ` },
-        ]}
-        breakdownTotal={{ label: 'Tổng Giá Thành TRƯỚC Lợi Nhuận:', value: `${res.pre_profit_price.toLocaleString('vi-VN')} VNĐ` }}
-        infoBoxes={[
-          { label: `Lợi Nhuận Mục Tiêu (${casting.k_profit_casting}%)`, value: (res.P_CASTING - res.pre_profit_price).toLocaleString('vi-VN'), unit: 'VNĐ' },
-        ]}
-        footerTitle="ĐƠN GIÁ BÁO GIÁ CUỐI CÙNG (GIÁ BÁN)"
-        footerSubtitle={`= Giá Thành Trước Lợi Nhuận × (1 + ${casting.k_profit_casting}%)`}
-        footerTotal={res.P_CASTING.toLocaleString('vi-VN')}
-        footerTotalUnit="VNĐ/SP"
-        isFinalTotal={true}
+      <Section5SummaryCard
+        isForging={false}
+        k_mgmt={casting.k_mgmt_cast ?? 10}
+        onKMgmtChange={(val) => setCastingField('k_mgmt_cast', val)}
+        DG_trans_kg={casting.DG_trans_kg ?? 1500}
+        onDGTransChange={(val) => setCastingField('DG_trans_kg', val)}
+        DG_pack_kg={casting.DG_pack_kg ?? 0}
+        onDGPackChange={(val) => setCastingField('DG_pack_kg', val)}
+        k_profit={casting.k_profit_casting ?? 12}
+        onKProfitChange={(val) => setCastingField('k_profit_casting', val)}
+        COGS={res.COGS}
+        C_mgmt={res.COGS * ((casting.k_mgmt_cast || 0) / 100)}
+        C_trans={(casting.DG_trans_kg || 0) * m_cast}
+        C_pack={casting.DG_pack_kg !== undefined ? (casting.DG_pack_kg * m_cast) : (casting.C_pack || 0)}
+        pre_profit_price={res.pre_profit_price}
+        profit_amount={res.P_CASTING - res.pre_profit_price}
+        final_price={res.P_CASTING}
       />
       
       {/* Recipe Details Preview Modal */}

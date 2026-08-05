@@ -49,6 +49,7 @@ export function calculateCastingPrice(input: CastingInput): CastingResult {
     N_order = 1,
     k_mgmt_cast,
     C_pack = 0,
+    DG_pack_kg,
     DG_trans_kg,
     k_profit_casting,
   } = input;
@@ -166,7 +167,8 @@ export function calculateCastingPrice(input: CastingInput): CastingResult {
 
   const C_admin = COGS * (k_mgmt_cast / 100);
   const C_transport = m_cast * DG_trans_kg;
-  const pre_profit_price = COGS + C_admin + C_pack + C_transport;
+  const actual_C_pack = DG_pack_kg !== undefined ? DG_pack_kg * m_cast : C_pack;
+  const pre_profit_price = COGS + C_admin + actual_C_pack + C_transport;
 
   const P_CASTING = Math.round(pre_profit_price * (1 + k_profit_casting / 100));
 

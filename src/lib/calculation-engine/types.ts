@@ -80,6 +80,7 @@ export interface ForgingInput {
   N_order?: number;           // Số lượng sản lượng đơn hàng (chi tiết), mặc định 1
   k_mgmt: number;             // Phần trăm chi phí quản lý % (VD: 8 = 8%)
   C_pack?: number;            // Chi phí đóng gói (VNĐ/chi tiết)
+  DG_pack_kg?: number;        // Đơn giá đóng gói (VNĐ/kg)
   DG_trans_kg: number;        // Đơn giá vận chuyển (VNĐ/kg phôi)
   k_profit_forging: number;   // Phần trăm lợi nhuận % (VD: 15 = 15%)
 }
@@ -153,6 +154,7 @@ export interface CastingInput {
   N_order?: number;           // Số lượng sản lượng đơn hàng (chi tiết), mặc định 1
   k_mgmt_cast: number;        // Phần trăm chi phí quản lý công ty % (VD: 10 = 10%)
   C_pack?: number;            // Chi phí đóng gói (VNĐ/chi tiết)
+  DG_pack_kg?: number;        // Đơn giá đóng gói (VNĐ/kg)
   DG_trans_kg: number;        // Đơn giá vận chuyển (VNĐ/kg vật đúc)
   k_profit_casting: number;   // Phần trăm lợi nhuận đúc % (VD: 12 = 12%)
 }

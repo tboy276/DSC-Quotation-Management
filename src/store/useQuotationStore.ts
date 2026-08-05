@@ -149,6 +149,7 @@ export const useQuotationStore = create<QuotationStoreState>((set, get) => ({
 
     k_mgmt: 8,
     DG_trans_kg: defaultTransRate,
+    DG_pack_kg: 0,
     k_profit_forging: 15,
   },
 
@@ -197,6 +198,7 @@ export const useQuotationStore = create<QuotationStoreState>((set, get) => ({
 
     k_mgmt_cast: 10,
     DG_trans_kg: defaultTransRate,
+    DG_pack_kg: 0,
     k_profit_casting: 12,
   },
 

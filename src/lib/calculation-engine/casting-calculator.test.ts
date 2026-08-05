@@ -43,8 +43,10 @@ describe('Casting Calculation Engine (Đúc Gang FC200 Test Case)', () => {
     // C_resin_core = 296.78648 * 12500 = 3,709,831đ
     expect(res.C_resin_core).toBeCloseTo(3709831, 0);
 
-    // C_molding = 1,302,200 + 3,709,831 = 5,012,031đ
-    expect(res.C_molding_materials).toBeCloseTo(5012031, 0);
+    // C_molding_materials (3 vật tư cố định) = 1,302,200đ
+    expect(res.C_molding_materials).toBeCloseTo(1302200, 0);
+    // Tổng vật tư khuôn (3 cố định + thao cát nhựa) = 1,302,200 + 3,709,831 = 5,012,031đ
+    expect(res.C_molding_materials + res.C_resin_core).toBeCloseTo(5012031, 0);
 
     // C_metal = (1000 * 11138.51) - (408.5 * 5500) = 8,891,760đ
     expect(res.C_metal_casting).toBeCloseTo(8891760, 0);

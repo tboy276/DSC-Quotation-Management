@@ -35,6 +35,7 @@ export function calculateForgingPrice(input: ForgingInput): ForgingResult {
     N_order = 1,
     k_mgmt,
     C_pack = 0,
+    DG_pack_kg,
     DG_trans_kg,
     k_profit_forging,
   } = input;
@@ -111,8 +112,9 @@ export function calculateForgingPrice(input: ForgingInput): ForgingResult {
 
   const COGS = C_mat_forging + C_ops_forging + C_machining + dieInCogs;
 
+  const actual_C_pack = DG_pack_kg !== undefined ? DG_pack_kg * m_phoi : C_pack;
   const pre_profit_price =
-    COGS * (1 + k_mgmt / 100) + C_pack + (m_phoi * DG_trans_kg);
+    COGS * (1 + k_mgmt / 100) + actual_C_pack + (m_phoi * DG_trans_kg);
 
   const P_FORGING = Math.round(pre_profit_price * (1 + k_profit_forging / 100));
 

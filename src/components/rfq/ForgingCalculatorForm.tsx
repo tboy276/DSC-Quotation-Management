@@ -2,13 +2,13 @@ import { useQuotationStore } from '../../store/useQuotationStore';
 import { MachiningOpsList } from './MachiningOpsList';
 import { ToolingOpsList } from './ToolingOpsList';
 import { ToolingAmortizationSection } from './ToolingAmortizationSection';
-import { SliderInput } from '../ui/SliderInput';
+import { Section5SummaryCard } from './Section5SummaryCard';
 import {
   INITIAL_MATERIALS,
   INITIAL_PRESSING_RATES,
   INITIAL_HAMMER_RATES,
 } from '../../lib/master-data-service';
-import { Workflow, Layers, PieChart } from 'lucide-react';
+import { Workflow, Layers } from 'lucide-react';
 import { CostSectionCard } from '../ui/CostSectionCard';
 
 export const ForgingCalculatorForm = () => {
@@ -333,60 +333,24 @@ export const ForgingCalculatorForm = () => {
         amortizationCostPerUnit={res.C_die_amortization || 0}
       />
 
-      {/* 5. Section Sliders: Chi Phí Quản Lý, Vận Chuyển & Lợi Nhuận */}
-      <CostSectionCard
-        icon={<PieChart className="w-5 h-5" />}
-        title="SECTION 5: TỔNG HỢP & BÁO GIÁ CUỐI CÙNG"
-        topInputs={
-          <>
-            <SliderInput
-              label="Chi Phí Quản Lý (k_mgmt %)"
-              value={forging.k_mgmt}
-              onChange={(val) => setForgingField('k_mgmt', val)}
-              min={0}
-              max={30}
-              step={0.5}
-              unit="%"
-              description="Phân bổ quản lý doanh nghiệp"
-            />
-            <SliderInput
-              label="Đơn Giá Vận Chuyển (DG_trans)"
-              value={forging.DG_trans_kg}
-              onChange={(val) => setForgingField('DG_trans_kg', val)}
-              min={0}
-              max={10000}
-              step={100}
-              unit="VNĐ/kg"
-              description="Tính theo khối lượng phôi tổng"
-            />
-            <SliderInput
-              label="Margin Lợi Nhuận (k_profit %)"
-              value={forging.k_profit_forging}
-              onChange={(val) => setForgingField('k_profit_forging', val)}
-              min={0}
-              max={50}
-              step={1}
-              unit="%"
-              description="Tỷ lệ lợi nhuận mục tiêu Rèn"
-            />
-          </>
-        }
-        mainBlockTitle="Tổng Hợp Chi Phí (Cho 1 Sản Phẩm)"
-        breakdownItems={[
-          { label: 'I. Giá Vốn Rèn (COGS):', value: `${res.COGS.toLocaleString('vi-VN')} đ` },
-          { label: `II. Phí Quản Lý Công Ty (${forging.k_mgmt}%):`, value: `${(res.COGS * (forging.k_mgmt || 0) / 100).toLocaleString('vi-VN')} đ` },
-          { label: `III. Phí Vận Chuyển (${(forging.DG_trans_kg || 0).toLocaleString('vi-VN')} đ/kg):`, value: `${((forging.DG_trans_kg || 0) * res.m_phoi).toLocaleString('vi-VN')} đ` },
-          { label: 'IV. Phí Bao Gói:', value: `${(forging.C_pack || 0).toLocaleString('vi-VN')} đ` },
-        ]}
-        breakdownTotal={{ label: 'Tổng Giá Thành TRƯỚC Lợi Nhuận:', value: `${res.pre_profit_price.toLocaleString('vi-VN')} VNĐ` }}
-        infoBoxes={[
-          { label: `Lợi Nhuận Mục Tiêu (${forging.k_profit_forging}%)`, value: (res.P_FORGING - res.pre_profit_price).toLocaleString('vi-VN'), unit: 'VNĐ' },
-        ]}
-        footerTitle="ĐƠN GIÁ BÁO GIÁ CUỐI CÙNG (GIÁ BÁN)"
-        footerSubtitle={`= Giá Thành Trước Lợi Nhuận × (1 + ${forging.k_profit_forging}%)`}
-        footerTotal={res.P_FORGING.toLocaleString('vi-VN')}
-        footerTotalUnit="VNĐ/SP"
-        isFinalTotal={true}
+      {/* 5. Section 5: Tổng Hợp & Báo Giá Cuối Cùng */}
+      <Section5SummaryCard
+        isForging={true}
+        k_mgmt={forging.k_mgmt ?? 8}
+        onKMgmtChange={(val) => setForgingField('k_mgmt', val)}
+        DG_trans_kg={forging.DG_trans_kg ?? 1500}
+        onDGTransChange={(val) => setForgingField('DG_trans_kg', val)}
+        DG_pack_kg={forging.DG_pack_kg ?? 0}
+        onDGPackChange={(val) => setForgingField('DG_pack_kg', val)}
+        k_profit={forging.k_profit_forging ?? 15}
+        onKProfitChange={(val) => setForgingField('k_profit_forging', val)}
+        COGS={res.COGS}
+        C_mgmt={res.COGS * ((forging.k_mgmt || 0) / 100)}
+        C_trans={(forging.DG_trans_kg || 0) * res.m_phoi}
+        C_pack={forging.DG_pack_kg !== undefined ? (forging.DG_pack_kg * res.m_phoi) : (forging.C_pack || 0)}
+        pre_profit_price={res.pre_profit_price}
+        profit_amount={res.P_FORGING - res.pre_profit_price}
+        final_price={res.P_FORGING}
       />
     </div>
   );
