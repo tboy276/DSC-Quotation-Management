@@ -5,20 +5,22 @@ import { CostSectionCard } from '../ui/CostSectionCard';
 
 interface MachiningOpsListProps {
   operations: MachiningOperation[];
-  N_order: number;
   totalMachiningCost: number;
+  machiningNotes?: string;
   onAddOp: (op: MachiningOperation) => void;
   onUpdateOp: (index: number, op: MachiningOperation) => void;
   onRemoveOp: (index: number) => void;
+  onUpdateNotes: (notes: string) => void;
 }
 
 export const MachiningOpsList = ({
   operations,
-  N_order,
   totalMachiningCost,
+  machiningNotes,
   onAddOp,
   onUpdateOp,
   onRemoveOp,
+  onUpdateNotes,
 }: MachiningOpsListProps) => {
   const cncMachineTypes = [
     { key: 'cnc_turning', name: 'Máy Tiện CNC', ratePerMinute: 3500 },
@@ -38,7 +40,6 @@ export const MachiningOpsList = ({
       t_prep_min: 10,
       t_man_min: 2.0,
       DG_machine_hour: hourlyRate,
-      C_tooling: 1500,
     });
   };
 
@@ -68,7 +69,7 @@ export const MachiningOpsList = ({
       Chưa có nguyên công gia công nào. Nhấp "+ Thêm nguyên công" để chọn máy CNC.
     </p>
   ) : (
-    <div className="space-y-3">
+    <div className="space-y-4">
       {operations.map((op, idx) => {
         const matchedCncKey = cncMachineTypes.find((c) =>
           op.name?.includes('Tiện') ? c.key === 'cnc_turning' :
@@ -79,101 +80,109 @@ export const MachiningOpsList = ({
         )?.key || 'cnc_turning';
 
         // Calculate cost for this specific op
-        const validNOrder = Math.max(1, N_order);
-        const opCost = ((op.t_prep_min / validNOrder) + op.t_man_min) * (op.DG_machine_hour / 60) + op.C_tooling;
+        const opCost = (op.t_prep_min + op.t_man_min) * (op.DG_machine_hour / 60);
 
         return (
           <div
             key={idx}
-            className="p-3 rounded-[6px] border border-[#EAEAEA] bg-[#FBFBFA] space-y-2 text-xs"
+            className="rounded-[6px] border border-[#EAEAEA] bg-[#FBFBFA] overflow-hidden"
           >
-            <div className="flex items-center justify-between gap-2">
-              <div className="flex-1 flex items-center space-x-2">
-                <span className="w-6 font-bold text-[#787774] text-[11px] flex-shrink-0">
-                  {toRoman(idx)}.
-                </span>
-                {/* Machine Type Selection Dropdown */}
-                <select
-                  value={matchedCncKey}
-                  onChange={(e) => handleSelectMachineType(idx, e.target.value)}
-                  className="flex-1 px-2 py-1.5 border border-[#EAEAEA] rounded-[4px] bg-white text-[#111111] font-bold text-xs focus:outline-none"
-                >
-                  {cncMachineTypes.map((cnc) => (
-                    <option key={cnc.key} value={cnc.key}>
-                      {cnc.name} ({(cnc.ratePerMinute).toLocaleString('vi-VN')} VNĐ/phút)
-                    </option>
-                  ))}
-                </select>
+            <div className="flex flex-col md:flex-row">
+              {/* Cột trái: Nhập liệu */}
+              <div className="w-full md:w-1/2 p-3 space-y-3 bg-white border-b md:border-b-0 md:border-r border-[#EAEAEA]">
+                <div className="flex items-center space-x-2">
+                  <span className="w-6 font-bold text-[#787774] text-[11px] flex-shrink-0">
+                    {toRoman(idx)}.
+                  </span>
+                  <select
+                    value={matchedCncKey}
+                    onChange={(e) => handleSelectMachineType(idx, e.target.value)}
+                    className="flex-1 px-2 py-1.5 border border-[#EAEAEA] rounded-[4px] bg-white text-[#111111] font-bold text-xs focus:outline-none"
+                  >
+                    {cncMachineTypes.map((cnc) => (
+                      <option key={cnc.key} value={cnc.key}>
+                        {cnc.name} ({(cnc.ratePerMinute).toLocaleString('vi-VN')} VNĐ/phút)
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <label className="block text-[10px] font-semibold text-[#787774] mb-1">
+                      T.Gian Gia Công (Phút)
+                    </label>
+                    <input
+                      type="number"
+                      min="0.1"
+                      step="0.1"
+                      value={op.t_man_min}
+                      onChange={(e) =>
+                        onUpdateOp(idx, { ...op, t_man_min: Number(e.target.value) })
+                      }
+                      className="w-full px-2 py-1.5 border border-[#EAEAEA] rounded-[4px] bg-white font-mono font-bold text-xs text-[#111111]"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-semibold text-[#787774] mb-1">
+                      T.Gian Gá Lắp (Phút)
+                    </label>
+                    <input
+                      type="number"
+                      min="0"
+                      step="0.5"
+                      value={op.t_prep_min}
+                      onChange={(e) =>
+                        onUpdateOp(idx, { ...op, t_prep_min: Number(e.target.value) })
+                      }
+                      className="w-full px-2 py-1.5 border border-[#EAEAEA] rounded-[4px] bg-white font-mono font-bold text-xs text-[#111111]"
+                    />
+                  </div>
+                </div>
               </div>
 
-              <div className="flex items-center space-x-3">
-                <span className="font-mono font-bold text-[#111111]">
-                  {Math.round(opCost).toLocaleString('vi-VN')} đ
-                </span>
-                <button
-                  type="button"
-                  onClick={() => onRemoveOp(idx)}
-                  className="p-1 text-red-500 hover:text-red-700 hover:bg-red-50 rounded cursor-pointer"
-                  title="Xóa công đoạn"
-                >
-                  <Trash2 className="w-4 h-4" />
-                </button>
-              </div>
-            </div>
-
-            {/* Operation Details Input Grid */}
-            <div className="grid grid-cols-3 gap-2 pt-2 border-t border-dashed border-[#EAEAEA]">
-              <div>
-                <label className="block text-[10px] font-semibold text-[#787774] mb-1">
-                  t_prep (Chuẩn bị/Gá đặt - Phút)
-                </label>
-                <input
-                  type="number"
-                  min="0"
-                  step="0.5"
-                  value={op.t_prep_min}
-                  onChange={(e) =>
-                    onUpdateOp(idx, { ...op, t_prep_min: Number(e.target.value) })
-                  }
-                  className="w-full px-2 py-1.5 border border-[#EAEAEA] rounded-[4px] bg-white font-mono text-xs text-[#111111]"
-                />
-              </div>
-
-              <div>
-                <label className="block text-[10px] font-semibold text-[#787774] mb-1">
-                  t_man (Thời gian máy/SP - Phút)
-                </label>
-                <input
-                  type="number"
-                  min="0.1"
-                  step="0.1"
-                  value={op.t_man_min}
-                  onChange={(e) =>
-                    onUpdateOp(idx, { ...op, t_man_min: Number(e.target.value) })
-                  }
-                  className="w-full px-2 py-1.5 border border-[#EAEAEA] rounded-[4px] bg-white font-mono font-bold text-xs text-[#111111]"
-                />
-              </div>
-
-              <div>
-                <label className="block text-[10px] font-semibold text-[#787774] mb-1">
-                  C_tooling (Dao cụ/SP - VNĐ)
-                </label>
-                <input
-                  type="number"
-                  min="0"
-                  step="500"
-                  value={op.C_tooling}
-                  onChange={(e) =>
-                    onUpdateOp(idx, { ...op, C_tooling: Number(e.target.value) })
-                  }
-                  className="w-full px-2 py-1.5 border border-[#EAEAEA] rounded-[4px] bg-white font-mono font-bold text-xs text-[#111111]"
-                />
+              {/* Cột phải: Phép tính & Kết quả */}
+              <div className="w-full md:w-1/2 p-3 flex flex-col justify-between bg-[#FBFBFA]">
+                <div className="flex justify-between items-start">
+                  <div className="space-y-1">
+                    <p className="text-[10px] font-semibold text-[#787774] uppercase tracking-wider">Chi phí nguyên công</p>
+                    <p className="text-[11px] font-mono text-[#333333]">
+                      ({op.t_man_min}p + {op.t_prep_min}p) × {(op.DG_machine_hour / 60).toLocaleString('vi-VN')} đ
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => onRemoveOp(idx)}
+                    className="p-1 text-red-500 hover:text-red-700 hover:bg-red-50 rounded cursor-pointer"
+                    title="Xóa công đoạn"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </div>
+                
+                <div className="text-right mt-3">
+                  <span className="font-mono font-bold text-[#111111] text-sm">
+                    {Math.round(opCost).toLocaleString('vi-VN')} VNĐ
+                  </span>
+                </div>
               </div>
             </div>
           </div>
         );
       })}
+
+      {/* Ghi chú chung */}
+      <div className="pt-2">
+        <label className="block text-[11px] font-bold text-[#787774] uppercase tracking-wider mb-1.5">
+          Ghi Chú Gia Công (Chung)
+        </label>
+        <textarea
+          value={machiningNotes || ''}
+          onChange={(e) => onUpdateNotes(e.target.value)}
+          placeholder="Ví dụ: Cần mua dao khoả đặc biệt, Cần mượn gá lắp từ khách hàng..."
+          className="w-full px-3 py-2 border border-[#EAEAEA] rounded-[4px] bg-white text-[#111111] font-mono text-[13px] h-20 resize-none focus:outline-none focus:border-[#111111]"
+        />
+      </div>
 
       <div className="border-t-2 border-[#111111] pt-3 flex flex-wrap gap-2 justify-between items-center font-mono">
         <span className="text-[13px] font-bold text-[#111111] uppercase font-sans">

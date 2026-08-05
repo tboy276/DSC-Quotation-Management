@@ -183,11 +183,12 @@ export const CastingCalculatorForm = () => {
       {/* SECTION 3: GIA CÔNG CƠ KHÍ */}
       <MachiningOpsList
         operations={casting.machining_operations || []}
-        N_order={casting.N_order || 1}
         totalMachiningCost={res.C_machining_casting}
+        machiningNotes={casting.machining_notes}
         onAddOp={addOp}
         onUpdateOp={updateOp}
         onRemoveOp={removeOp}
+        onUpdateNotes={(notes) => setCastingField('machining_notes', notes)}
       />
 
       {/* SECTION 4: KHẤU HAO MẪU */}

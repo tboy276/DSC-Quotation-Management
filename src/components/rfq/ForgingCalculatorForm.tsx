@@ -294,11 +294,12 @@ export const ForgingCalculatorForm = () => {
       {/* 3. Section Gia Công Cơ Khí Động (CNC Ops) */}
       <MachiningOpsList
         operations={forging.machining_operations || []}
-        N_order={forging.N_order || 1}
         totalMachiningCost={res.C_machining}
+        machiningNotes={forging.machining_notes}
         onAddOp={addOp}
         onUpdateOp={updateOp}
         onRemoveOp={removeOp}
+        onUpdateNotes={(notes) => setForgingField('machining_notes', notes)}
       />
 
       {/* 4. Section Khấu Hao Khuôn & Đơn Hàng */}

@@ -15,7 +15,6 @@ export interface MachiningOperation {
   t_prep_min: number;      // Thời gian gá đặt/chuẩn bị (phút) - t_prep_i
   t_man_min: number;       // Thời gian công đoạn/chi tiết (phút) - t_man_i
   DG_machine_hour: number; // Đơn giá máy (/giờ) - DG_machine_i
-  C_tooling: number;       // Chi phí dao cụ (/chi tiết) - C_tooling_i
 }
 
 // ----------------------------------------------------------------------
@@ -49,6 +48,7 @@ export interface ForgingInput {
   // Section 3 — Machining (Gia công cơ khí)
   machining_operations?: MachiningOperation[];
   C_machining_override?: number;
+  machining_notes?: string;        // Ghi chú chung cho khối CNC
 
   // Section 4 — Die Amortization (Khấu hao khuôn)
   C_die_total?: number;       // Tổng chi phí bộ khuôn (VNĐ)
@@ -114,6 +114,7 @@ export interface CastingInput {
   C_coating?: number;         // Chi phí sơn/mạ (VNĐ/cái)
   C_QA?: number;              // Chi phí kiểm định QA/QC (VNĐ/cái)
   C_machining_override?: number;
+  machining_notes?: string;
 
   // Section 4 — Pattern Amortization (Khấu hao mẫu đúc)
   C_pattern_total?: number;       // Tổng chi phí bộ mẫu đúc (VNĐ)

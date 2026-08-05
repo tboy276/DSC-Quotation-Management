@@ -131,9 +131,10 @@ export const useQuotationStore = create<QuotationStoreState>((set, get) => ({
     DG_clean_kg: 1200,
 
     machining_operations: [
-      { name: 'Tiện thô CNC mặt đầu & đường kính', t_prep_min: 15, t_man_min: 2.5, DG_machine_hour: 210000, C_tooling: 1500 },
-      { name: 'Phay rãnh keyway CNC', t_prep_min: 10, t_man_min: 1.8, DG_machine_hour: 270000, C_tooling: 2000 },
+      { name: 'Tiện thô CNC mặt đầu & đường kính', t_prep_min: 15, t_man_min: 2.5, DG_machine_hour: 210000 },
+      { name: 'Phay rãnh keyway CNC', t_prep_min: 10, t_man_min: 1.8, DG_machine_hour: 270000 },
     ],
+    machining_notes: '',
 
     C_die_total: 85000000,
     L_die_life: 10000,
@@ -176,9 +177,10 @@ export const useQuotationStore = create<QuotationStoreState>((set, get) => ({
     DG_finish_kg: 1800,
 
     machining_operations: [
-      { name: 'Tiện mặt đúc CNC', t_prep_min: 15, t_man_min: 3.0, DG_machine_hour: 210000, C_tooling: 1800 },
-      { name: 'Khoan lỗ gá CNC', t_prep_min: 10, t_man_min: 1.5, DG_machine_hour: 180000, C_tooling: 1000 },
+      { name: 'Tiện mặt đúc CNC', t_prep_min: 15, t_man_min: 3.0, DG_machine_hour: 210000 },
+      { name: 'Khoan lỗ gá CNC', t_prep_min: 10, t_man_min: 1.5, DG_machine_hour: 180000 },
     ],
+    machining_notes: '',
     C_coating: 1200,
     C_QA: 1500,
 

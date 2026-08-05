@@ -116,10 +116,8 @@ export function calculateCastingPrice(input: CastingInput): CastingResult {
   if (C_machining_override !== undefined) {
     C_machining_casting = C_machining_override;
   } else {
-    const validNOrder = Math.max(1, N_order);
     const C_machining = machining_operations.reduce((total, op) => {
-      const C_machining_i =
-        ((op.t_prep_min / validNOrder) + op.t_man_min) * (op.DG_machine_hour / 60) + op.C_tooling;
+      const C_machining_i = (op.t_prep_min + op.t_man_min) * (op.DG_machine_hour / 60);
       return total + C_machining_i;
     }, 0);
 
