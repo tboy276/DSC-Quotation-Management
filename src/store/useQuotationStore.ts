@@ -143,9 +143,9 @@ export const useQuotationStore = create<QuotationStoreState>((set, get) => ({
     machining_notes: '',
 
     C_die_total: 85000000,
-    L_die_life: 10000,
-    N_order: 1000,
-    die_cost_treatment: 'amortized',
+    L_die_life: 20000,
+    N_order: 20000,
+    die_cost_treatment: 'separate',
 
     k_mgmt: 8,
     DG_trans_kg: defaultTransRate,
@@ -191,9 +191,9 @@ export const useQuotationStore = create<QuotationStoreState>((set, get) => ({
     C_QA: 1500,
 
     C_pattern_total: 45000000,
-    L_pattern_life: 15000,
-    N_order: 1000,
-    pattern_cost_treatment: 'amortized',
+    L_pattern_life: 20000,
+    N_order: 20000,
+    pattern_cost_treatment: 'separate',
 
     k_mgmt_cast: 10,
     DG_trans_kg: defaultTransRate,

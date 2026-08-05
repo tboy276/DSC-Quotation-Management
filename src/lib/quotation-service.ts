@@ -53,7 +53,7 @@ export const fetchQuotes = async (filter?: QuotationFilterOptions): Promise<Quot
       status: item.status,
       currency: existingQuote?.currency || 'VND',
       exchange_rate: existingQuote?.exchange_rate || 1,
-      die_cost_treatment: existingQuote?.die_cost_treatment || 'amortized',
+      die_cost_treatment: existingQuote?.die_cost_treatment || 'separate',
       final_quoted_price: existingQuote?.final_quoted_price || 0,
       created_at: item.created_at,
       sent_at: item.quoted_sent_at || existingQuote?.sent_at,

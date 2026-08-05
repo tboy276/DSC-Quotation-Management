@@ -2,11 +2,12 @@ import { useState, useEffect } from 'react';
 import { useQuotationStore } from '../../store/useQuotationStore';
 import { MachiningOpsList } from './MachiningOpsList';
 import { ToolingOpsList } from './ToolingOpsList';
+import { ToolingAmortizationSection } from './ToolingAmortizationSection';
 import { SliderInput } from '../ui/SliderInput';
 import { INITIAL_CASTING_GRADES, fetchCastingGrades } from '../../lib/master-data-service';
 import type { CastingGrade } from '../../types/master-data';
 import { Modal } from '../ui/Modal';
-import { Layers, Wrench, PieChart, Factory, Eye } from 'lucide-react';
+import { Layers, PieChart, Factory, Eye } from 'lucide-react';
 import { CostSectionCard } from '../ui/CostSectionCard';
 
 export const CastingCalculatorForm = () => {
@@ -209,77 +210,16 @@ export const CastingCalculatorForm = () => {
         onUpdateField={(field, value) => setCastingField(field, value)}
       />
 
-      {/* 4B. Section Khấu Hao Mẫu & Đơn Hàng */}
-      <CostSectionCard
-        icon={<Wrench className="w-5 h-5" />}
-        title="SECTION 4B: CƠ CHẾ KHẤU HAO & SẢN LƯỢNG ĐƠN HÀNG"
-        topInputs={
-          <>
-            <div className="hidden">
-              <input type="hidden" value={casting.C_pattern_total} />
-            </div>
-            <div className="hidden">
-              <input type="hidden" value={casting.L_pattern_life} />
-            </div>
-            <div>
-              <label className="block text-[11px] font-bold text-[#787774] uppercase tracking-wider mb-1.5">
-                Sản Lượng Đơn Hàng (N_order)
-              </label>
-              <input
-                type="number"
-                value={casting.N_order}
-                onChange={(e) => setCastingField('N_order', Number(e.target.value))}
-                className="w-full px-3 py-2 border border-[#EAEAEA] rounded-[4px] font-mono font-bold text-[13px] text-[#111111]"
-              />
-            </div>
-          </>
-        }
-        mainLeftContent={
-          <div>
-            <label className="block text-[11px] font-bold text-[#787774] uppercase tracking-wider mb-2">
-              Cơ Chế Xử Lý Tiền Mẫu
-            </label>
-            <div className="flex flex-col gap-2">
-              <button
-                type="button"
-                onClick={() => setCastingField('pattern_cost_treatment', 'amortized')}
-                className={`px-3 py-2 rounded-[4px] text-xs font-bold transition-all cursor-pointer border text-left ${
-                  casting.pattern_cost_treatment === 'amortized'
-                    ? 'bg-white border-[#111111] text-[#111111] shadow-sm'
-                    : 'bg-[#F9F9F9] border-[#EAEAEA] text-[#787774] hover:text-[#111111]'
-                }`}
-              >
-                Phân Bổ Vào Giá Vốn (Amortized COGS)
-              </button>
-              <button
-                type="button"
-                onClick={() => setCastingField('pattern_cost_treatment', 'separate')}
-                className={`px-3 py-2 rounded-[4px] text-xs font-bold transition-all cursor-pointer border text-left ${
-                  casting.pattern_cost_treatment === 'separate'
-                    ? 'bg-[#FDEBEC] border-[#9F2F2D] text-[#9F2F2D] shadow-sm'
-                    : 'bg-[#F9F9F9] border-[#EAEAEA] text-[#787774] hover:text-[#111111]'
-                }`}
-              >
-                Tách Riêng Khoản Mẫu (Separate Fee)
-              </button>
-            </div>
-          </div>
-        }
-        breakdownItems={
-          casting.pattern_cost_treatment === 'amortized' ? [
-            { label: 'I. Tổng Chi Phí Mẫu:', value: `${(res.actual_C_pattern_total || 0).toLocaleString('vi-VN')} đ` },
-            { label: 'II. Mẫu số khấu hao (Min giữa L_pattern_life và N_order):', value: `${Math.min(res.actual_L_pattern_life || 1, Math.max(1, casting.N_order || 1)).toLocaleString('vi-VN')} SP` },
-          ] : [
-            { label: 'I. Tiền Mẫu Tách Riêng Nhập 1 Lần:', value: `${(res.actual_C_pattern_total || 0).toLocaleString('vi-VN')} đ` },
-          ]
-        }
-        breakdownTotal={
-          casting.pattern_cost_treatment === 'amortized' ? { label: 'Khấu hao tiền mẫu / Sản phẩm:', value: `${res.C_pattern_amortization.toLocaleString('vi-VN')} VNĐ/SP` } : undefined
-        }
-        footerTitle="Phí Khấu Hao Mẫu (Cộng vào Giá Vốn COGS)"
-        footerSubtitle={casting.pattern_cost_treatment === 'amortized' ? "= Phí Khấu Hao Mẫu / Sản phẩm" : "Tiền mẫu tách riêng, KHÔNG phân bổ vào COGS"}
-        footerTotal={casting.pattern_cost_treatment === 'amortized' ? res.C_pattern_amortization.toLocaleString('vi-VN') : 0}
-        footerTotalUnit="VNĐ/SP"
+      {/* 4B. Section Khấu Hao Mẫu & Đơn Hàng (Tối giản hoá) */}
+      <ToolingAmortizationSection
+        isForging={false}
+        treatment={casting.pattern_cost_treatment || 'separate'}
+        onTreatmentChange={(treatment) => setCastingField('pattern_cost_treatment', treatment)}
+        N_order={casting.N_order || res.actual_L_pattern_life || 20000}
+        onNOrderChange={(val) => setCastingField('N_order', val)}
+        totalToolingCost={res.actual_C_pattern_total || 0}
+        autoToolLife={res.actual_L_pattern_life || 20000}
+        amortizationCostPerUnit={res.C_pattern_amortization || 0}
       />
 
       {/* SECTION 5: TỔNG KẾT & BÁO GIÁ */}

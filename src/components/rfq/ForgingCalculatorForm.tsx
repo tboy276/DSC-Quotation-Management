@@ -1,13 +1,14 @@
 import { useQuotationStore } from '../../store/useQuotationStore';
 import { MachiningOpsList } from './MachiningOpsList';
 import { ToolingOpsList } from './ToolingOpsList';
+import { ToolingAmortizationSection } from './ToolingAmortizationSection';
 import { SliderInput } from '../ui/SliderInput';
 import {
   INITIAL_MATERIALS,
   INITIAL_PRESSING_RATES,
   INITIAL_HAMMER_RATES,
 } from '../../lib/master-data-service';
-import { Workflow, Layers, Wrench, PieChart } from 'lucide-react';
+import { Workflow, Layers, PieChart } from 'lucide-react';
 import { CostSectionCard } from '../ui/CostSectionCard';
 
 export const ForgingCalculatorForm = () => {
@@ -320,79 +321,16 @@ export const ForgingCalculatorForm = () => {
         onUpdateField={(field, value) => setForgingField(field, value)}
       />
 
-      {/* 4B. Section Khấu Hao Khuôn & Đơn Hàng */}
-      <CostSectionCard
-        icon={<Wrench className="w-5 h-5" />}
-        title="SECTION 4B: CƠ CHẾ KHẤU HAO & SẢN LƯỢNG ĐƠN HÀNG"
-        topInputs={
-          <>
-            <div className="hidden">
-              {/* Giữ lại C_die_total ẩn nếu cần cho backward compatibility, nhưng giờ nó được tính tự động */}
-              <input type="hidden" value={forging.C_die_total} />
-            </div>
-            <div className="hidden">
-              {/* Giữ lại L_die_life ẩn nếu cần */}
-              <input type="hidden" value={forging.L_die_life} />
-            </div>
-            <div>
-              <label className="block text-[11px] font-bold text-[#787774] uppercase tracking-wider mb-1.5">
-                Sản Lượng Đơn Hàng (N_order)
-              </label>
-              <input
-                type="number"
-                value={forging.N_order}
-                onChange={(e) => setForgingField('N_order', Number(e.target.value))}
-                className="w-full px-3 py-2 border border-[#EAEAEA] rounded-[4px] font-mono font-bold text-[13px] text-[#111111]"
-              />
-            </div>
-          </>
-        }
-        mainLeftContent={
-          <div>
-            <label className="block text-[11px] font-bold text-[#787774] uppercase tracking-wider mb-2">
-              Cơ Chế Xử Lý Tiền Khuôn
-            </label>
-            <div className="flex flex-col gap-2">
-              <button
-                type="button"
-                onClick={() => setForgingField('die_cost_treatment', 'amortized')}
-                className={`px-3 py-2 rounded-[4px] text-xs font-bold transition-all cursor-pointer border text-left ${
-                  forging.die_cost_treatment === 'amortized'
-                    ? 'bg-white border-[#111111] text-[#111111] shadow-sm'
-                    : 'bg-[#F9F9F9] border-[#EAEAEA] text-[#787774] hover:text-[#111111]'
-                }`}
-              >
-                Phân Bổ Vào Giá Vốn (Amortized COGS)
-              </button>
-              <button
-                type="button"
-                onClick={() => setForgingField('die_cost_treatment', 'separate')}
-                className={`px-3 py-2 rounded-[4px] text-xs font-bold transition-all cursor-pointer border text-left ${
-                  forging.die_cost_treatment === 'separate'
-                    ? 'bg-[#FDEBEC] border-[#9F2F2D] text-[#9F2F2D] shadow-sm'
-                    : 'bg-[#F9F9F9] border-[#EAEAEA] text-[#787774] hover:text-[#111111]'
-                }`}
-              >
-                Tách Riêng Khoản Khuôn (Separate Fee)
-              </button>
-            </div>
-          </div>
-        }
-        breakdownItems={
-          forging.die_cost_treatment === 'amortized' ? [
-            { label: 'I. Tổng Chi Phí Khuôn:', value: `${(res.actual_C_die_total || 0).toLocaleString('vi-VN')} đ` },
-            { label: 'II. Mẫu số khấu hao:', value: `${Math.min(res.actual_L_die_life || 1, Math.max(1, forging.N_order || 1)).toLocaleString('vi-VN')} SP` },
-          ] : [
-            { label: 'I. Tiền Khuôn Tách Riêng Nhập 1 Lần:', value: `${(res.actual_C_die_total || 0).toLocaleString('vi-VN')} đ` },
-          ]
-        }
-        breakdownTotal={
-          forging.die_cost_treatment === 'amortized' ? { label: 'Khấu hao tiền khuôn / Sản phẩm:', value: `${res.C_die_amortization.toLocaleString('vi-VN')} VNĐ/SP` } : undefined
-        }
-        footerTitle="Phí Khấu Hao Khuôn (Cộng vào Giá Vốn COGS)"
-        footerSubtitle={forging.die_cost_treatment === 'amortized' ? "= Phí Khấu Hao Khuôn / Sản phẩm" : "Tiền khuôn tách riêng, KHÔNG phân bổ vào COGS"}
-        footerTotal={forging.die_cost_treatment === 'amortized' ? res.C_die_amortization.toLocaleString('vi-VN') : 0}
-        footerTotalUnit="VNĐ/SP"
+      {/* 4B. Section Khấu Hao Khuôn & Đơn Hàng (Tối giản hoá) */}
+      <ToolingAmortizationSection
+        isForging={true}
+        treatment={forging.die_cost_treatment || 'separate'}
+        onTreatmentChange={(treatment) => setForgingField('die_cost_treatment', treatment)}
+        N_order={forging.N_order || res.actual_L_die_life || 20000}
+        onNOrderChange={(val) => setForgingField('N_order', val)}
+        totalToolingCost={res.actual_C_die_total || 0}
+        autoToolLife={res.actual_L_die_life || 20000}
+        amortizationCostPerUnit={res.C_die_amortization || 0}
       />
 
       {/* 5. Section Sliders: Chi Phí Quản Lý, Vận Chuyển & Lợi Nhuận */}
