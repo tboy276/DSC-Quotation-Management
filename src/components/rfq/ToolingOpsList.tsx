@@ -1,7 +1,5 @@
-
 import type { ToolingComponent } from '../../lib/calculation-engine/types';
-import { Plus, Trash2, PenTool } from 'lucide-react';
-import { CostSectionCard } from '../ui/CostSectionCard';
+import { Plus, Trash2, Layers } from 'lucide-react';
 
 interface ToolingOpsListProps {
   isForging: boolean;
@@ -66,302 +64,274 @@ export const ToolingOpsList = ({
   const totalDieCost = totalComponentsCost + C_design + mgmtCost;
   const autoLife = life_coefficient * cavity;
 
-  const topInputs = (
-    <div className="col-span-3 grid grid-cols-1 md:grid-cols-4 gap-4 p-4 bg-[#FBFBFA] border border-[#EAEAEA] rounded-[4px]">
-      <div className="space-y-3 col-span-1 md:col-span-2">
-        <h5 className="text-[11px] font-bold text-[#111111] uppercase tracking-wider mb-2 border-b border-[#EAEAEA] pb-1">
-          Thông số chung & Tuổi thọ
-        </h5>
-        <div className="grid grid-cols-2 gap-3">
-          <div>
-            <label className="block text-[10px] font-bold text-[#787774] uppercase tracking-wider mb-1">
-              Cavity / Khuôn
-            </label>
-            <input
-              type="number"
-              min="1"
-              value={cavity}
-              onChange={(e) => onUpdateField('cavity', Number(e.target.value))}
-              className="w-full px-2.5 py-1.5 border border-[#EAEAEA] rounded-[4px] bg-white text-[#111111] font-mono text-xs focus:outline-none focus:border-[#111111]"
-            />
-          </div>
-          <div>
-            <label className="block text-[10px] font-bold text-[#787774] uppercase tracking-wider mb-1">
-              Hệ số tuổi thọ/cavity
-            </label>
-            <div className="flex items-center">
-              <input
-                type="number"
-                min="0"
-                value={life_coefficient}
-                onChange={(e) => onUpdateField('life_coefficient', Number(e.target.value))}
-                className="w-full px-2.5 py-1.5 border border-[#EAEAEA] rounded-l-[4px] bg-white text-[#111111] font-mono text-xs focus:outline-none focus:border-[#111111]"
-              />
-              <span className="bg-[#F0F0EE] px-2 py-1.5 border border-l-0 border-[#EAEAEA] rounded-r-[4px] text-[10px] font-bold text-[#787774] uppercase">pcs</span>
-            </div>
-          </div>
-        </div>
-        <div className="mt-2 pt-2 border-t border-dashed border-[#EAEAEA]">
-          <p className="text-[10px] font-bold text-[#787774] uppercase">Tuổi thọ (Tự động):</p>
-          <p className="font-mono font-extrabold text-[#38517A] text-[16px]">{autoLife.toLocaleString('vi-VN')} pcs</p>
-        </div>
+  return (
+    <div className="space-y-4 animate-fade-in-up mt-8">
+      {/* Section Header */}
+      <div className="flex items-center gap-2 px-1 mb-2">
+        <Layers className="w-5 h-5 text-[#38517A]" />
+        <h3 className="text-[14px] font-black text-[#38517A] uppercase tracking-wider">
+          {isForging ? "SECTION 4: BỘ KHUÔN RÈN" : "SECTION 4: BỘ MẪU ĐÚC"}
+        </h3>
       </div>
-      
-      <div className="space-y-2 col-span-1 md:col-span-2">
-        <h5 className="text-[11px] font-bold text-[#111111] uppercase tracking-wider mb-2 border-b border-[#EAEAEA] pb-1">
-          Bóc tách Chi phí Bộ {isForging ? 'Khuôn' : 'Mẫu'}
-        </h5>
-        
-        <div className="flex justify-between items-center pb-1">
-          <span className="text-[11px] font-medium text-[#787774]">Tổng tiền thành phần:</span>
-          <span className="font-mono font-bold text-[#111111] text-xs">{totalComponentsCost.toLocaleString('vi-VN')} đ</span>
-        </div>
-        
-        <div className="flex items-center gap-2 pb-1">
-          <span className="text-[11px] font-medium text-[#787774] min-w-[120px]">+ Tiền thiết kế:</span>
-          <div className="flex-1 relative">
-            <input
-              type="number"
-              min="0"
-              value={C_design}
-              onChange={(e) => onUpdateField('C_design', Number(e.target.value))}
-              className="w-full px-2 py-1 border border-[#EAEAEA] rounded-[4px] bg-white text-[#111111] font-mono text-xs focus:outline-none focus:border-[#111111] text-right pr-6"
-            />
-            <span className="absolute right-2 top-1.5 text-[10px] text-[#787774]">đ</span>
-          </div>
-        </div>
-        
-        <div className="flex items-center gap-2 pb-1">
-          <span className="text-[11px] font-medium text-[#787774] min-w-[120px]">+ Tiền quản lý (%):</span>
-          <div className="flex-1 flex gap-2 items-center">
-            <input
-              type="number"
-              min="0"
-              max="100"
-              value={k_mgmt_die}
-              onChange={(e) => onUpdateField('k_mgmt_die', Number(e.target.value))}
-              className="w-16 px-2 py-1 border border-[#EAEAEA] rounded-[4px] bg-white text-[#111111] font-mono text-xs focus:outline-none focus:border-[#111111] text-center"
-            />
-            <span className="text-[10px] text-[#787774] font-mono">= {mgmtCost.toLocaleString('vi-VN')} đ</span>
-          </div>
-        </div>
-        
-        <div className="mt-2 pt-2 border-t border-[#111111] flex justify-between items-center">
-          <span className="text-[11px] font-bold text-[#111111] uppercase tracking-wider">= Tổng Chi Phí:</span>
-          <span className="font-mono font-extrabold text-[#38517A] text-[16px]">{totalDieCost.toLocaleString('vi-VN')} đ</span>
-        </div>
-      </div>
-    </div>
-  );
 
-  const rightContent = components.length === 0 ? (
-    <p className="text-xs text-[#787774] italic py-2 text-center">
-      Chưa có thành phần {isForging ? 'khuôn' : 'mẫu'} nào. Nhấp "+ Thêm Thành Phần" để bổ sung.
-    </p>
-  ) : (
-    <div className="space-y-4 mt-4">
-      {components.map((comp, idx) => {
-        // Compute for this comp
-        const materialCost = comp.weight_kg * comp.material_price_kg;
-        const machiningCost = comp.weight_kg * comp.machining_price_kg;
-        const heatTreatmentCost = comp.needs_heat_treatment ? (comp.weight_kg * comp.heat_treatment_price_kg) : 0;
-        
-        let reworkCost = 0;
-        if (isForging && comp.needs_reworking) {
-          const reworkRatio = (comp.rework_ratio ?? 30) / 100;
-          const reworkCount = comp.rework_count ?? 9;
-          reworkCost = reworkCount * (reworkRatio * machiningCost);
-        }
-        
-        const opCost = materialCost + machiningCost + heatTreatmentCost + reworkCost;
-
-        return (
-          <div
-            key={idx}
-            className="flex flex-col gap-3 p-4 rounded-[6px] border border-[#EAEAEA] bg-white text-xs relative animate-fade-in"
+      {/* Card 1: Danh sách thành phần */}
+      <div className="bg-white border border-[#EAEAEA] rounded-[6px] shadow-sm p-5 pl-10 relative">
+        <div className="flex justify-between items-center mb-6 pb-4 border-b border-[#EAEAEA]">
+          <h4 className="text-[12px] font-bold text-[#111111] uppercase tracking-wider">
+            Danh sách các thành phần
+          </h4>
+          <button
+            type="button"
+            onClick={handleAddDefaultComp}
+            className="flex items-center space-x-1.5 px-4 py-2 bg-[#111111] hover:bg-[#333333] active:scale-[0.98] text-white text-xs font-bold rounded-[4px] transition-all cursor-pointer shadow-sm"
           >
-            <div className="flex justify-between items-start">
-              <div className="grid grid-cols-1 md:grid-cols-5 gap-3 flex-1 mr-4">
-                {/* Tên thành phần */}
-                <div className="col-span-1 md:col-span-2">
-                  <label className="block text-[9px] font-bold text-[#787774] uppercase tracking-wider mb-1.5">
-                    Tên thành phần
-                  </label>
-                  <input
-                    type="text"
-                    value={comp.name || ''}
-                    onChange={(e) => onUpdateComp(idx, { ...comp, name: e.target.value })}
-                    placeholder="VD: Tấm mẫu..."
-                    className="w-full px-2.5 py-1.5 border border-[#EAEAEA] rounded-[4px] bg-white text-[#111111] font-mono text-xs focus:outline-none focus:border-[#111111]"
-                  />
-                </div>
+            <Plus className="w-4 h-4" />
+            <span>Thêm thành phần</span>
+          </button>
+        </div>
 
-                {/* Mác vật liệu */}
-                <div className="col-span-1 md:col-span-1">
-                  <label className="block text-[9px] font-bold text-[#787774] uppercase tracking-wider mb-1.5">
-                    Mác vật liệu
-                  </label>
-                  <input
-                    type="text"
-                    value={comp.material || ''}
-                    onChange={(e) => onUpdateComp(idx, { ...comp, material: e.target.value })}
-                    placeholder="VD: Nhôm khối"
-                    className="w-full px-2.5 py-1.5 border border-[#EAEAEA] rounded-[4px] bg-white text-[#111111] font-mono text-xs focus:outline-none focus:border-[#111111]"
-                  />
-                </div>
+        {components.length === 0 ? (
+          <p className="text-xs text-[#787774] italic py-8 text-center bg-[#F9F9F9] rounded border border-dashed border-[#EAEAEA]">
+            Chưa có thành phần {isForging ? 'khuôn' : 'mẫu'} nào. Nhấp "+ Thêm thành phần" để bổ sung.
+          </p>
+        ) : (
+          <div className="space-y-0">
+            {components.map((comp, idx) => {
+              // Compute for this comp
+              const materialCost = comp.weight_kg * comp.material_price_kg;
+              const machiningCost = comp.weight_kg * comp.machining_price_kg;
+              const heatTreatmentCost = comp.needs_heat_treatment ? (comp.weight_kg * comp.heat_treatment_price_kg) : 0;
+              
+              let reworkCost = 0;
+              if (isForging && comp.needs_reworking) {
+                const reworkRatio = (comp.rework_ratio ?? 30) / 100;
+                const reworkCount = comp.rework_count ?? 9;
+                reworkCost = reworkCount * (reworkRatio * machiningCost);
+              }
+              
+              const opCost = materialCost + machiningCost + heatTreatmentCost + reworkCost;
 
-                {/* Trọng lượng */}
-                <div className="col-span-1 md:col-span-1">
-                  <label className="block text-[9px] font-bold text-[#787774] uppercase tracking-wider mb-1.5">
-                    Trọng lượng (kg)
-                  </label>
-                  <input
-                    type="number"
-                    min="0"
-                    step="0.1"
-                    value={comp.weight_kg}
-                    onChange={(e) => onUpdateComp(idx, { ...comp, weight_kg: Number(e.target.value) })}
-                    className="w-full px-2.5 py-1.5 border border-[#EAEAEA] rounded-[4px] bg-white font-mono text-[#111111] text-xs focus:outline-none focus:border-[#111111]"
-                  />
-                </div>
+              return (
+                <div key={idx} className="flex flex-wrap lg:flex-nowrap items-end gap-4 relative py-4 border-b border-[#F0F0EE] last:border-0 group">
+                  <button 
+                    onClick={() => onRemoveComp(idx)}
+                    className="absolute -left-10 top-1/2 -translate-y-1/2 p-2 text-gray-300 hover:text-red-500 hover:bg-red-50 rounded transition-all opacity-0 group-hover:opacity-100"
+                    title="Xóa thành phần"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
 
-                {/* Phép tính giá */}
-                <div className="col-span-1 md:col-span-5 grid grid-cols-1 md:grid-cols-2 gap-3 mt-1 pt-3 border-t border-dashed border-[#EAEAEA]">
-                  <div className="space-y-2">
-                    <div className="flex items-center gap-2">
-                      <span className="text-[10px] text-[#787774] w-28 inline-block">ĐG Vật tư (đ/kg)</span>
-                      <input
-                        type="number"
-                        min="0"
-                        value={comp.material_price_kg}
-                        onChange={(e) => onUpdateComp(idx, { ...comp, material_price_kg: Number(e.target.value) })}
-                        className="w-24 px-2 py-1 border border-[#EAEAEA] rounded-[4px] bg-white font-mono text-[#111111] text-xs focus:outline-none focus:border-[#111111]"
-                      />
-                      <span className="text-[10px] text-[#787774] font-mono">= {(comp.weight_kg * comp.material_price_kg).toLocaleString('vi-VN')} đ</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-[10px] text-[#787774] w-28 inline-block">ĐG Gia công (đ/kg)</span>
-                      <input
-                        type="number"
-                        min="0"
-                        value={comp.machining_price_kg}
-                        onChange={(e) => onUpdateComp(idx, { ...comp, machining_price_kg: Number(e.target.value) })}
-                        className="w-24 px-2 py-1 border border-[#EAEAEA] rounded-[4px] bg-white font-mono text-[#111111] text-xs focus:outline-none focus:border-[#111111]"
-                      />
-                      <span className="text-[10px] text-[#787774] font-mono">= {(comp.weight_kg * comp.machining_price_kg).toLocaleString('vi-VN')} đ</span>
-                    </div>
+                  <div className="w-[160px] flex-shrink-0">
+                    <label className="block text-[9px] font-bold text-[#999999] uppercase tracking-wider mb-1.5">Tên</label>
+                    <input 
+                      type="text" 
+                      value={comp.name || ''}
+                      onChange={(e) => onUpdateComp(idx, { ...comp, name: e.target.value })}
+                      className="w-full px-2.5 py-1.5 border border-[#EAEAEA] rounded-[4px] text-xs font-medium text-[#111111] focus:border-[#111111] outline-none" 
+                    />
                   </div>
-
-                  <div className="space-y-2">
+                  <div className="w-[120px] flex-shrink-0">
+                    <label className="block text-[9px] font-bold text-[#999999] uppercase tracking-wider mb-1.5">Mác</label>
+                    <input 
+                      type="text"
+                      value={comp.material || ''}
+                      onChange={(e) => onUpdateComp(idx, { ...comp, material: e.target.value })}
+                      className="w-full px-2.5 py-1.5 border border-[#EAEAEA] rounded-[4px] text-xs font-medium text-[#111111] focus:border-[#111111] outline-none" 
+                    />
+                  </div>
+                  <div className="w-[80px] flex-shrink-0">
+                    <label className="block text-[9px] font-bold text-[#999999] uppercase tracking-wider mb-1.5">KL (KG)</label>
+                    <input 
+                      type="number" 
+                      min="0" step="0.1"
+                      value={comp.weight_kg}
+                      onChange={(e) => onUpdateComp(idx, { ...comp, weight_kg: Number(e.target.value) })}
+                      className="w-full px-2.5 py-1.5 border border-[#EAEAEA] rounded-[4px] text-xs font-mono font-medium text-[#111111] focus:border-[#111111] outline-none" 
+                    />
+                  </div>
+                  <div className="w-[110px] flex-shrink-0">
+                    <label className="block text-[9px] font-bold text-[#999999] uppercase tracking-wider mb-1.5">ĐG Vật tư</label>
+                    <input 
+                      type="number"
+                      min="0"
+                      value={comp.material_price_kg}
+                      onChange={(e) => onUpdateComp(idx, { ...comp, material_price_kg: Number(e.target.value) })}
+                      className="w-full px-2.5 py-1.5 border border-[#EAEAEA] rounded-[4px] text-xs font-mono font-medium text-[#111111] focus:border-[#111111] outline-none" 
+                    />
+                  </div>
+                  <div className="w-[110px] flex-shrink-0">
+                    <label className="block text-[9px] font-bold text-[#999999] uppercase tracking-wider mb-1.5">ĐG Gia công</label>
+                    <input 
+                      type="number" 
+                      min="0"
+                      value={comp.machining_price_kg}
+                      onChange={(e) => onUpdateComp(idx, { ...comp, machining_price_kg: Number(e.target.value) })}
+                      className="w-full px-2.5 py-1.5 border border-[#EAEAEA] rounded-[4px] text-xs font-mono font-medium text-[#111111] focus:border-[#111111] outline-none" 
+                    />
+                  </div>
+                  
+                  <div className="flex-1 flex flex-col gap-1.5 pb-2 pl-2">
                     <div className="flex items-center gap-2">
-                      <label className="flex items-center gap-1.5 cursor-pointer w-28">
-                        <input
-                          type="checkbox"
+                      <label className="flex items-center gap-1.5 cursor-pointer">
+                        <input 
+                          type="checkbox" 
                           checked={comp.needs_heat_treatment}
                           onChange={(e) => onUpdateComp(idx, { ...comp, needs_heat_treatment: e.target.checked })}
-                          className="w-3 h-3 text-[#111111] focus:ring-[#111111] border-gray-300 rounded"
+                          className="w-3.5 h-3.5 text-[#111111] rounded border-gray-300" 
                         />
-                        <span className="text-[10px] font-bold text-[#111111]">Xử lý nhiệt?</span>
+                        <span className="text-[10px] font-bold text-[#787774]">Xử lý nhiệt</span>
                       </label>
                       {comp.needs_heat_treatment && (
-                        <>
-                          <input
-                            type="number"
-                            min="0"
-                            value={comp.heat_treatment_price_kg}
-                            onChange={(e) => onUpdateComp(idx, { ...comp, heat_treatment_price_kg: Number(e.target.value) })}
-                            className="w-24 px-2 py-1 border border-[#EAEAEA] rounded-[4px] bg-white font-mono text-[#111111] text-xs focus:outline-none focus:border-[#111111]"
-                          />
-                          <span className="text-[10px] text-[#787774] font-mono">= {(comp.weight_kg * comp.heat_treatment_price_kg).toLocaleString('vi-VN')} đ</span>
-                        </>
+                         <input 
+                           type="number" 
+                           placeholder="Đơn giá XLN"
+                           value={comp.heat_treatment_price_kg}
+                           onChange={(e) => onUpdateComp(idx, { ...comp, heat_treatment_price_kg: Number(e.target.value) })}
+                           className="w-[80px] px-2 py-1 border border-[#EAEAEA] rounded text-[10px] font-mono outline-none focus:border-[#111111]" 
+                         />
                       )}
                     </div>
-                    
                     {isForging && (
                       <div className="flex items-center gap-2">
-                        <label className="flex items-center gap-1.5 cursor-pointer w-28">
-                          <input
-                            type="checkbox"
+                        <label className="flex items-center gap-1.5 cursor-pointer">
+                          <input 
+                            type="checkbox" 
                             checked={comp.needs_reworking}
                             onChange={(e) => onUpdateComp(idx, { ...comp, needs_reworking: e.target.checked })}
-                            className="w-3 h-3 text-[#111111] focus:ring-[#111111] border-gray-300 rounded"
+                            className="w-3.5 h-3.5 text-[#111111] rounded border-gray-300" 
                           />
-                          <span className="text-[10px] font-bold text-[#111111]">Hạ cốt?</span>
+                          <span className="text-[10px] font-bold text-[#787774]">Hạ cốt</span>
                         </label>
                         {comp.needs_reworking && (
-                          <div className="flex items-center gap-1.5 bg-[#F0F0EE] p-1 rounded">
-                            <span className="text-[9px] text-[#787774]">Tỷ lệ</span>
-                            <input
-                              type="number"
-                              min="0"
-                              max="100"
-                              value={comp.rework_ratio}
-                              onChange={(e) => onUpdateComp(idx, { ...comp, rework_ratio: Number(e.target.value) })}
-                              className="w-12 px-1 py-0.5 border border-[#EAEAEA] rounded bg-white font-mono text-[#111111] text-[10px] focus:outline-none text-center"
-                            />
-                            <span className="text-[9px] text-[#787774]">% x</span>
-                            <input
-                              type="number"
-                              min="1"
-                              value={comp.rework_count}
-                              onChange={(e) => onUpdateComp(idx, { ...comp, rework_count: Number(e.target.value) })}
-                              className="w-12 px-1 py-0.5 border border-[#EAEAEA] rounded bg-white font-mono text-[#111111] text-[10px] focus:outline-none text-center"
-                            />
-                            <span className="text-[9px] text-[#787774]">lần = </span>
-                            <span className="text-[10px] text-[#111111] font-mono font-bold">{(reworkCost).toLocaleString('vi-VN')} đ</span>
-                          </div>
+                           <div className="flex items-center gap-1">
+                             <input 
+                               type="number" 
+                               value={comp.rework_ratio}
+                               onChange={(e) => onUpdateComp(idx, { ...comp, rework_ratio: Number(e.target.value) })}
+                               className="w-[50px] px-1.5 py-1 border border-[#EAEAEA] rounded text-[10px] font-mono outline-none focus:border-[#111111] text-center" 
+                               placeholder="Tỷ lệ %" 
+                             /> 
+                             <span className="text-[9px] text-[#787774]">%</span>
+                             <input 
+                               type="number" 
+                               value={comp.rework_count}
+                               onChange={(e) => onUpdateComp(idx, { ...comp, rework_count: Number(e.target.value) })}
+                               className="w-[50px] px-1.5 py-1 border border-[#EAEAEA] rounded text-[10px] font-mono outline-none focus:border-[#111111] text-center ml-1" 
+                               placeholder="Số lần" 
+                             /> 
+                             <span className="text-[9px] text-[#787774]">lần</span>
+                           </div>
                         )}
                       </div>
                     )}
                   </div>
-                </div>
 
-              </div>
-              
-              <div className="flex flex-col items-end gap-2">
-                <button
-                  type="button"
-                  onClick={() => onRemoveComp(idx)}
-                  className="p-1.5 text-red-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors self-end cursor-pointer"
-                  title="Xóa thành phần"
-                >
-                  <Trash2 className="w-4 h-4" />
-                </button>
-                <div className="text-right mt-auto pb-1 bg-[#FBFBFA] p-2 rounded border border-[#EAEAEA]">
-                  <p className="text-[9px] font-bold text-[#787774] uppercase tracking-wider mb-1">Tổng TP vòng đời</p>
-                  <p className="font-mono font-extrabold text-[#111111] text-[15px]">
-                    {Math.round(opCost).toLocaleString('vi-VN')} <span className="text-[9px] font-sans font-bold uppercase tracking-wider text-[#787774]">VNĐ</span>
-                  </p>
+                  <div className="w-[120px] text-right border-l border-[#F0F0EE] pl-4 pb-1 flex-shrink-0">
+                    <span className="block text-[8px] font-bold text-[#999999] uppercase tracking-wider mb-1">Tổng TP</span>
+                    <div className="font-mono font-bold text-[#111111] text-[13px]">
+                      {Math.round(opCost).toLocaleString('vi-VN')} <span className="text-[9px] text-[#999999] font-sans">đ</span>
+                    </div>
+                  </div>
                 </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+
+      {/* Card 2: 2 columns */}
+      <div className="bg-white border border-[#EAEAEA] rounded-[6px] shadow-sm p-6 flex flex-col md:flex-row gap-6">
+        {/* Left Column: Thông số chung */}
+        <div className="flex-1 md:border-r border-[#EAEAEA] md:pr-8">
+          <h4 className="text-[12px] font-bold text-[#111111] uppercase tracking-wider mb-6 pb-2 border-b border-[#EAEAEA]">
+            Thông số chung & Tuổi thọ
+          </h4>
+          <div className="flex gap-6 mb-8">
+            <div className="w-[120px]">
+              <label className="block text-[9px] font-bold text-[#999999] uppercase tracking-wider mb-1.5">Cavity / Khuôn</label>
+              <input 
+                type="number" 
+                min="1"
+                value={cavity}
+                onChange={(e) => onUpdateField('cavity', Number(e.target.value))}
+                className="w-full px-2.5 py-1.5 border border-[#EAEAEA] rounded-[4px] text-xs font-mono font-medium text-[#111111] focus:border-[#111111] outline-none" 
+              />
+            </div>
+            <div className="w-[160px]">
+              <label className="block text-[9px] font-bold text-[#999999] uppercase tracking-wider mb-1.5">Hệ số tuổi thọ/cavity</label>
+              <div className="flex items-center border border-[#EAEAEA] rounded-[4px] overflow-hidden focus-within:border-[#111111]">
+                <input 
+                  type="number" 
+                  min="0"
+                  value={life_coefficient}
+                  onChange={(e) => onUpdateField('life_coefficient', Number(e.target.value))}
+                  className="w-full px-2.5 py-1.5 text-xs font-mono font-medium text-[#111111] outline-none border-none" 
+                />
+                <span className="px-2.5 py-1.5 bg-[#F9F9F9] border-l border-[#EAEAEA] text-[10px] font-bold text-[#787774] uppercase">PCS</span>
               </div>
             </div>
           </div>
-        );
-      })}
-    </div>
-  );
+          
+          <div>
+            <span className="block text-[10px] font-bold text-[#787774] uppercase tracking-wider mb-1">Tuổi thọ (Tự động):</span>
+            <div className="text-[20px] font-black text-[#38517A] flex items-baseline gap-1.5">
+              {autoLife.toLocaleString('vi-VN')} <span className="text-[12px] font-bold text-[#787774] font-sans lowercase">pcs</span>
+            </div>
+          </div>
+        </div>
 
-  return (
-    <CostSectionCard
-      icon={<PenTool className="w-5 h-5" />}
-      title={isForging ? "SECTION 4: BỘ KHUÔN RÈN" : "SECTION 4: BỘ MẪU ĐÚC"}
-      topInputs={<>{topInputs}</>}
-      mainBlockTitle="Danh Sách Các Thành Phần"
-      mainBlockHeaderRight={
-        <button
-          type="button"
-          onClick={handleAddDefaultComp}
-          className="flex items-center space-x-1.5 px-3 py-1.5 bg-[#111111] hover:bg-[#333333] active:scale-[0.98] text-white text-xs font-bold rounded-[4px] transition-all cursor-pointer shadow-sm"
-        >
-          <Plus className="w-4 h-4" />
-          <span>Thêm thành phần</span>
-        </button>
-      }
-      mainRightContent={rightContent}
-      footerTitle={isForging ? "TỔNG CHI PHÍ BỘ KHUÔN RÈN" : "TỔNG CHI PHÍ BỘ MẪU ĐÚC"}
-      footerSubtitle="= Tổng tiền (Thành phần + Thiết kế + Quản lý)"
-      footerTotal={Math.round(totalDieCost).toLocaleString('vi-VN')}
-      footerTotalUnit="VNĐ"
-    />
+        {/* Right Column: Bóc tách chi phí */}
+        <div className="flex-1 md:pl-2 pt-6 md:pt-0 border-t md:border-t-0 border-[#EAEAEA]">
+          <h4 className="text-[12px] font-bold text-[#111111] uppercase tracking-wider mb-6 pb-2 border-b border-[#EAEAEA]">
+            Bóc tách chi phí bộ {isForging ? 'Khuôn' : 'Mẫu'}
+          </h4>
+          
+          <div className="space-y-4">
+            <div className="flex justify-between items-center">
+              <span className="text-[12px] font-medium text-[#787774]">Tổng tiền thành phần:</span>
+              <span className="font-mono font-bold text-[#111111] text-[13px]">{totalComponentsCost.toLocaleString('vi-VN')} đ</span>
+            </div>
+            
+            <div className="flex justify-between items-center">
+              <span className="text-[12px] font-medium text-[#787774]">+ Tiền thiết kế:</span>
+              <div className="flex items-center gap-1.5">
+                <input 
+                  type="number" 
+                  min="0"
+                  value={C_design}
+                  onChange={(e) => onUpdateField('C_design', Number(e.target.value))}
+                  className="w-[120px] px-2.5 py-1.5 border border-[#EAEAEA] rounded-[4px] text-xs font-mono font-medium text-[#111111] focus:border-[#111111] outline-none text-right" 
+                />
+                <span className="text-[12px] text-[#787774] font-sans">đ</span>
+              </div>
+            </div>
+            
+            <div className="flex justify-between items-center">
+              <span className="text-[12px] font-medium text-[#787774]">+ Tiền quản lý (%):</span>
+              <div className="flex items-center gap-3">
+                <div className="flex items-center gap-1">
+                   <input 
+                     type="number" 
+                     min="0" max="100"
+                     value={k_mgmt_die}
+                     onChange={(e) => onUpdateField('k_mgmt_die', Number(e.target.value))}
+                     className="w-[60px] px-2.5 py-1.5 border border-[#EAEAEA] rounded-[4px] text-xs font-mono font-medium text-[#111111] focus:border-[#111111] outline-none text-center" 
+                   />
+                   <span className="text-[12px] text-[#787774] font-sans">%</span>
+                </div>
+                <span className="text-[12px] text-[#787774] font-mono">= {mgmtCost.toLocaleString('vi-VN')} đ</span>
+              </div>
+            </div>
+            
+            <div className="pt-4 border-t border-[#EAEAEA] flex justify-between items-end mt-2">
+              <span className="text-[12px] font-bold text-[#111111] uppercase tracking-wider">= Tổng chi phí:</span>
+              <span className="font-mono font-black text-[#38517A] text-[20px]">
+                {Math.round(totalDieCost).toLocaleString('vi-VN')} <span className="text-[13px] font-bold text-[#38517A] font-sans">đ</span>
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 };
