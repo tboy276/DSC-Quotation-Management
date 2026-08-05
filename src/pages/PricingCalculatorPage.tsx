@@ -168,7 +168,7 @@ export const PricingCalculatorPage = ({ onNavigateToQuotations }: PricingCalcula
   }
 
   return (
-    <div className="max-w-7xl mx-auto space-y-5">
+    <div className="w-full space-y-5">
       {/* Specific RFQ Item Dossier Header Banner (REAL DATA ONLY) */}
       <div className="bg-[#111111] text-white p-4.5 rounded-[10px] shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3 animate-fade-in-up">
         <div className="space-y-1">
@@ -271,10 +271,10 @@ export const PricingCalculatorPage = ({ onNavigateToQuotations }: PricingCalcula
         </div>
       )}
 
-      {/* Split-Screen Main Layout: Form (Left 60%) + Real-time Summary (Right 40%) */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+      {/* Split-Screen Main Layout: Form (Left larger) + Real-time Summary (Right smaller) */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 xl:grid-cols-4 gap-6 items-start">
         {/* Left Column: Interactive Form Inputs */}
-        <div className="lg:col-span-7 space-y-5">
+        <div className="lg:col-span-8 xl:col-span-3 space-y-5">
           {/* Step 1: Segment Choice (Rèn Dập vs Đúc Gang) */}
           <SegmentSelector />
 
@@ -287,7 +287,7 @@ export const PricingCalculatorPage = ({ onNavigateToQuotations }: PricingCalcula
         </div>
 
         {/* Right Column: Real-time Split-screen Calculation Summary Panel */}
-        <div className="lg:col-span-5">
+        <div className="lg:col-span-4 xl:col-span-1 sticky top-6">
           <RealtimeSummaryPanel />
         </div>
       </div>
