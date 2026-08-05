@@ -4,8 +4,15 @@ import { MachiningOpsList } from './MachiningOpsList';
 import { ToolingOpsList } from './ToolingOpsList';
 import { ToolingAmortizationSection } from './ToolingAmortizationSection';
 import { Section5SummaryCard } from './Section5SummaryCard';
-import { INITIAL_CASTING_GRADES, fetchCastingGrades } from '../../lib/master-data-service';
-import type { CastingGrade } from '../../types/master-data';
+import {
+  INITIAL_CASTING_GRADES,
+  fetchCastingGrades,
+  fetchMoldingRecipe,
+  fetchCastingSettings,
+  getMoldingRecipeTotalCost1000kg,
+  getFurnaceLadleCostPer1000kg,
+} from '../../lib/master-data-service';
+import type { CastingGrade, MoldingRecipeItem } from '../../types/master-data';
 import { Modal } from '../ui/Modal';
 import { Layers, Factory, Eye } from 'lucide-react';
 import { CostSectionCard } from '../ui/CostSectionCard';
@@ -24,20 +31,43 @@ export const CastingCalculatorForm = () => {
 
   const [showRecipeModal, setShowRecipeModal] = useState<boolean>(false);
   const [grades, setGrades] = useState<CastingGrade[]>(INITIAL_CASTING_GRADES);
+  const [recipeItems, setRecipeItems] = useState<MoldingRecipeItem[]>([]);
 
   useEffect(() => {
-    const loadMasterDataGrades = async () => {
-      const fetched = await fetchCastingGrades();
-      if (fetched && fetched.length > 0) {
-        setGrades(fetched);
-        if (!casting.selected_casting_grade_id || !fetched.some((g) => g.id === casting.selected_casting_grade_id)) {
-          selectGrade(fetched[0].id);
+    const loadMasterData = async () => {
+      const [fetchedGrades, fetchedRecipe, fetchedSettings] = await Promise.all([
+        fetchCastingGrades(),
+        fetchMoldingRecipe(),
+        fetchCastingSettings(),
+      ]);
+
+      if (fetchedRecipe && fetchedRecipe.length > 0) {
+        setRecipeItems(fetchedRecipe);
+        const moldingTotal = getMoldingRecipeTotalCost1000kg(fetchedRecipe);
+        setCastingField('C_molding_recipe_total_1000kg', moldingTotal);
+      }
+
+      if (fetchedSettings) {
+        const furnaceTotal = getFurnaceLadleCostPer1000kg(fetchedSettings);
+        setCastingField('C_furnace_ladle_per_1000kg', furnaceTotal);
+        setCastingField('DG_finishing_per_kg', fetchedSettings.finishing_material_rate);
+        setCastingField('DG_utility_per_kg', fetchedSettings.utility_rate);
+        setCastingField('DG_labor_per_kg', fetchedSettings.labor_rate);
+        setCastingField('DG_workshop_mgmt_per_kg', fetchedSettings.workshop_mgmt_rate);
+        setCastingField('DG_equipment_depr_per_kg', fetchedSettings.equipment_depreciation_rate);
+        setCastingField('DG_resin_core_per_kg', fetchedSettings.resin_core_sand_rate_per_kg || 12500);
+      }
+
+      if (fetchedGrades && fetchedGrades.length > 0) {
+        setGrades(fetchedGrades);
+        if (!casting.selected_casting_grade_id || !fetchedGrades.some((g) => g.id === casting.selected_casting_grade_id)) {
+          selectGrade(fetchedGrades[0].id);
         } else {
           selectGrade(casting.selected_casting_grade_id);
         }
       }
     };
-    loadMasterDataGrades();
+    loadMasterData();
   }, []);
 
   const res = getCastingResult();
@@ -260,7 +290,7 @@ export const CastingCalculatorForm = () => {
       >
         <div className="space-y-3 text-xs">
           <div className="p-3 bg-[#FBFBFA] border border-[#EAEAEA] rounded-[6px] flex items-center justify-between">
-            <span className="font-bold text-[#111111]">Tổng 3 Vật Tư Khuôn Cố Định / 1,000kg:</span>
+            <span className="font-bold text-[#111111]">Tổng Chi Phí Vật Tư Khuôn / 1,000kg:</span>
             <span className="font-mono text-sm font-extrabold text-[#111111]">
               {(casting.C_molding_recipe_total_1000kg || 1302200).toLocaleString('vi-VN')} VNĐ
             </span>
@@ -269,31 +299,46 @@ export const CastingCalculatorForm = () => {
           <table className="w-full text-left text-xs border border-[#EAEAEA] rounded-[6px] overflow-hidden">
             <thead className="bg-[#FBFBFA] border-b border-[#EAEAEA] font-semibold text-[#787774]">
               <tr>
-                <th className="py-2 px-3">Tên Vật Tư</th>
+                <th className="py-2 px-3">Tên Vật Tư / Dịch Vụ</th>
                 <th className="py-2 px-3 text-right">Định Mức / 1000kg</th>
                 <th className="py-2 px-3 text-right">Đơn Giá</th>
                 <th className="py-2 px-3 text-right">Thành Tiền</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-[#EAEAEA] font-medium text-[#111111]">
-              <tr>
-                <td className="py-2 px-3 font-bold">Bột đất sét</td>
-                <td className="py-2 px-3 text-right font-mono">50 kg</td>
-                <td className="py-2 px-3 text-right font-mono">13,900 đ</td>
-                <td className="py-2 px-3 text-right font-mono font-bold">695,000 đ</td>
-              </tr>
-              <tr>
-                <td className="py-2 px-3 font-bold">Cát đúc</td>
-                <td className="py-2 px-3 text-right font-mono">300 kg</td>
-                <td className="py-2 px-3 text-right font-mono">1,560 đ</td>
-                <td className="py-2 px-3 text-right font-mono font-bold">468,000 đ</td>
-              </tr>
-              <tr>
-                <td className="py-2 px-3 font-bold">Sơn khuôn</td>
-                <td className="py-2 px-3 text-right font-mono">4 kg</td>
-                <td className="py-2 px-3 text-right font-mono">34,800 đ</td>
-                <td className="py-2 px-3 text-right font-mono font-bold">139,200 đ</td>
-              </tr>
+              {(recipeItems.length > 0
+                ? recipeItems
+                : [
+                    { id: '1', material_name: 'Bột đất sét', quantity_per_1000kg: 50, unit: 'kg', unit_price: 13900, is_outsourced: false, outsourced_cost_per_1000kg: 0 },
+                    { id: '2', material_name: 'Cát đúc', quantity_per_1000kg: 300, unit: 'kg', unit_price: 1560, is_outsourced: false, outsourced_cost_per_1000kg: 0 },
+                    { id: '3', material_name: 'Sơn khuôn', quantity_per_1000kg: 4, unit: 'kg', unit_price: 34800, is_outsourced: false, outsourced_cost_per_1000kg: 0 },
+                  ]
+              ).map((item) => {
+                const itemCost = item.is_outsourced
+                  ? item.outsourced_cost_per_1000kg
+                  : item.quantity_per_1000kg * item.unit_price;
+                return (
+                  <tr key={item.id}>
+                    <td className="py-2 px-3 font-bold text-[#111111]">
+                      {item.material_name}
+                      {item.is_outsourced && (
+                        <span className="ml-1.5 px-1.5 py-0.2 rounded bg-amber-100 text-amber-900 text-[10px] font-bold">
+                          Thuê ngoài
+                        </span>
+                      )}
+                    </td>
+                    <td className="py-2 px-3 text-right font-mono text-[#787774]">
+                      {item.is_outsourced ? '—' : `${item.quantity_per_1000kg} ${item.unit || 'kg'}`}
+                    </td>
+                    <td className="py-2 px-3 text-right font-mono text-[#787774]">
+                      {item.is_outsourced ? '—' : `${item.unit_price.toLocaleString('vi-VN')} đ`}
+                    </td>
+                    <td className="py-2 px-3 text-right font-mono font-bold text-[#111111]">
+                      {itemCost.toLocaleString('vi-VN')} đ
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
 

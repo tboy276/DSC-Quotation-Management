@@ -2,24 +2,22 @@ import { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { MaterialsManager } from './MaterialsManager';
 import { CastingBomManager } from './CastingBomManager';
-import { MoldingRecipeManager } from './MoldingRecipeManager';
-import { CastingSettingsManager } from './CastingSettingsManager';
+import { CastingOperationsRatesManager } from './CastingOperationsRatesManager';
 import { EquipmentRatesManager } from './EquipmentRatesManager';
-import { Package, Box, Layers, Settings, Settings2 } from 'lucide-react';
+import { Package, Box, Factory, Settings2 } from 'lucide-react';
 
 export const MasterDataContainer = () => {
   const { profile } = useAuth();
   const isEstimator = profile?.role === 'estimator';
   const [activeSubTab, setActiveSubTab] = useState<
-    'materials' | 'casting_bom' | 'molding_recipe' | 'casting_settings' | 'equipment_rates'
+    'materials' | 'casting_bom' | 'casting_operations' | 'equipment_rates'
   >('materials');
 
   const tabs = [
     { id: 'materials', label: '1. Vật Tư & Lịch Sử Giá', icon: Package },
     { id: 'casting_bom', label: '2. Định Mức BOM Mác Gang', icon: Box },
-    { id: 'molding_recipe', label: '3. Vật Tư Khuôn Dùng Chung', icon: Layers },
-    { id: 'casting_settings', label: '4. Lò/Gầu & Đơn Giá Phần B', icon: Settings },
-    { id: 'equipment_rates', label: '5. Chi Phí Thiết Bị', icon: Settings2 },
+    { id: 'casting_operations', label: '3. Chi Phí Công Đoạn Đúc', icon: Factory },
+    { id: 'equipment_rates', label: '4. Chi Phí Thiết Bị', icon: Settings2 },
   ];
 
   return (
@@ -49,8 +47,7 @@ export const MasterDataContainer = () => {
       {/* Render Active Sub-Tab View */}
       {activeSubTab === 'materials' && <MaterialsManager isEstimator={isEstimator} />}
       {activeSubTab === 'casting_bom' && <CastingBomManager isEstimator={isEstimator} />}
-      {activeSubTab === 'molding_recipe' && <MoldingRecipeManager />}
-      {activeSubTab === 'casting_settings' && <CastingSettingsManager />}
+      {activeSubTab === 'casting_operations' && <CastingOperationsRatesManager />}
       {activeSubTab === 'equipment_rates' && <EquipmentRatesManager />}
     </div>
   );
