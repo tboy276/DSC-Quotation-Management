@@ -5,7 +5,7 @@ import { SliderInput } from '../ui/SliderInput';
 import { INITIAL_CASTING_GRADES, fetchCastingGrades } from '../../lib/master-data-service';
 import type { CastingGrade } from '../../types/master-data';
 import { Modal } from '../ui/Modal';
-import { Box, Flame, Layers, Wrench, PieChart, Factory, Eye, Info } from 'lucide-react';
+import { Layers, Wrench, PieChart, Factory, Eye, Check } from 'lucide-react';
 
 export const CastingCalculatorForm = () => {
   const casting = useQuotationStore((state) => state.castingInput);
@@ -14,7 +14,6 @@ export const CastingCalculatorForm = () => {
   const updateOp = useQuotationStore((state) => state.updateCastingMachiningOp);
   const removeOp = useQuotationStore((state) => state.removeCastingMachiningOp);
   const selectGrade = useQuotationStore((state) => state.selectCastingGrade);
-  const getCastingResult = useQuotationStore((state) => state.getCastingResult);
 
   const [showRecipeModal, setShowRecipeModal] = useState<boolean>(false);
   const [grades, setGrades] = useState<CastingGrade[]>(INITIAL_CASTING_GRADES);
@@ -76,7 +75,6 @@ export const CastingCalculatorForm = () => {
     (casting.DG_workshop_mgmt_per_kg || 0) +
     (casting.DG_equipment_depr_per_kg || 4000);
 
-  const castingRes = getCastingResult();
 
   return (
     <div className="space-y-5 animate-fade-in-up">
