@@ -65,20 +65,17 @@ export function calculateCastingPrice(input: CastingInput): CastingResult {
   // ----------------------------------------------------------------------
   // Section 2 — Technology & Operations for Liquid Metal Batch (Phần A)
   // ----------------------------------------------------------------------
-  let C_furnace_ladle = 0;
+  const batchRatio = m_liquid / 1000;
+  let C_furnace_ladle = C_furnace_ladle_per_1000kg * batchRatio;
+  let C_molding_materials = C_molding_recipe_total_1000kg * batchRatio; // 3 vật tư cố định
   let C_resin_core = m_resin_core * DG_resin_core_per_kg; // Tính riêng theo 1 sản phẩm
-  let C_molding_materials = 0;
   let C_core = m_core * DG_core_sand_kg;
+  
   let C_ops_casting = 0;
-
   if (C_ops_override !== undefined) {
     C_ops_casting = C_ops_override;
   } else {
-    const batchRatio = m_liquid / 1000;
-    C_furnace_ladle = C_furnace_ladle_per_1000kg * batchRatio;
-    const C_molding_materials_fixed = C_molding_recipe_total_1000kg * batchRatio;
-    C_molding_materials = C_molding_materials_fixed + C_resin_core;
-    C_ops_casting = C_furnace_ladle + C_molding_materials + C_core;
+    C_ops_casting = C_furnace_ladle + C_molding_materials + C_resin_core + C_core;
   }
 
   // ----------------------------------------------------------------------
@@ -93,7 +90,22 @@ export function calculateCastingPrice(input: CastingInput): CastingResult {
 
   // Total Workshop Cost per kg cast product (Part A per kg + Part B per kg)
   const validMCast = Math.max(0.0001, m_cast);
-  const partA_per_kg = (C_metal_casting + C_ops_casting) / validMCast;
+  
+  // TÍNH TOÁN PART A THEO ĐÚNG BƯỚC 1000KG (Tránh sai số làm tròn so với UI)
+  const cost_metal_1000 = 1000 * DG_liquid;
+  const yield_ratio = validYield / 100;
+  const burn_ratio = k_burn_loss / 100;
+  const scrap_kg_1000 = Math.max(0, 1000 - (1000 * yield_ratio) - (1000 * burn_ratio));
+  const cost_scrap_1000 = scrap_kg_1000 * DG_cast_scrap;
+  
+  const total_batch_cost = cost_metal_1000 - cost_scrap_1000 + C_furnace_ladle_per_1000kg + C_molding_recipe_total_1000kg;
+  const dg_liquid_final = total_batch_cost / 1000;
+  
+  const totalCoreCostPerProduct = C_resin_core + C_core;
+  const coreCostPerKg = totalCoreCostPerProduct / validMCast;
+  
+  const partA_per_kg = (dg_liquid_final / yield_ratio) + coreCostPerKg;
+  
   const partB_per_kg = C_part_b_total / validMCast;
   const workshop_cost_per_kg = partA_per_kg + partB_per_kg;
 

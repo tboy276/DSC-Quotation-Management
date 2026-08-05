@@ -4,6 +4,7 @@ import {
   fetchCastingGrades,
   fetchCastingBomItems,
   fetchMaterials,
+  fetchPriceHistory,
   addBomItem,
   updateBomItem,
   deleteBomItem,
@@ -22,6 +23,7 @@ export const CastingBomManager = ({ isEstimator }: CastingBomManagerProps) => {
   const [selectedGradeId, setSelectedGradeId] = useState<string>('');
   const [bomItems, setBomItems] = useState<CastingBomItem[]>([]);
   const [materials, setMaterials] = useState<Material[]>([]);
+  const [priceHistory, setPriceHistory] = useState<any[]>([]);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -51,8 +53,10 @@ export const CastingBomManager = ({ isEstimator }: CastingBomManagerProps) => {
     setLoading(true);
     const fetchedGrades = await fetchCastingGrades();
     const fetchedMaterials = await fetchMaterials();
+    const fetchedPriceHistory = await fetchPriceHistory();
     setGrades(fetchedGrades);
     setMaterials(fetchedMaterials);
+    setPriceHistory(fetchedPriceHistory);
 
     if (fetchedGrades.length > 0 && !selectedGradeId) {
       setSelectedGradeId(fetchedGrades[0].id);
@@ -124,7 +128,7 @@ export const CastingBomManager = ({ isEstimator }: CastingBomManagerProps) => {
   const liquidPriceResult = calculateLiquidMetalPrice(
     selectedGradeId,
     bomItems,
-    [],
+    priceHistory,
     materials
   );
 

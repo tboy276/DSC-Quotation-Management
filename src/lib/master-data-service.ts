@@ -418,11 +418,12 @@ let localMoldingRecipe: MoldingRecipeItem[] = [
 ];
 
 export async function fetchLiquidMetalPriceForGrade(gradeId: string) {
-  const [bomItems, materials] = await Promise.all([
+  const [bomItems, materials, priceHistory] = await Promise.all([
     fetchCastingBomItems(gradeId),
     fetchMaterials(),
+    fetchPriceHistory(),
   ]);
-  return calculateLiquidMetalPrice(gradeId, bomItems, [], materials);
+  return calculateLiquidMetalPrice(gradeId, bomItems, priceHistory, materials);
 }
 
 export async function fetchCastingSettings(): Promise<CastingFactorySettings> {
