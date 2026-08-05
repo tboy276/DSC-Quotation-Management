@@ -36,7 +36,7 @@ export const MachiningOpsList = ({
     const hourlyRate = (systemRateObj?.value || defaultType.ratePerMinute) * 60;
 
     onAddOp({
-      name: defaultType.name,
+      name: `Tiện mặt ${operations.length + 1}`,
       t_prep_min: 10,
       t_man_min: 2.0,
       DG_machine_hour: hourlyRate,
@@ -52,16 +52,9 @@ export const MachiningOpsList = ({
       const currentOp = operations[index];
       onUpdateOp(index, {
         ...currentOp,
-        name: cncObj.name,
         DG_machine_hour: ratePerMin * 60,
       });
     }
-  };
-
-  // Helper to convert index to Roman numerals (I, II, III, IV...)
-  const toRoman = (num: number): string => {
-    const roman = ["I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X", "XI", "XII", "XIII", "XIV", "XV"];
-    return roman[num] || (num + 1).toString();
   };
 
   const rightContent = operations.length === 0 ? (
@@ -69,15 +62,16 @@ export const MachiningOpsList = ({
       Chưa có nguyên công gia công nào. Nhấp "+ Thêm nguyên công" để chọn máy CNC.
     </p>
   ) : (
-    <div className="space-y-4">
+    <div className="space-y-3">
       {operations.map((op, idx) => {
-        const matchedCncKey = cncMachineTypes.find((c) =>
-          op.name?.includes('Tiện') ? c.key === 'cnc_turning' :
-          op.name?.includes('Phay') ? c.key === 'cnc_milling' :
-          op.name?.includes('Khoan') ? c.key === 'cnc_drilling' :
-          op.name?.includes('Mài') ? c.key === 'cnc_grinding' :
-          op.name?.includes('Chuốt') ? c.key === 'cnc_broaching' : false
-        )?.key || 'cnc_turning';
+        // Find matching CNC type based on rate, or default to turning
+        const matchedCncKey = cncMachineTypes.find((c) => {
+          const sysRate = INITIAL_SYSTEM_RATES.find(r => r.rate_key === c.key)?.value || c.ratePerMinute;
+          return sysRate * 60 === op.DG_machine_hour;
+        })?.key || 'cnc_turning';
+        
+        const currentCncType = cncMachineTypes.find(c => c.key === matchedCncKey);
+        const ratePerMin = currentCncType ? (currentCncType.ratePerMinute >= 1000 ? `${currentCncType.ratePerMinute / 1000}k` : currentCncType.ratePerMinute) : (op.DG_machine_hour / 60);
 
         // Calculate cost for this specific op
         const opCost = (op.t_prep_min + op.t_man_min) * (op.DG_machine_hour / 60);
@@ -85,87 +79,98 @@ export const MachiningOpsList = ({
         return (
           <div
             key={idx}
-            className="rounded-[6px] border border-[#EAEAEA] bg-[#FBFBFA] overflow-hidden"
+            className="flex flex-col md:flex-row md:items-end justify-between gap-4 p-4 rounded-[6px] border border-[#EAEAEA] bg-white text-xs"
           >
-            <div className="flex flex-col md:flex-row">
-              {/* Cột trái: Nhập liệu */}
-              <div className="w-full md:w-1/2 p-3 space-y-3 bg-white border-b md:border-b-0 md:border-r border-[#EAEAEA]">
-                <div className="flex items-center space-x-2">
-                  <span className="w-6 font-bold text-[#787774] text-[11px] flex-shrink-0">
-                    {toRoman(idx)}.
-                  </span>
-                  <select
-                    value={matchedCncKey}
-                    onChange={(e) => handleSelectMachineType(idx, e.target.value)}
-                    className="flex-1 px-2 py-1.5 border border-[#EAEAEA] rounded-[4px] bg-white text-[#111111] font-bold text-xs focus:outline-none"
-                  >
-                    {cncMachineTypes.map((cnc) => (
+            {/* Cột trái: Các trường nhập liệu */}
+            <div className="flex flex-wrap gap-4 flex-1">
+              {/* Tên Nguyên Công */}
+              <div className="flex-1 min-w-[150px]">
+                <label className="block text-[9px] font-bold text-[#787774] uppercase tracking-wider mb-1.5">
+                  Tên Nguyên Công
+                </label>
+                <input
+                  type="text"
+                  value={op.name || ''}
+                  onChange={(e) => onUpdateOp(idx, { ...op, name: e.target.value })}
+                  placeholder={`Nguyên công ${idx + 1}`}
+                  className="w-full px-2.5 py-1.5 border border-[#EAEAEA] rounded-[4px] bg-white text-[#111111] font-mono text-xs focus:outline-none focus:border-[#111111] transition-colors"
+                />
+              </div>
+
+              {/* Máy Gia Công */}
+              <div className="flex-[1.5] min-w-[200px]">
+                <label className="block text-[9px] font-bold text-[#787774] uppercase tracking-wider mb-1.5">
+                  Máy Gia Công
+                </label>
+                <select
+                  value={matchedCncKey}
+                  onChange={(e) => handleSelectMachineType(idx, e.target.value)}
+                  className="w-full px-2.5 py-1.5 border border-[#EAEAEA] rounded-[4px] bg-[#F0F0EE] text-[#111111] font-bold text-xs focus:outline-none"
+                >
+                  {cncMachineTypes.map((cnc) => {
+                    const rPm = cnc.ratePerMinute >= 1000 ? `${cnc.ratePerMinute / 1000}k` : cnc.ratePerMinute;
+                    return (
                       <option key={cnc.key} value={cnc.key}>
-                        {cnc.name} ({(cnc.ratePerMinute).toLocaleString('vi-VN')} VNĐ/phút)
+                        {cnc.name} ({rPm}/p)
                       </option>
-                    ))}
-                  </select>
-                </div>
-                
-                <div className="grid grid-cols-2 gap-2">
-                  <div>
-                    <label className="block text-[10px] font-semibold text-[#787774] mb-1">
-                      T.Gian Gia Công (Phút)
-                    </label>
-                    <input
-                      type="number"
-                      min="0.1"
-                      step="0.1"
-                      value={op.t_man_min}
-                      onChange={(e) =>
-                        onUpdateOp(idx, { ...op, t_man_min: Number(e.target.value) })
-                      }
-                      className="w-full px-2 py-1.5 border border-[#EAEAEA] rounded-[4px] bg-white font-mono font-bold text-xs text-[#111111]"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-[10px] font-semibold text-[#787774] mb-1">
-                      T.Gian Gá Lắp (Phút)
-                    </label>
-                    <input
-                      type="number"
-                      min="0"
-                      step="0.5"
-                      value={op.t_prep_min}
-                      onChange={(e) =>
-                        onUpdateOp(idx, { ...op, t_prep_min: Number(e.target.value) })
-                      }
-                      className="w-full px-2 py-1.5 border border-[#EAEAEA] rounded-[4px] bg-white font-mono font-bold text-xs text-[#111111]"
-                    />
-                  </div>
+                    );
+                  })}
+                </select>
+              </div>
+
+              {/* Thời gian gia công */}
+              <div className="w-[120px]">
+                <label className="block text-[9px] font-bold text-[#787774] uppercase tracking-wider mb-1.5">
+                  Gia Công (Phút)
+                </label>
+                <div className="flex items-center">
+                  <input
+                    type="number"
+                    min="0.1"
+                    step="0.1"
+                    value={op.t_man_min}
+                    onChange={(e) => onUpdateOp(idx, { ...op, t_man_min: Number(e.target.value) })}
+                    className="w-full px-2.5 py-1.5 border border-[#EAEAEA] rounded-[4px] bg-white font-mono text-[#111111] text-xs focus:outline-none focus:border-[#111111] transition-colors"
+                  />
                 </div>
               </div>
 
-              {/* Cột phải: Phép tính & Kết quả */}
-              <div className="w-full md:w-1/2 p-3 flex flex-col justify-between bg-[#FBFBFA]">
-                <div className="flex justify-between items-start">
-                  <div className="space-y-1">
-                    <p className="text-[10px] font-semibold text-[#787774] uppercase tracking-wider">Chi phí nguyên công</p>
-                    <p className="text-[11px] font-mono text-[#333333]">
-                      ({op.t_man_min}p + {op.t_prep_min}p) × {(op.DG_machine_hour / 60).toLocaleString('vi-VN')} đ
-                    </p>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => onRemoveOp(idx)}
-                    className="p-1 text-red-500 hover:text-red-700 hover:bg-red-50 rounded cursor-pointer"
-                    title="Xóa công đoạn"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
-                </div>
-                
-                <div className="text-right mt-3">
-                  <span className="font-mono font-bold text-[#111111] text-sm">
-                    {Math.round(opCost).toLocaleString('vi-VN')} VNĐ
-                  </span>
+              {/* Thời gian gá lắp */}
+              <div className="w-[120px]">
+                <label className="block text-[9px] font-bold text-[#787774] uppercase tracking-wider mb-1.5">
+                  Gá Lắp (Phút)
+                </label>
+                <div className="flex items-center">
+                  <input
+                    type="number"
+                    min="0"
+                    step="0.5"
+                    value={op.t_prep_min}
+                    onChange={(e) => onUpdateOp(idx, { ...op, t_prep_min: Number(e.target.value) })}
+                    className="w-full px-2.5 py-1.5 border border-[#EAEAEA] rounded-[4px] bg-white font-mono text-[#111111] text-xs focus:outline-none focus:border-[#111111] transition-colors"
+                  />
                 </div>
               </div>
+            </div>
+
+            {/* Cột phải: Phép tính & Kết quả */}
+            <div className="flex items-center justify-end gap-3 min-w-[150px]">
+              <div className="text-right">
+                <p className="text-[10px] font-mono font-medium text-[#787774] mb-1">
+                  ({op.t_man_min}+{op.t_prep_min})×{ratePerMin}
+                </p>
+                <p className="font-mono font-extrabold text-[#111111] text-sm">
+                  {Math.round(opCost).toLocaleString('vi-VN')} <span className="text-[9px] font-sans font-bold uppercase tracking-wider text-[#787774]">VNĐ</span>
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => onRemoveOp(idx)}
+                className="p-1.5 text-red-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors self-end mb-0.5 cursor-pointer"
+                title="Xóa công đoạn"
+              >
+                <Trash2 className="w-4 h-4" />
+              </button>
             </div>
           </div>
         );
@@ -179,18 +184,9 @@ export const MachiningOpsList = ({
         <textarea
           value={machiningNotes || ''}
           onChange={(e) => onUpdateNotes(e.target.value)}
-          placeholder="Ví dụ: Cần mua dao khoả đặc biệt, Cần mượn gá lắp từ khách hàng..."
+          placeholder="Ví dụ: Cần mua dao khoét đặc biệt, Cần mượn gá lắp từ khách hàng..."
           className="w-full px-3 py-2 border border-[#EAEAEA] rounded-[4px] bg-white text-[#111111] font-mono text-[13px] h-20 resize-none focus:outline-none focus:border-[#111111]"
         />
-      </div>
-
-      <div className="border-t-2 border-[#111111] pt-3 flex flex-wrap gap-2 justify-between items-center font-mono">
-        <span className="text-[13px] font-bold text-[#111111] uppercase font-sans">
-          Tổng Chi Phí Gia Công / SP:
-        </span>
-        <span className="font-extrabold text-[#38517A] text-[15px]">
-          {Math.round(totalMachiningCost).toLocaleString('vi-VN')} VNĐ
-        </span>
       </div>
     </div>
   );
@@ -200,20 +196,18 @@ export const MachiningOpsList = ({
       icon={<Cpu className="w-5 h-5" />}
       title="SECTION 3: GIA CÔNG CƠ KHÍ (CNC OPS)"
       mainBlockTitle="Danh Sách Các Nguyên Công"
-      mainLeftContent={
-        <div>
-          <button
-            type="button"
-            onClick={handleAddDefaultOp}
-            className="flex items-center space-x-1.5 px-3 py-2 bg-[#111111] hover:bg-[#333333] active:scale-[0.98] text-white text-xs font-bold rounded-[4px] transition-all cursor-pointer shadow-sm w-full justify-center"
-          >
-            <Plus className="w-4 h-4" />
-            <span>+ Thêm nguyên công</span>
-          </button>
-        </div>
+      mainBlockHeaderRight={
+        <button
+          type="button"
+          onClick={handleAddDefaultOp}
+          className="flex items-center space-x-1.5 px-3 py-1.5 bg-[#111111] hover:bg-[#333333] active:scale-[0.98] text-white text-xs font-bold rounded-[4px] transition-all cursor-pointer shadow-sm"
+        >
+          <Plus className="w-4 h-4" />
+          <span>Thêm nguyên công</span>
+        </button>
       }
       mainRightContent={rightContent}
-      footerTitle="Tổng Đơn Giá Gia Công (Phần C)"
+      footerTitle="TỔNG CHI PHÍ GIA CÔNG (PHẦN C)"
       footerSubtitle="= Tổng chi phí các nguyên công cộng lại"
       footerTotal={Math.round(totalMachiningCost).toLocaleString('vi-VN')}
       footerTotalUnit="VNĐ/SP"
