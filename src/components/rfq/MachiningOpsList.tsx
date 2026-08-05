@@ -23,22 +23,21 @@ export const MachiningOpsList = ({
   onUpdateNotes,
 }: MachiningOpsListProps) => {
   const cncMachineTypes = [
-    { key: 'cnc_turning', name: 'Máy Tiện CNC', ratePerMinute: 3500 },
-    { key: 'cnc_milling', name: 'Máy Phay CNC (3-5 trục)', ratePerMinute: 4500 },
-    { key: 'cnc_drilling', name: 'Máy Khoan / Taro CNC', ratePerMinute: 3000 },
-    { key: 'cnc_grinding', name: 'Máy Mài Tròn / Mài Phẳng', ratePerMinute: 4000 },
-    { key: 'cnc_broaching', name: 'Máy Chuốt / Xọc Răng', ratePerMinute: 5000 },
+    { key: 'cnc_type_1', name: 'Loại I: TT Gia công tổ hợp, ngang, đứng', ratePerHour: 390000, ratePerMinute: 6500 },
+    { key: 'cnc_type_2', name: 'Loại II: Máy tiện đứng, phay 3 trục,...', ratePerHour: 338000, ratePerMinute: 338000 / 60 },
+    { key: 'cnc_type_3', name: 'Loại III: Máy tiện, phay CNC', ratePerHour: 234000, ratePerMinute: 3900 },
+    { key: 'cnc_type_4', name: 'Loại IV: Máy khoan cần, máy cũ,..', ratePerHour: 182000, ratePerMinute: 182000 / 60 },
   ];
 
   const handleAddDefaultOp = () => {
-    const defaultType = cncMachineTypes[0];
+    const defaultType = cncMachineTypes[2]; // Default to Loại III: Máy tiện, phay CNC
     const systemRateObj = INITIAL_SYSTEM_RATES.find((r) => r.rate_key === defaultType.key);
-    const hourlyRate = (systemRateObj?.value || defaultType.ratePerMinute) * 60;
+    const hourlyRate = systemRateObj?.value || defaultType.ratePerHour;
 
     onAddOp({
-      name: `Tiện mặt ${operations.length + 1}`,
-      t_prep_min: 10,
-      t_man_min: 2.0,
+      name: `Nguyên công ${operations.length + 1}`,
+      t_prep_min: 2.0,
+      t_man_min: 3.0,
       DG_machine_hour: hourlyRate,
     });
   };
@@ -48,29 +47,29 @@ export const MachiningOpsList = ({
     const systemRateObj = INITIAL_SYSTEM_RATES.find((r) => r.rate_key === key);
 
     if (cncObj) {
-      const ratePerMin = systemRateObj?.value || cncObj.ratePerMinute;
+      const hourlyRate = systemRateObj?.value || cncObj.ratePerHour;
       const currentOp = operations[index];
       onUpdateOp(index, {
         ...currentOp,
-        DG_machine_hour: ratePerMin * 60,
+        DG_machine_hour: hourlyRate,
       });
     }
   };
 
   const rightContent = operations.length === 0 ? (
     <p className="text-xs text-[#787774] italic py-2 text-center">
-      Chưa có nguyên công gia công nào. Nhấp "+ Thêm nguyên công" để chọn máy CNC.
+      Chưa có nguyên công gia công nào. Nhấp "+ Thêm nguyên công" để chọn nhóm máy CNC.
     </p>
   ) : (
     <div className="space-y-3">
       {operations.map((op, idx) => {
-        // Find matching CNC type based on rate, or default to turning
+        // Find matching CNC type based on rate, or default to Loại III
         const matchedCncKey = cncMachineTypes.find((c) => {
-          const sysRate = INITIAL_SYSTEM_RATES.find(r => r.rate_key === c.key)?.value || c.ratePerMinute;
-          return sysRate * 60 === op.DG_machine_hour;
-        })?.key || 'cnc_turning';
+          const sysRate = INITIAL_SYSTEM_RATES.find(r => r.rate_key === c.key)?.value || c.ratePerHour;
+          return sysRate === op.DG_machine_hour;
+        })?.key || 'cnc_type_3';
         
-        const currentCncType = cncMachineTypes.find(c => c.key === matchedCncKey);
+        const currentCncType = cncMachineTypes.find(c => c.key === matchedCncKey) || cncMachineTypes[2];
         const ratePerMin = currentCncType ? (currentCncType.ratePerMinute >= 1000 ? `${currentCncType.ratePerMinute / 1000}k` : currentCncType.ratePerMinute) : (op.DG_machine_hour / 60);
 
         // Calculate cost for this specific op
@@ -107,14 +106,11 @@ export const MachiningOpsList = ({
                   onChange={(e) => handleSelectMachineType(idx, e.target.value)}
                   className="w-full px-2.5 py-1.5 border border-[#EAEAEA] rounded-[4px] bg-[#F0F0EE] text-[#111111] font-bold text-xs focus:outline-none"
                 >
-                  {cncMachineTypes.map((cnc) => {
-                    const rPm = cnc.ratePerMinute >= 1000 ? `${cnc.ratePerMinute / 1000}k` : cnc.ratePerMinute;
-                    return (
-                      <option key={cnc.key} value={cnc.key}>
-                        {cnc.name} ({rPm}/p)
-                      </option>
-                    );
-                  })}
+                  {cncMachineTypes.map((cnc) => (
+                    <option key={cnc.key} value={cnc.key}>
+                      {cnc.name} ({Math.round(cnc.ratePerHour / 1000)}k/h • {Math.round(cnc.ratePerMinute).toLocaleString('vi-VN')} đ/p)
+                    </option>
+                  ))}
                 </select>
               </div>
 

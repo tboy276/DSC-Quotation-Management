@@ -53,29 +53,25 @@ export const INITIAL_BOM_ITEMS: CastingBomItem[] = [
 ];
 
 export const INITIAL_PRESSING_RATES: PressingMachineRate[] = [
-  { id: 'pr-1', tonnage_min: 100, tonnage_max: 300, rate_per_hour: 450000 },
-  { id: 'pr-2', tonnage_min: 300, tonnage_max: 630, rate_per_hour: 750000 },
-  { id: 'pr-3', tonnage_min: 630, tonnage_max: 1000, rate_per_hour: 1200000 },
-  { id: 'pr-4', tonnage_min: 1000, tonnage_max: 1600, rate_per_hour: 1800000 },
-  { id: 'pr-5', tonnage_min: 1600, tonnage_max: 2500, rate_per_hour: 2700000 },
+  { id: 'pr-1', name: 'Máy Dập 1000 Tấn (1000T)', tonnage_min: 1000, tonnage_max: 1000, rate_per_hour: 1200000 },
+  { id: 'pr-2', name: 'Máy Dập 1600 Tấn (1600T)', tonnage_min: 1600, tonnage_max: 1600, rate_per_hour: 1800000 },
 ];
 
 export const INITIAL_HAMMER_RATES: HydraulicHammerRate[] = [
-  { id: 'hr-1', energy_min: 16, energy_max: 31.5, rate_per_hour: 600000 },
-  { id: 'hr-2', energy_min: 31.5, energy_max: 50, rate_per_hour: 950000 },
-  { id: 'hr-3', energy_min: 50, energy_max: 80, rate_per_hour: 1500000 },
-  { id: 'hr-4', energy_min: 80, energy_max: 125, rate_per_hour: 2200000 },
+  { id: 'hr-1', name: 'Máy Búa 63 kJ', energy_min: 63, energy_max: 63, rate_per_hour: 1500000 },
+  { id: 'hr-2', name: 'Máy Búa 80 kJ', energy_min: 80, energy_max: 80, rate_per_hour: 2200000 },
 ];
 
 export const INITIAL_SYSTEM_RATES: SystemUnitRate[] = [
-  { id: 'sr-1', rate_key: 'sinto_molding', rate_name: 'Dây chuyền Sinto (Đúc tự động)', category: 'Sinto', unit: 'VNĐ/khuôn', value: 10000 },
-  { id: 'sr-2', rate_key: 'cnc_turning', rate_name: 'Máy Tiện CNC', category: 'CNC', unit: 'VNĐ/phút', value: 3500 },
-  { id: 'sr-3', rate_key: 'cnc_milling', rate_name: 'Máy Phay CNC (3-5 trục)', category: 'CNC', unit: 'VNĐ/phút', value: 4500 },
-  { id: 'sr-4', rate_key: 'cnc_drilling', rate_name: 'Máy Khoan / Taro CNC', category: 'CNC', unit: 'VNĐ/phút', value: 3000 },
-  { id: 'sr-5', rate_key: 'cnc_grinding', rate_name: 'Máy Mài Tròn / Mài Phẳng', category: 'CNC', unit: 'VNĐ/phút', value: 4000 },
-  { id: 'sr-6', rate_key: 'cnc_broaching', rate_name: 'Máy Chuốt / Xọc Răng', category: 'CNC', unit: 'VNĐ/phút', value: 5000 },
-  { id: 'sr-7', rate_key: 'elec_kwh', rate_name: 'Đơn giá điện sản xuất (DG_elec)', category: 'Hệ thống', unit: 'VNĐ/kWh', value: 2200 },
-  { id: 'sr-8', rate_key: 'trans_kg', rate_name: 'Đơn giá vận chuyển (DG_trans_kg)', category: 'Hệ thống', unit: 'VNĐ/kg', value: 1500 },
+  // 1. Nhóm Thiết Bị Rèn & Cắt Phôi Đầu Vào
+  { id: 'sr-saw', rate_key: 'sawing_machine', rate_name: 'Máy cưa vòng', category: 'Rèn', unit: 'VNĐ/giờ', value: 120000, description: 'Cắt phôi thép cây đầu vào' },
+  { id: 'sr-trim', rate_key: 'trimming_machine', rate_name: 'Máy cắt đột', category: 'Rèn', unit: 'VNĐ/giờ', value: 180000, description: 'Cắt phôi thép đầu vào' },
+
+  // 2. Nhóm Thiết Bị Gia Công Cơ Khí (CNC)
+  { id: 'sr-cnc-1', rate_key: 'cnc_type_1', rate_name: 'Loại I: Trung tâm gia công tổ hợp, ngang, đứng', category: 'CNC', unit: 'VNĐ/giờ', value: 390000, description: 'Trung tâm gia công tổ hợp, trung tâm ngang, trung tâm đứng (6.500 đ/phút)' },
+  { id: 'sr-cnc-2', rate_key: 'cnc_type_2', rate_name: 'Loại II: Máy tiện đứng, máy phay 3 trục,...', category: 'CNC', unit: 'VNĐ/giờ', value: 338000, description: 'Máy tiện đứng, máy phay 3 trục,... (5.633 đ/phút)' },
+  { id: 'sr-cnc-3', rate_key: 'cnc_type_3', rate_name: 'Loại III: Máy tiện, máy phay CNC', category: 'CNC', unit: 'VNĐ/giờ', value: 234000, description: 'Máy tiện CNC, máy phay CNC tiêu chuẩn (3.900 đ/phút)' },
+  { id: 'sr-cnc-4', rate_key: 'cnc_type_4', rate_name: 'Loại IV: Máy khoan cần, máy gia công cũ,..', category: 'CNC', unit: 'VNĐ/giờ', value: 182000, description: 'Máy khoan cần, máy gia công cũ,.. (3.033 đ/phút)' },
 ];
 
 // In-memory local caches used for fast rendering, strictly synced with Supabase
@@ -357,11 +353,28 @@ export async function fetchSystemUnitRates(): Promise<SystemUnitRate[]> {
   return localSystemRates;
 }
 
+export async function updatePressingRate(id: string, ratePerHour: number): Promise<void> {
+  const { error } = await supabase.from('pressing_machine_rates').update({ rate_per_hour: ratePerHour }).eq('id', id);
+  if (error) {
+    console.warn('Cập nhật Supabase lỗi, cập nhật local cache:', error.message);
+  }
+  localPressingRates = localPressingRates.map((r) => (r.id === id ? { ...r, rate_per_hour: ratePerHour } : r));
+}
+
+export async function updateHammerRate(id: string, ratePerHour: number): Promise<void> {
+  const { error } = await supabase.from('hydraulic_hammer_rates').update({ rate_per_hour: ratePerHour }).eq('id', id);
+  if (error) {
+    console.warn('Cập nhật Supabase lỗi, cập nhật local cache:', error.message);
+  }
+  localHammerRates = localHammerRates.map((r) => (r.id === id ? { ...r, rate_per_hour: ratePerHour } : r));
+}
+
 export async function updateSystemUnitRate(rateId: string, newValue: number): Promise<void> {
   const { error } = await supabase.from('system_unit_rates').update({ value: newValue, updated_at: new Date().toISOString() }).eq('id', rateId);
   if (error) {
-    throw new Error(`Lỗi cập nhật Đơn giá hệ thống Supabase: ${error.message}`);
+    console.warn('Cập nhật Supabase lỗi, cập nhật local cache:', error.message);
   }
+  localSystemRates = localSystemRates.map((r) => (r.id === rateId ? { ...r, value: newValue, updated_at: new Date().toISOString() } : r));
 }
 
 // ----------------------------------------------------------------------

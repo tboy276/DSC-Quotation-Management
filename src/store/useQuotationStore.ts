@@ -83,13 +83,14 @@ export interface QuotationStoreState {
 
 // Initial Forging Defaults
 const defaultForgingMaterial = INITIAL_MATERIALS.find((m) => m.category === 'Thép cán - Rèn') || INITIAL_MATERIALS[5];
-const defaultPressRate = INITIAL_PRESSING_RATES[1]; // 300-630T (750k/h)
-const defaultElecRate = INITIAL_SYSTEM_RATES.find((r) => r.rate_key === 'elec_kwh')?.value || 2200;
-const defaultTransRate = INITIAL_SYSTEM_RATES.find((r) => r.rate_key === 'trans_kg')?.value || 1500;
+const defaultPressRate = INITIAL_PRESSING_RATES[0]; // 1000T (1.200.000 đ/h)
+const defaultSawingRate = INITIAL_SYSTEM_RATES.find((r) => r.rate_key === 'sawing_machine')?.value || 120000;
+const defaultTrimmingRate = INITIAL_SYSTEM_RATES.find((r) => r.rate_key === 'trimming_machine')?.value || 180000;
+const defaultElecRate = 2200;
+const defaultTransRate = 1500;
 
 // Initial Casting Defaults
 const defaultCastingGrade = INITIAL_CASTING_GRADES[0]; // FCD450
-const defaultSintoRate = INITIAL_SYSTEM_RATES.find((r) => r.rate_key === 'sinto_molding')?.value || 10000;
 
 const DEFAULT_EXCHANGE_RATES: Record<CurrencyType, number> = {
   VND: 1,
@@ -127,18 +128,18 @@ export const useQuotationStore = create<QuotationStoreState>((set, get) => ({
     DG_forging_machine_hour: defaultPressRate.rate_per_hour,
 
     t_cut_sec: 15,
-    DG_sawing_machine_hour: 120000,
+    DG_sawing_machine_hour: defaultSawingRate,
     w_elec_kwh_per_kg: 0.45,
     DG_elec_kwh: defaultElecRate,
     t_forging_sec: 12,
     t_trim_sec: 8,
-    DG_trim_machine_hour: 180000,
+    DG_trim_machine_hour: defaultTrimmingRate,
     DG_heat_treat_kg: 4500,
     DG_clean_kg: 1200,
 
     machining_operations: [
-      { name: 'Tiện thô CNC mặt đầu & đường kính', t_prep_min: 15, t_man_min: 2.5, DG_machine_hour: 210000 },
-      { name: 'Phay rãnh keyway CNC', t_prep_min: 10, t_man_min: 1.8, DG_machine_hour: 270000 },
+      { name: 'Tiện thô CNC mặt đầu & đường kính', t_prep_min: 2.0, t_man_min: 2.5, DG_machine_hour: 234000 },
+      { name: 'Phay rãnh then CNC', t_prep_min: 1.5, t_man_min: 1.8, DG_machine_hour: 234000 },
     ],
     machining_notes: '',
 
@@ -179,13 +180,12 @@ export const useQuotationStore = create<QuotationStoreState>((set, get) => ({
     DG_equipment_depr_per_kg: 4000,
 
     // Deprecated legacy fields
-    DG_sinto_op: defaultSintoRate,
     n_cavity_per_mold: 2,
     DG_finish_kg: 1800,
 
     machining_operations: [
-      { name: 'Tiện mặt đúc CNC', t_prep_min: 15, t_man_min: 3.0, DG_machine_hour: 210000 },
-      { name: 'Khoan lỗ gá CNC', t_prep_min: 10, t_man_min: 1.5, DG_machine_hour: 180000 },
+      { name: 'Tiện mặt đúc CNC', t_prep_min: 2.0, t_man_min: 3.0, DG_machine_hour: 234000 },
+      { name: 'Khoan lỗ gá CNC', t_prep_min: 1.0, t_man_min: 1.5, DG_machine_hour: 182000 },
     ],
     machining_notes: '',
     C_coating: 1200,

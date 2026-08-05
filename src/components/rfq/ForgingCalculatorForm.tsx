@@ -261,7 +261,7 @@ export const ForgingCalculatorForm = () => {
                 >
                   {INITIAL_PRESSING_RATES.map((r) => (
                     <option key={r.id} value={r.id}>
-                      Máy Dập {r.tonnage_min} - {r.tonnage_max} Tấn — {r.rate_per_hour.toLocaleString('vi-VN')} VNĐ/giờ
+                      {r.name || `Máy Dập ${r.tonnage_min} Tấn`} — {r.rate_per_hour.toLocaleString('vi-VN')} VNĐ/giờ
                     </option>
                   ))}
                 </select>
@@ -273,7 +273,7 @@ export const ForgingCalculatorForm = () => {
                 >
                   {INITIAL_HAMMER_RATES.map((r) => (
                     <option key={r.id} value={r.id}>
-                      Máy Búa {r.energy_min} - {r.energy_max} kJ — {r.rate_per_hour.toLocaleString('vi-VN')} VNĐ/giờ
+                      {r.name || `Máy Búa ${r.energy_min} kJ`} — {r.rate_per_hour.toLocaleString('vi-VN')} VNĐ/giờ
                     </option>
                   ))}
                 </select>

@@ -4,15 +4,14 @@ import { MaterialsManager } from './MaterialsManager';
 import { CastingBomManager } from './CastingBomManager';
 import { MoldingRecipeManager } from './MoldingRecipeManager';
 import { CastingSettingsManager } from './CastingSettingsManager';
-import { ForgingRatesManager } from './ForgingRatesManager';
-import { SystemRatesManager } from './SystemRatesManager';
-import { Package, Box, Workflow, Cpu, Layers, Settings } from 'lucide-react';
+import { EquipmentRatesManager } from './EquipmentRatesManager';
+import { Package, Box, Layers, Settings, Settings2 } from 'lucide-react';
 
 export const MasterDataContainer = () => {
   const { profile } = useAuth();
   const isEstimator = profile?.role === 'estimator';
   const [activeSubTab, setActiveSubTab] = useState<
-    'materials' | 'casting_bom' | 'molding_recipe' | 'casting_settings' | 'forging_rates' | 'system_rates'
+    'materials' | 'casting_bom' | 'molding_recipe' | 'casting_settings' | 'equipment_rates'
   >('materials');
 
   const tabs = [
@@ -20,8 +19,7 @@ export const MasterDataContainer = () => {
     { id: 'casting_bom', label: '2. Định Mức BOM Mác Gang', icon: Box },
     { id: 'molding_recipe', label: '3. Vật Tư Khuôn Dùng Chung', icon: Layers },
     { id: 'casting_settings', label: '4. Lò/Gầu & Đơn Giá Phần B', icon: Settings },
-    { id: 'forging_rates', label: '5. Cước Máy Rèn Dập', icon: Workflow },
-    { id: 'system_rates', label: '6. Đơn Giá Hệ Thống & CNC', icon: Cpu },
+    { id: 'equipment_rates', label: '5. Chi Phí Thiết Bị', icon: Settings2 },
   ];
 
   return (
@@ -53,8 +51,7 @@ export const MasterDataContainer = () => {
       {activeSubTab === 'casting_bom' && <CastingBomManager isEstimator={isEstimator} />}
       {activeSubTab === 'molding_recipe' && <MoldingRecipeManager />}
       {activeSubTab === 'casting_settings' && <CastingSettingsManager />}
-      {activeSubTab === 'forging_rates' && <ForgingRatesManager />}
-      {activeSubTab === 'system_rates' && <SystemRatesManager />}
+      {activeSubTab === 'equipment_rates' && <EquipmentRatesManager />}
     </div>
   );
 };

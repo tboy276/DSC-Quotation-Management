@@ -49,6 +49,7 @@ export interface CastingBomItem {
 
 export interface PressingMachineRate {
   id: string;
+  name?: string;
   tonnage_min: number; // Tấn từ
   tonnage_max: number; // Tấn đến
   rate_per_hour: number; // Đơn giá VNĐ/giờ
@@ -57,19 +58,21 @@ export interface PressingMachineRate {
 
 export interface HydraulicHammerRate {
   id: string;
-  energy_min: number; // Năng lượng/tải trọng từ
-  energy_max: number; // Năng lượng/tải trọng đến
+  name?: string;
+  energy_min: number; // Năng lượng kJ từ
+  energy_max: number; // Năng lượng kJ đến
   rate_per_hour: number; // Đơn giá VNĐ/giờ
   created_at?: string;
 }
 
 export interface SystemUnitRate {
   id: string;
-  rate_key: string; // 'sinto_molding' | 'cnc_turning' | 'cnc_milling' | 'cnc_drilling' | 'cnc_grinding' | 'cnc_broaching' | 'elec_kwh' | 'trans_kg'
+  rate_key: string; // 'sawing_machine' | 'trimming_machine' | 'cnc_type_1' | 'cnc_type_2' | 'cnc_type_3' | 'cnc_type_4'
   rate_name: string;
-  category: string; // 'Sinto' | 'CNC' | 'Hệ thống'
-  unit: string; // 'VNĐ/khuôn' | 'VNĐ/phút' | 'VNĐ/kWh' | 'VNĐ/kg'
+  category: 'Rèn' | 'CNC' | 'Đúc' | 'Hệ thống' | string;
+  unit: string; // 'VNĐ/giờ' | 'VNĐ/phút' | string
   value: number;
+  description?: string;
   updated_at?: string;
 }
 
