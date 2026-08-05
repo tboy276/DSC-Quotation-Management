@@ -1,5 +1,6 @@
 import { useQuotationStore } from '../../store/useQuotationStore';
 import { MachiningOpsList } from './MachiningOpsList';
+import { ToolingOpsList } from './ToolingOpsList';
 import { SliderInput } from '../ui/SliderInput';
 import {
   INITIAL_MATERIALS,
@@ -15,6 +16,9 @@ export const ForgingCalculatorForm = () => {
   const addOp = useQuotationStore((state) => state.addForgingMachiningOp);
   const updateOp = useQuotationStore((state) => state.updateForgingMachiningOp);
   const removeOp = useQuotationStore((state) => state.removeForgingMachiningOp);
+  const addComp = useQuotationStore((state) => state.addForgingDieComponent);
+  const updateComp = useQuotationStore((state) => state.updateForgingDieComponent);
+  const removeComp = useQuotationStore((state) => state.removeForgingDieComponent);
   const selectMaterial = useQuotationStore((state) => state.selectForgingMaterial);
   const selectMachineRate = useQuotationStore((state) => state.selectForgingMachineRate);
   const getForgingResult = useQuotationStore((state) => state.getForgingResult);
@@ -302,34 +306,33 @@ export const ForgingCalculatorForm = () => {
         onUpdateNotes={(notes) => setForgingField('machining_notes', notes)}
       />
 
-      {/* 4. Section Khấu Hao Khuôn & Đơn Hàng */}
+      {/* 4A. Bóc Tách Chi Phí Khuôn */}
+      <ToolingOpsList
+        isForging={true}
+        components={forging.die_components || []}
+        C_design={forging.C_design ?? 15000000}
+        k_mgmt_die={forging.k_mgmt_die ?? 10}
+        cavity={forging.cavity ?? 1}
+        life_coefficient={forging.life_coefficient ?? 20000}
+        onAddComp={addComp}
+        onUpdateComp={updateComp}
+        onRemoveComp={removeComp}
+        onUpdateField={(field, value) => setForgingField(field, value)}
+      />
+
+      {/* 4B. Section Khấu Hao Khuôn & Đơn Hàng */}
       <CostSectionCard
         icon={<Wrench className="w-5 h-5" />}
-        title="SECTION 4: BỘ KHUÔN RÈN & SẢN LƯỢNG ĐƠN HÀNG"
+        title="SECTION 4B: CƠ CHẾ KHẤU HAO & SẢN LƯỢNG ĐƠN HÀNG"
         topInputs={
           <>
-            <div>
-              <label className="block text-[11px] font-bold text-[#787774] uppercase tracking-wider mb-1.5">
-                Tổng Chi Phí Bộ Khuôn (VNĐ)
-              </label>
-              <input
-                type="number"
-                step="1000000"
-                value={forging.C_die_total}
-                onChange={(e) => setForgingField('C_die_total', Number(e.target.value))}
-                className="w-full px-3 py-2 border border-[#EAEAEA] rounded-[4px] font-mono font-bold text-[13px] text-[#111111]"
-              />
+            <div className="hidden">
+              {/* Giữ lại C_die_total ẩn nếu cần cho backward compatibility, nhưng giờ nó được tính tự động */}
+              <input type="hidden" value={forging.C_die_total} />
             </div>
-            <div>
-              <label className="block text-[11px] font-bold text-[#787774] uppercase tracking-wider mb-1.5">
-                Tuổi Thọ Khuôn (L_die_life - SP)
-              </label>
-              <input
-                type="number"
-                value={forging.L_die_life}
-                onChange={(e) => setForgingField('L_die_life', Number(e.target.value))}
-                className="w-full px-3 py-2 border border-[#EAEAEA] rounded-[4px] font-mono font-bold text-[13px] text-[#111111]"
-              />
+            <div className="hidden">
+              {/* Giữ lại L_die_life ẩn nếu cần */}
+              <input type="hidden" value={forging.L_die_life} />
             </div>
             <div>
               <label className="block text-[11px] font-bold text-[#787774] uppercase tracking-wider mb-1.5">
@@ -377,10 +380,10 @@ export const ForgingCalculatorForm = () => {
         }
         breakdownItems={
           forging.die_cost_treatment === 'amortized' ? [
-            { label: 'I. Tổng Chi Phí Khuôn:', value: `${(forging.C_die_total || 0).toLocaleString('vi-VN')} đ` },
-            { label: 'II. Mẫu số khấu hao:', value: `${Math.min(forging.L_die_life || 1, Math.max(1, forging.N_order || 1)).toLocaleString('vi-VN')} SP` },
+            { label: 'I. Tổng Chi Phí Khuôn:', value: `${(res.actual_C_die_total || 0).toLocaleString('vi-VN')} đ` },
+            { label: 'II. Mẫu số khấu hao:', value: `${Math.min(res.actual_L_die_life || 1, Math.max(1, forging.N_order || 1)).toLocaleString('vi-VN')} SP` },
           ] : [
-            { label: 'I. Tiền Khuôn Tách Riêng Nhập 1 Lần:', value: `${(forging.C_die_total || 0).toLocaleString('vi-VN')} đ` },
+            { label: 'I. Tiền Khuôn Tách Riêng Nhập 1 Lần:', value: `${(res.actual_C_die_total || 0).toLocaleString('vi-VN')} đ` },
           ]
         }
         breakdownTotal={

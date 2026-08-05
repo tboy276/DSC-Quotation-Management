@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useQuotationStore } from '../../store/useQuotationStore';
 import { MachiningOpsList } from './MachiningOpsList';
+import { ToolingOpsList } from './ToolingOpsList';
 import { SliderInput } from '../ui/SliderInput';
 import { INITIAL_CASTING_GRADES, fetchCastingGrades } from '../../lib/master-data-service';
 import type { CastingGrade } from '../../types/master-data';
@@ -14,6 +15,9 @@ export const CastingCalculatorForm = () => {
   const addOp = useQuotationStore((state) => state.addCastingMachiningOp);
   const updateOp = useQuotationStore((state) => state.updateCastingMachiningOp);
   const removeOp = useQuotationStore((state) => state.removeCastingMachiningOp);
+  const addComp = useQuotationStore((state) => state.addCastingPatternComponent);
+  const updateComp = useQuotationStore((state) => state.updateCastingPatternComponent);
+  const removeComp = useQuotationStore((state) => state.removeCastingPatternComponent);
   const selectGrade = useQuotationStore((state) => state.selectCastingGrade);
   const getCastingResult = useQuotationStore((state) => state.getCastingResult);
 
@@ -191,34 +195,31 @@ export const CastingCalculatorForm = () => {
         onUpdateNotes={(notes) => setCastingField('machining_notes', notes)}
       />
 
-      {/* SECTION 4: KHẤU HAO MẪU */}
+      {/* 4A. Bóc Tách Chi Phí Mẫu */}
+      <ToolingOpsList
+        isForging={false}
+        components={casting.pattern_components || []}
+        C_design={casting.C_design ?? 15000000}
+        k_mgmt_die={casting.k_mgmt_die ?? 10}
+        cavity={casting.cavity ?? 1}
+        life_coefficient={casting.life_coefficient ?? 20000}
+        onAddComp={addComp}
+        onUpdateComp={updateComp}
+        onRemoveComp={removeComp}
+        onUpdateField={(field, value) => setCastingField(field, value)}
+      />
+
+      {/* 4B. Section Khấu Hao Mẫu & Đơn Hàng */}
       <CostSectionCard
         icon={<Wrench className="w-5 h-5" />}
-        title="SECTION 4: BỘ MẪU ĐÚC SINTO & SẢN LƯỢNG ĐƠN HÀNG"
+        title="SECTION 4B: CƠ CHẾ KHẤU HAO & SẢN LƯỢNG ĐƠN HÀNG"
         topInputs={
           <>
-            <div>
-              <label className="block text-[11px] font-bold text-[#787774] uppercase tracking-wider mb-1.5">
-                Tổng Chi Phí Bộ Mẫu Đúc (VNĐ)
-              </label>
-              <input
-                type="number"
-                step="1000000"
-                value={casting.C_pattern_total}
-                onChange={(e) => setCastingField('C_pattern_total', Number(e.target.value))}
-                className="w-full px-3 py-2 border border-[#EAEAEA] rounded-[4px] font-mono font-bold text-[13px] text-[#111111]"
-              />
+            <div className="hidden">
+              <input type="hidden" value={casting.C_pattern_total} />
             </div>
-            <div>
-              <label className="block text-[11px] font-bold text-[#787774] uppercase tracking-wider mb-1.5">
-                Tuổi Thọ Mẫu (L_pattern_life - SP)
-              </label>
-              <input
-                type="number"
-                value={casting.L_pattern_life}
-                onChange={(e) => setCastingField('L_pattern_life', Number(e.target.value))}
-                className="w-full px-3 py-2 border border-[#EAEAEA] rounded-[4px] font-mono font-bold text-[13px] text-[#111111]"
-              />
+            <div className="hidden">
+              <input type="hidden" value={casting.L_pattern_life} />
             </div>
             <div>
               <label className="block text-[11px] font-bold text-[#787774] uppercase tracking-wider mb-1.5">
@@ -266,10 +267,10 @@ export const CastingCalculatorForm = () => {
         }
         breakdownItems={
           casting.pattern_cost_treatment === 'amortized' ? [
-            { label: 'I. Tổng Chi Phí Mẫu:', value: `${(casting.C_pattern_total || 0).toLocaleString('vi-VN')} đ` },
-            { label: 'II. Mẫu số khấu hao (Min giữa L_pattern_life và N_order):', value: `${Math.min(casting.L_pattern_life || 1, Math.max(1, casting.N_order || 1)).toLocaleString('vi-VN')} SP` },
+            { label: 'I. Tổng Chi Phí Mẫu:', value: `${(res.actual_C_pattern_total || 0).toLocaleString('vi-VN')} đ` },
+            { label: 'II. Mẫu số khấu hao (Min giữa L_pattern_life và N_order):', value: `${Math.min(res.actual_L_pattern_life || 1, Math.max(1, casting.N_order || 1)).toLocaleString('vi-VN')} SP` },
           ] : [
-            { label: 'I. Tiền Mẫu Tách Riêng Nhập 1 Lần:', value: `${(casting.C_pattern_total || 0).toLocaleString('vi-VN')} đ` },
+            { label: 'I. Tiền Mẫu Tách Riêng Nhập 1 Lần:', value: `${(res.actual_C_pattern_total || 0).toLocaleString('vi-VN')} đ` },
           ]
         }
         breakdownTotal={

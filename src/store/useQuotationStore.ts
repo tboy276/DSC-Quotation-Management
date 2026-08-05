@@ -60,6 +60,9 @@ export interface QuotationStoreState {
   addForgingMachiningOp: (op: MachiningOperation) => void;
   updateForgingMachiningOp: (index: number, op: MachiningOperation) => void;
   removeForgingMachiningOp: (index: number) => void;
+  addForgingDieComponent: (comp: any) => void;
+  updateForgingDieComponent: (index: number, comp: any) => void;
+  removeForgingDieComponent: (index: number) => void;
   selectForgingMaterial: (materialId: string) => void;
   selectForgingMachineRate: (rateId: string, type: 'press' | 'hammer') => void;
 
@@ -68,6 +71,9 @@ export interface QuotationStoreState {
   addCastingMachiningOp: (op: MachiningOperation) => void;
   updateCastingMachiningOp: (index: number, op: MachiningOperation) => void;
   removeCastingMachiningOp: (index: number) => void;
+  addCastingPatternComponent: (comp: any) => void;
+  updateCastingPatternComponent: (index: number, comp: any) => void;
+  removeCastingPatternComponent: (index: number) => void;
   selectCastingGrade: (gradeId: string) => void;
 
   // Computed Getters
@@ -281,6 +287,31 @@ export const useQuotationStore = create<QuotationStoreState>((set, get) => ({
       },
     })),
 
+  addForgingDieComponent: (comp) =>
+    set((state) => ({
+      forgingInput: {
+        ...state.forgingInput,
+        die_components: [...(state.forgingInput.die_components || []), comp],
+      },
+    })),
+
+  updateForgingDieComponent: (index, comp) =>
+    set((state) => {
+      const comps = [...(state.forgingInput.die_components || [])];
+      comps[index] = comp;
+      return {
+        forgingInput: { ...state.forgingInput, die_components: comps },
+      };
+    }),
+
+  removeForgingDieComponent: (index) =>
+    set((state) => ({
+      forgingInput: {
+        ...state.forgingInput,
+        die_components: (state.forgingInput.die_components || []).filter((_, i) => i !== index),
+      },
+    })),
+
   selectForgingMaterial: (materialId) => {
     const mat = INITIAL_MATERIALS.find((m) => m.id === materialId);
     if (mat) {
@@ -351,6 +382,31 @@ export const useQuotationStore = create<QuotationStoreState>((set, get) => ({
       castingInput: {
         ...state.castingInput,
         machining_operations: (state.castingInput.machining_operations || []).filter((_, i) => i !== index),
+      },
+    })),
+
+  addCastingPatternComponent: (comp) =>
+    set((state) => ({
+      castingInput: {
+        ...state.castingInput,
+        pattern_components: [...(state.castingInput.pattern_components || []), comp],
+      },
+    })),
+
+  updateCastingPatternComponent: (index, comp) =>
+    set((state) => {
+      const comps = [...(state.castingInput.pattern_components || [])];
+      comps[index] = comp;
+      return {
+        castingInput: { ...state.castingInput, pattern_components: comps },
+      };
+    }),
+
+  removeCastingPatternComponent: (index) =>
+    set((state) => ({
+      castingInput: {
+        ...state.castingInput,
+        pattern_components: (state.castingInput.pattern_components || []).filter((_, i) => i !== index),
       },
     })),
 

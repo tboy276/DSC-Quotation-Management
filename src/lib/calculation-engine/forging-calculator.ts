@@ -23,6 +23,11 @@ export function calculateForgingPrice(input: ForgingInput): ForgingResult {
     C_ops_override,
     machining_operations = [],
     C_machining_override,
+    die_components = [],
+    C_design = 15000000,
+    k_mgmt_die = 10,
+    cavity = 1,
+    life_coefficient = 20000,
     C_die_total = 0,
     L_die_life = 0,
     die_cost_treatment,
@@ -69,12 +74,35 @@ export function calculateForgingPrice(input: ForgingInput): ForgingResult {
   }
 
   // Section 4 — Khấu hao khuôn
+  let actual_C_die_total = C_die_total;
+  let actual_L_die_life = L_die_life;
+
+  if (die_components.length > 0) {
+    const totalComponentsCost = die_components.reduce((sum, comp) => {
+      const materialCost = comp.weight_kg * comp.material_price_kg;
+      const machiningCost = comp.weight_kg * comp.machining_price_kg;
+      const heatTreatmentCost = comp.needs_heat_treatment ? (comp.weight_kg * comp.heat_treatment_price_kg) : 0;
+      
+      let reworkCost = 0;
+      if (comp.needs_reworking) {
+        const reworkRatio = (comp.rework_ratio ?? 30) / 100;
+        const reworkCount = comp.rework_count ?? 9;
+        const reworkCostPerTime = reworkRatio * machiningCost;
+        reworkCost = reworkCount * reworkCostPerTime;
+      }
+      
+      return sum + materialCost + machiningCost + heatTreatmentCost + reworkCost;
+    }, 0);
+    actual_C_die_total = (totalComponentsCost + C_design) * (1 + k_mgmt_die / 100);
+    actual_L_die_life = life_coefficient * cavity;
+  }
+
   let C_die_amortization = 0;
   if (C_die_amortization_override !== undefined) {
     C_die_amortization = C_die_amortization_override;
-  } else if (C_die_total > 0 && L_die_life > 0) {
-    const denominator = Math.min(L_die_life, Math.max(1, N_order));
-    C_die_amortization = C_die_total / denominator;
+  } else if (actual_C_die_total > 0 && actual_L_die_life > 0) {
+    const denominator = Math.min(actual_L_die_life, Math.max(1, N_order));
+    C_die_amortization = actual_C_die_total / denominator;
   }
 
   // Section 5 — Tổng hợp
@@ -98,5 +126,7 @@ export function calculateForgingPrice(input: ForgingInput): ForgingResult {
     pre_profit_price,
     P_FORGING,
     separate_die_cost,
+    actual_C_die_total,
+    actual_L_die_life,
   };
 }

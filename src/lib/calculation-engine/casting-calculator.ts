@@ -35,6 +35,11 @@ export function calculateCastingPrice(input: CastingInput): CastingResult {
     C_machining_override,
 
     // Section 4 — Pattern Amortization
+    pattern_components = [],
+    C_design = 15000000,
+    k_mgmt_die = 10,
+    cavity = 1,
+    life_coefficient = 20000,
     C_pattern_total = 0,
     L_pattern_life = 0,
     pattern_cost_treatment,
@@ -127,12 +132,27 @@ export function calculateCastingPrice(input: CastingInput): CastingResult {
   // ----------------------------------------------------------------------
   // Section 4 — Pattern Amortization (Khấu hao mẫu)
   // ----------------------------------------------------------------------
+  let actual_C_pattern_total = C_pattern_total;
+  let actual_L_pattern_life = L_pattern_life;
+
+  if (pattern_components.length > 0) {
+    const totalComponentsCost = pattern_components.reduce((sum, comp) => {
+      const materialCost = comp.weight_kg * comp.material_price_kg;
+      const machiningCost = comp.weight_kg * comp.machining_price_kg;
+      const heatTreatmentCost = comp.needs_heat_treatment ? (comp.weight_kg * comp.heat_treatment_price_kg) : 0;
+      
+      return sum + materialCost + machiningCost + heatTreatmentCost;
+    }, 0);
+    actual_C_pattern_total = (totalComponentsCost + C_design) * (1 + k_mgmt_die / 100);
+    actual_L_pattern_life = life_coefficient * cavity;
+  }
+
   let C_pattern_amortization = 0;
   if (C_pattern_amortization_override !== undefined) {
     C_pattern_amortization = C_pattern_amortization_override;
-  } else if (C_pattern_total > 0 && L_pattern_life > 0) {
-    const denominator = Math.min(L_pattern_life, Math.max(1, N_order));
-    C_pattern_amortization = C_pattern_total / denominator;
+  } else if (actual_C_pattern_total > 0 && actual_L_pattern_life > 0) {
+    const denominator = Math.min(actual_L_pattern_life, Math.max(1, N_order));
+    C_pattern_amortization = actual_C_pattern_total / denominator;
   }
 
   // ----------------------------------------------------------------------
@@ -173,5 +193,7 @@ export function calculateCastingPrice(input: CastingInput): CastingResult {
     pre_profit_price,
     P_CASTING,
     separate_pattern_cost,
+    actual_C_pattern_total,
+    actual_L_pattern_life,
   };
 }

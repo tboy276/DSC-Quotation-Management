@@ -17,6 +17,21 @@ export interface MachiningOperation {
   DG_machine_hour: number; // Đơn giá máy (/giờ) - DG_machine_i
 }
 
+export interface ToolingComponent {
+  name: string; // Tên thành phần
+  material: string; // Mác vật liệu
+  weight_kg: number; // Trọng lượng sử dụng
+  material_price_kg: number; // Đơn giá vật tư
+  machining_price_kg: number; // Đơn giá gia công
+  needs_heat_treatment: boolean; // Cần xử lý nhiệt
+  heat_treatment_price_kg: number; // Đơn giá xử lý nhiệt
+  
+  // RÈN ONLY
+  needs_reworking?: boolean; // Cần hạ cốt
+  rework_ratio?: number; // Tỷ lệ hạ cốt mỗi lần (%)
+  rework_count?: number; // Số lần hạ cốt trong vòng đời
+}
+
 // ----------------------------------------------------------------------
 // FORGING (RÈN DẬP) TYPES
 // ----------------------------------------------------------------------
@@ -51,8 +66,13 @@ export interface ForgingInput {
   machining_notes?: string;        // Ghi chú chung cho khối CNC
 
   // Section 4 — Die Amortization (Khấu hao khuôn)
-  C_die_total?: number;       // Tổng chi phí bộ khuôn (VNĐ)
-  L_die_life?: number;        // Tuổi thọ bộ khuôn (số sản phẩm)
+  die_components?: ToolingComponent[];
+  C_design?: number;          // Tiền thiết kế
+  k_mgmt_die?: number;        // Phần trăm quản lý khuôn
+  cavity?: number;            // Số khoang khuôn
+  life_coefficient?: number;  // Hệ số tuổi thọ/cavity
+  C_die_total?: number;       // Tổng chi phí bộ khuôn (VNĐ) - Legacy
+  L_die_life?: number;        // Tuổi thọ bộ khuôn (số sản phẩm) - Legacy
   die_cost_treatment: CostTreatment; // 'amortized' | 'separate'
   C_die_amortization_override?: number;
 
@@ -74,6 +94,8 @@ export interface ForgingResult {
   pre_profit_price: number;   // Giá trước lợi nhuận (VNĐ)
   P_FORGING: number;          // Giá bán rèn dập cuối cùng (VNĐ/cái)
   separate_die_cost?: number; // Khoản chi phí khuôn trả riêng nếu die_cost_treatment = 'separate'
+  actual_C_die_total?: number;
+  actual_L_die_life?: number;
 }
 
 // ----------------------------------------------------------------------
@@ -117,8 +139,13 @@ export interface CastingInput {
   machining_notes?: string;
 
   // Section 4 — Pattern Amortization (Khấu hao mẫu đúc)
-  C_pattern_total?: number;       // Tổng chi phí bộ mẫu đúc (VNĐ)
-  L_pattern_life?: number;        // Tuổi thọ bộ mẫu đúc (số sản phẩm)
+  pattern_components?: ToolingComponent[];
+  C_design?: number;          // Tiền thiết kế
+  k_mgmt_die?: number;        // Phần trăm quản lý khuôn
+  cavity?: number;            // Số khoang khuôn
+  life_coefficient?: number;  // Hệ số tuổi thọ/cavity
+  C_pattern_total?: number;       // Tổng chi phí bộ mẫu đúc (VNĐ) - Legacy
+  L_pattern_life?: number;        // Tuổi thọ bộ mẫu đúc (số sản phẩm) - Legacy
   pattern_cost_treatment: CostTreatment; // 'amortized' | 'separate'
   C_pattern_amortization_override?: number;
 
@@ -159,6 +186,8 @@ export interface CastingResult {
   // Section 5 & Final Price
   COGS: number;                  // Giá vốn hàng bán (VNĐ)
   pre_profit_price: number;      // Giá trước lợi nhuận (VNĐ)
-  P_CASTING: number;             // Giá bán đúc gang cuối cùng (VNĐ/cái)
-  separate_pattern_cost?: number;// Khoản chi phí mẫu trả riêng nếu pattern_cost_treatment = 'separate'
+  P_CASTING: number;              // Giá bán đúc cuối cùng (VNĐ/cái)
+  separate_pattern_cost?: number; // Khoản chi phí mẫu trả riêng nếu pattern_cost_treatment = 'separate'
+  actual_C_pattern_total?: number;
+  actual_L_pattern_life?: number;
 }
