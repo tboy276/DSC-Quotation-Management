@@ -117,7 +117,7 @@ export const useQuotationStore = create<QuotationStoreState>((set, get) => ({
   forgingInput: {
     m_phoi: 1.2,
     m_chi: 1.531,
-    k_loss: 2.0,
+    k_loss: 5.0,
     k_mgmt_mat: 0,
     use_m_tinh: false,
     selected_material_id: defaultForgingMaterial.id,
@@ -246,7 +246,7 @@ export const useQuotationStore = create<QuotationStoreState>((set, get) => ({
           const old_m_bavia = mappedInputs.m_bavia;
           mappedInputs.m_phoi = old_m_tinh;
           mappedInputs.m_tinh = undefined;
-          mappedInputs.m_chi = Number(((old_m_tinh + old_m_bavia) / (1 - (mappedInputs.k_loss || 2.0) / 100)).toFixed(4));
+          mappedInputs.m_chi = Number(((old_m_tinh + old_m_bavia) / (1 - (mappedInputs.k_loss || 5.0) / 100)).toFixed(4));
           delete mappedInputs.m_bavia;
         }
 
