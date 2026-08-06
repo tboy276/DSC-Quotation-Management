@@ -965,7 +965,14 @@ export const QuotationsManager = ({ onNavigateToCalculator }: QuotationsManagerP
                   return (
                     <tr
                       key={q.id}
-                      className={`group hover:bg-[#F4F9F4] transition-colors ${
+                      onClick={(e) => {
+                        if (window.getSelection()?.toString().length) return;
+                        const target = e.target as HTMLElement;
+                        const isInteractive = target.closest('button, input, a, select, textarea');
+                        if (isInteractive) return;
+                        toggleSelectQuote(q.id);
+                      }}
+                      className={`group hover:bg-[#F4F9F4] transition-colors cursor-pointer ${
                         isSelected ? 'bg-[#F0F0EE]/80' : ''
                       }`}
                     >
