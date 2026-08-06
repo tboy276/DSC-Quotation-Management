@@ -49,10 +49,11 @@ export const QuoteDetailModal = ({ quote, onClose }: QuoteDetailModalProps) => {
       breakdownRows.push({
         section: 'SECTION 1 — CHI PHÍ VẬT LIỆU (FORGING STEEL MATERIAL)',
         rows: [
-          { name: 'Trọng lượng tinh m_tinh (kg/cái)', val: `${fInp.m_tinh || 0} kg` },
-          { name: 'Trọng lượng bavia m_bavia (kg/cái)', val: `${fInp.m_bavia || 0} kg` },
-          { name: 'Tỷ lệ tổn thất phôi k_loss (%)', val: `${fInp.k_loss || 0}%` },
-          { name: 'Trọng lượng phôi rèn m_phoi (kg/cái)', val: `${fRes?.m_phoi || 0} kg` },
+          ...(fInp.use_m_tinh ? [{ name: 'Trọng lượng tinh m_tinh (kg/cái)', val: `${fInp.m_tinh || 0} kg` }] : []),
+          { name: 'Trọng lượng phôi rèn m_phoi (kg/cái)', val: `${fInp.m_phoi || 0} kg` },
+          { name: 'Trọng lượng chi m_chi (kg/cái)', val: `${fInp.m_chi || 0} kg` },
+          { name: 'Trọng lượng ba-via m_bavia (kg/cái)', val: `${fRes?.m_bavia || 0} kg` },
+          { name: '% cháy hao k_loss', val: `${fInp.k_loss}%` },
           { name: 'Đơn giá thép mua vào DG_steel (VNĐ/kg)', val: `${fInp.DG_steel?.toLocaleString('vi-VN')} VNĐ` },
           { name: 'Đơn giá phế liệu thu hồi DG_scrap (VNĐ/kg)', val: `${fInp.DG_scrap?.toLocaleString('vi-VN')} VNĐ` },
           { name: 'Chi phí vật liệu tinh C_mat_forging (VNĐ/cái)', val: formatCurrencyValue(fRes?.C_mat_forging || 0, currency, exchangeRate) },

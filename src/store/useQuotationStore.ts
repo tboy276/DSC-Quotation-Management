@@ -115,9 +115,11 @@ export const useQuotationStore = create<QuotationStoreState>((set, get) => ({
 
   // 2. Forging Initial Input State
   forgingInput: {
-    m_tinh: 1.2,
-    m_bavia: 0.3,
+    m_phoi: 1.2,
+    m_chi: 1.531,
     k_loss: 2.0,
+    k_mgmt_mat: 0,
+    use_m_tinh: false,
     selected_material_id: defaultForgingMaterial.id,
     DG_steel: defaultForgingMaterial.latest_price || 22000,
     DG_scrap: defaultForgingMaterial.scrap_price || 8000,
@@ -236,15 +238,28 @@ export const useQuotationStore = create<QuotationStoreState>((set, get) => ({
     const clonedInputs = JSON.parse(JSON.stringify(quote.inputs_json));
 
     if (quote.segment === 'forging') {
-      set((state) => ({
-        segment: 'forging',
-        currency: quote.currency || 'VND',
-        exchange_rate: quote.exchange_rate || 1,
-        forgingInput: {
-          ...state.forgingInput,
-          ...clonedInputs,
-        },
-      }));
+      set((state) => {
+        let mappedInputs = { ...clonedInputs };
+        // Backward compatibility: map old m_tinh -> m_phoi, old m_bavia -> calculate m_chi
+        if (mappedInputs.m_chi === undefined && mappedInputs.m_tinh !== undefined && mappedInputs.m_bavia !== undefined) {
+          const old_m_tinh = mappedInputs.m_tinh;
+          const old_m_bavia = mappedInputs.m_bavia;
+          mappedInputs.m_phoi = old_m_tinh;
+          mappedInputs.m_tinh = undefined;
+          mappedInputs.m_chi = Number(((old_m_tinh + old_m_bavia) / (1 - (mappedInputs.k_loss || 2.0) / 100)).toFixed(4));
+          delete mappedInputs.m_bavia;
+        }
+
+        return {
+          segment: 'forging',
+          currency: quote.currency || 'VND',
+          exchange_rate: quote.exchange_rate || 1,
+          forgingInput: {
+            ...state.forgingInput,
+            ...mappedInputs,
+          },
+        };
+      });
     } else {
       set((state) => ({
         segment: 'casting',

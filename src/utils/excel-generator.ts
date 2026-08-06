@@ -28,7 +28,7 @@ export const exportDocumentToExcel = (document: QuotationDocument) => {
     const inp = q?.inputs_json as any || {};
     const res = q?.results_json as any || {};
 
-    const weightKg = isForging ? res.m_phoi || inp.m_tinh : inp.m_cast;
+    const weightKg = isForging ? inp.m_phoi : inp.m_cast;
     const formingCostVnd = isForging
       ? (res.C_mat_forging || 0) + (res.C_ops_forging || 0)
       : (res.C_metal_casting || 0) + (res.C_ops_casting || 0);
@@ -135,10 +135,13 @@ export const exportDocumentToExcel = (document: QuotationDocument) => {
     if (isForging) {
       const fInp = inp as ForgingInput;
       const fRes = res as ForgingResult;
-      sheetData.push(['Trọng lượng tinh m_tinh (kg/cái)', fInp.m_tinh]);
-      sheetData.push(['Trọng lượng bavia m_bavia (kg/cái)', fInp.m_bavia]);
+      if (fInp.use_m_tinh) {
+        sheetData.push(['Trọng lượng tinh m_tinh (kg/cái)', fInp.m_tinh || 0]);
+      }
+      sheetData.push(['Trọng lượng phôi rèn m_phoi (kg/cái)', fInp.m_phoi || 0]);
+      sheetData.push(['Trọng lượng chi m_chi (kg/cái)', fInp.m_chi || 0]);
+      sheetData.push(['Trọng lượng bavia m_bavia (kg/cái)', fRes.m_bavia || 0]);
       sheetData.push(['Tỷ lệ tổn thất phôi k_loss (%)', fInp.k_loss]);
-      sheetData.push(['Trọng lượng phôi dập m_phoi (kg/cái)', fRes.m_phoi]);
       sheetData.push(['Đơn giá thép mua vào DG_steel (VNĐ/kg)', fInp.DG_steel]);
       sheetData.push(['Đơn giá phế liệu thu hồi DG_scrap (VNĐ/kg)', fInp.DG_scrap]);
       sheetData.push(['Chi phí vật liệu tinh C_mat_forging (VNĐ/cái)', Math.round(fRes.C_mat_forging)]);

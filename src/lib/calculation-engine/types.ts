@@ -38,11 +38,16 @@ export interface ToolingComponent {
 
 export interface ForgingInput {
   // Section 1 — Material (Vật liệu)
-  m_tinh: number;      // Phôi tinh (kg)
-  m_bavia: number;     // Khối lượng ba-via (kg)
+  m_tinh?: number;     // Trọng lượng tinh sau gia công (kg) - Mới
+  m_phoi: number;      // Trọng lượng phôi rèn (kg) - Cũ là m_tinh
+  m_chi: number;       // Trọng lượng chi phôi đầu vào (kg) - Cũ là m_phoi/m_bavia
+  d_cut?: number;      // Đường kính cắt (mm)
+  l_cut?: number;      // Chiều dài cắt (mm)
   k_loss: number;      // Phần trăm cháy hao % (VD: 2.0 = 2%)
   DG_steel: number;    // Đơn giá thép phôi (VNĐ/kg)
   DG_scrap: number;    // Đơn giá thu hồi ba-via (VNĐ/kg)
+  k_mgmt_mat?: number; // Chi phí quản lý vật tư (%)
+  use_m_tinh?: boolean;// Tính chi phí vật tư theo TL sau gia công
 
   // Section 2 — Technology & Operations (Công nghệ & Nhiệt luyện)
   t_cut_sec?: number;              // Thời gian cắt phôi (giây)
@@ -86,7 +91,8 @@ export interface ForgingInput {
 }
 
 export interface ForgingResult {
-  m_phoi: number;             // Khối lượng phôi tổng (kg)
+  m_phoi: number;             // Trọng lượng chi đầu vào (kg) - Cũ là m_phoi
+  m_bavia: number;            // Khối lượng ba-via (kg)
   C_mat_forging: number;      // Chi phí vật liệu rèn (VNĐ)
   C_ops_forging: number;      // Chi phí công nghệ rèn (VNĐ)
   C_machining: number;        // Chi phí gia công cơ khí (VNĐ)

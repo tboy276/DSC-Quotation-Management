@@ -6,10 +6,13 @@ import type { ForgingInput, ForgingResult } from './types';
 export function calculateForgingPrice(input: ForgingInput): ForgingResult {
   const {
     m_tinh,
-    m_bavia,
+    m_phoi,
+    m_chi,
     k_loss,
     DG_steel,
     DG_scrap,
+    k_mgmt_mat = 0,
+    use_m_tinh = false,
     t_cut_sec = 0,
     DG_sawing_machine_hour = 0,
     w_elec_kwh_per_kg = 0,
@@ -41,12 +44,13 @@ export function calculateForgingPrice(input: ForgingInput): ForgingResult {
   } = input;
 
   // Section 1 — Vật liệu
-  // m_phoi = (m_tinh + m_bavia) / (1 - k_loss/100)
-  const m_phoi_exact = (m_tinh + m_bavia) / (1 - k_loss / 100);
-  const m_phoi = Number(m_phoi_exact.toFixed(3)); // Round to 3 decimal places for kg
+  // m_bavia = (m_chi - m_phoi) * (1 - k_loss / 100) (hoặc theo m_tinh nếu dùng)
+  const base_weight = use_m_tinh ? (m_tinh || 0) : m_phoi;
+  const m_bavia = (m_chi - base_weight) * (1 - k_loss / 100);
 
-  // C_mat_forging = (m_phoi × DG_steel) - (m_bavia × DG_scrap)
-  const C_mat_forging = (m_phoi * DG_steel) - (m_bavia * DG_scrap);
+  // C_mat_forging = (m_chi × DG_steel_eff) - (m_bavia × DG_scrap)
+  const effective_DG_steel = DG_steel * (1 + k_mgmt_mat / 100);
+  const C_mat_forging = (m_chi * effective_DG_steel) - (m_bavia * DG_scrap);
 
   // Section 2 — Công nghệ & Nhiệt luyện
   let C_ops_forging = 0;
@@ -54,11 +58,11 @@ export function calculateForgingPrice(input: ForgingInput): ForgingResult {
     C_ops_forging = C_ops_override;
   } else {
     const C_cut = (t_cut_sec / 3600) * DG_sawing_machine_hour;
-    const C_heat_induction = m_phoi * w_elec_kwh_per_kg * DG_elec_kwh;
+    const C_heat_induction = m_chi * w_elec_kwh_per_kg * DG_elec_kwh;
     const C_forging_op = (t_forging_sec / 3600) * DG_forging_machine_hour;
     const C_trim = (t_trim_sec / 3600) * DG_trim_machine_hour;
-    const C_heat_treat = m_phoi * DG_heat_treat_kg;
-    const C_clean = m_phoi * DG_clean_kg;
+    const C_heat_treat = m_chi * DG_heat_treat_kg;
+    const C_clean = m_chi * DG_clean_kg;
 
     C_ops_forging = C_cut + C_heat_induction + C_forging_op + C_trim + C_heat_treat + C_clean;
   }
@@ -112,14 +116,15 @@ export function calculateForgingPrice(input: ForgingInput): ForgingResult {
 
   const COGS = C_mat_forging + C_ops_forging + C_machining + dieInCogs;
 
-  const actual_C_pack = DG_pack_kg !== undefined ? DG_pack_kg * m_phoi : C_pack;
+  const actual_C_pack = DG_pack_kg !== undefined ? DG_pack_kg * m_chi : C_pack;
   const pre_profit_price =
-    COGS * (1 + k_mgmt / 100) + actual_C_pack + (m_phoi * DG_trans_kg);
+    COGS * (1 + k_mgmt / 100) + actual_C_pack + (m_chi * DG_trans_kg);
 
   const P_FORGING = Math.round(pre_profit_price * (1 + k_profit_forging / 100));
 
   return {
-    m_phoi,
+    m_phoi: m_chi, // Legacy mapping in result (Trọng lượng chi)
+    m_bavia,
     C_mat_forging,
     C_ops_forging,
     C_machining,
