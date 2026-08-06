@@ -30,7 +30,13 @@ export const fetchQuotationDocuments = async (): Promise<QuotationDocument[]> =>
       .order('created_at', { ascending: false });
 
     if (!error && dbDocs) {
-      localDocumentsCache = dbDocs as QuotationDocument[];
+      localDocumentsCache = dbDocs.map((doc: any) => ({
+        ...doc,
+        items: doc.items?.map((item: any) => ({
+          ...item,
+          quote: Array.isArray(item.quote) ? item.quote[0] : item.quote
+        }))
+      })) as QuotationDocument[];
     }
   } catch (err) {
     console.warn('Fetching quotation_documents from Supabase error:', err);

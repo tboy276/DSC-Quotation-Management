@@ -44,8 +44,8 @@ export const fetchQuotes = async (filter?: QuotationFilterOptions): Promise<Quot
   // Construct complete QuoteRecord list
   let list: QuoteRecord[] = localItemsCache.map((item) => {
     const parentDossier = localDossiersCache.find((d) => d.id === item.rfq_id) || item.rfq;
-    const existingQuote = localQuotesCache.find((q) => q.rfq_item_id === item.id) || item.quote;
-
+    const dbQuote = Array.isArray(item.quote) ? item.quote[0] : item.quote;
+    const existingQuote = localQuotesCache.find((q) => q.rfq_item_id === item.id) || dbQuote;
     return {
       id: existingQuote?.id || `quote-${item.id}`,
       rfq_item_id: item.id,
