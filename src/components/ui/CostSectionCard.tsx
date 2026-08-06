@@ -171,7 +171,7 @@ export const CostSectionCard: React.FC<CostSectionCardProps> = ({
 
       {/* FOOTER TOTAL */}
       {(footerTitle || footerTotal) && (
-        <div className={`p-4 mt-6 border rounded-[6px] flex flex-col md:flex-row items-center justify-between ${isFinalTotal ? 'bg-[#111111] border-[#111111] shadow-xl' : 'bg-[#F8F9FA] border-slate-200/60'}`}>
+        <div className={`p-4 mt-6 border rounded-[6px] flex flex-col md:flex-row items-center justify-between ${isFinalTotal ? 'bg-[#111111] border-[#111111] shadow-xl' : 'bg-[#F4F7FB] border-blue-100/50'}`}>
           <div>
             {footerTitle && (
               <h5 className={`font-extrabold uppercase ${isFinalTotal ? 'text-[20px] text-white' : 'text-[14px] text-slate-900'}`}>
@@ -179,15 +179,15 @@ export const CostSectionCard: React.FC<CostSectionCardProps> = ({
               </h5>
             )}
             {footerSubtitle && (
-              <p className={`text-[11px] mt-1 font-mono ${isFinalTotal ? 'text-slate-400' : 'text-slate-400'}`}>
+              <p className={`text-[11px] mt-1 font-mono ${isFinalTotal ? 'text-slate-400' : 'hidden'}`}>
                 {footerSubtitle}
               </p>
             )}
           </div>
           <div className="text-right mt-4 md:mt-0">
             {footerTotal && (
-              <span className={`font-bold font-sans leading-none ${isFinalTotal ? 'text-[42px] text-emerald-400' : 'text-[24px] text-slate-900'}`}>
-                {footerTotal} {footerTotalUnit && <span className={`font-bold font-sans uppercase ml-1.5 ${isFinalTotal ? 'text-[18px] text-white' : 'text-[13px] text-slate-900'}`}>{footerTotalUnit}</span>}
+              <span className={`font-bold leading-none ${isFinalTotal ? 'text-[42px] font-sans text-emerald-400' : 'text-[18px] font-mono text-blue-600'}`}>
+                {footerTotal} {footerTotalUnit && <span className={`font-bold uppercase ml-1.5 ${isFinalTotal ? 'text-[18px] font-sans text-white' : 'text-[14px] font-sans text-blue-600'}`}>{footerTotalUnit}</span>}
               </span>
             )}
           </div>
