@@ -100,8 +100,7 @@ export function DataTable<T>({
     onSelectionChange?.(nextIds, nextRows);
   };
 
-  const handleSelectRow = (rowKey: string, e: React.MouseEvent) => {
-    e.stopPropagation();
+  const toggleRowSelection = (rowKey: string) => {
     let nextIds: string[];
     if (selectedIds.includes(rowKey)) {
       nextIds = selectedIds.filter((id) => id !== rowKey);
@@ -113,6 +112,11 @@ export function DataTable<T>({
     }
     const nextRows = data.filter((r) => nextIds.includes(keyExtractor(r)));
     onSelectionChange?.(nextIds, nextRows);
+  };
+
+  const handleCheckboxCellClick = (rowKey: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    toggleRowSelection(rowKey);
   };
 
   const handleSort = (col: DataTableColumn<T>) => {
@@ -324,15 +328,24 @@ export function DataTable<T>({
                   return (
                     <tr
                       key={rKey}
-                      onClick={() => onRowClick?.(row)}
-                      className={`hover:bg-[#F7F6F3] transition-colors ${
-                        onRowClick ? 'cursor-pointer' : ''
-                      } ${isChecked ? 'bg-[#F0F0EE]/60' : ''}`}
+                      onClick={(e) => {
+                        if (window.getSelection()?.toString().length) {
+                          return;
+                        }
+                        const target = e.target as HTMLElement;
+                        const isInteractive = target.closest('button, a, input, select, textarea, [role="button"]');
+                        if (isInteractive) {
+                          return;
+                        }
+                        toggleRowSelection(rKey);
+                        onRowClick?.(row);
+                      }}
+                      className={`hover:bg-[#F0F0EE] transition-colors cursor-pointer ${isChecked ? 'bg-[#F0F0EE]/60' : ''}`}
                     >
                       {/* Column 1: Row Checkbox */}
                       <td
                         className="py-3 px-3.5 text-center"
-                        onClick={(e) => handleSelectRow(rKey, e)}
+                        onClick={(e) => handleCheckboxCellClick(rKey, e)}
                       >
                         <input
                           type="checkbox"
