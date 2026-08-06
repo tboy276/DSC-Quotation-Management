@@ -14,7 +14,7 @@ import {
 } from '../../lib/master-data-service';
 import type { CastingGrade, MoldingRecipeItem } from '../../types/master-data';
 import { Modal } from '../ui/Modal';
-import { Factory, Eye } from 'lucide-react';
+import { FileText, Eye } from 'lucide-react';
 import { CostSectionCard } from '../ui/CostSectionCard';
 
 export const CastingCalculatorForm = () => {
@@ -273,75 +273,84 @@ export const CastingCalculatorForm = () => {
         </div>
       </div>
 
-      {/* SECTION B: CHI PHÍ XƯỞNG */}
-      <CostSectionCard
-        icon={<Factory className="w-5 h-5" />}
-        title={`PHẦN B: CHI PHÍ XƯỞNG SAU ĐÚC (Quy Đổi Theo ${m_cast} kg Thành Phẩm)`}
-        mainRightContent={
-          <div className="space-y-4 mb-4">
-            <div className="bg-[#F0F0EE] p-5 rounded-[4px] border border-slate-300 space-y-3 font-mono text-[13px] h-full flex flex-col justify-center">
-              
-              {/* I. Vật Tư HTSP */}
-              <div className="flex justify-between border-b border-dashed border-slate-300 pb-2 items-center">
-                <div className="flex flex-col">
-                  <span className="font-bold text-slate-700 font-sans text-[12px]">I. Vật Tư HTSP:</span>
-                  <span className="text-[10px] text-slate-500 font-mono">{(casting.DG_finishing_per_kg || 771.82).toLocaleString('vi-VN')} đ/kg × {m_cast} kg</span>
-                </div>
-                <span className="font-bold text-[#111111]">{res.C_finishing.toLocaleString('vi-VN')} đ</span>
-              </div>
+      {/* SECTION B: CHI PHÍ PHÂN XƯỞNG ĐÚC (Bespoke UI) */}
+      <div className="border border-slate-200 rounded-[8px] p-5 bg-white shadow-[0_2px_8px_rgba(0,0,0,0.03)] animate-fade-in-up">
+        {/* Header */}
+        <div className="flex items-center gap-3 mb-6">
+          <div className="w-8 h-8 bg-slate-100 rounded-[6px] flex items-center justify-center flex-shrink-0">
+            <FileText className="w-4 h-4 text-slate-700" />
+          </div>
+          <h2 className="text-[15px] font-bold text-slate-900 uppercase tracking-wide">
+            PHẦN B: CHI PHÍ PHÂN XƯỞNG ĐÚC
+          </h2>
+        </div>
 
-              {/* II. Điện + Nước Tiêu Hao Xưởng */}
-              <div className="flex justify-between border-b border-dashed border-slate-300 pb-2 items-center">
-                <div className="flex flex-col">
-                  <span className="font-bold text-slate-700 font-sans text-[12px]">II. Điện + Nước Tiêu Hao Xưởng:</span>
-                  <span className="text-[10px] text-slate-500 font-mono">{(casting.DG_utility_per_kg || 3687.6).toLocaleString('vi-VN')} đ/kg × {m_cast} kg</span>
-                </div>
-                <span className="font-bold text-[#111111]">{res.C_utility.toLocaleString('vi-VN')} đ</span>
+        {/* List of items */}
+        <div className="flex flex-col space-y-4">
+          {/* I */}
+          <div className="flex justify-between items-center border-b border-slate-100 pb-3">
+            <div>
+              <div className="text-[13px] font-bold text-slate-900">I. Vật Tư HTSP:</div>
+              <div className="text-[10px] font-mono text-slate-400 uppercase mt-1">
+                {(casting.DG_finishing_per_kg || 771.82).toLocaleString('vi-VN', { maximumFractionDigits: 2 })} Đ/KG × {m_cast} KG
               </div>
+            </div>
+            <div className="font-mono text-[14px] font-bold text-slate-900">{res.C_finishing.toLocaleString('vi-VN')} đ</div>
+          </div>
 
-              {/* III. Lương Trực Tiếp & Gián Tiếp */}
-              <div className="flex justify-between border-b border-dashed border-slate-300 pb-2 items-center">
-                <div className="flex flex-col">
-                  <span className="font-bold text-slate-700 font-sans text-[12px]">III. Lương Trực Tiếp & Gián Tiếp:</span>
-                  <span className="text-[10px] text-slate-500 font-mono">{(casting.DG_labor_per_kg || 2461).toLocaleString('vi-VN')} đ/kg × {m_cast} kg</span>
-                </div>
-                <span className="font-bold text-[#111111]">{res.C_labor.toLocaleString('vi-VN')} đ</span>
+          {/* II */}
+          <div className="flex justify-between items-center border-b border-slate-100 pb-3">
+            <div>
+              <div className="text-[13px] font-bold text-slate-900">II. Điện + Nước Tiêu Hao Xưởng:</div>
+              <div className="text-[10px] font-mono text-slate-400 uppercase mt-1">
+                {(casting.DG_utility_per_kg || 3687.6).toLocaleString('vi-VN', { maximumFractionDigits: 2 })} Đ/KG × {m_cast} KG
               </div>
+            </div>
+            <div className="font-mono text-[14px] font-bold text-slate-900">{res.C_utility.toLocaleString('vi-VN')} đ</div>
+          </div>
 
-              {/* IV. Quản Lý Phân Xưởng */}
-              <div className="flex justify-between border-b border-dashed border-slate-300 pb-2 items-center">
-                <div className="flex flex-col">
-                  <span className="font-bold text-slate-700 font-sans text-[12px]">IV. Quản Lý Phân Xưởng:</span>
-                  <span className="text-[10px] text-slate-500 font-mono">{(casting.DG_workshop_mgmt_per_kg || 0).toLocaleString('vi-VN')} đ/kg × {m_cast} kg</span>
-                </div>
-                <span className="font-bold text-[#111111]">{res.C_workshop_mgmt.toLocaleString('vi-VN')} đ</span>
+          {/* III */}
+          <div className="flex justify-between items-center border-b border-slate-100 pb-3">
+            <div>
+              <div className="text-[13px] font-bold text-slate-900">III. Lương Trực Tiếp & Gián Tiếp:</div>
+              <div className="text-[10px] font-mono text-slate-400 uppercase mt-1">
+                {(casting.DG_labor_per_kg || 2461).toLocaleString('vi-VN', { maximumFractionDigits: 2 })} Đ/KG × {m_cast} KG
               </div>
+            </div>
+            <div className="font-mono text-[14px] font-bold text-slate-900">{res.C_labor.toLocaleString('vi-VN')} đ</div>
+          </div>
 
-              {/* V. Khấu Hao Thiết Bị Xưởng */}
-              <div className="flex justify-between border-b border-slate-400 pb-3 items-center">
-                <div className="flex flex-col">
-                  <span className="font-bold text-slate-700 font-sans text-[12px]">V. Khấu Hao Thiết Bị Xưởng:</span>
-                  <span className="text-[10px] text-slate-500 font-mono">{(casting.DG_equipment_depr_per_kg || 4000).toLocaleString('vi-VN')} đ/kg × {m_cast} kg</span>
-                </div>
-                <span className="font-bold text-[#111111]">{res.C_equipment_depreciation.toLocaleString('vi-VN')} đ</span>
+          {/* IV */}
+          <div className="flex justify-between items-center border-b border-slate-100 pb-3">
+            <div>
+              <div className="text-[13px] font-bold text-slate-900">IV. Quản Lý Phân Xưởng:</div>
+              <div className="text-[10px] font-mono text-slate-400 uppercase mt-1">
+                {(casting.DG_workshop_mgmt_per_kg || 0).toLocaleString('vi-VN', { maximumFractionDigits: 2 })} Đ/KG × {m_cast} KG
               </div>
+            </div>
+            <div className="font-mono text-[14px] font-bold text-slate-900">{res.C_workshop_mgmt.toLocaleString('vi-VN')} đ</div>
+          </div>
 
-              {/* Tổng Phần B */}
-              <div className="flex justify-between items-center pt-2">
-                <div className="flex flex-col">
-                  <span className="font-extrabold text-slate-900 font-sans text-[14px] uppercase tracking-tight">TỔNG PHẦN B XƯỞNG:</span>
-                </div>
-                <span className="font-extrabold text-[#38517A] text-[24px] leading-none">{res.C_part_b_total.toLocaleString('vi-VN')} đ</span>
+          {/* V */}
+          <div className="flex justify-between items-center pb-2">
+            <div>
+              <div className="text-[13px] font-bold text-slate-900">V. Khấu Hao Thiết Bị Xưởng:</div>
+              <div className="text-[10px] font-mono text-slate-400 uppercase mt-1">
+                {(casting.DG_equipment_depr_per_kg || 4000).toLocaleString('vi-VN', { maximumFractionDigits: 2 })} Đ/KG × {m_cast} KG
               </div>
+            </div>
+            <div className="font-mono text-[14px] font-bold text-slate-900">{res.C_equipment_depreciation.toLocaleString('vi-VN')} đ</div>
+          </div>
 
+          {/* Total Box */}
+          <div className="mt-2 bg-[#F4F7FB] border border-blue-100/50 rounded-[6px] p-4 flex justify-between items-center">
+            <div className="text-[14px] font-extrabold text-slate-900 uppercase">TỔNG PHẦN B XƯỞNG:</div>
+            <div className="text-[18px] font-mono font-bold text-blue-600">
+              {Math.round(res.C_part_b_total).toLocaleString('vi-VN')} <span className="text-[14px] font-bold uppercase">VNĐ/SP</span>
             </div>
           </div>
-        }
-        footerTitle="Tổng Chi Phí Phần B (Chi Phí Xưởng)"
-        footerSubtitle="= Tổng Phân B Xưởng (Quy đổi cho 1 sản phẩm)"
-        footerTotal={Math.round(res.C_part_b_total).toLocaleString('vi-VN')}
-        footerTotalUnit="VNĐ/SP"
-      />
+        </div>
+      </div>
 
       {/* SECTION 3: GIA CÔNG CƠ KHÍ */}
       <MachiningOpsList
