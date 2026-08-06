@@ -292,7 +292,7 @@ export const saveQuoteDraft = async (
   };
 
   let dbQuote: any = null;
-  if (existingQuoteId) {
+  if (existingQuoteId && !existingQuoteId.startsWith('quote-')) {
     const { data, error } = await supabase
       .from('quotes')
       .update(quotePayload)
