@@ -247,10 +247,10 @@ export const CastingCalculatorForm = () => {
           </div>
         }
         bottomNote={`* DG_liquid: ${(casting.DG_liquid || 0).toLocaleString('vi-VN')} đ/kg | DG_cast_scrap: ${(casting.DG_cast_scrap || 0).toLocaleString('vi-VN')} đ/kg | Hồi liệu mẻ 1000kg: ${scrap_kg_1000.toFixed(1)} kg.`}
-        footerTitle="2: Tổng Đơn Giá Phần A (Vật Liệu + Tạo Khuôn)"
-        footerSubtitle="= Tổng Chi Phí Mẻ ÷ Khối lượng Thành phẩm trong mẻ (1000kg × Tỷ lệ thu hồi) + Phí Thao Quy Đổi"
-        footerTotal={Math.round(partA_per_kg).toLocaleString('vi-VN')}
-        footerTotalUnit="VNĐ/kg"
+        footerTitle="2: Tổng Chi Phí Phần A (Vật Liệu + Tạo Khuôn)"
+        footerSubtitle="= Đơn giá 1kg × Khối lượng vật đúc"
+        footerTotal={Math.round(partA_per_kg * m_cast).toLocaleString('vi-VN')}
+        footerTotalUnit="VNĐ/SP"
       />
 
       {/* SECTION B: CHI PHÍ XƯỞNG */}
@@ -317,10 +317,10 @@ export const CastingCalculatorForm = () => {
             </div>
           </div>
         }
-        footerTitle="Tổng Đơn Giá Phần B (Chi Phí Xưởng)"
-        footerSubtitle="= Tổng Chi Phí Phần B ÷ Khối lượng Thành phẩm"
-        footerTotal={Math.round(res.C_part_b_total / Math.max(0.0001, m_cast)).toLocaleString('vi-VN')}
-        footerTotalUnit="VNĐ/kg"
+        footerTitle="Tổng Chi Phí Phần B (Chi Phí Xưởng)"
+        footerSubtitle="= Tổng Phân B Xưởng (Quy đổi cho 1 sản phẩm)"
+        footerTotal={Math.round(res.C_part_b_total).toLocaleString('vi-VN')}
+        footerTotalUnit="VNĐ/SP"
       />
 
       {/* SECTION 3: GIA CÔNG CƠ KHÍ */}
