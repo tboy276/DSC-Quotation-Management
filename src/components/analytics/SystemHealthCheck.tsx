@@ -22,25 +22,25 @@ export const SystemHealthCheck: React.FC = () => {
       name: 'user_profiles',
       desc: 'Hồ sơ người dùng & Vai trò phân quyền',
       columns: ['id', 'email', 'full_name', 'role', 'created_at'],
-      sampleRecord: (id) => ({ id, email: `test-${id}@disoco.vn`, full_name: 'Test Profile', role: 'sales' }),
+      sampleRecord: (id) => ({ id, email: `test-${id}@disoco.vn`, full_name: '__HEALTH_CHECK_TEST__', role: 'sales' }),
     },
     {
       name: 'materials',
       desc: 'Master Data — Danh mục Vật tư / Mác thép',
       columns: ['id', 'name', 'unit', 'category', 'scrap_price', 'notes'],
-      sampleRecord: (id) => ({ id, name: `Test Material ${id.slice(0, 5)}`, unit: 'kg', category: 'Gang thỏi' }),
+      sampleRecord: (id) => ({ id, name: `__HEALTH_CHECK_TEST__`, unit: 'kg', category: 'Gang thỏi', scrap_price: 1000 }),
     },
     {
       name: 'material_price_history',
       desc: 'Master Data — Lịch sử giá vật tư',
       columns: ['id', 'material_id', 'price', 'scrap_price', 'effective_date'],
-      sampleRecord: (id) => ({ id, price: 10000, effective_date: '2026-01-01' }),
+      sampleRecord: (id) => ({ id, price: 10000, scrap_price: 1000, effective_date: '2026-01-01' }),
     },
     {
       name: 'casting_grades',
       desc: 'Master Data — Mác gang đúc (FCD450, FC250...)',
       columns: ['id', 'name', 'code', 'notes'],
-      sampleRecord: (id) => ({ id, name: `Test Grade ${id.slice(0, 5)}`, code: 'FCDTEST' }),
+      sampleRecord: (id) => ({ id, name: `__HEALTH_CHECK_TEST__`, code: 'FCDTEST' }),
     },
     {
       name: 'casting_bom_items',
@@ -64,31 +64,31 @@ export const SystemHealthCheck: React.FC = () => {
       name: 'system_unit_rates',
       desc: 'Master Data — Đơn giá hệ thống (Sinto, CNC, Điện...)',
       columns: ['id', 'rate_key', 'rate_name', 'category', 'unit', 'value'],
-      sampleRecord: (id) => ({ id, rate_key: `test_key_${id.slice(0, 5)}`, rate_name: 'Test Rate', category: 'Test', unit: 'VNĐ', value: 100 }),
+      sampleRecord: (id) => ({ id, rate_key: `test_key_${id.slice(0, 5)}`, rate_name: '__HEALTH_CHECK_TEST__', category: 'Test', unit: 'VNĐ', value: 100 }),
     },
     {
       name: 'rfqs',
       desc: 'Hồ sơ RFQ tổng nhận từ khách hàng',
       columns: ['id', 'rfq_code', 'customer_name', 'customer_address', 'customer_contact_person', 'rfq_received_date', 'customer_deadline', 'trade_terms', 'delivery_address', 'special_requirements', 'notes', 'created_by_email'],
-      sampleRecord: (id) => ({ id, customer_name: 'Test Customer', rfq_code: `TEST-${id.slice(0, 5)}`, rfq_received_date: '2026-08-03', customer_deadline: '2026-08-10' }),
+      sampleRecord: (id) => ({ id, customer_name: '__HEALTH_CHECK_TEST__', rfq_code: `TEST-${id.slice(0, 5)}`, rfq_received_date: '2026-08-03', customer_deadline: '2026-08-10' }),
     },
     {
       name: 'rfq_items',
       desc: 'Chi tiết từng dòng sản phẩm thuộc RFQ',
       columns: ['id', 'rfq_id', 'item_code', 'product_name', 'part_number', 'annual_volume', 'quantity_unit', 'target_price', 'technology_requirement', 'status', 'cancel_reason', 'quoted_sent_at'],
-      sampleRecord: (id) => ({ id, product_name: 'Test Part', annual_volume: 1000, target_price: 50000, status: 'IN_COSTING' }),
+      sampleRecord: (id) => ({ id, product_name: '__HEALTH_CHECK_TEST__', annual_volume: 1000, target_price: 50000, status: 'IN_COSTING' }),
     },
     {
       name: 'quotes',
       desc: 'Bản snapshot bóc tách tính giá (JSONB)',
       columns: ['id', 'rfq_item_id', 'segment', 'inputs_json', 'results_json', 'status', 'currency', 'exchange_rate', 'die_cost_treatment', 'final_quoted_price', 'created_by_email'],
-      sampleRecord: (id) => ({ id, segment: 'forging', final_quoted_price: 50000, currency: 'VND', exchange_rate: 1 }),
+      sampleRecord: (id) => ({ id, segment: 'forging', final_quoted_price: 50000, currency: 'VND', exchange_rate: 1, inputs_json: { marker: '__HEALTH_CHECK_TEST__' }, results_json: { marker: '__HEALTH_CHECK_TEST__' }, status: 'READY_FOR_QUOTE' }),
     },
     {
       name: 'quotation_documents',
       desc: 'Văn bản báo giá gộp gửi khách hàng',
       columns: ['id', 'customer_name', 'contact_person', 'contact_email', 'quotation_date', 'trade_terms', 'currency', 'exchange_rate', 'payment_terms', 'delivery_notes', 'display_config'],
-      sampleRecord: (id) => ({ id, customer_name: 'Test Customer Doc', quotation_date: '2026-08-03', trade_terms: 'FOB' }),
+      sampleRecord: (id) => ({ id, customer_name: '__HEALTH_CHECK_TEST__', quotation_date: '2026-08-03', trade_terms: 'FOB' }),
     },
     {
       name: 'quotation_document_items',
@@ -101,6 +101,83 @@ export const SystemHealthCheck: React.FC = () => {
   const runHealthCheck = async () => {
     setLoading(true);
     const checkResults: TableCheckResult[] = [];
+
+    // --- NEW: Test Full Quotation Chain Once ---
+    const chainWriteResults: Record<string, { ok: boolean, err: string }> = {
+      rfqs: { ok: false, err: 'Chưa thực hiện test' },
+      rfq_items: { ok: false, err: 'Chưa thực hiện test' },
+      quotes: { ok: false, err: 'Chưa thực hiện test' },
+      quotation_documents: { ok: false, err: 'Chưa thực hiện test' },
+      quotation_document_items: { ok: false, err: 'Chưa thực hiện test' },
+    };
+
+    const runQuotationChainTest = async () => {
+      const testId = `00000000-0000-0000-0000-${Date.now().toString().slice(-12)}`;
+      const rfqId = testId;
+      const rfqItemId = testId;
+      const quoteId = testId;
+      const docId = testId;
+      const docItemId = testId;
+      const createdTables: string[] = [];
+
+      try {
+        // 1. rfqs
+        const { error: e1 } = await supabase.from('rfqs').insert(
+          tableSpecs.find(s => s.name === 'rfqs')!.sampleRecord(rfqId)
+        );
+        if (e1) { chainWriteResults.rfqs = { ok: false, err: `Lỗi ghi rfqs: ${e1.message}` }; return; }
+        createdTables.push('rfqs');
+        chainWriteResults.rfqs = { ok: true, err: '' };
+
+        // 2. rfq_items
+        const { error: e2 } = await supabase.from('rfq_items').insert({
+          ...tableSpecs.find(s => s.name === 'rfq_items')!.sampleRecord(rfqItemId),
+          rfq_id: rfqId,
+          item_code: `TEST-${testId.slice(0, 5)}-01`,
+        });
+        if (e2) { chainWriteResults.rfq_items = { ok: false, err: `Lỗi ghi rfq_items: ${e2.message}` }; return; }
+        createdTables.push('rfq_items');
+        chainWriteResults.rfq_items = { ok: true, err: '' };
+
+        // 3. quotes
+        const { error: e3 } = await supabase.from('quotes').insert({
+          ...tableSpecs.find(s => s.name === 'quotes')!.sampleRecord(quoteId),
+          rfq_item_id: rfqItemId,
+        });
+        if (e3) { chainWriteResults.quotes = { ok: false, err: `Lỗi ghi quotes: ${e3.message}` }; return; }
+        createdTables.push('quotes');
+        chainWriteResults.quotes = { ok: true, err: '' };
+
+        // 4. quotation_documents
+        const { error: e4 } = await supabase.from('quotation_documents').insert(
+          tableSpecs.find(s => s.name === 'quotation_documents')!.sampleRecord(docId)
+        );
+        if (e4) { chainWriteResults.quotation_documents = { ok: false, err: `Lỗi ghi quotation_documents: ${e4.message}` }; return; }
+        createdTables.push('quotation_documents');
+        chainWriteResults.quotation_documents = { ok: true, err: '' };
+
+        // 5. quotation_document_items
+        const { error: e5 } = await supabase.from('quotation_document_items').insert({
+          ...tableSpecs.find(s => s.name === 'quotation_document_items')!.sampleRecord(docItemId),
+          quotation_document_id: docId,
+          quote_id: quoteId,
+        });
+        if (e5) { chainWriteResults.quotation_document_items = { ok: false, err: `Lỗi ghi quotation_document_items: ${e5.message}` }; return; }
+        createdTables.push('quotation_document_items');
+        chainWriteResults.quotation_document_items = { ok: true, err: '' };
+
+      } finally {
+        // Clean up in reverse order
+        if (createdTables.includes('quotation_document_items')) await supabase.from('quotation_document_items').delete().eq('id', docItemId);
+        if (createdTables.includes('quotation_documents')) await supabase.from('quotation_documents').delete().eq('id', docId);
+        if (createdTables.includes('quotes')) await supabase.from('quotes').delete().eq('id', quoteId);
+        if (createdTables.includes('rfq_items')) await supabase.from('rfq_items').delete().eq('id', rfqItemId);
+        if (createdTables.includes('rfqs')) await supabase.from('rfqs').delete().eq('id', rfqId);
+      }
+    };
+
+    await runQuotationChainTest();
+    // ----------------------------------------------
 
     for (const spec of tableSpecs) {
       let exists = false;
@@ -152,25 +229,42 @@ export const SystemHealthCheck: React.FC = () => {
               writeOk = false;
               if (!errDetail) errDetail = 'Không tìm thấy user đăng nhập để test RLS.';
             }
-          } else if (spec.name === 'quotation_document_items') {
-            const docId = `00000000-0000-0000-0000-${Date.now().toString().slice(-12)}`;
-            const { error: docErr } = await supabase.from('quotation_documents').insert({ id: docId, customer_name: 'Test Parent' });
-            if (docErr) {
-              writeOk = false;
-              if (!errDetail) errDetail = `Lỗi tạo Document cha: ${docErr.message}`;
-            } else {
-              const itemId = `00000000-0000-0000-0000-${(Date.now() + 1).toString().slice(-12)}`;
-              const { error: itemErr } = await supabase.from('quotation_document_items').insert({ id: itemId, quotation_document_id: docId, display_order: 1 });
-              if (itemErr) {
-                writeOk = false;
-                if (!errDetail) errDetail = `Lỗi tạo Item con: [${itemErr.code}] ${itemErr.message}`;
-              } else {
-                writeOk = true;
-                await supabase.from('quotation_document_items').delete().eq('id', itemId);
-              }
-              await supabase.from('quotation_documents').delete().eq('id', docId);
+          } else if (chainWriteResults.hasOwnProperty(spec.name)) {
+            // Use pre-calculated result for chain tables
+            const res = chainWriteResults[spec.name];
+            writeOk = res.ok;
+            if (!writeOk) errDetail = res.err;
+          } else if (spec.name === 'material_price_history') {
+            const testId = `00000000-0000-0000-0000-${Date.now().toString().slice(-12)}`;
+            const matId = testId;
+            const histId = testId;
+            const { error: matErr } = await supabase.from('materials').insert(tableSpecs.find(s => s.name === 'materials')!.sampleRecord(matId));
+            if (matErr) { writeOk = false; errDetail = `Lỗi tạo DB cha: ${matErr.message}`; }
+            else {
+              const payload = { ...spec.sampleRecord(histId), material_id: matId };
+              const { error: histErr } = await supabase.from('material_price_history').insert(payload);
+              if (histErr) { writeOk = false; errDetail = `Lỗi ghi: ${histErr.message}`; }
+              else { writeOk = true; await supabase.from('material_price_history').delete().eq('id', histId); }
+              await supabase.from('materials').delete().eq('id', matId);
             }
+          } else if (spec.name === 'casting_bom_items') {
+            const testId = `00000000-0000-0000-0000-${Date.now().toString().slice(-12)}`;
+            const matId = testId;
+            const gradeId = testId;
+            const bomId = testId;
+            const { error: e1 } = await supabase.from('materials').insert(tableSpecs.find(s => s.name === 'materials')!.sampleRecord(matId));
+            const { error: e2 } = await supabase.from('casting_grades').insert(tableSpecs.find(s => s.name === 'casting_grades')!.sampleRecord(gradeId));
+            if (e1 || e2) { writeOk = false; errDetail = `Lỗi tạo DB cha: ${e1?.message || e2?.message}`; }
+            else {
+              const payload = { ...spec.sampleRecord(bomId), material_id: matId, casting_grade_id: gradeId };
+              const { error: bomErr } = await supabase.from('casting_bom_items').insert(payload);
+              if (bomErr) { writeOk = false; errDetail = `Lỗi ghi: ${bomErr.message}`; }
+              else { writeOk = true; await supabase.from('casting_bom_items').delete().eq('id', bomId); }
+            }
+            if (!e2) await supabase.from('casting_grades').delete().eq('id', gradeId);
+            if (!e1) await supabase.from('materials').delete().eq('id', matId);
           } else {
+            // Standard standalone test
             const testId = `00000000-0000-0000-0000-${Date.now().toString().slice(-12)}`;
             const payload = spec.sampleRecord(testId);
 
