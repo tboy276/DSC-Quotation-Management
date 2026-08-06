@@ -17,10 +17,8 @@ export function calculateForgingPrice(input: ForgingInput): ForgingResult {
     DG_sawing_machine_hour = 0,
     w_elec_kwh_per_kg = 0,
     DG_elec_kwh = 0,
-    t_forging_sec = 0,
+    expected_productivity = 1000,
     DG_forging_machine_hour = 0,
-    t_trim_sec = 0,
-    DG_trim_machine_hour = 0,
     DG_heat_treat_kg = 0,
     DG_clean_kg = 0,
     C_ops_override,
@@ -59,12 +57,14 @@ export function calculateForgingPrice(input: ForgingInput): ForgingResult {
   } else {
     const C_cut = (t_cut_sec / 3600) * DG_sawing_machine_hour;
     const C_heat_induction = m_chi * w_elec_kwh_per_kg * DG_elec_kwh;
-    const C_forging_op = (t_forging_sec / 3600) * DG_forging_machine_hour;
-    const C_trim = (t_trim_sec / 3600) * DG_trim_machine_hour;
+    // (8 giờ x 60 phút / năng suất dự kiến) x (DG_forging_machine_hour / 60)
+    // Simplify: (8 * DG_forging_machine_hour) / expected_productivity
+    const safeProductivity = expected_productivity > 0 ? expected_productivity : 1;
+    const C_forging_op = (8 * DG_forging_machine_hour) / safeProductivity;
     const C_heat_treat = m_chi * DG_heat_treat_kg;
     const C_clean = m_chi * DG_clean_kg;
 
-    C_ops_forging = C_cut + C_heat_induction + C_forging_op + C_trim + C_heat_treat + C_clean;
+    C_ops_forging = C_cut + C_heat_induction + C_forging_op + C_heat_treat + C_clean;
   }
 
   // Section 3 — Gia công cơ khí

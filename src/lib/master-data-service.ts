@@ -25,6 +25,7 @@ export const INITIAL_MATERIALS: Material[] = [
   { id: 'mat-6', name: 'S45C - JFE (Nhật Bản)', unit: 'kg', category: 'Thép cán - Rèn', scrap_price: 8500, notes: 'Thép phôi rèn chuẩn JFE Nhật', latest_price: 22000, latest_effective_date: '2026-01-01' },
   { id: 'mat-7', name: '40Cr - Baosteel (Trung Quốc)', unit: 'kg', category: 'Thép cán - Rèn', scrap_price: 7800, notes: 'Thép hợp kim niken-crom rèn', latest_price: 24500, latest_effective_date: '2026-01-01' },
   { id: 'mat-8', name: '20CrMnTi - HBIS', unit: 'kg', category: 'Thép cán - Rèn', scrap_price: 8000, notes: 'Thép thấm cacbon bánh răng', latest_price: 26000, latest_effective_date: '2026-01-01' },
+  { id: 'mat-9', name: 'Điện năng', unit: 'kWh', category: 'Năng lượng', scrap_price: 0, notes: 'Đơn giá điện năng chung', latest_price: 2200, latest_effective_date: '2026-01-01' },
 ];
 
 export const INITIAL_PRICE_HISTORY: MaterialPriceHistory[] = [

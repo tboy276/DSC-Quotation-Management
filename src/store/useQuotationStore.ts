@@ -64,7 +64,8 @@ export interface QuotationStoreState {
   updateForgingDieComponent: (index: number, comp: any) => void;
   removeForgingDieComponent: (index: number) => void;
   selectForgingMaterial: (materialId: string) => void;
-  selectForgingMachineRate: (rateId: string, type: 'press' | 'hammer') => void;
+  selectSawingMachineType: (type: 'band_saw' | 'punch_cut') => void;
+  selectForgingLine: (line: '1000T' | '1600T' | '63kJ' | '80kJ') => void;
 
   // Casting Actions
   setCastingField: (field: string, value: any) => void;
@@ -83,10 +84,10 @@ export interface QuotationStoreState {
 
 // Initial Forging Defaults
 const defaultForgingMaterial = INITIAL_MATERIALS.find((m) => m.category === 'Thép cán - Rèn') || INITIAL_MATERIALS[5];
-const defaultPressRate = INITIAL_PRESSING_RATES[0]; // 1000T (1.200.000 đ/h)
+const defaultPressRate = INITIAL_PRESSING_RATES[0]; // 1000T
 const defaultSawingRate = INITIAL_SYSTEM_RATES.find((r) => r.rate_key === 'sawing_machine')?.value || 120000;
-const defaultTrimmingRate = INITIAL_SYSTEM_RATES.find((r) => r.rate_key === 'trimming_machine')?.value || 180000;
-const defaultElecRate = 2200;
+const defaultPunchRate = INITIAL_SYSTEM_RATES.find((r) => r.rate_key === 'trimming_machine')?.value || 180000;
+const defaultElecRate = INITIAL_MATERIALS.find((m) => m.name === 'Điện năng')?.latest_price || 2200;
 const defaultTransRate = 1500;
 
 // Initial Casting Defaults
@@ -124,20 +125,16 @@ export const useQuotationStore = create<QuotationStoreState>((set, get) => ({
     DG_steel: defaultForgingMaterial.latest_price || 22000,
     DG_scrap: defaultForgingMaterial.scrap_price || 8000,
 
-    forging_machine_type: 'press',
-    selected_press_rate_id: defaultPressRate.id,
-    selected_hammer_rate_id: INITIAL_HAMMER_RATES[0].id,
-    DG_forging_machine_hour: defaultPressRate.rate_per_hour,
-
+    sawing_machine_type: 'band_saw',
     t_cut_sec: 15,
     DG_sawing_machine_hour: defaultSawingRate,
-    w_elec_kwh_per_kg: 0.45,
+    forging_line: '1000T',
+    expected_productivity: 1000,
+    DG_forging_machine_hour: defaultPressRate.rate_per_hour,
+    w_elec_kwh_per_kg: 0.8,
     DG_elec_kwh: defaultElecRate,
-    t_forging_sec: 12,
-    t_trim_sec: 8,
-    DG_trim_machine_hour: defaultTrimmingRate,
     DG_heat_treat_kg: 4500,
-    DG_clean_kg: 1200,
+    DG_clean_kg: 1000,
 
     machining_operations: [
       { name: 'Tiện thô CNC mặt đầu & đường kính', t_prep_min: 2.0, t_man_min: 2.5, DG_machine_hour: 234000 },
@@ -343,32 +340,47 @@ export const useQuotationStore = create<QuotationStoreState>((set, get) => ({
     }
   },
 
-  selectForgingMachineRate: (rateId, type) => {
-    if (type === 'press') {
-      const rateObj = INITIAL_PRESSING_RATES.find((r) => r.id === rateId);
-      if (rateObj) {
-        set((state) => ({
-          forgingInput: {
-            ...state.forgingInput,
-            forging_machine_type: 'press',
-            selected_press_rate_id: rateId,
-            DG_forging_machine_hour: rateObj.rate_per_hour,
-          },
-        }));
-      }
+  selectSawingMachineType: (type) => {
+    let rate = 120000;
+    if (type === 'band_saw') {
+      rate = INITIAL_SYSTEM_RATES.find((r) => r.rate_key === 'sawing_machine')?.value || 120000;
     } else {
-      const rateObj = INITIAL_HAMMER_RATES.find((r) => r.id === rateId);
-      if (rateObj) {
-        set((state) => ({
-          forgingInput: {
-            ...state.forgingInput,
-            forging_machine_type: 'hammer',
-            selected_hammer_rate_id: rateId,
-            DG_forging_machine_hour: rateObj.rate_per_hour,
-          },
-        }));
-      }
+      rate = INITIAL_SYSTEM_RATES.find((r) => r.rate_key === 'trimming_machine')?.value || 180000;
     }
+    set((state) => ({
+      forgingInput: {
+        ...state.forgingInput,
+        sawing_machine_type: type,
+        DG_sawing_machine_hour: rate,
+      },
+    }));
+  },
+
+  selectForgingLine: (line) => {
+    let w_elec = 0.8;
+    let rate = 1200000;
+    if (line === '1000T') {
+      w_elec = 0.8;
+      rate = INITIAL_PRESSING_RATES.find((r) => r.tonnage_min === 1000)?.rate_per_hour || 1200000;
+    } else if (line === '1600T') {
+      w_elec = 1.0;
+      rate = INITIAL_PRESSING_RATES.find((r) => r.tonnage_min === 1600)?.rate_per_hour || 1800000;
+    } else if (line === '63kJ') {
+      w_elec = 1.2;
+      rate = INITIAL_HAMMER_RATES.find((r) => r.energy_min === 63)?.rate_per_hour || 1500000;
+    } else if (line === '80kJ') {
+      w_elec = 1.5;
+      rate = INITIAL_HAMMER_RATES.find((r) => r.energy_min === 80)?.rate_per_hour || 2200000;
+    }
+    
+    set((state) => ({
+      forgingInput: {
+        ...state.forgingInput,
+        forging_line: line,
+        w_elec_kwh_per_kg: w_elec,
+        DG_forging_machine_hour: rate,
+      },
+    }));
   },
 
   // Casting Actions

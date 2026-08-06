@@ -50,15 +50,14 @@ export interface ForgingInput {
   use_m_tinh?: boolean;// Tính chi phí vật tư theo TL sau gia công
 
   // Section 2 — Technology & Operations (Công nghệ & Nhiệt luyện)
+  sawing_machine_type?: 'band_saw' | 'punch_cut'; // Loại máy cắt
   t_cut_sec?: number;              // Thời gian cắt phôi (giây)
   DG_sawing_machine_hour?: number; // Đơn giá máy cưa (VNĐ/giờ)
   w_elec_kwh_per_kg?: number;      // Điện năng nung (kWh/kg)
   DG_elec_kwh?: number;            // Đơn giá điện (VNĐ/kWh)
-  t_forging_sec?: number;          // Thời gian dập/búa (giây)
-  forging_machine_type?: ForgingMachineType;
+  forging_line?: '1000T' | '1600T' | '63kJ' | '80kJ'; // Dây chuyền rèn
+  expected_productivity?: number;  // Năng suất dự kiến (Cái/ca)
   DG_forging_machine_hour?: number;// Đơn giá máy dập/búa (VNĐ/giờ)
-  t_trim_sec?: number;             // Thời gian cắt ba-via (giây)
-  DG_trim_machine_hour?: number;   // Đơn giá máy cắt bavia (VNĐ/giờ)
   DG_heat_treat_kg?: number;       // Đơn giá nhiệt luyện (VNĐ/kg)
   DG_clean_kg?: number;            // Đơn giá làm sạch/phun bi (VNĐ/kg)
 

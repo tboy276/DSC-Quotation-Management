@@ -21,7 +21,8 @@ export const ForgingCalculatorForm = () => {
   const updateComp = useQuotationStore((state) => state.updateForgingDieComponent);
   const removeComp = useQuotationStore((state) => state.removeForgingDieComponent);
   const selectMaterial = useQuotationStore((state) => state.selectForgingMaterial);
-  const selectMachineRate = useQuotationStore((state) => state.selectForgingMachineRate);
+  const selectSawingMachineType = useQuotationStore((state) => state.selectSawingMachineType);
+  const selectForgingLine = useQuotationStore((state) => state.selectForgingLine);
   const getForgingResult = useQuotationStore((state) => state.getForgingResult);
 
   const steelMaterials = INITIAL_MATERIALS.filter(
@@ -33,8 +34,8 @@ export const ForgingCalculatorForm = () => {
   // Variables for Section 2 (Operations breakdown)
   const C_cut = ((forging.t_cut_sec || 0) / 3600) * (forging.DG_sawing_machine_hour || 0);
   const C_heat_induction = forging.m_chi * (forging.w_elec_kwh_per_kg || 0) * (forging.DG_elec_kwh || 0);
-  const C_forging_op = ((forging.t_forging_sec || 0) / 3600) * (forging.DG_forging_machine_hour || 0);
-  const C_trim = ((forging.t_trim_sec || 0) / 3600) * (forging.DG_trim_machine_hour || 0);
+  const safeProductivity = (forging.expected_productivity && forging.expected_productivity > 0) ? forging.expected_productivity : 1;
+  const C_forging_op = (8 * (forging.DG_forging_machine_hour || 0)) / safeProductivity;
   const C_heat_treat = forging.m_chi * (forging.DG_heat_treat_kg || 0);
   const C_clean = forging.m_chi * (forging.DG_clean_kg || 0);
 
@@ -258,153 +259,144 @@ export const ForgingCalculatorForm = () => {
       <CostSectionCard
         icon={<Layers className="w-5 h-5" />}
         title="SECTION 2: CÔNG NGHỆ RÈN & HỆ THIẾT BỊ"
-        topInputs={
-          <>
-            <div>
-              <label className="block text-[11px] font-bold text-[#787774] uppercase tracking-wider mb-1.5">
-                Thời Gian Cắt Phôi (t_cut - s)
-              </label>
-              <input
-                type="number"
-                value={forging.t_cut_sec}
-                onChange={(e) => setForgingField('t_cut_sec', Number(e.target.value))}
-                className="w-full px-3 py-2 border border-[#EAEAEA] rounded-[4px] font-mono font-bold text-[13px] text-[#111111]"
-              />
-            </div>
-            <div>
-              <label className="block text-[11px] font-bold text-[#787774] uppercase tracking-wider mb-1.5">
-                Thời Gian Máy Rèn (t_forging - s)
-              </label>
-              <input
-                type="number"
-                value={forging.t_forging_sec}
-                onChange={(e) => setForgingField('t_forging_sec', Number(e.target.value))}
-                className="w-full px-3 py-2 border border-[#EAEAEA] rounded-[4px] font-mono font-bold text-[13px] text-[#111111]"
-              />
-            </div>
-            <div>
-              <label className="block text-[11px] font-bold text-[#787774] uppercase tracking-wider mb-1.5">
-                Thời Gian Cắt Ba-via (t_trim - s)
-              </label>
-              <input
-                type="number"
-                value={forging.t_trim_sec}
-                onChange={(e) => setForgingField('t_trim_sec', Number(e.target.value))}
-                className="w-full px-3 py-2 border border-[#EAEAEA] rounded-[4px] font-mono font-bold text-[13px] text-[#111111]"
-              />
-            </div>
-            <div>
-              <label className="block text-[11px] font-bold text-[#787774] uppercase tracking-wider mb-1.5">
-                Nhiệt Luyện (DG_heat_treat - VNĐ/kg)
-              </label>
-              <input
-                type="number"
-                value={forging.DG_heat_treat_kg}
-                onChange={(e) => setForgingField('DG_heat_treat_kg', Number(e.target.value))}
-                className="w-full px-3 py-2 border border-[#EAEAEA] rounded-[4px] font-mono font-bold text-[13px] text-[#111111]"
-              />
-            </div>
-            <div>
-              <label className="block text-[11px] font-bold text-[#787774] uppercase tracking-wider mb-1.5">
-                Phun Bi/Làm Sạch (DG_clean - VNĐ/kg)
-              </label>
-              <input
-                type="number"
-                value={forging.DG_clean_kg}
-                onChange={(e) => setForgingField('DG_clean_kg', Number(e.target.value))}
-                className="w-full px-3 py-2 border border-[#EAEAEA] rounded-[4px] font-mono font-bold text-[13px] text-[#111111]"
-              />
-            </div>
-            <div>
-              <label className="block text-[11px] font-bold text-[#787774] uppercase tracking-wider mb-1.5">
-                Đơn Giá Điện (DG_elec - VNĐ/kWh)
-              </label>
-              <input
-                type="number"
-                value={forging.DG_elec_kwh}
-                onChange={(e) => setForgingField('DG_elec_kwh', Number(e.target.value))}
-                className="w-full px-3 py-2 border border-[#EAEAEA] rounded-[4px] font-mono font-bold text-[13px] text-[#111111]"
-              />
-            </div>
-          </>
-        }
-        mainBlockTitle="Lựa Chọn Hệ Máy Rèn"
+        mainBlockTitle="Nhập Liệu Công Nghệ"
         mainLeftContent={
-          <>
-            <div>
-              <label className="block text-[11px] font-bold text-[#787774] uppercase tracking-wider mb-1.5">
-                Hệ Thiết Bị Rèn Chính
-              </label>
-              <div className="flex flex-col gap-2">
-                <button
-                  type="button"
-                  onClick={() => selectMachineRate(forging.selected_press_rate_id, 'press')}
-                  className={`px-3 py-2 rounded-[4px] text-[13px] font-bold transition-all cursor-pointer border text-left ${
-                    forging.forging_machine_type === 'press'
-                      ? 'bg-white border-[#111111] text-[#111111] shadow-sm'
-                      : 'bg-[#F9F9F9] border-[#EAEAEA] text-[#787774] hover:text-[#111111]'
-                  }`}
-                >
-                  Máy Dập (Presses)
-                </button>
-                <button
-                  type="button"
-                  onClick={() => selectMachineRate(forging.selected_hammer_rate_id, 'hammer')}
-                  className={`px-3 py-2 rounded-[4px] text-[13px] font-bold transition-all cursor-pointer border text-left ${
-                    forging.forging_machine_type === 'hammer'
-                      ? 'bg-white border-[#111111] text-[#111111] shadow-sm'
-                      : 'bg-[#F9F9F9] border-[#EAEAEA] text-[#787774] hover:text-[#111111]'
-                  }`}
-                >
-                  Máy Búa Khuỷu Thủy Lực
-                </button>
+          <div className="space-y-0 text-[13px]">
+            {/* 1. Máy cắt/cưa phôi */}
+            <div className="flex items-center justify-between py-2 border-b border-[#EAEAEA]">
+              <label className="font-bold text-[#787774]">1. Máy cắt/cưa phôi:</label>
+              <select
+                value={forging.sawing_machine_type || 'band_saw'}
+                onChange={(e) => selectSawingMachineType(e.target.value as 'band_saw' | 'punch_cut')}
+                className="w-1/2 min-w-[200px] px-2 py-1.5 border border-[#EAEAEA] rounded-[4px] bg-white text-[#111111] font-bold text-right"
+              >
+                <option value="band_saw">Máy cưa vòng</option>
+                <option value="punch_cut">Máy cắt đột</option>
+              </select>
+            </div>
+
+            {/* 2. Thời gian cắt phôi */}
+            <div className="flex items-center justify-between py-2 border-b border-[#EAEAEA]">
+              <label className="font-bold text-[#787774]">2. Thời gian cắt phôi (giây):</label>
+              <input
+                type="number"
+                min="0"
+                value={forging.t_cut_sec ?? ''}
+                onChange={(e) => setForgingField('t_cut_sec', Math.max(0, Number(e.target.value)))}
+                className="w-1/2 min-w-[200px] px-2 py-1.5 border border-[#EAEAEA] rounded-[4px] font-mono font-bold text-[#111111] text-right"
+              />
+            </div>
+
+            {/* 3. Dây chuyền rèn */}
+            <div className="flex items-center justify-between py-2 border-b border-[#EAEAEA]">
+              <label className="font-bold text-[#787774]">3. Dây chuyền rèn:</label>
+              <select
+                value={forging.forging_line || '1000T'}
+                onChange={(e) => selectForgingLine(e.target.value as any)}
+                className="w-1/2 min-w-[200px] px-2 py-1.5 border border-[#EAEAEA] rounded-[4px] bg-white text-[#111111] font-bold text-right"
+              >
+                <option value="1000T">Máy dập 1000T</option>
+                <option value="1600T">Máy dập 1600T</option>
+                <option value="63kJ">Máy búa 63 kJ</option>
+                <option value="80kJ">Máy búa 80 kJ</option>
+              </select>
+            </div>
+
+            {/* 4. Năng suất dự kiến */}
+            <div className="flex items-center justify-between py-2 border-b border-[#EAEAEA]">
+              <label className="font-bold text-[#787774]">4. Năng suất dự kiến (Cái/ca):</label>
+              <input
+                type="number"
+                min="0"
+                value={forging.expected_productivity ?? ''}
+                onChange={(e) => setForgingField('expected_productivity', Math.max(0, Number(e.target.value)))}
+                className="w-1/2 min-w-[200px] px-2 py-1.5 border border-[#EAEAEA] rounded-[4px] font-mono font-bold text-[#111111] text-right"
+              />
+            </div>
+
+            {/* 5. Đơn giá nhiệt luyện */}
+            <div className="flex items-center justify-between py-2 border-b border-[#EAEAEA]">
+              <label className="font-bold text-[#787774]">5. Đơn giá nhiệt luyện (VNĐ/kg):</label>
+              <input
+                type="number"
+                min="0"
+                value={forging.DG_heat_treat_kg ?? ''}
+                onChange={(e) => setForgingField('DG_heat_treat_kg', Math.max(0, Number(e.target.value)))}
+                className="w-1/2 min-w-[200px] px-2 py-1.5 border border-[#EAEAEA] rounded-[4px] font-mono font-bold text-[#111111] text-right"
+              />
+            </div>
+
+            {/* 6. Đơn giá phun bi */}
+            <div className="flex items-center justify-between py-2">
+              <label className="font-bold text-[#787774]">6. Đơn giá phun bi (VNĐ/kg):</label>
+              <input
+                type="number"
+                min="0"
+                value={forging.DG_clean_kg ?? ''}
+                onChange={(e) => setForgingField('DG_clean_kg', Math.max(0, Number(e.target.value)))}
+                className="w-1/2 min-w-[200px] px-2 py-1.5 border border-[#EAEAEA] rounded-[4px] font-mono font-bold text-[#111111] text-right"
+              />
+            </div>
+          </div>
+        }
+        mainRightContent={
+          <div className="space-y-4 mb-4">
+            <div className="bg-[#F0F0EE] p-5 rounded-[4px] border border-slate-300 space-y-3 font-mono text-[13px] h-full flex flex-col justify-center">
+              {/* 1. Chi phí cưa phôi */}
+              <div className="flex justify-between border-b border-dashed border-slate-300 pb-2 items-center">
+                <div className="flex flex-col">
+                  <span className="font-bold text-slate-700 font-sans text-[12px]">1. Chi phí cưa phôi:</span>
+                  <span className="text-[10px] text-slate-500 font-mono">(t_cut / 3600) × DG_may_cua</span>
+                </div>
+                <span className="font-bold text-[#111111]">{Math.round(C_cut).toLocaleString('vi-VN')} đ</span>
+              </div>
+              
+              {/* 2. Chi phí nung phôi */}
+              <div className="flex justify-between border-b border-dashed border-slate-300 pb-2 items-center">
+                <div className="flex flex-col">
+                  <span className="font-bold text-slate-700 font-sans text-[12px]">2. Chi phí nung phôi:</span>
+                  <span className="text-[10px] text-slate-500 font-mono">m_chi × {forging.w_elec_kwh_per_kg} kWh/kg × DG_dien</span>
+                </div>
+                <span className="font-bold text-[#111111]">{Math.round(C_heat_induction).toLocaleString('vi-VN')} đ</span>
+              </div>
+
+              {/* 3. Chi phí rèn phôi */}
+              <div className="flex justify-between border-b border-dashed border-slate-300 pb-2 items-center">
+                <div className="flex flex-col">
+                  <span className="font-bold text-slate-700 font-sans text-[12px]">3. Chi phí rèn phôi:</span>
+                  <span className="text-[10px] text-slate-500 font-mono">(8×60 / NangSuat) × DG_may_ren/phut</span>
+                </div>
+                <span className="font-bold text-[#111111]">{Math.round(C_forging_op).toLocaleString('vi-VN')} đ</span>
+              </div>
+
+              {/* 4. Chi phí nhiệt luyện */}
+              <div className="flex justify-between border-b border-dashed border-slate-300 pb-2 items-center">
+                <div className="flex flex-col">
+                  <span className="font-bold text-slate-700 font-sans text-[12px]">4. Chi phí nhiệt luyện:</span>
+                  <span className="text-[10px] text-slate-500 font-mono">m_chi × DG_nhiet_luyen</span>
+                </div>
+                <span className="font-bold text-[#111111]">{Math.round(C_heat_treat).toLocaleString('vi-VN')} đ</span>
+              </div>
+
+              {/* 5. Chi phí phun bi */}
+              <div className="flex justify-between border-b border-slate-400 pb-3 items-center">
+                <div className="flex flex-col">
+                  <span className="font-bold text-slate-700 font-sans text-[12px]">5. Chi phí phun bi:</span>
+                  <span className="text-[10px] text-slate-500 font-mono">m_chi × DG_phun_bi</span>
+                </div>
+                <span className="font-bold text-[#111111]">{Math.round(C_clean).toLocaleString('vi-VN')} đ</span>
+              </div>
+
+              {/* 6. Tổng chi phí rèn */}
+              <div className="flex justify-between items-center pt-2">
+                <div className="flex flex-col">
+                  <span className="font-extrabold text-slate-900 font-sans text-[14px] uppercase tracking-tight">TỔNG CHI PHÍ RÈN & XLB:</span>
+                </div>
+                <span className="font-extrabold text-[#111111] text-[24px] leading-none">{res.C_ops_forging.toLocaleString('vi-VN')} đ</span>
               </div>
             </div>
-            <div>
-              <label className="block text-[11px] font-bold text-[#787774] uppercase tracking-wider mb-1.5">
-                Chọn Dải Tải Trọng / Năng Lượng Máy
-              </label>
-              {forging.forging_machine_type === 'press' ? (
-                <select
-                  value={forging.selected_press_rate_id}
-                  onChange={(e) => selectMachineRate(e.target.value, 'press')}
-                  className="w-full px-3 py-2 border border-[#EAEAEA] rounded-[4px] bg-white text-[#111111] font-bold text-[13px]"
-                >
-                  {INITIAL_PRESSING_RATES.map((r) => (
-                    <option key={r.id} value={r.id}>
-                      {r.name || `Máy Dập ${r.tonnage_min} Tấn`} — {r.rate_per_hour.toLocaleString('vi-VN')} VNĐ/giờ
-                    </option>
-                  ))}
-                </select>
-              ) : (
-                <select
-                  value={forging.selected_hammer_rate_id}
-                  onChange={(e) => selectMachineRate(e.target.value, 'hammer')}
-                  className="w-full px-3 py-2 border border-[#EAEAEA] rounded-[4px] bg-white text-[#111111] font-bold text-[13px]"
-                >
-                  {INITIAL_HAMMER_RATES.map((r) => (
-                    <option key={r.id} value={r.id}>
-                      {r.name || `Máy Búa ${r.energy_min} kJ`} — {r.rate_per_hour.toLocaleString('vi-VN')} VNĐ/giờ
-                    </option>
-                  ))}
-                </select>
-              )}
-            </div>
-          </>
+          </div>
         }
-        breakdownItems={[
-          { label: 'I. Chi phí máy cưa:', value: `${Math.round(C_cut).toLocaleString('vi-VN')} đ` },
-          { label: 'II. Nung phôi điện cảm ứng:', value: `${Math.round(C_heat_induction).toLocaleString('vi-VN')} đ` },
-          { label: 'III. Chi phí máy rèn:', value: `${Math.round(C_forging_op).toLocaleString('vi-VN')} đ` },
-          { label: 'IV. Chi phí cắt ba-via:', value: `${Math.round(C_trim).toLocaleString('vi-VN')} đ` },
-          { label: 'V. Chi phí nhiệt luyện:', value: `${Math.round(C_heat_treat).toLocaleString('vi-VN')} đ` },
-          { label: 'VI. Chi phí phun bi / Làm sạch:', value: `${Math.round(C_clean).toLocaleString('vi-VN')} đ` },
-        ]}
-        breakdownTotal={{ label: 'Tổng Chi Phí Rèn & XLB:', value: `${res.C_ops_forging.toLocaleString('vi-VN')} VNĐ` }}
-        footerTitle="2: Tổng Đơn Giá Công Nghệ Rèn"
-        footerSubtitle="= Tổng chi phí máy móc, nhiệt luyện và làm sạch"
-        footerTotal={res.C_ops_forging.toLocaleString('vi-VN')}
-        footerTotalUnit="VNĐ/SP"
       />
 
       {/* 3. Section Gia Công Cơ Khí Động (CNC Ops) */}
