@@ -281,7 +281,7 @@ export const saveQuoteDraft = async (
   const quotePayload = {
     rfq_item_id: itemId,
     segment,
-    status: 'READY_FOR_QUOTE',
+    status: 'DRAFT',
     currency,
     exchange_rate: exchangeRate,
     die_cost_treatment: dieTreatment,
@@ -366,11 +366,28 @@ export const updateQuoteStatus = async (
   cancelReason?: string
 ): Promise<void> => {
   let itemStatus: RfqItemStatus = 'QUOTED_SENT';
-  if (newStatus === 'SUCCESSFUL' || newStatus === 'APPROVED') itemStatus = 'SUCCESSFUL';
-  else if (newStatus === 'CANCELLED' || newStatus === 'REJECTED' || newStatus === 'CANCELLED_AFTER_QUOTE') itemStatus = 'CANCELLED_AFTER_QUOTE';
-  else if (newStatus === 'CANCELLED_NOT_FEASIBLE') itemStatus = 'CANCELLED_NOT_FEASIBLE';
-  else if (newStatus === 'READY_FOR_QUOTE') itemStatus = 'READY_FOR_QUOTE';
-  else if (newStatus === 'IN_COSTING' || newStatus === 'DRAFT') itemStatus = 'IN_COSTING';
+  let quoteStatus = 'SENT';
+
+  if (newStatus === 'SUCCESSFUL' || newStatus === 'APPROVED') {
+    itemStatus = 'SUCCESSFUL';
+    quoteStatus = 'SUCCESSFUL';
+  }
+  else if (newStatus === 'CANCELLED' || newStatus === 'REJECTED' || newStatus === 'CANCELLED_AFTER_QUOTE') {
+    itemStatus = 'CANCELLED_AFTER_QUOTE';
+    quoteStatus = 'CANCELLED';
+  }
+  else if (newStatus === 'CANCELLED_NOT_FEASIBLE') {
+    itemStatus = 'CANCELLED_NOT_FEASIBLE';
+    quoteStatus = 'CANCELLED';
+  }
+  else if (newStatus === 'READY_FOR_QUOTE') {
+    itemStatus = 'READY_FOR_QUOTE';
+    quoteStatus = 'DRAFT';
+  }
+  else if (newStatus === 'IN_COSTING' || newStatus === 'DRAFT') {
+    itemStatus = 'IN_COSTING';
+    quoteStatus = 'DRAFT';
+  }
 
   const now = new Date().toISOString();
 
@@ -401,7 +418,7 @@ export const updateQuoteStatus = async (
   // Update quotes table status
   await supabase
     .from('quotes')
-    .update({ status: itemStatus })
+    .update({ status: quoteStatus })
     .eq('rfq_item_id', targetItemId);
 
   await fetchQuotes();
