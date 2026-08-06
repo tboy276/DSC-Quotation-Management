@@ -131,18 +131,58 @@ export const SystemHealthCheck: React.FC = () => {
             }
           }
 
-          // 3. Test Insert + Immediately Delete dummy record to test RLS write permissions
-          const testId = `00000000-0000-0000-0000-${Date.now().toString().slice(-12)}`;
-          const payload = spec.sampleRecord(testId);
-
-          const insRes = await supabase.from(spec.name).insert(payload);
-          if (insRes.error) {
-            writeOk = false;
-            if (!errDetail) errDetail = `Lỗi quyền GHI (RLS Policy/Constraint): [${insRes.error.code}] ${insRes.error.message}`;
+          // 3. Test Insert/Update to test RLS write permissions
+          if (spec.name === 'user_profiles') {
+            const { data: authData } = await supabase.auth.getUser();
+            if (authData?.user) {
+              const userId = authData.user.id;
+              const { data: userProfile } = await supabase.from('user_profiles').select('full_name').eq('id', userId).single();
+              const originalName = userProfile?.full_name || '';
+              const testName = originalName + ' ';
+              
+              const updRes = await supabase.from('user_profiles').update({ full_name: testName }).eq('id', userId);
+              if (updRes.error) {
+                writeOk = false;
+                if (!errDetail) errDetail = `Lỗi quyền GHI (RLS Policy/Constraint): [${updRes.error.code}] ${updRes.error.message}`;
+              } else {
+                writeOk = true;
+                await supabase.from('user_profiles').update({ full_name: originalName }).eq('id', userId);
+              }
+            } else {
+              writeOk = false;
+              if (!errDetail) errDetail = 'Không tìm thấy user đăng nhập để test RLS.';
+            }
+          } else if (spec.name === 'quotation_document_items') {
+            const docId = `00000000-0000-0000-0000-${Date.now().toString().slice(-12)}`;
+            const { error: docErr } = await supabase.from('quotation_documents').insert({ id: docId, customer_name: 'Test Parent' });
+            if (docErr) {
+              writeOk = false;
+              if (!errDetail) errDetail = `Lỗi tạo Document cha: ${docErr.message}`;
+            } else {
+              const itemId = `00000000-0000-0000-0000-${(Date.now() + 1).toString().slice(-12)}`;
+              const { error: itemErr } = await supabase.from('quotation_document_items').insert({ id: itemId, quotation_document_id: docId, display_order: 1 });
+              if (itemErr) {
+                writeOk = false;
+                if (!errDetail) errDetail = `Lỗi tạo Item con: [${itemErr.code}] ${itemErr.message}`;
+              } else {
+                writeOk = true;
+                await supabase.from('quotation_document_items').delete().eq('id', itemId);
+              }
+              await supabase.from('quotation_documents').delete().eq('id', docId);
+            }
           } else {
-            writeOk = true;
-            // Clean up test row
-            await supabase.from(spec.name).delete().eq('id', testId);
+            const testId = `00000000-0000-0000-0000-${Date.now().toString().slice(-12)}`;
+            const payload = spec.sampleRecord(testId);
+
+            const insRes = await supabase.from(spec.name).insert(payload);
+            if (insRes.error) {
+              writeOk = false;
+              if (!errDetail) errDetail = `Lỗi quyền GHI (RLS Policy/Constraint): [${insRes.error.code}] ${insRes.error.message}`;
+            } else {
+              writeOk = true;
+              // Clean up test row
+              await supabase.from(spec.name).delete().eq('id', testId);
+            }
           }
         }
       } catch (err: any) {
