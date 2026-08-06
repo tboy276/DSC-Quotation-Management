@@ -89,7 +89,7 @@ export const CostSectionCard: React.FC<CostSectionCardProps> = ({
       )}
 
       {/* MAIN BLOCK */}
-      {(mainBlockTitle || mainLeftContent || breakdownItems || infoBoxes) && (
+      {(mainBlockTitle || mainLeftContent || mainRightContent || breakdownItems || infoBoxes) && (
         <div className="p-5 bg-[#F9F9F9] border border-[#EAEAEA] rounded-[4px] space-y-5">
           {/* Main Block Header */}
           {(mainBlockTitle || mainBlockHeaderRight) && (
