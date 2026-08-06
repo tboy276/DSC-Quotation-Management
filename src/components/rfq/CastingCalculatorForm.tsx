@@ -196,10 +196,10 @@ export const CastingCalculatorForm = () => {
             </div>
 
             {/* Right Column - Calculations */}
-            <div className="md:col-span-7 border border-slate-200 rounded-[8px] p-6 flex flex-col">
-              <div className="flex-1 space-y-5">
+            <div className="md:col-span-7 border border-slate-200 rounded-[8px] p-5 flex flex-col justify-center">
+              <div className="flex-1 space-y-3.5">
                 {/* I */}
-                <div className="flex justify-between items-center border-b border-dashed border-slate-200 pb-4">
+                <div className="flex justify-between items-center border-b border-dashed border-slate-200 pb-2.5">
                   <div>
                     <div className="text-[13px] font-bold text-slate-900">I. Chi phí vật tư nấu luyện:</div>
                     <div className="text-[10px] font-mono text-slate-400 uppercase mt-0.5">1000KG × DG_LIQUID</div>
@@ -208,7 +208,7 @@ export const CastingCalculatorForm = () => {
                 </div>
 
                 {/* II */}
-                <div className="flex justify-between items-center border-b border-dashed border-slate-200 pb-4">
+                <div className="flex justify-between items-center border-b border-dashed border-slate-200 pb-2.5">
                   <div>
                     <div className="text-[13px] font-bold text-slate-900">II. Hồi liệu thu hồi (-):</div>
                     <div className="text-[10px] font-mono text-slate-400 uppercase mt-0.5">SCRAP_KG × DG_CAST_SCRAP</div>
@@ -217,7 +217,7 @@ export const CastingCalculatorForm = () => {
                 </div>
 
                 {/* III */}
-                <div className="flex justify-between items-center border-b border-dashed border-slate-200 pb-4">
+                <div className="flex justify-between items-center border-b border-dashed border-slate-200 pb-2.5">
                   <div>
                     <div className="text-[13px] font-bold text-slate-900">III. Chi phí nấu luyện (Lò & Gầu):</div>
                     <div className="text-[10px] font-mono text-slate-400 uppercase mt-0.5">ĐỊNH MỨC HỆ THỐNG</div>
@@ -226,7 +226,7 @@ export const CastingCalculatorForm = () => {
                 </div>
 
                 {/* IV */}
-                <div className="flex justify-between items-center border-b border-dashed border-slate-200 pb-4">
+                <div className="flex justify-between items-center border-b border-dashed border-slate-200 pb-2.5">
                   <div>
                     <div className="text-[13px] font-bold text-slate-900">IV. Chi phí làm khuôn cát:</div>
                     <div className="text-[10px] font-mono text-slate-400 uppercase mt-0.5">ĐỊNH MỨC HỆ THỐNG</div>
@@ -235,7 +235,7 @@ export const CastingCalculatorForm = () => {
                 </div>
 
                 {/* V */}
-                <div className="flex justify-between items-center border-b border-dashed border-slate-200 pb-4">
+                <div className="flex justify-between items-center border-b border-dashed border-slate-200 pb-2.5">
                   <div>
                     <div className="text-[13px] font-bold text-slate-900">V. Đơn giá thành phẩm:</div>
                     <div className="text-[10px] font-mono text-slate-400 uppercase mt-0.5">TỔNG CHI PHÍ MẺ ÷ (1000KG × TỶ LỆ THU HỒI)</div>
@@ -244,7 +244,7 @@ export const CastingCalculatorForm = () => {
                 </div>
 
                 {/* VI */}
-                <div className="flex justify-between items-center pb-2">
+                <div className="flex justify-between items-center pb-1">
                   <div>
                     <div className="text-[13px] font-bold text-slate-900">VI. Phí thao quy đổi:</div>
                     <div className="text-[10px] font-mono text-slate-400 uppercase mt-0.5">ĐỊNH MỨC HỆ THỐNG</div>
@@ -254,7 +254,7 @@ export const CastingCalculatorForm = () => {
               </div>
 
               {/* Total Box */}
-              <div className="mt-4 bg-[#F4F7FB] border border-blue-100/50 rounded-[8px] p-5 flex justify-between items-end">
+              <div className="mt-3 bg-[#F4F7FB] border border-blue-100/50 rounded-[8px] p-4 flex justify-between items-end">
                 <div>
                   <div className="text-[15px] font-extrabold text-slate-900 uppercase">TỔNG CHI PHÍ VẬT TƯ ĐÚC</div>
                   <div className="text-[10px] font-mono text-slate-500 uppercase mt-1">ĐƠN GIÁ/KG × TRỌNG LƯỢNG VẬT ĐÚC</div>
