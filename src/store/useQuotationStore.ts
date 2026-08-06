@@ -37,8 +37,6 @@ export interface QuotationStoreState {
   // 2. Forging State
   forgingInput: ForgingInput & {
     selected_material_id: string;
-    selected_press_rate_id: string;
-    selected_hammer_rate_id: string;
   };
 
   // 3. Casting State
@@ -86,7 +84,6 @@ export interface QuotationStoreState {
 const defaultForgingMaterial = INITIAL_MATERIALS.find((m) => m.category === 'Thép cán - Rèn') || INITIAL_MATERIALS[5];
 const defaultPressRate = INITIAL_PRESSING_RATES[0]; // 1000T
 const defaultSawingRate = INITIAL_SYSTEM_RATES.find((r) => r.rate_key === 'sawing_machine')?.value || 120000;
-const defaultPunchRate = INITIAL_SYSTEM_RATES.find((r) => r.rate_key === 'trimming_machine')?.value || 180000;
 const defaultElecRate = INITIAL_MATERIALS.find((m) => m.name === 'Điện năng')?.latest_price || 2200;
 const defaultTransRate = 1500;
 

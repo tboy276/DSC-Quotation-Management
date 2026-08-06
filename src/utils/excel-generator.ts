@@ -165,7 +165,7 @@ export const exportDocumentToExcel = (document: QuotationDocument) => {
       sheetData.push(['Đơn giá máy cưa đĩa DG_sawing (VNĐ/giờ)', fInp.DG_sawing_machine_hour]);
       sheetData.push(['Tiêu hao điện rèn w_elec (kWh/kg)', fInp.w_elec_kwh_per_kg]);
       sheetData.push(['Đơn giá điện công nghiệp DG_elec (VNĐ/kWh)', fInp.DG_elec_kwh]);
-      sheetData.push(['Thời gian dập nóng t_forging (giây/cái)', fInp.t_forging_sec]);
+      sheetData.push(['Năng suất dự kiến (Cái/ca)', fInp.expected_productivity]);
       sheetData.push(['Đơn giá cước hệ máy dập/búa DG_machine (VNĐ/giờ)', fInp.DG_forging_machine_hour]);
       sheetData.push(['Chi phí công nghệ rèn C_ops_forging (VNĐ/cái)', Math.round(fRes.C_ops_forging)]);
     } else {

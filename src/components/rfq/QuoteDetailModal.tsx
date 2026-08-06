@@ -67,8 +67,8 @@ export const QuoteDetailModal = ({ quote, onClose }: QuoteDetailModalProps) => {
           { name: 'Cước máy cưa đĩa DG_sawing (VNĐ/giờ)', val: `${fInp.DG_sawing_machine_hour?.toLocaleString('vi-VN')} VNĐ` },
           { name: 'Tiêu hao điện rèn w_elec (kWh/kg)', val: `${fInp.w_elec_kwh_per_kg || 0} kWh/kg` },
           { name: 'Đơn giá điện công nghiệp DG_elec (VNĐ/kWh)', val: `${fInp.DG_elec_kwh?.toLocaleString('vi-VN')} VNĐ` },
-          { name: 'Thời gian dập nóng t_forging (giây/cái)', val: `${fInp.t_forging_sec || 0}s` },
-          { name: 'Cước máy dập/búa DG_machine (VNĐ/giờ)', val: `${fInp.DG_forging_machine_hour?.toLocaleString('vi-VN')} VNĐ` },
+          { name: 'Năng suất dự kiến (Cái/ca)', val: `${fInp.expected_productivity || 0}` },
+          { name: 'Cước hệ máy dập/búa DG_machine (VNĐ/giờ)', val: `${fInp.DG_forging_machine_hour?.toLocaleString('vi-VN')} VNĐ` },
           { name: 'Chi phí công nghệ rèn C_ops_forging (VNĐ/cái)', val: formatCurrencyValue(fRes?.C_ops_forging || 0, currency, exchangeRate) },
         ],
       });

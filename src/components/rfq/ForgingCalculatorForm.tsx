@@ -5,8 +5,6 @@ import { ToolingAmortizationSection } from './ToolingAmortizationSection';
 import { Section5SummaryCard } from './Section5SummaryCard';
 import {
   INITIAL_MATERIALS,
-  INITIAL_PRESSING_RATES,
-  INITIAL_HAMMER_RATES,
 } from '../../lib/master-data-service';
 import { Workflow, Layers } from 'lucide-react';
 import { CostSectionCard } from '../ui/CostSectionCard';
