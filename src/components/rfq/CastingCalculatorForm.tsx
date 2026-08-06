@@ -15,7 +15,6 @@ import {
 import type { CastingGrade, MoldingRecipeItem } from '../../types/master-data';
 import { Modal } from '../ui/Modal';
 import { FileText, Eye } from 'lucide-react';
-import { CostSectionCard } from '../ui/CostSectionCard';
 
 export const CastingCalculatorForm = () => {
   const casting = useQuotationStore((state) => state.castingInput);
