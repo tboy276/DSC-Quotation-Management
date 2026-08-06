@@ -10,8 +10,8 @@ describe('DSC-Quotation-Management Calculation Engine', () => {
   describe('Test Case 1: Rèn Búa Thủy Lực (Forging)', () => {
     it('Tính chính xác m_phoi, C_mat_forging, COGS, P_FORGING theo yêu cầu', () => {
       const input: ForgingInput = {
-        m_tinh: 1.2,
-        m_bavia: 0.3,
+        m_phoi: 1.2,
+        m_chi: 1.531,
         k_loss: 2.0,
         DG_steel: 22000,
         DG_scrap: 8000,
@@ -40,8 +40,8 @@ describe('DSC-Quotation-Management Calculation Engine', () => {
 
     it('Xử lý đúng cơ chế die_cost_treatment = "separate"', () => {
       const input: ForgingInput = {
-        m_tinh: 1.2,
-        m_bavia: 0.3,
+        m_phoi: 1.2,
+        m_chi: 1.531,
         k_loss: 2.0,
         DG_steel: 22000,
         DG_scrap: 8000,
