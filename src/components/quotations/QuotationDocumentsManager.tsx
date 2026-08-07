@@ -11,11 +11,14 @@ import {
   Download,
   Eye,
   Search,
+  AlertTriangle,
+  X,
 } from 'lucide-react';
 
 export const QuotationDocumentsManager = () => {
   const [documents, setDocuments] = useState<QuotationDocument[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [selectedDocIds, setSelectedDocIds] = useState<string[]>([]);
   const [selectedDoc, setSelectedDoc] = useState<QuotationDocument | null>(null);
@@ -26,9 +29,15 @@ export const QuotationDocumentsManager = () => {
 
   const loadDocuments = async () => {
     setLoading(true);
-    const data = await fetchQuotationDocuments();
-    setDocuments(data);
-    setLoading(false);
+    setErrorMsg(null);
+    try {
+      const data = await fetchQuotationDocuments();
+      setDocuments(data);
+    } catch (err: any) {
+      setErrorMsg(err.message || 'Lỗi tải danh sách văn bản báo giá.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const filteredDocs = searchQuery.trim()
@@ -142,6 +151,18 @@ export const QuotationDocumentsManager = () => {
 
   return (
     <div className="space-y-5 animate-fade-in-up">
+      {errorMsg && (
+        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-[8px] text-sm font-medium flex items-center justify-between animate-fade-in-up">
+          <div className="flex items-center space-x-2">
+            <AlertTriangle className="w-4 h-4 text-red-500 shrink-0" />
+            <span>{errorMsg}</span>
+          </div>
+          <button onClick={() => setErrorMsg(null)} className="text-red-500 hover:text-red-900 cursor-pointer">
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+      )}
+
       {/* Header Toolbar */}
       <div className="bg-white p-4 rounded-[10px] border border-[#EAEAEA] shadow-[0_2px_8px_rgba(0,0,0,0.03)] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>

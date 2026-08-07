@@ -24,22 +24,41 @@ export const resetQuotationDocumentsCache = () => {
  */
 export const fetchQuotationDocuments = async (): Promise<QuotationDocument[]> => {
   try {
+    // Sửa đường dẫn relation: quotes -> rfq_items -> rfqs
     const { data: dbDocs, error } = await supabase
       .from('quotation_documents')
-      .select('*, items:quotation_document_items(*, quote:quotes(*, rfq:rfqs(*)))')
+      .select('*, items:quotation_document_items(*, quote:quotes(*, rfqItem:rfq_items(*, rfq:rfqs(*))))')
       .order('created_at', { ascending: false });
 
-    if (!error && dbDocs) {
+    if (error) {
+      console.error('Lỗi Supabase khi tải quotation_documents:', error);
+      throw new Error(`Lỗi tải danh sách văn bản báo giá từ Supabase: ${error.message}`);
+    }
+
+    if (dbDocs) {
       localDocumentsCache = dbDocs.map((doc: any) => ({
         ...doc,
-        items: doc.items?.map((item: any) => ({
-          ...item,
-          quote: Array.isArray(item.quote) ? item.quote[0] : item.quote
-        }))
+        items: doc.items?.map((item: any) => {
+          const rawQuote = Array.isArray(item.quote) ? item.quote[0] : item.quote;
+          const rawRfqItem = rawQuote?.rfqItem || item.rfq_item;
+          const rawRfq = rawRfqItem?.rfq || item.rfq;
+
+          return {
+            ...item,
+            quote: rawQuote
+              ? {
+                  ...rawQuote,
+                  rfqItem: rawRfqItem,
+                  rfq: rawRfq,
+                }
+              : undefined,
+          };
+        }),
       })) as QuotationDocument[];
     }
-  } catch (err) {
-    console.warn('Fetching quotation_documents from Supabase error:', err);
+  } catch (err: any) {
+    console.error('Fetching quotation_documents error:', err);
+    throw err; // Bắt buộc throw lỗi để UI hiển thị thông báo thay vì im lặng
   }
 
   return [...localDocumentsCache];
@@ -96,13 +115,31 @@ export const createQuotationDocument = async (
 
   const createdDoc = await supabase
     .from('quotation_documents')
-    .select('*, items:quotation_document_items(*, quote:quotes(*, rfq:rfqs(*)))')
+    .select('*, items:quotation_document_items(*, quote:quotes(*, rfqItem:rfq_items(*, rfq:rfqs(*))))')
     .eq('id', docData.id)
     .single();
 
   if (createdDoc.data) {
-    localDocumentsCache.unshift(createdDoc.data as QuotationDocument);
-    return createdDoc.data as QuotationDocument;
+    const formattedDoc = {
+      ...createdDoc.data,
+      items: createdDoc.data.items?.map((item: any) => {
+        const rawQuote = Array.isArray(item.quote) ? item.quote[0] : item.quote;
+        const rawRfqItem = rawQuote?.rfqItem || item.rfq_item;
+        const rawRfq = rawRfqItem?.rfq || item.rfq;
+        return {
+          ...item,
+          quote: rawQuote
+            ? {
+                ...rawQuote,
+                rfqItem: rawRfqItem,
+                rfq: rawRfq,
+              }
+            : undefined,
+        };
+      }),
+    } as QuotationDocument;
+    localDocumentsCache.unshift(formattedDoc);
+    return formattedDoc;
   }
 
   return docData as QuotationDocument;
