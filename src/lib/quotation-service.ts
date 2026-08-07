@@ -7,6 +7,7 @@ import type {
   QuotationFilterOptions,
   CurrencyType,
   RfqStageCounts,
+  TechnologyRequirementType,
 } from '../types/quote';
 import type { ForgingInput, CastingInput, ForgingResult, CastingResult } from './calculation-engine/types';
 import type { SegmentType } from '../store/useQuotationStore';
@@ -547,6 +548,29 @@ export const updateQuoteStatus = async (
   }
 
   await fetchQuotes();
+};
+
+/**
+ * Update RFQ Item Fields (Edit Product Name, Part Number, Volume, Target Price, Tech)
+ */
+export const updateRfqItemDetails = async (
+  itemId: string,
+  details: {
+    product_name?: string;
+    part_number?: string;
+    annual_volume?: number;
+    target_price?: number;
+    technology_requirement?: TechnologyRequirementType;
+  }
+): Promise<void> => {
+  const { error } = await supabase
+    .from('rfq_items')
+    .update(details)
+    .eq('id', itemId);
+
+  if (error) {
+    throw new Error(`Lỗi cập nhật thông tin sản phẩm RFQ: ${error.message}`);
+  }
 };
 
 /**

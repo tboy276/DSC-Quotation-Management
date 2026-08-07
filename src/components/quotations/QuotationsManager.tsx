@@ -14,6 +14,7 @@ import {
   updateQuoteStatus,
   createRfqDossierWithItems,
   deleteRfqItems,
+  updateRfqItemDetails,
 } from '../../lib/quotation-service';
 import { Modal } from '../ui/Modal';
 import { QuoteStatusBadge } from '../rfq/QuoteStatusBadge';
@@ -35,7 +36,6 @@ import {
   Plus,
   AlertCircle,
   X,
-  Check,
   Calculator,
   Layers,
   Trash2,
@@ -51,6 +51,7 @@ import {
   Inbox,
   SlidersHorizontal,
   Send,
+  Pencil,
 } from 'lucide-react';
 
 interface ColumnDef {
@@ -180,6 +181,42 @@ export const QuotationsManager = () => {
   const [selectedQuote, setSelectedQuote] = useState<QuoteRecord | null>(null);
   const [showNewRfqModal, setShowNewRfqModal] = useState<boolean>(false);
 
+  // Edit Item Modal State
+  const [showEditItemModal, setShowEditItemModal] = useState<boolean>(false);
+  const [editProductName, setEditProductName] = useState<string>('');
+  const [editPartNumber, setEditPartNumber] = useState<string>('');
+  const [editTechRequirement, setEditTechRequirement] = useState<TechnologyRequirementType>('Rèn+Gia công');
+  const [editAnnualVolume, setEditAnnualVolume] = useState<number>(0);
+  const [editTargetPrice, setEditTargetPrice] = useState<number>(0);
+
+  const handleOpenEditModal = (quote: QuoteRecord) => {
+    setEditProductName(quote.rfqItem?.product_name || '');
+    setEditPartNumber(quote.rfqItem?.part_number || '');
+    setEditTechRequirement(quote.rfqItem?.technology_requirement || 'Rèn+Gia công');
+    setEditAnnualVolume(quote.rfqItem?.annual_volume || 0);
+    setEditTargetPrice(quote.rfqItem?.target_price || 0);
+    setShowEditItemModal(true);
+  };
+
+  const handleSaveEditItemSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedSingleQuote || !editProductName.trim()) return;
+    try {
+      await updateRfqItemDetails(selectedSingleQuote.rfq_item_id, {
+        product_name: editProductName.trim(),
+        part_number: editPartNumber.trim(),
+        technology_requirement: editTechRequirement,
+        annual_volume: Number(editAnnualVolume) || 0,
+        target_price: Number(editTargetPrice) || 0,
+      });
+      setShowEditItemModal(false);
+      loadQuotes();
+      setMsg({ text: `Đã cập nhật thông tin sản phẩm "${editProductName.trim()}" thành công!` });
+    } catch (err: any) {
+      alert(`Lỗi cập nhật sản phẩm: ${err.message || err}`);
+    }
+  };
+
   // Paste Structured Text Sub-Modal State
   const [showPasteModal, setShowPasteModal] = useState<boolean>(false);
   const [pasteRawText, setPasteRawText] = useState<string>('');
@@ -188,7 +225,6 @@ export const QuotationsManager = () => {
   // Cancel Reason Modal State
   const [showCancelReasonModal, setShowCancelReasonModal] = useState<boolean>(false);
   const [cancelReasonText, setCancelReasonText] = useState<string>('');
-  const [itemToCancel, setItemToCancel] = useState<{ id: string; targetStatus: RfqItemStatus } | null>(null);
 
   // Expanded New RFQ Dossier Quick Entry Modal Form State
   const [newCustomerName, setNewCustomerName] = useState<string>('');
@@ -374,14 +410,29 @@ export const QuotationsManager = () => {
     ? (selectedSingleQuote.rfqItem?.status || selectedSingleQuote.status)
     : null;
 
-  const canApproveFeasibility = selectedSingleQuote && selectedItemStatus === 'PENDING_REVIEW' && canManageQuote(selectedSingleQuote);
-  const canGoToCalculator = selectedSingleQuote && selectedItemStatus === 'IN_COSTING';
-  const canMarkSentStatus = selectedSingleQuote && selectedItemStatus === 'QUOTED_SENT' && canManageQuote(selectedSingleQuote);
-
   // Selected quotes list for validation
   const selectedQuotes = useMemo(() => {
     return quotes.filter((q) => selectedQuoteIds.includes(q.id));
   }, [quotes, selectedQuoteIds]);
+
+  const canApproveFeasibility = useMemo(() => {
+    if (selectedQuotes.length === 0) return false;
+    return selectedQuotes.every((q) => {
+      const st = q.rfqItem?.status || q.status;
+      return st === 'PENDING_REVIEW' && canManageQuote(q);
+    });
+  }, [selectedQuotes, profile, currentUserEmail]);
+
+  const canRejectFeasibility = useMemo(() => {
+    if (selectedQuotes.length === 0) return false;
+    return selectedQuotes.every((q) => {
+      const st = q.rfqItem?.status || q.status;
+      return st === 'PENDING_REVIEW' && canManageQuote(q);
+    });
+  }, [selectedQuotes, profile, currentUserEmail]);
+
+  const canGoToCalculator = selectedSingleQuote && selectedItemStatus === 'IN_COSTING';
+  const canMarkSentStatus = selectedSingleQuote && selectedItemStatus === 'QUOTED_SENT' && canManageQuote(selectedSingleQuote);
 
   // Check if ALL selected items can be deleted by current user (Ownership rule)
   const canDeleteSelected = useMemo(() => {
@@ -461,34 +512,47 @@ export const QuotationsManager = () => {
     }
   };
 
-  const handleApproveFeasibility = async (quote: QuoteRecord) => {
-    await updateQuoteStatus(quote.id, 'IN_COSTING');
-    if (quote.rfq && !quote.rfq.technical_review_completed_at) {
-      quote.rfq.technical_review_completed_at = new Date().toISOString();
+  const handleApproveFeasibility = async () => {
+    if (!canApproveFeasibility || selectedQuotes.length === 0) return;
+    try {
+      for (const quote of selectedQuotes) {
+        await updateQuoteStatus(quote.id, 'IN_COSTING');
+        if (quote.rfq && !quote.rfq.technical_review_completed_at) {
+          quote.rfq.technical_review_completed_at = new Date().toISOString();
+        }
+      }
+      setMsg({
+        text: `Đã duyệt khả thi cho (${selectedQuotes.length}) sản phẩm. Đã chuyển sang Tab "Đang Xử Lý Nội Bộ".`,
+        targetStage: 'internal',
+      });
+      setSelectedQuoteIds([]);
+      loadQuotes();
+    } catch (err: any) {
+      alert(`❌ Lỗi chuyển tính giá: ${err.message || err}`);
     }
-    const prodName = quote.rfqItem?.product_name || quote.id;
-    setMsg({
-      text: `Đã duyệt khả thi cho sản phẩm "${prodName}". Đã chuyển sang Tab "Đang Xử Lý Nội Bộ".`,
-      targetStage: 'internal',
-    });
-    setSelectedQuoteIds([]);
-    loadQuotes();
   };
 
-  const handleOpenItemCancelModal = (quote: QuoteRecord, targetStatus: RfqItemStatus) => {
-    setItemToCancel({ id: quote.id, targetStatus });
+  const handleOpenItemCancelModal = (_targetStatus?: RfqItemStatus) => {
+    if (selectedQuotes.length === 0) return;
     setCancelReasonText('');
     setShowCancelReasonModal(true);
   };
 
   const handleConfirmItemCancelSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!itemToCancel || !cancelReasonText.trim()) return;
+    if (!cancelReasonText.trim() || selectedQuotes.length === 0) return;
 
-    await updateQuoteStatus(itemToCancel.id, itemToCancel.targetStatus, cancelReasonText.trim());
-    setShowCancelReasonModal(false);
-    setItemToCancel(null);
-    loadQuotes();
+    try {
+      const targetStatus: RfqItemStatus = activeStage === 'new' ? 'CANCELLED_NOT_FEASIBLE' : 'CANCELLED_AFTER_QUOTE';
+      for (const quote of selectedQuotes) {
+        await updateQuoteStatus(quote.id, targetStatus, cancelReasonText.trim());
+      }
+      setShowCancelReasonModal(false);
+      setSelectedQuoteIds([]);
+      loadQuotes();
+    } catch (err: any) {
+      alert(`❌ Lỗi cập nhật không phù hợp: ${err.message || err}`);
+    }
   };
 
   const handleGoToCalculator = (quote: QuoteRecord) => {
@@ -971,49 +1035,100 @@ export const QuotationsManager = () => {
           </div>
         </div>
 
+        {/* Middle Group: TAB 1 FEASIBILITY ACTION BUTTONS (Chuyển tính giá & Không phù hợp) */}
+        {activeStage === 'new' && (
+          <div className="flex items-center space-x-2 px-2.5 py-1 bg-[#FBFBFA] border border-[#EAEAEA] rounded-[8px]">
+            <button
+              type="button"
+              disabled={!canApproveFeasibility}
+              onClick={handleApproveFeasibility}
+              title={
+                selectedQuotes.length === 0
+                  ? 'Vui lòng chọn sản phẩm để chuyển tính giá'
+                  : !canApproveFeasibility
+                  ? 'Bạn chỉ có quyền chuyển tính giá các RFQ do chính mình tạo'
+                  : `Chuyển (${selectedQuotes.length}) sản phẩm đã chọn sang giai đoạn tính giá`
+              }
+              className="px-3.5 py-1.5 bg-[#111111] hover:bg-[#333333] text-white font-bold rounded-[6px] text-xs transition-all disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer shadow-xs"
+            >
+              Chuyển tính giá
+            </button>
+
+            <button
+              type="button"
+              disabled={!canRejectFeasibility}
+              onClick={() => handleOpenItemCancelModal('CANCELLED_NOT_FEASIBLE')}
+              title={
+                selectedQuotes.length === 0
+                  ? 'Vui lòng chọn sản phẩm để hủy'
+                  : !canRejectFeasibility
+                  ? 'Bạn chỉ có quyền hủy các RFQ do chính mình tạo'
+                  : `Đánh dấu (${selectedQuotes.length}) sản phẩm đã chọn là không phù hợp`
+              }
+              className="px-3.5 py-1.5 bg-[#FDEBEC] hover:bg-[#F8C9CA] text-[#9F2F2D] border border-[#FADBDC] font-bold rounded-[6px] text-xs transition-all disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
+            >
+              Không phù hợp
+            </button>
+          </div>
+        )}
+
         {/* Right Side: CONTEXTUAL STAGE ACTION BUTTONS */}
         <div className="flex items-center space-x-1.5">
-          {/* Global Action 1: Xem Chi Tiết */}
-          <button
-            type="button"
-            disabled={selectedQuoteIds.length !== 1}
-            onClick={() => {
-              if (selectedSingleQuote) setSelectedQuote(selectedSingleQuote);
-            }}
-            title="Xem chi tiết bóc tách sản phẩm"
-            className="p-2 bg-[#F0F0EE] hover:bg-[#E0E0DE] text-[#111111] rounded-[6px] transition-colors cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed border border-[#EAEAEA]"
-          >
-            <Eye className="w-4 h-4" />
-          </button>
+          {/* Global Action 1: Xem Chi Tiết (Ẩn ở Tab 1) */}
+          {activeStage !== 'new' && (
+            <button
+              type="button"
+              disabled={selectedQuoteIds.length !== 1}
+              onClick={() => {
+                if (selectedSingleQuote) setSelectedQuote(selectedSingleQuote);
+              }}
+              title="Xem chi tiết bóc tách sản phẩm"
+              className="p-2 bg-[#F0F0EE] hover:bg-[#E0E0DE] text-[#111111] rounded-[6px] transition-colors cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed border border-[#EAEAEA]"
+            >
+              <Eye className="w-4 h-4" />
+            </button>
+          )}
 
-          {/* TAB 1 ACTIONS: Feasibility for PENDING_REVIEW & + Tạo RFQ Mới */}
+          {/* TAB 1 ACTIONS: Sửa, Xóa & + Tạo RFQ Mới */}
           {activeStage === 'new' && (
             <>
+              {/* Nút Sửa Sản Phẩm */}
               <button
                 type="button"
-                disabled={!canApproveFeasibility}
+                disabled={selectedQuoteIds.length !== 1 || !canManageQuote(selectedSingleQuote)}
                 onClick={() => {
-                  if (selectedSingleQuote) handleApproveFeasibility(selectedSingleQuote);
+                  if (selectedSingleQuote) handleOpenEditModal(selectedSingleQuote);
                 }}
-                title="✓ Có, tiếp tục tính giá (Kỹ thuật khả thi)"
-                className="p-2 bg-[#111111] hover:bg-[#333333] text-white rounded-[6px] transition-colors cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed shadow-xs"
+                title={
+                  selectedQuoteIds.length !== 1
+                    ? 'Vui lòng chọn đúng 1 sản phẩm để sửa'
+                    : !canManageQuote(selectedSingleQuote)
+                    ? 'Bạn chỉ có quyền sửa các RFQ do chính mình tạo'
+                    : 'Chỉnh sửa thông tin dòng sản phẩm RFQ đã chọn'
+                }
+                className="p-2 bg-[#F0F0EE] hover:bg-[#E0E0DE] text-[#111111] border border-[#EAEAEA] rounded-[6px] transition-all cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed"
               >
-                <Check className="w-4 h-4 stroke-[2.5]" />
+                <Pencil className="w-4 h-4 stroke-[2]" />
               </button>
 
+              {/* Nút Xóa Sản Phẩm */}
               <button
                 type="button"
-                disabled={!canApproveFeasibility}
-                onClick={() => {
-                  if (selectedSingleQuote) handleOpenItemCancelModal(selectedSingleQuote, 'CANCELLED_NOT_FEASIBLE');
-                }}
-                title="✕ Không khả thi, huỷ ngay"
-                className="p-2 bg-[#FDEBEC] hover:bg-[#F8C9CA] text-[#9F2F2D] border border-[#FADBDC] rounded-[6px] transition-colors cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed"
+                disabled={selectedQuoteIds.length === 0 || !canDeleteSelected}
+                onClick={handleDeleteSelectedItems}
+                title={
+                  selectedQuoteIds.length === 0
+                    ? 'Vui lòng chọn sản phẩm để xoá'
+                    : !canDeleteSelected
+                    ? 'Bạn chỉ có quyền xóa các RFQ do chính mình tạo'
+                    : `Xoá (${selectedQuoteIds.length}) mã sản phẩm đã chọn khỏi Supabase DB`
+                }
+                className="p-2 bg-[#FDEBEC] hover:bg-[#F8C9CA] text-[#9F2F2D] border border-[#FADBDC] rounded-[6px] transition-all cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed"
               >
-                <X className="w-4 h-4 stroke-[2.5]" />
+                <Trash2 className="w-4 h-4 stroke-[2]" />
               </button>
 
-              {/* + Tạo RFQ Mới (Chỉ hiện ở Tab 1) */}
+              {/* + Tạo RFQ Mới */}
               <button
                 type="button"
                 onClick={() => setShowNewRfqModal(true)}
@@ -1088,9 +1203,7 @@ export const QuotationsManager = () => {
               <button
                 type="button"
                 disabled={!canMarkSentStatus}
-                onClick={() => {
-                  if (selectedSingleQuote) handleOpenItemCancelModal(selectedSingleQuote, 'CANCELLED_AFTER_QUOTE');
-                }}
+                onClick={() => handleOpenItemCancelModal('CANCELLED_AFTER_QUOTE')}
                 title="Đánh dấu Từ Chối / Huỷ sau báo giá"
                 className="p-2 bg-[#FDEBEC] hover:bg-[#F8C9CA] text-[#9F2F2D] border border-[#FADBDC] rounded-[6px] transition-colors cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed"
               >
@@ -1343,6 +1456,113 @@ export const QuotationsManager = () => {
           </div>
         </div>
       </div>
+
+      {/* EDIT ITEM MODAL */}
+      {showEditItemModal && selectedSingleQuote && (
+        <Modal
+          isOpen={true}
+          onClose={() => setShowEditItemModal(false)}
+          title="Sửa Thông Tin Sản Phẩm RFQ"
+          size="md"
+        >
+          <form onSubmit={handleSaveEditItemSubmit} className="space-y-4 text-xs">
+            <div className="bg-[#FBFBFA] p-3 rounded-[8px] border border-[#EAEAEA] space-y-1">
+              <div className="text-[11px] font-bold text-[#787774]">
+                Khách hàng: <span className="text-[#111111] font-semibold">{selectedSingleQuote.rfq?.customer_name}</span>
+              </div>
+              <div className="text-[11px] font-bold text-[#787774]">
+                Mã dòng sản phẩm: <span className="font-mono text-[#111111]">{selectedSingleQuote.id}</span>
+              </div>
+            </div>
+
+            <div>
+              <label className="block font-bold text-[#787774] mb-1 uppercase text-[10px] tracking-wider">
+                Tên Sản Phẩm <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="text"
+                required
+                value={editProductName}
+                onChange={(e) => setEditProductName(e.target.value)}
+                className="w-full px-3 py-2 border border-[#EAEAEA] rounded-[6px] font-semibold text-[#111111] focus:outline-none focus:border-[#111111]"
+              />
+            </div>
+
+            <div>
+              <label className="block font-bold text-[#787774] mb-1 uppercase text-[10px] tracking-wider">
+                Part Number
+              </label>
+              <input
+                type="text"
+                value={editPartNumber}
+                onChange={(e) => setEditPartNumber(e.target.value)}
+                className="w-full px-3 py-2 border border-[#EAEAEA] rounded-[6px] font-mono text-[#111111] focus:outline-none focus:border-[#111111]"
+              />
+            </div>
+
+            <div>
+              <label className="block font-bold text-[#787774] mb-1 uppercase text-[10px] tracking-wider">
+                Yêu Cầu Công Nghệ
+              </label>
+              <select
+                value={editTechRequirement}
+                onChange={(e) => setEditTechRequirement(e.target.value as TechnologyRequirementType)}
+                className="w-full px-3 py-2 border border-[#EAEAEA] rounded-[6px] font-bold bg-white text-[#111111] focus:outline-none focus:border-[#111111]"
+              >
+                <option value="Rèn+Gia công">Phân Hệ Rèn + GC</option>
+                <option value="Phôi rèn">Chỉ Phôi Rèn</option>
+                <option value="Đúc+Gia công">Phân Hệ Đúc + GC</option>
+                <option value="Phôi đúc">Chỉ Phôi Đúc</option>
+                <option value="Phôi cưa+Gia công">Phôi Cưa + GC</option>
+                <option value="Phôi cưa">Chỉ Phôi Cưa</option>
+                <option value="Chỉ gia công CNC">Chỉ Gia Công CNC</option>
+              </select>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block font-bold text-[#787774] mb-1 uppercase text-[10px] tracking-wider">
+                  Sản Lượng Nhu Cầu
+                </label>
+                <input
+                  type="number"
+                  value={editAnnualVolume || ''}
+                  onChange={(e) => setEditAnnualVolume(Number(e.target.value) || 0)}
+                  className="w-full px-3 py-2 border border-[#EAEAEA] rounded-[6px] font-mono text-[#111111] focus:outline-none focus:border-[#111111]"
+                />
+              </div>
+
+              <div>
+                <label className="block font-bold text-[#787774] mb-1 uppercase text-[10px] tracking-wider">
+                  Giá Target KH (VNĐ)
+                </label>
+                <input
+                  type="number"
+                  value={editTargetPrice || ''}
+                  onChange={(e) => setEditTargetPrice(Number(e.target.value) || 0)}
+                  className="w-full px-3 py-2 border border-[#EAEAEA] rounded-[6px] font-mono text-[#111111] focus:outline-none focus:border-[#111111]"
+                />
+              </div>
+            </div>
+
+            <div className="flex justify-end space-x-2 pt-3 border-t border-[#EAEAEA]">
+              <button
+                type="button"
+                onClick={() => setShowEditItemModal(false)}
+                className="px-4 py-2 border border-[#EAEAEA] rounded-[6px] font-bold text-[#787774] hover:text-[#111111] hover:bg-[#F7F6F3] cursor-pointer transition-colors"
+              >
+                Hủy
+              </button>
+              <button
+                type="submit"
+                className="px-4 py-2 bg-[#111111] hover:bg-[#333333] text-white font-bold rounded-[6px] cursor-pointer transition-colors shadow-xs"
+              >
+                Lưu Thay Đổi
+              </button>
+            </div>
+          </form>
+        </Modal>
+      )}
 
       {/* DETAIL MODAL */}
       {selectedQuote && (
