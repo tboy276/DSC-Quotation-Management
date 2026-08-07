@@ -9,6 +9,7 @@ export interface DocumentRemarkLine {
 
 export interface DocumentDisplayConfig {
   language: 'vi' | 'en' | 'both';
+  layoutOrientation?: 'portrait' | 'landscape';
   showWeight: boolean;
   showMOQ: boolean;
   showFormingCost: boolean;
@@ -23,6 +24,7 @@ export interface DocumentDisplayConfig {
 
 export const DEFAULT_DISPLAY_CONFIG: DocumentDisplayConfig = {
   language: 'both',
+  layoutOrientation: 'portrait',
   showWeight: true,
   showMOQ: true,
   showFormingCost: true,

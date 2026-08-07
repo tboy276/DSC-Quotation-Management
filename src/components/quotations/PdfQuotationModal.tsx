@@ -19,7 +19,8 @@ export const PdfQuotationModal = ({ document, onClose }: PdfQuotationModalProps)
     <Modal
       isOpen={true}
       onClose={onClose}
-      size="2xl"
+      size="full"
+      maxWidthClass="max-w-[98vw] max-h-[96vh]"
       title="Xem Trước Thư Báo Giá DISOCO (PDF Quotation Preview)"
       subtitle={`#${document.id.substring(0, 8)}`}
       headerExtra={

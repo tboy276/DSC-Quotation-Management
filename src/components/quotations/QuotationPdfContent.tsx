@@ -50,6 +50,8 @@ export const QuotationPdfContent: React.FC<QuotationPdfContentProps> = ({
     }
   );
 
+  const isLandscape = config.layoutOrientation === 'landscape';
+
   const getText = (viText: string, enText: string) => {
     if (lang === 'vi') return viText;
     if (lang === 'en') return enText;
@@ -58,17 +60,29 @@ export const QuotationPdfContent: React.FC<QuotationPdfContentProps> = ({
 
   return (
     <div
-      className="flex-1 overflow-y-auto p-6 sm:p-10 space-y-6 text-[#111111] font-sans text-xs bg-white print:p-0 print:overflow-visible"
+      className={`flex-1 overflow-y-auto p-6 sm:p-10 space-y-6 text-[#111111] font-sans text-xs bg-white print:p-0 print:overflow-visible transition-all ${
+        isLandscape ? 'max-w-[1140px] w-full mx-auto' : 'max-w-[840px] w-full mx-auto'
+      }`}
       id="printable-quotation"
     >
+      <style>{`
+        @media print {
+          @page {
+            size: ${isLandscape ? 'landscape' : 'portrait'};
+            margin: 8mm;
+          }
+        }
+      `}</style>
+
       {/* Header Block */}
-      <div className="grid grid-cols-12 gap-4 items-start border-b border-gray-300 pb-4">
+      <div className="grid grid-cols-12 gap-4 items-center border-b border-gray-300 pb-4">
         {/* Left: Logo */}
-        <div className="col-span-3">
-          <div className="w-36 h-14 bg-slate-100 border border-slate-300 rounded flex flex-col items-center justify-center text-center p-1">
-            <span className="font-extrabold text-slate-900 tracking-wider text-sm">DISOCO</span>
-            <span className="text-[9px] text-slate-500 uppercase font-semibold">Songcong Diesel</span>
-          </div>
+        <div className="col-span-3 flex items-center justify-start">
+          <img
+            src="https://res.cloudinary.com/ppzbydbc/image/upload/v1783387548/logo.png"
+            alt="DISOCO Logo"
+            className="h-16 w-auto max-w-full object-contain"
+          />
         </div>
 
         {/* Center: Company Info */}

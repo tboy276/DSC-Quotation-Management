@@ -287,9 +287,10 @@ export const DocumentDetailModal = ({
         <Modal
           isOpen={true}
           onClose={() => setShowCustomizeModal(false)}
-          size="2xl"
+          size="full"
+          maxWidthClass="max-w-[98vw] max-h-[96vh]"
           icon={<Sliders className="w-4 h-4" />}
-          title="Tuỳ Chỉnh Hiển Thị Văn Bản Báo Giá"
+          title="Xem Trước & Tuỳ Chỉnh Thư Báo Giá DISOCO"
           subtitle={`Văn bản #${document.id.substring(0, 10)} - ${document.customer_name}`}
         >
           <QuotationPreviewPanel

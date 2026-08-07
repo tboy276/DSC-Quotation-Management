@@ -87,9 +87,9 @@ export const QuotationPreviewPanel: React.FC<QuotationPreviewPanelProps> = ({
   };
 
   return (
-    <div className="flex flex-col lg:flex-row gap-6 h-full">
+    <div className="flex flex-col lg:flex-row gap-6 h-full flex-1 min-h-0">
       {/* Left Column: Control Settings Panel */}
-      <div className="w-full lg:w-[42%] flex flex-col space-y-4 bg-[#FBFBFA] border border-[#EAEAEA] rounded-[10px] p-4 text-xs">
+      <div className="w-full lg:w-[40%] flex flex-col space-y-4 bg-[#FBFBFA] border border-[#EAEAEA] rounded-[10px] p-4 text-xs shrink-0">
         <div className="flex items-center justify-between border-b border-[#EAEAEA] pb-3">
           <div className="flex items-center space-x-2">
             <Sliders className="w-4 h-4 text-[#111111]" />
@@ -102,7 +102,7 @@ export const QuotationPreviewPanel: React.FC<QuotationPreviewPanelProps> = ({
           )}
         </div>
 
-        <div className="space-y-4 overflow-y-auto pr-1 flex-1 max-h-[65vh]">
+        <div className="space-y-4 overflow-y-auto pr-1 flex-1 max-h-[calc(100vh-230px)]">
           {/* Section 1: Language */}
           <div className="space-y-1.5">
             <label className="block text-[10px] font-bold text-[#787774] uppercase tracking-wider">
@@ -131,10 +131,43 @@ export const QuotationPreviewPanel: React.FC<QuotationPreviewPanelProps> = ({
             </div>
           </div>
 
-          {/* Section 2: Columns Visibility */}
+          {/* Section 2: Form Layout Orientation (Dọc vs Ngang) */}
           <div className="space-y-1.5">
             <label className="block text-[10px] font-bold text-[#787774] uppercase tracking-wider">
-              2. Ẩn / Hiện Cột Trong Bảng Chi Phí
+              2. Định Dạng Form Báo Giá (Dọc / Ngang)
+            </label>
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                disabled={readOnly}
+                onClick={() => setConfig((prev) => ({ ...prev, layoutOrientation: 'portrait' }))}
+                className={`py-2 px-3 rounded-[6px] border text-[11px] font-semibold cursor-pointer transition-all flex items-center justify-center space-x-1.5 ${
+                  (config.layoutOrientation || 'portrait') === 'portrait'
+                    ? 'bg-[#111111] text-white border-[#111111] shadow-xs'
+                    : 'bg-white text-[#111111] border-[#EAEAEA] hover:border-[#CCCCCC]'
+                }`}
+              >
+                <span>📄 Form Dọc (Portrait)</span>
+              </button>
+              <button
+                type="button"
+                disabled={readOnly}
+                onClick={() => setConfig((prev) => ({ ...prev, layoutOrientation: 'landscape' }))}
+                className={`py-2 px-3 rounded-[6px] border text-[11px] font-semibold cursor-pointer transition-all flex items-center justify-center space-x-1.5 ${
+                  config.layoutOrientation === 'landscape'
+                    ? 'bg-[#111111] text-white border-[#111111] shadow-xs'
+                    : 'bg-white text-[#111111] border-[#EAEAEA] hover:border-[#CCCCCC]'
+                }`}
+              >
+                <span>🖼️ Form Ngang (Landscape)</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Section 3: Columns Visibility */}
+          <div className="space-y-1.5">
+            <label className="block text-[10px] font-bold text-[#787774] uppercase tracking-wider">
+              3. Ẩn / Hiện Cột Trong Bảng Chi Phí
             </label>
             <div className="grid grid-cols-2 gap-2 bg-white p-3 border border-[#EAEAEA] rounded-[8px]">
               {[
@@ -165,11 +198,11 @@ export const QuotationPreviewPanel: React.FC<QuotationPreviewPanelProps> = ({
             </div>
           </div>
 
-          {/* Section 3: Custom Remarks / Notes */}
+          {/* Section 4: Custom Remarks / Notes */}
           <div className="space-y-2">
             <div className="flex items-center justify-between">
               <label className="block text-[10px] font-bold text-[#787774] uppercase tracking-wider">
-                3. Ghi Chú & Điều Khoản (Remarks)
+                4. Ghi Chú & Điều Khoản (Remarks)
               </label>
               {!readOnly && (
                 <button
@@ -279,18 +312,20 @@ export const QuotationPreviewPanel: React.FC<QuotationPreviewPanelProps> = ({
       </div>
 
       {/* Right Column: Live Document Preview */}
-      <div className="w-full lg:w-[58%] border border-[#EAEAEA] rounded-[10px] overflow-hidden flex flex-col bg-slate-50 shadow-inner">
-        <div className="px-4 py-2 bg-white border-b border-[#EAEAEA] flex items-center justify-between text-[11px] font-bold text-[#787774]">
-          <div className="flex items-center space-x-1.5">
-            <Eye className="w-3.5 h-3.5 text-[#111111]" />
+      <div className="flex-1 border border-[#EAEAEA] rounded-[10px] overflow-hidden flex flex-col bg-slate-100 shadow-inner min-w-0">
+        <div className="px-4 py-2.5 bg-white border-b border-[#EAEAEA] flex items-center justify-between text-[11px] font-bold text-[#787774] shrink-0">
+          <div className="flex items-center space-x-2">
+            <Eye className="w-4 h-4 text-[#111111]" />
             <span>XEM TRƯỚC BÁO GIÁ THỜI GIAN THỰC (LIVE PREVIEW)</span>
           </div>
-          <span className="text-[10px] font-mono text-emerald-600 font-semibold bg-emerald-50 px-2 py-0.5 rounded">
-            Cập nhật tự động
-          </span>
+          <div className="flex items-center space-x-2">
+            <span className="text-[10px] font-mono text-emerald-600 font-semibold bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+              {config.layoutOrientation === 'landscape' ? 'Form Ngang (Landscape)' : 'Form Dọc (Portrait)'}
+            </span>
+          </div>
         </div>
 
-        <div className="flex-1 overflow-y-auto max-h-[72vh]">
+        <div className="flex-1 overflow-y-auto max-h-[calc(100vh-200px)] p-4">
           <QuotationPdfContent document={document} config={config} />
         </div>
       </div>

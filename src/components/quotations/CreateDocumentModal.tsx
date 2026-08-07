@@ -235,7 +235,8 @@ export const CreateDocumentModal = ({
       <Modal
         isOpen={true}
         onClose={onClose}
-        size={step === 'preview' ? '2xl' : 'xl'}
+        size={step === 'preview' ? 'full' : 'xl'}
+        maxWidthClass={step === 'preview' ? 'max-w-[98vw] max-h-[96vh]' : undefined}
         icon={<FileText className="w-4 h-4 stroke-[2]" />}
         title={
           step === 'form'
