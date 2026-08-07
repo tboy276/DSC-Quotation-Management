@@ -155,4 +155,26 @@ describe('DSC-Quotation-Management Calculation Engine', () => {
       expect(result.separate_pattern_cost).toBe(10000);
     });
   });
+
+  // ------------------------------------------------------------------
+  // TEST CASE 3: CƯA/CẮT PHÔI (SAWING)
+  // ------------------------------------------------------------------
+  describe('Test Case 3: Cưa/Cắt Phôi (Sawing)', () => {
+    it('Tính chính xác m_bavia, C_mat_sawing, P_SAWING', () => {
+      const input: SawingInput = {
+        m_phoi: 1.2,
+        m_chi: 1.531,
+        k_loss: 2.0,
+        DG_steel: 22000,
+        DG_scrap: 8000,
+        k_mgmt: 8,
+        DG_trans_kg: 1500,
+        k_profit_sawing: 15,
+      };
+
+      const result = calculateSawingPrice(input);
+      expect(result.m_bavia).toBeCloseTo((1.531 - 1.2) * 0.98, 4);
+      expect(result.P_SAWING).toBeGreaterThan(0);
+    });
+  });
 });

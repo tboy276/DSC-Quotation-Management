@@ -17,7 +17,7 @@ describe('P0 Requirements Unit Tests', () => {
         segment: 'forging',
         currency: 'USD',
         exchange_rate: 25000,
-        inputs_json: { m_phoi: 2.5, m_chi: 3.1, forging_line: '1600T' },
+        inputs_json: { m_phoi: 2.5, m_chi: 3.1, forging_line: '1600T' } as any,
       };
 
       useQuotationStore.getState().cloneInputsFromQuote(mockForgingQuote as QuoteRecord);
@@ -34,7 +34,7 @@ describe('P0 Requirements Unit Tests', () => {
         segment: 'casting',
         currency: 'VND',
         exchange_rate: 1,
-        inputs_json: { m_cast: 7.5, Y_yield: 65 },
+        inputs_json: { m_cast: 7.5, Y_yield: 65 } as any,
       };
 
       useQuotationStore.getState().cloneInputsFromQuote(mockCastingQuote as QuoteRecord);
@@ -50,7 +50,7 @@ describe('P0 Requirements Unit Tests', () => {
         segment: 'sawing',
         currency: 'EUR',
         exchange_rate: 27000,
-        inputs_json: { m_phoi: 4.2, t_cut_sec: 45 },
+        inputs_json: { m_phoi: 4.2, t_cut_sec: 45 } as any,
       };
 
       useQuotationStore.getState().cloneInputsFromQuote(mockSawingQuote as QuoteRecord);
@@ -66,7 +66,7 @@ describe('P0 Requirements Unit Tests', () => {
         segment: 'machining',
         currency: 'JPY',
         exchange_rate: 170,
-        inputs_json: { m_tinh: 3.8, k_mgmt: 12 },
+        inputs_json: { m_tinh: 3.8, k_mgmt: 12 } as any,
       };
 
       useQuotationStore.getState().cloneInputsFromQuote(mockMachiningQuote as QuoteRecord);
@@ -82,7 +82,7 @@ describe('P0 Requirements Unit Tests', () => {
     it('resets input state for new items and preserves saved items when switching back', () => {
       const itemAQuote: Partial<QuoteRecord> = {
         segment: 'forging',
-        inputs_json: { m_phoi: 9.9, forging_line: '80kJ' },
+        inputs_json: { m_phoi: 9.9, forging_line: '80kJ' } as any,
       };
 
       // 1. Open Item A (saved item)
