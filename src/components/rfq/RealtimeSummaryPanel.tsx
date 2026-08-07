@@ -330,26 +330,26 @@ export const RealtimeSummaryPanel = () => {
       )}
 
       {/* Final Quoted Unit Price Highlights */}
-      <div className="p-4 rounded-[10px] bg-[#111111] text-white space-y-1">
-        <div className="flex items-center justify-between text-[11px] text-slate-400 uppercase tracking-wider font-semibold">
+      <div className="p-3.5 rounded-[8px] bg-[#111111] text-white space-y-1.5 border border-[#111111] shadow-xs">
+        <div className="flex items-center justify-between text-[10px] text-slate-400 uppercase tracking-wider font-bold">
           <span>Đơn Giá Báo Giá Cuối Cùng ({currency})</span>
-          <span>{rfq.product_name || 'SP'}</span>
+          <span className="font-mono text-white">{rfq.product_name || 'SP'}</span>
         </div>
 
-        <div className="flex items-baseline justify-between pt-1">
-          <p className="text-2xl font-extrabold font-mono">
+        <div className="flex items-baseline justify-between pt-0.5">
+          <p className="text-2xl font-bold font-mono text-emerald-400">
             {formatCurrencyValue(finalPriceVnd, currency, exchangeRate)}
           </p>
-          <span className="text-xs font-semibold text-slate-300">/ Chi tiết</span>
+          <span className="text-xs font-mono text-slate-300">/ Chi tiết</span>
         </div>
 
         {currency !== 'VND' && (
-          <p className="text-[10px] text-slate-400 font-mono pt-0.5">
+          <p className="text-[10px] text-slate-400 font-mono">
             (Tương đương {Math.round(finalPriceVnd).toLocaleString('vi-VN')} VNĐ với tỷ giá 1 {currency} = {exchangeRate.toLocaleString('vi-VN')} VNĐ)
           </p>
         )}
 
-        <div className="pt-2 border-t border-slate-800 flex items-center justify-between text-[10px] text-slate-400">
+        <div className="pt-2 border-t border-slate-800 flex items-center justify-between text-[10px] text-slate-400 font-mono">
           <span>Sản lượng: {(rfq.annual_volume || 0).toLocaleString('vi-VN')} Pcs/năm</span>
           <span>Doanh số: {formatCurrencyValue((rfq.annual_volume || 0) * finalPriceVnd, currency, exchangeRate)}</span>
         </div>

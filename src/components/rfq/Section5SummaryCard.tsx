@@ -23,10 +23,10 @@ const SliderCard: React.FC<SliderCardProps> = ({
   description,
 }) => {
   return (
-    <div className="bg-white border border-[#E5E7EB] rounded-[8px] p-3.5 space-y-2 shadow-2xs hover:border-[#D1D5DB] transition-all">
+    <div className="bg-white border border-[#EAEAEA] rounded-[6px] p-3 space-y-1.5 shadow-2xs hover:border-[#111111] transition-all">
       {/* Top row: Label & Number Stepper */}
       <div className="flex items-center justify-between gap-2">
-        <label className="text-xs font-bold text-[#1E293B] uppercase tracking-wide">
+        <label className="text-[10px] font-bold text-[#787774] uppercase tracking-wider">
           {label}
         </label>
         <div className="flex items-center gap-1">
@@ -37,16 +37,16 @@ const SliderCard: React.FC<SliderCardProps> = ({
             step={step}
             value={value}
             onChange={(e) => onChange(Number(e.target.value))}
-            className="w-20 px-2 py-1 border border-[#D1D5DB] rounded-[4px] text-right font-mono font-bold text-xs text-[#111111] bg-white outline-none focus:border-[#0F766E]"
+            className="w-20 px-2 py-0.5 border border-[#EAEAEA] rounded-[4px] text-right font-mono font-bold text-xs text-[#111111] bg-white outline-none focus:border-[#111111]"
           />
-          <span className="text-[11px] font-medium text-[#64748B] min-w-[32px]">
+          <span className="text-[10px] font-bold text-[#787774] min-w-[32px] uppercase">
             {unit}
           </span>
         </div>
       </div>
 
       {/* Middle row: Slider */}
-      <div className="relative flex items-center py-1">
+      <div className="relative flex items-center py-0.5">
         <input
           type="range"
           min={min}
@@ -54,12 +54,12 @@ const SliderCard: React.FC<SliderCardProps> = ({
           step={step}
           value={value}
           onChange={(e) => onChange(Number(e.target.value))}
-          className="w-full h-1.5 bg-[#E2E8F0] rounded-lg appearance-none cursor-pointer accent-[#0F766E]"
+          className="w-full h-1.5 bg-[#EAEAEA] rounded-lg appearance-none cursor-pointer accent-[#111111]"
         />
       </div>
 
       {/* Bottom row: Subtitle description */}
-      <p className="text-[11px] text-[#64748B]">
+      <p className="text-[11px] text-[#787774] italic">
         {description}
       </p>
     </div>
@@ -108,17 +108,17 @@ export const Section5SummaryCard: React.FC<Section5SummaryCardProps> = ({
   return (
     <div className="space-y-4 pt-2">
       {/* Section Header */}
-      <div className="flex items-center gap-2">
-        <PlusCircle className="w-5 h-5 text-[#111111] stroke-[2]" />
-        <h2 className="text-[15px] font-bold text-[#111111] uppercase tracking-wide">
+      <div className="flex items-center gap-2 border-b border-[#EAEAEA] pb-2.5">
+        <PlusCircle className="w-4 h-4 text-[#111111] stroke-[2]" />
+        <h2 className="text-xs font-bold text-[#111111] uppercase tracking-wider">
           SECTION 5: TỔNG HỢP & BÁO GIÁ CUỐI CÙNG
         </h2>
       </div>
 
       {/* 2-Column Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-start">
         {/* Left Column: 4 Slider Cards */}
-        <div className="lg:col-span-5 space-y-3">
+        <div className="lg:col-span-5 space-y-2.5">
           {/* 1. Chi phí quản lý chung */}
           <SliderCard
             label="CHI PHÍ QUẢN LÝ CHUNG"
@@ -170,76 +170,76 @@ export const Section5SummaryCard: React.FC<Section5SummaryCardProps> = ({
 
         {/* Right Column: Tổng hợp chi phí Card */}
         <div className="lg:col-span-7">
-          <div className="bg-white border border-[#E5E7EB] rounded-[10px] p-6 shadow-sm flex flex-col justify-between">
+          <div className="bg-[#FBFBFA] border border-[#EAEAEA] rounded-[8px] p-4 space-y-3.5 shadow-xs">
             {/* Title */}
-            <h3 className="text-[14px] font-bold text-[#1E293B] uppercase tracking-wide mb-4">
+            <h3 className="text-[11px] font-bold text-[#111111] uppercase tracking-wider border-b border-[#EAEAEA] pb-2">
               TỔNG HỢP CHI PHÍ (CHO 1 SẢN PHẨM)
             </h3>
 
             {/* Breakdown Items List */}
-            <div className="space-y-3 text-[13px]">
-              <div className="flex items-center justify-between py-1 border-b border-[#F1F5F9]">
-                <span className="text-[#334155]">I. Giá Vốn (COGS):</span>
-                <span className="font-mono font-bold text-[#1E293B]">
-                  {Math.round(COGS).toLocaleString('vi-VN')} đ
+            <div className="space-y-2 text-xs font-mono">
+              <div className="flex items-center justify-between py-1 border-b border-[#EAEAEA]">
+                <span className="text-[#787774] font-sans">I. Giá Vốn (COGS):</span>
+                <span className="font-bold text-[#111111]">
+                  {Math.round(COGS).toLocaleString('vi-VN')} VNĐ
                 </span>
               </div>
 
-              <div className="flex items-center justify-between py-1 border-b border-[#F1F5F9]">
-                <span className="text-[#334155]">II. Chi Phí Quản Lý Công Ty:</span>
-                <span className="font-mono font-bold text-[#1E293B]">
-                  {Math.round(C_mgmt).toLocaleString('vi-VN')} đ
+              <div className="flex items-center justify-between py-1 border-b border-[#EAEAEA]">
+                <span className="text-[#787774] font-sans">II. Chi Phí Quản Lý Công Ty:</span>
+                <span className="font-bold text-[#111111]">
+                  {Math.round(C_mgmt).toLocaleString('vi-VN')} VNĐ
                 </span>
               </div>
 
-              <div className="flex items-center justify-between py-1 border-b border-[#F1F5F9]">
-                <span className="text-[#334155]">III. Phí Vận Chuyển:</span>
-                <span className="font-mono font-bold text-[#1E293B]">
-                  {Math.round(C_trans).toLocaleString('vi-VN')} đ
+              <div className="flex items-center justify-between py-1 border-b border-[#EAEAEA]">
+                <span className="text-[#787774] font-sans">III. Phí Vận Chuyển:</span>
+                <span className="font-bold text-[#111111]">
+                  {Math.round(C_trans).toLocaleString('vi-VN')} VNĐ
                 </span>
               </div>
 
-              <div className="flex items-center justify-between py-1 border-b border-[#F1F5F9]">
-                <span className="text-[#334155]">IV. Phí Bao Gói:</span>
-                <span className="font-mono font-bold text-[#1E293B]">
-                  {Math.round(C_pack).toLocaleString('vi-VN')} đ
+              <div className="flex items-center justify-between py-1 border-b border-[#EAEAEA]">
+                <span className="text-[#787774] font-sans">IV. Phí Bao Gói:</span>
+                <span className="font-bold text-[#111111]">
+                  {Math.round(C_pack).toLocaleString('vi-VN')} VNĐ
                 </span>
               </div>
             </div>
 
             {/* Subtotals */}
-            <div className="pt-4 mt-2 border-t border-[#E2E8F0] space-y-2 text-[13px]">
-              <div className="flex items-center justify-between font-bold">
-                <span className="text-[#1E293B] uppercase tracking-wide">
+            <div className="pt-2 border-t border-[#EAEAEA] space-y-1.5 text-xs font-mono">
+              <div className="flex items-center justify-between">
+                <span className="text-[#787774] font-sans font-bold uppercase">
                   TỔNG GIÁ THÀNH TRƯỚC LỢI NHUẬN:
                 </span>
-                <span className="font-mono text-[#1E293B]">
+                <span className="font-bold text-[#111111]">
                   {Math.round(pre_profit_price).toLocaleString('vi-VN')} VNĐ
                 </span>
               </div>
 
-              <div className="flex items-center justify-between font-bold">
-                <span className="text-[#1E293B] uppercase tracking-wide">
+              <div className="flex items-center justify-between">
+                <span className="text-[#787774] font-sans font-bold uppercase">
                   LỢI NHUẬN MỤC TIÊU:
                 </span>
-                <span className="font-mono text-[#1D4ED8]">
-                  {Math.round(profit_amount).toLocaleString('vi-VN')} VNĐ
+                <span className="font-bold text-[#346538]">
+                  +{Math.round(profit_amount).toLocaleString('vi-VN')} VNĐ
                 </span>
               </div>
             </div>
 
-            {/* Big Hero Total Box */}
-            <div className="bg-[#72F1D1] rounded-[8px] p-4 mt-5 flex items-center justify-between shadow-2xs">
+            {/* Unified Signature Dark Obsidian Grand Total Hero Card */}
+            <div className="bg-[#111111] text-white rounded-[6px] p-3.5 flex items-center justify-between shadow-xs border border-[#111111]">
               <div>
-                <p className="text-[11px] font-bold text-[#0F766E] uppercase tracking-wider mb-0.5">
+                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">
                   TỔNG GIÁ BÁO (DỰ KIẾN)
                 </p>
-                <p className="font-mono font-extrabold text-[28px] text-[#042F2E] leading-tight tracking-tight">
+                <p className="font-mono font-extrabold text-2xl text-emerald-400 leading-none">
                   {Math.round(final_price).toLocaleString('vi-VN')}
                 </p>
               </div>
-              <span className="font-sans font-extrabold text-[17px] text-[#0F766E]">
-                VNĐ
+              <span className="font-mono font-bold text-xs text-white uppercase">
+                VNĐ / Chi tiết
               </span>
             </div>
           </div>
