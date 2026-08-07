@@ -8,6 +8,8 @@ import {
   Layers,
   TrendingUp,
   Activity,
+  Scissors,
+  Wrench,
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -28,8 +30,10 @@ export const Sidebar = ({
     { id: 'documents', label: 'Văn Bản Báo Giá Gộp', icon: Layers, shortcut: '⌘2' },
     { id: 'forging', label: 'Tính Giá Rèn Dập', icon: Workflow, shortcut: '⌘3' },
     { id: 'casting', label: 'Tính Giá Đúc Gang', icon: Box, shortcut: '⌘4' },
-    { id: 'master_data', label: 'Quản Lý Master Data', icon: Database, shortcut: '⌘5' },
-    { id: 'analytics', label: 'Báo Cáo Thống Kê RFQ', icon: TrendingUp, shortcut: '⌘7' },
+    { id: 'sawing', label: 'Tính Giá Phôi Cưa & GC', icon: Scissors, shortcut: '⌘5' },
+    { id: 'machining', label: 'Tính Giá Chỉ Gia Công CNC', icon: Wrench, shortcut: '⌘6' },
+    { id: 'master_data', label: 'Quản Lý Master Data', icon: Database, shortcut: '⌘7' },
+    { id: 'analytics', label: 'Báo Cáo Thống Kê RFQ', icon: TrendingUp, shortcut: '⌘8' },
   ];
 
   const adminNavItems = [
