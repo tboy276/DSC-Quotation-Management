@@ -51,6 +51,8 @@ export function usePricingCalculator(fixedSegment: SegmentType) {
     loadActiveItemDetails(activeRfqItemId);
   }, [activeRfqItemId, fixedSegment, setSegment]);
 
+  const resetSegmentInput = useQuotationStore((state) => state.resetSegmentInput);
+
   const loadActiveItemDetails = async (itemId: string) => {
     try {
       const target = await fetchQuoteByItemId(itemId);
@@ -63,6 +65,12 @@ export function usePricingCalculator(fixedSegment: SegmentType) {
         if (target.rfqItem?.product_name) setRfqField('product_name', target.rfqItem.product_name);
         if (target.rfqItem?.annual_volume) setRfqField('annual_volume', target.rfqItem.annual_volume);
         if (target.rfqItem?.target_price) setRfqField('target_price', target.rfqItem.target_price);
+
+        if (target.inputs_json && typeof target.inputs_json === 'object' && Object.keys(target.inputs_json).length > 0) {
+          cloneInputsFromQuote(target);
+        } else {
+          resetSegmentInput(fixedSegment);
+        }
 
         // CLEAR BANNER LỖI/CẢNH BÁO KHI LOAD THÀNH CÔNG (YÊU CẦU CỦA USER)
         setMsg(null);

@@ -46,6 +46,7 @@ export interface ForgingInput {
   k_loss: number;      // Phần trăm cháy hao % (VD: 2.0 = 2%)
   DG_steel: number;    // Đơn giá thép phôi (VNĐ/kg)
   DG_scrap: number;    // Đơn giá thu hồi ba-via (VNĐ/kg)
+  DG_scrap_cnc?: number; // Đơn giá thu hồi phoi CNC (VNĐ/kg) - Nhập tay riêng
   k_mgmt_mat?: number; // Chi phí quản lý vật tư (%)
   use_m_tinh?: boolean;// Tính chi phí vật tư theo TL sau gia công
 
@@ -91,7 +92,9 @@ export interface ForgingInput {
 
 export interface ForgingResult {
   m_phoi: number;             // Trọng lượng chi đầu vào (kg) - Cũ là m_phoi
-  m_bavia: number;            // Khối lượng ba-via (kg)
+  m_bavia: number;            // Khối lượng ba-via tổng (kg)
+  m_bavia_forging?: number;   // Khối lượng ba-via rèn thu hồi (kg)
+  m_bavia_cnc?: number;       // Khối lượng phoi CNC thu hồi (kg)
   C_mat_forging: number;      // Chi phí vật liệu rèn (VNĐ)
   C_ops_forging: number;      // Chi phí công nghệ rèn (VNĐ)
   C_machining: number;        // Chi phí gia công cơ khí (VNĐ)
@@ -213,6 +216,7 @@ export interface SawingInput {
   k_loss: number;      // Phần trăm cháy hao %
   DG_steel: number;    // Đơn giá thép phôi (VNĐ/kg)
   DG_scrap: number;    // Đơn giá thu hồi ba-via (VNĐ/kg)
+  DG_scrap_cnc?: number; // Đơn giá thu hồi phoi CNC (VNĐ/kg) - Nhập tay riêng
   k_mgmt_mat?: number; // Chi phí quản lý vật tư (%)
   use_m_tinh?: boolean;// Tính chi phí vật tư theo TL sau gia công
 
@@ -234,7 +238,9 @@ export interface SawingInput {
 }
 
 export interface SawingResult {
-  m_bavia: number;            // Khối lượng ba-via (kg)
+  m_bavia: number;            // Khối lượng ba-via tổng (kg)
+  m_bavia_forging?: number;   // Khối lượng phoi cưa/cắt (kg)
+  m_bavia_cnc?: number;       // Khối lượng phoi CNC (kg)
   C_mat_sawing: number;       // Chi phí vật liệu (VNĐ)
   C_ops_sawing: number;       // Chi phí công nghệ cắt (VNĐ)
   C_machining: number;        // Chi phí gia công cơ khí (VNĐ)

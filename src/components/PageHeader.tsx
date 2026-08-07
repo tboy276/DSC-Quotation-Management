@@ -19,9 +19,8 @@ export const PageHeader = ({ title }: PageHeaderProps) => {
   const role = profile?.role || 'sales';
   const initials = email.charAt(0).toUpperCase();
 
-  // Reset capability: ONLY accessible when user role is 'estimator' or 'admin'!
-  // Sales role MUST NEVER see or be able to reset system data.
-  const isEstimatorOrAdmin = role === 'estimator' || role === 'admin';
+  // Reset capability: ONLY accessible when user role is 'admin'!
+  const isAdmin = role === 'admin';
 
   const handleConfirmReset = async () => {
     setIsResetting(true);
@@ -57,8 +56,8 @@ export const PageHeader = ({ title }: PageHeaderProps) => {
             <span className="absolute top-1 right-1 w-1.5 h-1.5 bg-[#9F2F2D] rounded-full" />
           </button>
 
-          {/* Reset System Data Button (Estimator / Admin Only) */}
-          {isEstimatorOrAdmin && (
+          {/* Reset System Data Button (Admin Only) */}
+          {isAdmin && (
             <button
               onClick={() => setShowResetModal(true)}
               className="px-2 py-1 rounded-[6px] bg-[#FDEBEC] text-[#9F2F2D] border border-[#FADBDC] hover:bg-[#F8C9CA] transition-colors cursor-pointer text-xs font-bold inline-flex items-center space-x-1.5 shadow-2xs"

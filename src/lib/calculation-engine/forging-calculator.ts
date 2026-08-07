@@ -11,16 +11,19 @@ export function calculateForgingPrice(input: ForgingInput): ForgingResult {
     k_loss,
     DG_steel,
     DG_scrap,
+    DG_scrap_cnc,
     k_mgmt_mat = 0,
     use_m_tinh = false,
-    t_cut_sec = 0,
-    DG_sawing_machine_hour = 0,
-    w_elec_kwh_per_kg = 0,
-    DG_elec_kwh = 0,
+    sawing_machine_type = 'band_saw',
+    t_cut_sec = 15,
+    DG_sawing_machine_hour = 120000,
+    forging_line = '1000T',
     expected_productivity = 1000,
-    DG_forging_machine_hour = 0,
-    DG_heat_treat_kg = 0,
-    DG_clean_kg = 0,
+    DG_forging_machine_hour = 1200000,
+    w_elec_kwh_per_kg = 0.8,
+    DG_elec_kwh = 2200,
+    DG_heat_treat_kg = 4500,
+    DG_clean_kg = 1000,
     C_ops_override,
     machining_operations = [],
     C_machining_override,
@@ -42,13 +45,24 @@ export function calculateForgingPrice(input: ForgingInput): ForgingResult {
   } = input;
 
   // Section 1 — Vật liệu
-  // m_bavia = (m_chi - m_phoi) * (1 - k_loss / 100) (hoặc theo m_tinh nếu dùng)
-  const base_weight = use_m_tinh ? (m_tinh || 0) : m_phoi;
-  const m_bavia = (m_chi - base_weight) * (1 - k_loss / 100);
+  const DG_scrap_cnc_eff = DG_scrap_cnc ?? DG_scrap;
 
-  // C_mat_forging = (m_chi × DG_steel_eff) - (m_bavia × DG_scrap)
+  let m_bavia_forging = 0;
+  let m_bavia_cnc = 0;
+
+  if (use_m_tinh && m_tinh !== undefined) {
+    m_bavia_forging = (m_chi - m_phoi) * (1 - k_loss / 100);
+    m_bavia_cnc = Math.max(0, m_phoi - m_tinh);
+  } else {
+    m_bavia_forging = (m_chi - m_phoi) * (1 - k_loss / 100);
+    m_bavia_cnc = 0;
+  }
+
+  const m_bavia = m_bavia_forging + m_bavia_cnc;
+
+  // C_mat_forging = (m_chi × DG_steel_eff) - (m_bavia_forging × DG_scrap) - (m_bavia_cnc × DG_scrap_cnc_eff)
   const effective_DG_steel = DG_steel * (1 + k_mgmt_mat / 100);
-  const C_mat_forging = (m_chi * effective_DG_steel) - (m_bavia * DG_scrap);
+  const C_mat_forging = (m_chi * effective_DG_steel) - (m_bavia_forging * DG_scrap) - (m_bavia_cnc * DG_scrap_cnc_eff);
 
   // Section 2 — Công nghệ & Nhiệt luyện
   let C_ops_forging = 0;
@@ -126,6 +140,8 @@ export function calculateForgingPrice(input: ForgingInput): ForgingResult {
   return {
     m_phoi: m_chi, // Legacy mapping in result (Trọng lượng chi)
     m_bavia,
+    m_bavia_forging,
+    m_bavia_cnc,
     C_mat_forging,
     C_ops_forging,
     C_machining,

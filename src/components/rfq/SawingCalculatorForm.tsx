@@ -74,7 +74,7 @@ export default function SawingCalculatorForm() {
               />
             </div>
             <div className="space-y-1.5">
-              <label className="text-[11px] font-bold text-[#787774] uppercase tracking-wider">Đơn Giá Phế Liệu (VNĐ/kg)</label>
+              <label className="text-[11px] font-bold text-[#787774] uppercase tracking-wider">Đơn Giá Thu Hồi Phoi Cắt (VNĐ/kg)</label>
               <input
                 type="number"
                 value={sawing.DG_scrap}
@@ -82,6 +82,21 @@ export default function SawingCalculatorForm() {
                 className="w-full px-3 py-2 bg-white border border-[#EAEAEA] rounded-[8px] focus:ring-2 focus:ring-amber-500 focus:border-amber-500 text-[13px] transition-all font-mono"
               />
             </div>
+            {sawing.use_m_tinh && (sawing.m_tinh || 0) > 0 && (
+              <div className="space-y-1.5 bg-amber-50/50 p-2 rounded-[8px] border border-amber-200">
+                <label className="text-[11px] font-bold text-amber-900 uppercase tracking-wider">Đơn Giá Thu Hồi Phoi CNC (VNĐ/kg)</label>
+                {res.m_bavia_cnc && res.m_bavia_cnc > 0 && !sawing.DG_scrap_cnc && (
+                  <span className="block text-[10px] text-amber-700 font-medium">⚠️ Vui lòng nhập đơn giá phoi CNC thu hồi</span>
+                )}
+                <input
+                  type="number"
+                  placeholder="Nhập đơn giá phoi CNC"
+                  value={sawing.DG_scrap_cnc ?? ''}
+                  onChange={(e) => setSawingField('DG_scrap_cnc', e.target.value ? parseFloat(e.target.value) : undefined)}
+                  className={`w-full px-3 py-2 border rounded-[8px] text-[13px] font-mono font-bold ${res.m_bavia_cnc && res.m_bavia_cnc > 0 && !sawing.DG_scrap_cnc ? 'border-amber-500 bg-amber-100 text-amber-900' : 'bg-white border-[#EAEAEA]'}`}
+                />
+              </div>
+            )}
             <div className="space-y-1.5">
               <label className="text-[11px] font-bold text-[#787774] uppercase tracking-wider">Thời Gian Cắt Phôi (giây)</label>
               <input

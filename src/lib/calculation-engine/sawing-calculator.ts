@@ -11,6 +11,7 @@ export function calculateSawingPrice(input: SawingInput): SawingResult {
     k_loss,
     DG_steel,
     DG_scrap,
+    DG_scrap_cnc,
     k_mgmt_mat = 0,
     use_m_tinh = false,
     t_cut_sec = 0,
@@ -26,12 +27,24 @@ export function calculateSawingPrice(input: SawingInput): SawingResult {
   } = input;
 
   // Section 1 — Vật liệu
-  const base_weight = use_m_tinh ? (m_tinh || 0) : m_phoi;
-  const m_bavia = (m_chi - base_weight) * (1 - k_loss / 100);
+  const DG_scrap_cnc_eff = DG_scrap_cnc ?? DG_scrap;
 
-  // C_mat_sawing = (m_chi × DG_steel_eff) - (m_bavia × DG_scrap)
+  let m_bavia_forging = 0;
+  let m_bavia_cnc = 0;
+
+  if (use_m_tinh && m_tinh !== undefined) {
+    m_bavia_forging = (m_chi - m_phoi) * (1 - k_loss / 100);
+    m_bavia_cnc = Math.max(0, m_phoi - m_tinh);
+  } else {
+    m_bavia_forging = (m_chi - m_phoi) * (1 - k_loss / 100);
+    m_bavia_cnc = 0;
+  }
+
+  const m_bavia = m_bavia_forging + m_bavia_cnc;
+
+  // C_mat_sawing = (m_chi × DG_steel_eff) - (m_bavia_forging × DG_scrap) - (m_bavia_cnc × DG_scrap_cnc_eff)
   const effective_DG_steel = DG_steel * (1 + k_mgmt_mat / 100);
-  const C_mat_sawing = (m_chi * effective_DG_steel) - (m_bavia * DG_scrap);
+  const C_mat_sawing = (m_chi * effective_DG_steel) - (m_bavia_forging * DG_scrap) - (m_bavia_cnc * DG_scrap_cnc_eff);
 
   // Section 2 — Công nghệ (Chỉ có cưa cắt)
   let C_ops_sawing = 0;
@@ -74,6 +87,8 @@ export function calculateSawingPrice(input: SawingInput): SawingResult {
 
   return {
     m_bavia,
+    m_bavia_forging,
+    m_bavia_cnc,
     C_mat_sawing,
     C_ops_sawing,
     C_machining,

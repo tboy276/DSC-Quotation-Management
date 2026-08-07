@@ -57,6 +57,7 @@ export interface QuotationStoreState {
 
   // Actions
   setRfqField: (field: keyof RfqHeaderState, value: any) => void;
+  resetSegmentInput: (segment: SegmentType) => void;
   // Removed setActiveRfqItemId
   resetRfq: () => void;
   setSegment: (segment: SegmentType) => void;
@@ -282,8 +283,125 @@ export const useQuotationStore = create<QuotationStoreState>((set, get) => ({
         trade_terms: 'FOB',
         target_price: 0,
       },
-      // Removed activeRfqItemId
     }),
+
+  resetSegmentInput: (seg) => {
+    if (seg === 'forging') {
+      set({
+        forgingInput: {
+          m_phoi: 1.2,
+          m_chi: 1.531,
+          k_loss: 5.0,
+          k_mgmt_mat: 0,
+          use_m_tinh: false,
+          selected_material_id: defaultForgingMaterial.id,
+          DG_steel: defaultForgingMaterial.latest_price || 22000,
+          DG_scrap: defaultForgingMaterial.scrap_price || 8000,
+          sawing_machine_type: 'band_saw',
+          t_cut_sec: 15,
+          DG_sawing_machine_hour: defaultSawingRate,
+          forging_line: '1000T',
+          expected_productivity: 1000,
+          DG_forging_machine_hour: defaultPressRate.rate_per_hour,
+          w_elec_kwh_per_kg: 0.8,
+          DG_elec_kwh: defaultElecRate,
+          DG_heat_treat_kg: 4500,
+          DG_clean_kg: 1000,
+          machining_operations: [
+            { name: 'Tiện thô CNC mặt đầu & đường kính', t_prep_min: 2.0, t_man_min: 2.5, DG_machine_hour: 234000 },
+            { name: 'Phay rãnh then CNC', t_prep_min: 1.5, t_man_min: 1.8, DG_machine_hour: 234000 },
+          ],
+          machining_notes: '',
+          C_die_total: 85000000,
+          L_die_life: 20000,
+          N_order: 20000,
+          die_cost_treatment: 'separate',
+          k_mgmt: 8,
+          DG_trans_kg: defaultTransRate,
+          DG_pack_kg: 0,
+          k_profit_forging: 15,
+        },
+      });
+    } else if (seg === 'casting') {
+      set({
+        castingInput: {
+          selected_casting_grade_id: defaultCastingGrade.id,
+          DG_liquid: 13500,
+          DG_cast_scrap: 10000,
+          m_cast: 4.5,
+          Y_yield: 60,
+          k_burn_loss: 2.15,
+          C_furnace_ladle_per_1000kg: 120000,
+          C_molding_recipe_total_1000kg: 1302200,
+          m_resin_core: 0,
+          DG_resin_core_per_kg: 12500,
+          m_core: 1.2,
+          DG_core_sand_kg: 3500,
+          DG_finishing_per_kg: 771.82,
+          DG_utility_per_kg: 3687.6,
+          DG_labor_per_kg: 2461,
+          DG_workshop_mgmt_per_kg: 0,
+          DG_equipment_depr_per_kg: 4000,
+          n_cavity_per_mold: 2,
+          DG_finish_kg: 1800,
+          machining_operations: [
+            { name: 'Tiện mặt đúc CNC', t_prep_min: 2.0, t_man_min: 3.0, DG_machine_hour: 234000 },
+            { name: 'Khoan lỗ gá CNC', t_prep_min: 1.0, t_man_min: 1.5, DG_machine_hour: 182000 },
+          ],
+          machining_notes: '',
+          C_coating: 1200,
+          C_QA: 1500,
+          C_pattern_total: 45000000,
+          L_pattern_life: 20000,
+          N_order: 20000,
+          pattern_cost_treatment: 'separate',
+          k_mgmt_cast: 10,
+          DG_trans_kg: defaultTransRate,
+          DG_pack_kg: 0,
+          k_profit_casting: 12,
+        },
+      });
+    } else if (seg === 'sawing') {
+      set({
+        sawingInput: {
+          m_phoi: 1.2,
+          m_chi: 1.531,
+          k_loss: 2.0,
+          k_mgmt_mat: 0,
+          use_m_tinh: false,
+          selected_material_id: defaultForgingMaterial.id,
+          DG_steel: defaultForgingMaterial.latest_price || 22000,
+          DG_scrap: defaultForgingMaterial.scrap_price || 8000,
+          sawing_machine_type: 'band_saw',
+          t_cut_sec: 15,
+          DG_sawing_machine_hour: defaultSawingRate,
+          machining_operations: [
+            { name: 'Phay rãnh then CNC', t_prep_min: 1.5, t_man_min: 1.8, DG_machine_hour: 234000 },
+          ],
+          machining_notes: '',
+          N_order: 20000,
+          k_mgmt: 8,
+          DG_trans_kg: defaultTransRate,
+          DG_pack_kg: 0,
+          k_profit_sawing: 15,
+        },
+      });
+    } else if (seg === 'machining') {
+      set({
+        machiningInput: {
+          machining_operations: [
+            { name: 'Tiện CNC', t_prep_min: 2.0, t_man_min: 3.5, DG_machine_hour: 234000 },
+          ],
+          machining_notes: '',
+          N_order: 20000,
+          k_mgmt: 8,
+          DG_trans_kg: defaultTransRate,
+          DG_pack_kg: 0,
+          k_profit_machining: 15,
+        },
+      });
+    }
+  },
 
   setSegment: (segment) => set({ segment }),
 
@@ -296,41 +414,70 @@ export const useQuotationStore = create<QuotationStoreState>((set, get) => ({
   setExchangeRate: (rate) => set({ exchange_rate: Math.max(0.0001, rate) }),
 
   cloneInputsFromQuote: (quote) => {
-    const clonedInputs = JSON.parse(JSON.stringify(quote.inputs_json));
+    const clonedInputs = quote.inputs_json ? JSON.parse(JSON.stringify(quote.inputs_json)) : {};
+    const seg = quote.segment;
 
-    if (quote.segment === 'forging') {
-      set((state) => {
-        let mappedInputs = { ...clonedInputs };
-        // Backward compatibility: map old m_tinh -> m_phoi, old m_bavia -> calculate m_chi
-        if (mappedInputs.m_chi === undefined && mappedInputs.m_tinh !== undefined && mappedInputs.m_bavia !== undefined) {
-          const old_m_tinh = mappedInputs.m_tinh;
-          const old_m_bavia = mappedInputs.m_bavia;
-          mappedInputs.m_phoi = old_m_tinh;
-          mappedInputs.m_tinh = undefined;
-          mappedInputs.m_chi = Number(((old_m_tinh + old_m_bavia) / (1 - (mappedInputs.k_loss || 5.0) / 100)).toFixed(4));
-          delete mappedInputs.m_bavia;
-        }
+    switch (seg) {
+      case 'forging':
+        set((state) => {
+          let mappedInputs = { ...clonedInputs };
+          // Backward compatibility: map old m_tinh -> m_phoi, old m_bavia -> calculate m_chi
+          if (mappedInputs.m_chi === undefined && mappedInputs.m_tinh !== undefined && mappedInputs.m_bavia !== undefined) {
+            const old_m_tinh = mappedInputs.m_tinh;
+            const old_m_bavia = mappedInputs.m_bavia;
+            mappedInputs.m_phoi = old_m_tinh;
+            mappedInputs.m_tinh = undefined;
+            mappedInputs.m_chi = Number(((old_m_tinh + old_m_bavia) / (1 - (mappedInputs.k_loss || 5.0) / 100)).toFixed(4));
+            delete mappedInputs.m_bavia;
+          }
 
-        return {
-          segment: 'forging',
+          return {
+            segment: 'forging',
+            currency: quote.currency || 'VND',
+            exchange_rate: quote.exchange_rate || 1,
+            forgingInput: {
+              ...state.forgingInput,
+              ...mappedInputs,
+            },
+          };
+        });
+        break;
+
+      case 'casting':
+        set((state) => ({
+          segment: 'casting',
           currency: quote.currency || 'VND',
           exchange_rate: quote.exchange_rate || 1,
-          forgingInput: {
-            ...state.forgingInput,
-            ...mappedInputs,
+          castingInput: {
+            ...state.castingInput,
+            ...clonedInputs,
           },
-        };
-      });
-    } else {
-      set((state) => ({
-        segment: 'casting',
-        currency: quote.currency || 'VND',
-        exchange_rate: quote.exchange_rate || 1,
-        castingInput: {
-          ...state.castingInput,
-          ...clonedInputs,
-        },
-      }));
+        }));
+        break;
+
+      case 'sawing':
+        set((state) => ({
+          segment: 'sawing',
+          currency: quote.currency || 'VND',
+          exchange_rate: quote.exchange_rate || 1,
+          sawingInput: {
+            ...state.sawingInput,
+            ...clonedInputs,
+          },
+        }));
+        break;
+
+      case 'machining':
+        set((state) => ({
+          segment: 'machining',
+          currency: quote.currency || 'VND',
+          exchange_rate: quote.exchange_rate || 1,
+          machiningInput: {
+            ...state.machiningInput,
+            ...clonedInputs,
+          },
+        }));
+        break;
     }
   },
 

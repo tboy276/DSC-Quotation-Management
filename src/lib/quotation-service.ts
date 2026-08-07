@@ -276,13 +276,32 @@ export const saveQuoteDraft = async (
   segment: SegmentType,
   currency: CurrencyType,
   exchangeRate: number,
-  inputs: ForgingInput | CastingInput,
-  results: ForgingResult | CastingResult,
+  inputs: ForgingInput | CastingInput | any,
+  results: ForgingResult | CastingResult | any,
   existingQuoteId?: string,
   userEmail: string = 'estimator@disoco.vn'
 ): Promise<QuoteRecord> => {
-  const finalPrice = segment === 'forging' ? (results as ForgingResult).P_FORGING : (results as CastingResult).P_CASTING;
-  const dieTreatment = segment === 'forging' ? (inputs as ForgingInput).die_cost_treatment : (inputs as CastingInput).pattern_cost_treatment;
+  let finalPrice = 0;
+  let dieTreatment: string | null = null;
+
+  switch (segment) {
+    case 'forging':
+      finalPrice = (results as ForgingResult).P_FORGING ?? 0;
+      dieTreatment = (inputs as ForgingInput).die_cost_treatment ?? 'separate';
+      break;
+    case 'casting':
+      finalPrice = (results as CastingResult).P_CASTING ?? 0;
+      dieTreatment = (inputs as CastingInput).pattern_cost_treatment ?? 'separate';
+      break;
+    case 'sawing':
+      finalPrice = (results as any).P_SAWING ?? 0;
+      dieTreatment = null;
+      break;
+    case 'machining':
+      finalPrice = (results as any).P_MACHINING ?? 0;
+      dieTreatment = null;
+      break;
+  }
 
   let itemId = rfqItem.id;
   if (!itemId) {
@@ -315,8 +334,6 @@ export const saveQuoteDraft = async (
   if (itemErr) {
     throw new Error(`Lỗi cập nhật trạng thái RFQ Item trên Supabase: ${itemErr.message}`);
   }
-
-
 
   // Insert/Upsert into Supabase 'quotes' table
   const quotePayload = {

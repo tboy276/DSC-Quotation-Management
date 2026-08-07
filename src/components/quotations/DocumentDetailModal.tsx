@@ -85,7 +85,7 @@ export const DocumentDetailModal = ({
 
   // Tính tổng giá trị văn bản báo giá
   const totalAmountVnd = items.reduce(
-    (sum, item) => sum + (item.quote?.final_quoted_price || 0),
+    (sum, item) => sum + (item.quote?.final_quoted_price ?? 0),
     0
   );
 

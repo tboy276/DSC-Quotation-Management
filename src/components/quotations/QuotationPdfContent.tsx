@@ -198,23 +198,38 @@ export const QuotationPdfContent: React.FC<QuotationPdfContentProps> = ({
 
               const weightKg = isForging ? res.m_phoi || inp.m_tinh : inp.m_cast;
 
-              const formingCostVnd = isForging
-                ? (res.C_mat_forging || 0) + (res.C_ops_forging || 0)
-                : (res.C_metal_casting || 0) + (res.C_ops_casting || 0);
+              const seg = q.segment;
+              let formingCostVnd = 0;
+              let machiningCostVnd = 0;
+              let fallbackPrice = 0;
 
-              const machiningCostVnd = isForging
-                ? res.C_machining || 0
-                : res.C_machining_casting || 0;
+              if (seg === 'forging') {
+                formingCostVnd = (res.C_mat_forging ?? 0) + (res.C_ops_forging ?? 0);
+                machiningCostVnd = res.C_machining ?? 0;
+                fallbackPrice = res.P_FORGING ?? 0;
+              } else if (seg === 'casting') {
+                formingCostVnd = (res.C_metal_casting ?? 0) + (res.C_ops_casting ?? 0);
+                machiningCostVnd = res.C_machining_casting ?? 0;
+                fallbackPrice = res.P_CASTING ?? 0;
+              } else if (seg === 'sawing') {
+                formingCostVnd = (res.C_mat_sawing ?? 0) + (res.C_ops_sawing ?? 0);
+                machiningCostVnd = res.C_machining ?? 0;
+                fallbackPrice = res.P_SAWING ?? 0;
+              } else if (seg === 'machining') {
+                formingCostVnd = 0;
+                machiningCostVnd = res.C_machining ?? 0;
+                fallbackPrice = res.P_MACHINING ?? 0;
+              }
 
-              const packageCostVnd = inp.C_pack || 0;
-              const deliveryCostVnd = (weightKg || 0) * (inp.DG_trans_kg || 0);
+              const packageCostVnd = inp.C_pack ?? 0;
+              const deliveryCostVnd = (weightKg ?? 0) * (inp.DG_trans_kg ?? 0);
 
-              const unitPriceVnd = q.final_quoted_price || (isForging ? res.P_FORGING : res.P_CASTING);
+              const unitPriceVnd = q.final_quoted_price ?? fallbackPrice;
               const sgaAndPVnd = unitPriceVnd - (formingCostVnd + machiningCostVnd + packageCostVnd + deliveryCostVnd);
 
-              const isSeparateTooling = q.die_cost_treatment === 'separate';
-              const toolingPriceVnd = isForging ? inp.C_die_total : inp.C_pattern_total;
-              const toolingLife = isForging ? inp.L_die_life : inp.L_pattern_life;
+              const isSeparateTooling = (seg === 'forging' || seg === 'casting') && q.die_cost_treatment === 'separate';
+              const toolingPriceVnd = seg === 'forging' ? inp.C_die_total : seg === 'casting' ? inp.C_pattern_total : 0;
+              const toolingLife = seg === 'forging' ? inp.L_die_life : seg === 'casting' ? inp.L_pattern_life : 0;
 
               return (
                 <tr key={item.id} className="border-b border-black text-center">

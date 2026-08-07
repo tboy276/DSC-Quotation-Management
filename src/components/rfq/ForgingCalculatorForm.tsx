@@ -183,6 +183,38 @@ export const ForgingCalculatorForm = () => {
                 className="w-1/2 min-w-[200px] px-2 py-1.5 border border-[#EAEAEA] rounded-[4px] font-mono font-bold text-[#111111] text-right"
               />
             </div>
+
+            {/* 10. Đơn giá thu hồi ba-via rèn */}
+            <div className="flex items-center justify-between py-2 border-b border-[#EAEAEA]">
+              <label className="font-bold text-[#787774]">10. Đơn giá thu hồi ba-via rèn (VNĐ/kg):</label>
+              <input
+                type="number"
+                min="0"
+                value={forging.DG_scrap ?? ''}
+                onChange={(e) => setForgingField('DG_scrap', Math.max(0, Number(e.target.value)))}
+                className="w-1/2 min-w-[200px] px-2 py-1.5 border border-[#EAEAEA] rounded-[4px] font-mono font-bold text-[#111111] text-right"
+              />
+            </div>
+
+            {/* 11. Đơn giá thu hồi phoi CNC (chỉ hiển thị khi tính theo TL tinh) */}
+            {forging.use_m_tinh && (forging.m_tinh || 0) > 0 && (
+              <div className="flex items-center justify-between py-2 border-b border-[#EAEAEA] bg-amber-50/50 p-2 rounded">
+                <div className="flex flex-col">
+                  <label className="font-bold text-amber-900">11. Đơn giá thu hồi phoi CNC (VNĐ/kg):</label>
+                  {res.m_bavia_cnc && res.m_bavia_cnc > 0 && !forging.DG_scrap_cnc && (
+                    <span className="text-[10px] text-amber-700 font-medium">⚠️ Vui lòng nhập đơn giá phoi CNC thu hồi</span>
+                  )}
+                </div>
+                <input
+                  type="number"
+                  min="0"
+                  placeholder="Nhập đơn giá phoi CNC"
+                  value={forging.DG_scrap_cnc ?? ''}
+                  onChange={(e) => setForgingField('DG_scrap_cnc', e.target.value ? Math.max(0, Number(e.target.value)) : undefined)}
+                  className={`w-1/2 min-w-[200px] px-2 py-1.5 border rounded-[4px] font-mono font-bold text-right ${res.m_bavia_cnc && res.m_bavia_cnc > 0 && !forging.DG_scrap_cnc ? 'border-amber-500 bg-amber-100 text-amber-900' : 'border-[#EAEAEA] bg-white text-[#111111]'}`}
+                />
+              </div>
+            )}
           </div>
         }
         mainRightContent={

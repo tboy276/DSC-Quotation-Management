@@ -52,12 +52,12 @@ export function calculateLiquidMetalPrice(
       material_name: materialObj?.name || item.material_name || 'Vật tư',
       unit_price: latestPrice,
       item_cost: itemCost,
-      percentage: (item.weight_kg / 1000) * 100,
+      percentage: totalWeight > 0 ? (item.weight_kg / totalWeight) * 100 : 0,
     };
   });
 
-  // Đơn giá 1kg nước gang lỏng = Tổng chi phí mẻ / 1000
-  const DG_liquid = totalBatchCost / 1000;
+  // Đơn giá 1kg nước gang lỏng = Tổng chi phí mẻ / Tổng khối lượng thực tế mẻ
+  const DG_liquid = totalWeight > 0 ? totalBatchCost / totalWeight : 0;
 
   return {
     casting_grade_id,
