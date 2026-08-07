@@ -15,6 +15,7 @@ interface CloneQuoteModalProps {
 export const CloneQuoteModal = ({ segment, onClose, onSelectQuote }: CloneQuoteModalProps) => {
   const [quotes, setQuotes] = useState<QuoteRecord[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState<string>('');
 
   useEffect(() => {
@@ -23,9 +24,15 @@ export const CloneQuoteModal = ({ segment, onClose, onSelectQuote }: CloneQuoteM
 
   const loadSegmentQuotes = async () => {
     setLoading(true);
-    const data = await fetchQuotes({ segment });
-    setQuotes(data);
-    setLoading(false);
+    setErrorMsg(null);
+    try {
+      const data = await fetchQuotes({ segment });
+      setQuotes(data);
+    } catch (err: any) {
+      setErrorMsg(err.message || 'Lỗi tải dữ liệu báo giá.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const filteredQuotes = searchQuery.trim()
@@ -57,8 +64,13 @@ export const CloneQuoteModal = ({ segment, onClose, onSelectQuote }: CloneQuoteM
         </button>
       }
     >
-      <div className="space-y-4 text-xs text-[#111111]">
-        {/* Search Bar */}
+      <div className="space-y-4">
+        {errorMsg && (
+          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-[8px] text-sm font-medium flex items-center">
+            <span>{errorMsg}</span>
+          </div>
+        )}
+
         <div className="relative">
           <Search className="w-3.5 h-3.5 absolute left-3 top-2.5 text-[#787774]" />
           <input

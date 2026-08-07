@@ -29,7 +29,7 @@ export interface RfqHeaderState {
 export interface QuotationStoreState {
   // 1. RFQ Header Info & Currency Settings
   rfq: RfqHeaderState;
-  activeRfqItemId: string | null;
+  // Removed activeRfqItemId
   segment: SegmentType;
   currency: CurrencyType;
   exchange_rate: number;
@@ -46,7 +46,7 @@ export interface QuotationStoreState {
 
   // Actions
   setRfqField: (field: keyof RfqHeaderState, value: any) => void;
-  setActiveRfqItemId: (id: string | null) => void;
+  // Removed setActiveRfqItemId
   resetRfq: () => void;
   setSegment: (segment: SegmentType) => void;
   setCurrency: (currency: CurrencyType) => void;
@@ -106,7 +106,7 @@ export const useQuotationStore = create<QuotationStoreState>((set, get) => ({
     trade_terms: 'FOB',
     target_price: 95000,
   },
-  activeRfqItemId: null,
+  // Removed activeRfqItemId
   segment: 'forging',
   currency: 'VND',
   exchange_rate: 1,
@@ -204,7 +204,7 @@ export const useQuotationStore = create<QuotationStoreState>((set, get) => ({
       rfq: { ...state.rfq, [field]: value },
     })),
 
-  setActiveRfqItemId: (id) => set({ activeRfqItemId: id }),
+  // Removed setActiveRfqItemId
 
   resetRfq: () =>
     set({
@@ -215,7 +215,7 @@ export const useQuotationStore = create<QuotationStoreState>((set, get) => ({
         trade_terms: 'FOB',
         target_price: 0,
       },
-      activeRfqItemId: null,
+      // Removed activeRfqItemId
     }),
 
   setSegment: (segment) => set({ segment }),
@@ -330,8 +330,8 @@ export const useQuotationStore = create<QuotationStoreState>((set, get) => ({
         forgingInput: {
           ...state.forgingInput,
           selected_material_id: materialId,
-          DG_steel: mat.latest_price || state.forgingInput.DG_steel,
-          DG_scrap: mat.scrap_price || state.forgingInput.DG_scrap,
+          DG_steel: mat.latest_price || 0,
+          DG_scrap: mat.scrap_price || 0,
         },
       }));
     }

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useQuotationStore } from '../store/useQuotationStore';
-import { saveQuoteDraft, updateQuoteStatus, fetchQuotes } from '../lib/quotation-service';
+import { saveQuoteDraft, updateQuoteStatus, fetchQuoteByItemId } from '../lib/quotation-service';
 import type { QuoteRecord, RfqItemRecord, RfqDossier } from '../types/quote';
 import { SegmentSelector } from '../components/rfq/SegmentSelector';
 import { ForgingCalculatorForm } from '../components/rfq/ForgingCalculatorForm';
@@ -11,14 +11,15 @@ import { CloneQuoteModal } from '../components/rfq/CloneQuoteModal';
 import { formatDate, formatDateVerbose } from '../lib/format-date';
 import { Save, Check, Copy, CheckCircle2, AlertCircle, ArrowLeft, Layers, Calendar, Clock, AlertTriangle } from 'lucide-react';
 
-interface PricingCalculatorPageProps {
-  onNavigateToQuotations?: () => void;
-}
+import { useParams, useNavigate } from 'react-router-dom';
 
-export const PricingCalculatorPage = ({ onNavigateToQuotations }: PricingCalculatorPageProps) => {
-  const activeRfqItemId = useQuotationStore((state) => state.activeRfqItemId);
+export const PricingCalculatorPage = () => {
+  const navigate = useNavigate();
+  const { rfqItemId } = useParams();
+  const activeRfqItemId = rfqItemId || null;
   const setRfqField = useQuotationStore((state) => state.setRfqField);
   const segment = useQuotationStore((state) => state.segment);
+  const setSegment = useQuotationStore((state) => state.setSegment);
   const rfq = useQuotationStore((state) => state.rfq);
   const currency = useQuotationStore((state) => state.currency);
   const exchangeRate = useQuotationStore((state) => state.exchange_rate);
@@ -49,18 +50,34 @@ export const PricingCalculatorPage = ({ onNavigateToQuotations }: PricingCalcula
   }, [activeRfqItemId]);
 
   const loadActiveItemDetails = async (itemId: string) => {
-    const list = await fetchQuotes();
-    const target = list.find((q) => q.rfq_item_id === itemId);
-    if (target) {
-      setActiveItemRecord(target.rfqItem || null);
-      setActiveDossierRecord(target.rfq || null);
-      setCurrentQuoteId(target.id);
+    try {
+      const target = await fetchQuoteByItemId(itemId);
+      if (target) {
+        setActiveItemRecord(target.rfqItem || null);
+        setActiveDossierRecord(target.rfq || null);
+        setCurrentQuoteId(target.id);
 
-      // Populate real data into store for calculations
-      if (target.rfq?.customer_name) setRfqField('customer_name', target.rfq.customer_name);
-      if (target.rfqItem?.product_name) setRfqField('product_name', target.rfqItem.product_name);
-      if (target.rfqItem?.annual_volume) setRfqField('annual_volume', target.rfqItem.annual_volume);
-      if (target.rfqItem?.target_price) setRfqField('target_price', target.rfqItem.target_price);
+        // Auto-map segment based on technology_requirement
+        const tech = target.rfqItem?.technology_requirement || '';
+        let mappedSegment: 'forging' | 'casting' = 'forging';
+        if (tech.includes('Đúc') || tech.includes('Casting')) {
+          mappedSegment = 'casting';
+        } else if (tech.includes('Rèn') || tech.includes('Forging')) {
+          mappedSegment = 'forging';
+        } else if (tech.includes('Phôi cưa')) {
+          // TODO: Tạm thời map Phôi cưa vào Forging. Sẽ tách riêng module Sawing sau.
+          mappedSegment = 'forging';
+        }
+        setSegment(mappedSegment);
+
+        // Populate real data into store for calculations
+        if (target.rfq?.customer_name) setRfqField('customer_name', target.rfq.customer_name);
+        if (target.rfqItem?.product_name) setRfqField('product_name', target.rfqItem.product_name);
+        if (target.rfqItem?.annual_volume) setRfqField('annual_volume', target.rfqItem.annual_volume);
+        if (target.rfqItem?.target_price) setRfqField('target_price', target.rfqItem.target_price);
+      }
+    } catch (err: any) {
+      setMsg({ type: 'error', text: `Lỗi tải dữ liệu báo giá: ${err.message || err}` });
     }
   };
 
@@ -119,9 +136,7 @@ export const PricingCalculatorPage = ({ onNavigateToQuotations }: PricingCalcula
       });
 
       setTimeout(() => {
-        if (onNavigateToQuotations) {
-          onNavigateToQuotations();
-        }
+        navigate('/quotations');
       }, 1200);
     } catch (err: any) {
       setMsg({ type: 'error', text: `❌ LỖI HOÀN THÀNH TÍNH GIÁ THẤT BẠI TRÊN SUPABASE: ${err?.message || err}` });
@@ -153,16 +168,13 @@ export const PricingCalculatorPage = ({ onNavigateToQuotations }: PricingCalcula
             Vui lòng chọn 1 dòng sản phẩm từ danh sách Quản Lý RFQ để bắt đầu tính giá.
           </p>
         </div>
-        {onNavigateToQuotations && (
-          <button
-            type="button"
-            onClick={onNavigateToQuotations}
-            className="px-4 py-2 bg-[#111111] hover:bg-[#333333] text-white text-xs font-bold rounded-[6px] transition-all cursor-pointer inline-flex items-center space-x-1.5 shadow-xs"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            <span>Quay Lại Màn Hình Quản Lý RFQ</span>
-          </button>
-        )}
+        <button
+          onClick={() => navigate('/quotations')}
+          className="flex items-center space-x-2 text-[#787774] hover:text-[#111111] transition-colors bg-white px-3 py-1.5 rounded-[8px] shadow-[0_2px_8px_rgba(0,0,0,0.03)] border border-[#EAEAEA] select-none cursor-pointer"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          <span>Quay Lại Màn Hình Quản Lý RFQ</span>
+        </button>
       </div>
     );
   }
@@ -192,16 +204,14 @@ export const PricingCalculatorPage = ({ onNavigateToQuotations }: PricingCalcula
           </p>
         </div>
 
-        {onNavigateToQuotations && (
-          <button
-            type="button"
-            onClick={onNavigateToQuotations}
-            className="px-3 py-1.5 bg-white/10 hover:bg-white/20 text-white rounded-[6px] text-xs font-bold transition-all cursor-pointer inline-flex items-center space-x-1 border border-white/20"
-          >
-            <ArrowLeft className="w-3.5 h-3.5" />
-            <span>Quay Lại Quản Lý RFQ</span>
-          </button>
-        )}
+        <button
+          type="button"
+          onClick={() => navigate('/quotations')}
+          className="px-3 py-1.5 bg-white/10 hover:bg-white/20 text-white rounded-[6px] text-xs font-bold transition-all cursor-pointer inline-flex items-center space-x-1 border border-white/20"
+        >
+          <ArrowLeft className="w-3.5 h-3.5" />
+          <span>Quay Lại Quản Lý RFQ</span>
+        </button>
       </div>
 
       {/* Action Toolbar Header */}
@@ -277,6 +287,16 @@ export const PricingCalculatorPage = ({ onNavigateToQuotations }: PricingCalcula
         <div className="lg:col-span-8 xl:col-span-3 space-y-5">
           {/* Step 1: Segment Choice (Rèn Dập vs Đúc Gang) */}
           <SegmentSelector />
+
+          {/* TODO: Tạm thời map Phôi cưa vào Forging. Sẽ tách riêng module Sawing sau. */}
+          {activeItemRecord?.technology_requirement?.includes('Phôi cưa') && (
+            <div className="bg-amber-50 border border-amber-200 text-amber-800 p-3 rounded-[8px] text-xs font-medium flex items-start space-x-2 animate-fade-in-up">
+              <AlertTriangle className="w-4 h-4 flex-shrink-0 mt-0.5" />
+              <span>
+                <span className="font-bold">Lưu ý:</span> Sản phẩm yêu cầu công nghệ <strong>Phôi cưa</strong>. Hiện tại hệ thống đang sử dụng tạm form nhập liệu của <strong>Phân hệ Rèn Dập</strong> để tính chi phí cắt phôi. Module chuyên dụng cho Phôi cưa sẽ được cập nhật sau.
+              </span>
+            </div>
+          )}
 
           {/* Step 2: Detailed Segment Calculator Form */}
           {segment === 'forging' ? (

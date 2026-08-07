@@ -28,6 +28,7 @@ import {
 export const RfqAnalyticsReport = () => {
   const [quotes, setQuotes] = useState<QuoteRecord[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   // Filter States
   const [periodPreset, setPeriodPreset] = useState<'MONTH' | 'QUARTER' | 'YEAR' | 'ALL'>('ALL');
@@ -41,25 +42,31 @@ export const RfqAnalyticsReport = () => {
 
   const loadData = async () => {
     setLoading(true);
-    let start: string | undefined = fromDate;
-    let end: string | undefined = toDate;
+    setErrorMsg(null);
+    try {
+      let start: string | undefined = fromDate;
+      let end: string | undefined = toDate;
 
-    const now = new Date();
-    if (periodPreset === 'MONTH') {
-      start = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().slice(0, 10);
-      end = new Date(now.getFullYear(), now.getMonth() + 1, 0).toISOString().slice(0, 10);
-    } else if (periodPreset === 'QUARTER') {
-      const qMonth = Math.floor(now.getMonth() / 3) * 3;
-      start = new Date(now.getFullYear(), qMonth, 1).toISOString().slice(0, 10);
-      end = new Date(now.getFullYear(), qMonth + 3, 0).toISOString().slice(0, 10);
-    } else if (periodPreset === 'YEAR') {
-      start = new Date(now.getFullYear(), 0, 1).toISOString().slice(0, 10);
-      end = new Date(now.getFullYear(), 11, 31).toISOString().slice(0, 10);
+      const now = new Date();
+      if (periodPreset === 'MONTH') {
+        start = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().slice(0, 10);
+        end = new Date(now.getFullYear(), now.getMonth() + 1, 0).toISOString().slice(0, 10);
+      } else if (periodPreset === 'QUARTER') {
+        const qMonth = Math.floor(now.getMonth() / 3) * 3;
+        start = new Date(now.getFullYear(), qMonth, 1).toISOString().slice(0, 10);
+        end = new Date(now.getFullYear(), qMonth + 3, 0).toISOString().slice(0, 10);
+      } else if (periodPreset === 'YEAR') {
+        start = new Date(now.getFullYear(), 0, 1).toISOString().slice(0, 10);
+        end = new Date(now.getFullYear(), 11, 31).toISOString().slice(0, 10);
+      }
+
+      const data = await fetchQuotes({ fromDate: start, toDate: end });
+      setQuotes(data);
+    } catch (err: any) {
+      setErrorMsg(err.message || 'Lỗi tải dữ liệu báo cáo.');
+    } finally {
+      setLoading(false);
     }
-
-    const data = await fetchQuotes({ fromDate: start, toDate: end });
-    setQuotes(data);
-    setLoading(false);
   };
 
   // Filter quotes by selected User
@@ -248,6 +255,12 @@ export const RfqAnalyticsReport = () => {
           </div>
         </div>
       </div>
+
+      {errorMsg && (
+        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-[8px] text-sm font-medium flex items-center">
+          <span>{errorMsg}</span>
+        </div>
+      )}
 
       {/* Filter Bar (Period & User) */}
       <div className="bg-white p-4 rounded-[10px] border border-[#EAEAEA] shadow-[0_2px_8px_rgba(0,0,0,0.03)] flex flex-wrap items-center justify-between gap-3 text-xs">

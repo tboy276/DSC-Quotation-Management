@@ -26,6 +26,7 @@ export const CreateDocumentModal = ({
   const [selectedCustomer, setSelectedCustomer] = useState<string>('');
   const [selectedQuoteIds, setSelectedQuoteIds] = useState<string[]>([]);
   const [tradeTermWarning, setTradeTermWarning] = useState<string | null>(null);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   // Form State
   const [contactPerson, setContactPerson] = useState<string>('Mr. Attn (Phòng Mua Hàng)');
@@ -48,42 +49,47 @@ export const CreateDocumentModal = ({
   }, []);
 
   const loadReadyQuotes = async () => {
-    const data = await fetchQuotes();
-    // Filter quotes in READY_FOR_QUOTE or IN_COSTING or QUOTED_SENT
-    const readyList = data.filter(
-      (q) =>
-        q.rfqItem?.status === 'READY_FOR_QUOTE' ||
-        q.rfqItem?.status === 'IN_COSTING' ||
-        q.status === 'READY_FOR_QUOTE' ||
-        initialSelectedQuotes.some((sq) => sq.id === q.id)
-    );
+    try {
+      setErrorMsg(null);
+      const data = await fetchQuotes();
+      // Filter quotes in READY_FOR_QUOTE or IN_COSTING or QUOTED_SENT
+      const readyList = data.filter(
+        (q) =>
+          q.rfqItem?.status === 'READY_FOR_QUOTE' ||
+          q.rfqItem?.status === 'IN_COSTING' ||
+          q.status === 'READY_FOR_QUOTE' ||
+          initialSelectedQuotes.some((sq) => sq.id === q.id)
+      );
 
-    setAllReadyQuotes(readyList);
+      setAllReadyQuotes(readyList);
 
-    // Extract unique customers
-    const customers = Array.from(
-      new Set(readyList.map((q) => q.rfq?.customer_name || 'Khách hàng DISOCO'))
-    );
-    setCustomerOptions(customers);
+      // Extract unique customers
+      const customers = Array.from(
+        new Set(readyList.map((q) => q.rfq?.customer_name || 'Khách hàng DISOCO'))
+      );
+      setCustomerOptions(customers);
 
-    // Default customer
-    const initialCustomer =
-      initialSelectedQuotes[0]?.rfq?.customer_name || customers[0] || '';
-    setSelectedCustomer(initialCustomer);
+      // Default customer
+      const initialCustomer =
+        initialSelectedQuotes[0]?.rfq?.customer_name || customers[0] || '';
+      setSelectedCustomer(initialCustomer);
 
-    // Default selected IDs matching selected customer & same Trade Term
-    const matchingQuotes = initialSelectedQuotes.filter(
-      (q) => (q.rfq?.customer_name || '') === initialCustomer
-    );
+      // Default selected IDs matching selected customer & same Trade Term
+      const matchingQuotes = initialSelectedQuotes.filter(
+        (q) => (q.rfq?.customer_name || '') === initialCustomer
+      );
 
-    if (matchingQuotes.length > 0) {
-      const firstTerm = matchingQuotes[0].rfq?.trade_terms;
-      const validQuotes = firstTerm
-        ? matchingQuotes.filter((q) => !q.rfq?.trade_terms || q.rfq.trade_terms === firstTerm)
-        : matchingQuotes;
+      if (matchingQuotes.length > 0) {
+        const firstTerm = matchingQuotes[0].rfq?.trade_terms;
+        const validQuotes = firstTerm
+          ? matchingQuotes.filter((q) => !q.rfq?.trade_terms || q.rfq.trade_terms === firstTerm)
+          : matchingQuotes;
 
-      setSelectedQuoteIds(validQuotes.map((q) => q.id));
-      if (firstTerm) setTradeTerms(firstTerm);
+        setSelectedQuoteIds(validQuotes.map((q) => q.id));
+        if (firstTerm) setTradeTerms(firstTerm);
+      }
+    } catch (err: any) {
+      setErrorMsg(err.message || 'Lỗi tải dữ liệu báo giá.');
     }
   };
 
@@ -255,6 +261,12 @@ export const CreateDocumentModal = ({
       >
         {step === 'form' ? (
           <form id="create-document-form" onSubmit={handleGoToPreview} className="space-y-4">
+            {errorMsg && (
+              <div className="p-3 bg-red-50 border border-red-200 rounded-[8px] flex items-center space-x-2 text-red-800 text-xs font-semibold animate-fade-in-up">
+                <AlertTriangle className="w-4 h-4 text-red-600 shrink-0" />
+                <span>{errorMsg}</span>
+              </div>
+            )}
             {/* Warning Banner for Trade Term Mismatch */}
             {tradeTermWarning && (
               <div className="p-3 bg-amber-50 border border-amber-200 rounded-[8px] flex items-center space-x-2 text-amber-800 text-xs font-semibold animate-fade-in-up">

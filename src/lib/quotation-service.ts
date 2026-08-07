@@ -22,7 +22,62 @@ export const INITIAL_QUOTES: QuoteRecord[] = [];
 // Local memory caches strictly used as read buffer for UI
 let localDossiersCache: RfqDossier[] = [];
 let localItemsCache: RfqItemRecord[] = [];
-let localQuotesCache: QuoteRecord[] = [];
+
+/**
+ * Helper to map a raw DB item to QuoteRecord
+ */
+const mapItemToQuoteRecord = (item: any, parentDossier: any): QuoteRecord => {
+  const dbQuote = Array.isArray(item.quote) ? item.quote[0] : item.quote;
+  const currentQuote = dbQuote; // Luôn ưu tiên dbQuote từ DB
+
+  return {
+    id: currentQuote?.id || `quote-${item.id}`,
+    rfq_item_id: item.id,
+    segment: currentQuote?.segment || 'forging',
+    status: item.status,
+    currency: currentQuote?.currency || 'VND',
+    exchange_rate: currentQuote?.exchange_rate || 1,
+    die_cost_treatment: currentQuote?.die_cost_treatment || 'separate',
+    final_quoted_price: currentQuote?.final_quoted_price || 0,
+    created_at: item.created_at,
+    sent_at: item.quoted_sent_at || currentQuote?.sent_at,
+    cancel_reason: item.cancel_reason,
+    created_by_email: parentDossier?.created_by_email,
+    rfqItem: item,
+    rfq: parentDossier,
+    inputs_json: currentQuote?.inputs_json || ({} as any),
+    results_json: currentQuote?.results_json || ({} as any),
+  };
+};
+
+/**
+ * Fetch a single RFQ Item by ID joined with Quote calculations & Dossier Headers
+ */
+export const fetchQuoteByItemId = async (itemId: string): Promise<QuoteRecord | null> => {
+  try {
+    const { data: dbItem, error } = await supabase
+      .from('rfq_items')
+      .select('*, rfq:rfqs(*), quote:quotes(*)')
+      .eq('id', itemId)
+      .single();
+
+    if (error) {
+      throw new Error(`Lỗi tải dữ liệu RFQ từ Supabase: ${error.message}`);
+    }
+
+    if (dbItem) {
+      const existingIdx = localItemsCache.findIndex(i => i.id === dbItem.id);
+      if (existingIdx >= 0) localItemsCache[existingIdx] = dbItem;
+      else localItemsCache.push(dbItem);
+      
+      return mapItemToQuoteRecord(dbItem, dbItem.rfq);
+    }
+    return null;
+  } catch (err) {
+    console.warn('Fetching single rfq_item from Supabase error:', err);
+    throw err;
+  }
+};
 
 /**
  * Fetch all RFQ Items joined with Quote calculations & Dossier Headers from Supabase
@@ -34,36 +89,22 @@ export const fetchQuotes = async (filter?: QuotationFilterOptions): Promise<Quot
       .select('*, rfq:rfqs(*), quote:quotes(*)')
       .order('created_at', { ascending: false });
 
-    if (!error && dbItems) {
+    if (error) {
+      throw new Error(`Lỗi tải dữ liệu RFQ từ Supabase: ${error.message}`);
+    }
+
+    if (dbItems) {
       localItemsCache = dbItems as any[];
     }
   } catch (err) {
     console.warn('Fetching rfq_items from Supabase error:', err);
+    throw err; // Ném lỗi để UI hiển thị thông báo
   }
 
   // Construct complete QuoteRecord list
   let list: QuoteRecord[] = localItemsCache.map((item) => {
     const parentDossier = localDossiersCache.find((d) => d.id === item.rfq_id) || item.rfq;
-    const dbQuote = Array.isArray(item.quote) ? item.quote[0] : item.quote;
-    const existingQuote = localQuotesCache.find((q) => q.rfq_item_id === item.id) || dbQuote;
-    return {
-      id: existingQuote?.id || `quote-${item.id}`,
-      rfq_item_id: item.id,
-      segment: existingQuote?.segment || 'forging',
-      status: item.status,
-      currency: existingQuote?.currency || 'VND',
-      exchange_rate: existingQuote?.exchange_rate || 1,
-      die_cost_treatment: existingQuote?.die_cost_treatment || 'separate',
-      final_quoted_price: existingQuote?.final_quoted_price || 0,
-      created_at: item.created_at,
-      sent_at: item.quoted_sent_at || existingQuote?.sent_at,
-      cancel_reason: item.cancel_reason,
-      created_by_email: parentDossier?.created_by_email,
-      rfqItem: item,
-      rfq: parentDossier,
-      inputs_json: existingQuote?.inputs_json || ({} as any),
-      results_json: existingQuote?.results_json || ({} as any),
-    };
+    return mapItemToQuoteRecord(item, parentDossier);
   });
 
   if (!filter) return list;
@@ -391,35 +432,25 @@ export const updateQuoteStatus = async (
 
   const now = new Date().toISOString();
 
-  // Find target item ID
+  // Find target item ID (since we removed localQuotesCache, we find in localItemsCache)
   let targetItemId = quoteId;
-  const targetQuote = localQuotesCache.find((q) => q.id === quoteId || q.rfq_item_id === quoteId);
-  if (targetQuote) targetItemId = targetQuote.rfq_item_id;
+  const targetItem = localItemsCache.find(
+    (item) => item.id === quoteId || (item.quote && (Array.isArray(item.quote) ? item.quote[0]?.id : item.quote?.id) === quoteId)
+  );
+  if (targetItem) targetItemId = targetItem.id;
 
-  const updateFields: any = {
-    status: itemStatus,
-  };
-  if (itemStatus.startsWith('CANCELLED') && cancelReason) {
-    updateFields.cancel_reason = cancelReason;
+  // Use RPC to update both tables in a single transaction
+  const { error: rpcErr } = await supabase.rpc('update_quote_status_transaction', {
+    p_item_id: targetItemId,
+    p_item_status: itemStatus,
+    p_quote_status: quoteStatus,
+    p_cancel_reason: cancelReason || null,
+    p_resolved_at: (itemStatus === 'SUCCESSFUL' || itemStatus.startsWith('CANCELLED')) ? now : null
+  });
+
+  if (rpcErr) {
+    throw new Error(`Lỗi cập nhật trạng thái đồng bộ (RPC) trên Supabase: ${rpcErr.message}`);
   }
-  if (itemStatus === 'SUCCESSFUL' || itemStatus.startsWith('CANCELLED')) {
-    updateFields.resolved_at = now;
-  }
-
-  const { error: itemErr } = await supabase
-    .from('rfq_items')
-    .update(updateFields)
-    .eq('id', targetItemId);
-
-  if (itemErr) {
-    throw new Error(`Lỗi cập nhật trạng thái Supabase: ${itemErr.message}`);
-  }
-
-  // Update quotes table status
-  await supabase
-    .from('quotes')
-    .update({ status: quoteStatus })
-    .eq('rfq_item_id', targetItemId);
 
   await fetchQuotes();
 };
@@ -525,6 +556,5 @@ export const resetSystemData = async (): Promise<void> => {
 
   localDossiersCache = [];
   localItemsCache = [];
-  localQuotesCache = [];
   resetQuotationDocumentsCache();
 };

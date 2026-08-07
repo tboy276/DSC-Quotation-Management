@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import type {
   QuoteRecord,
   RfqItemStatus,
@@ -14,7 +15,7 @@ import { QuoteDetailModal } from '../rfq/QuoteDetailModal';
 import { CreateDocumentModal } from './CreateDocumentModal';
 import { formatCurrencyValue } from '../rfq/RealtimeSummaryPanel';
 import { useAuth } from '../../context/AuthContext';
-import { useQuotationStore } from '../../store/useQuotationStore';
+
 import { parseStructuredRfqText } from '../../utils/rfq-parser';
 import { formatDate } from '../../lib/format-date';
 import * as XLSX from 'xlsx';
@@ -44,10 +45,6 @@ import {
   Clock,
   FileText,
 } from 'lucide-react';
-
-interface QuotationsManagerProps {
-  onNavigateToCalculator?: (segment: 'forging' | 'casting') => void;
-}
 
 interface ColumnDef {
   key: string;
@@ -81,14 +78,13 @@ const ALL_ITEM_COLUMNS: ColumnDef[] = [
   { key: 'notes', header: 'Ghi Chú', defaultHidden: true },
 ];
 
-export const QuotationsManager = ({ onNavigateToCalculator }: QuotationsManagerProps) => {
+export const QuotationsManager = () => {
+  const navigate = useNavigate();
   const { profile, user } = useAuth();
   const currentUserEmail = profile?.email || user?.email || '';
   const isEstimator = profile?.role === 'estimator';
 
-  const setRfqField = useQuotationStore((state) => state.setRfqField);
-  const setSegment = useQuotationStore((state) => state.setSegment);
-  const setActiveRfqItemId = useQuotationStore((state) => state.setActiveRfqItemId);
+  // Removed unused useQuotationStore fields
 
   const [quotes, setQuotes] = useState<QuoteRecord[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
@@ -165,6 +161,7 @@ export const QuotationsManager = ({ onNavigateToCalculator }: QuotationsManagerP
   const [newCustomerName, setNewCustomerName] = useState<string>('');
   const [newCustomerAddress, setNewCustomerAddress] = useState<string>('');
   const [newRfqCode, setNewRfqCode] = useState<string>('');
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [newCustomerContactPerson, setNewCustomerContactPerson] = useState<string>('');
   const [newRfqReceivedDate, setNewRfqReceivedDate] = useState<string>(new Date().toISOString().slice(0, 10));
   const [newCustomerDeadline, setNewCustomerDeadline] = useState<string>(
@@ -211,21 +208,27 @@ export const QuotationsManager = ({ onNavigateToCalculator }: QuotationsManagerP
 
   const loadQuotes = async () => {
     setLoading(true);
-    const filterOptions: QuotationFilterOptions = {
-      status: statusFilter,
-      segment: segmentFilter,
-      searchQuery,
-      fromDate: fromDate || undefined,
-      toDate: toDate || undefined,
-      page: currentPage,
-      pageSize,
-    };
+    setErrorMsg(null);
+    try {
+      const filterOptions: QuotationFilterOptions = {
+        status: statusFilter,
+        segment: segmentFilter,
+        searchQuery,
+        fromDate: fromDate || undefined,
+        toDate: toDate || undefined,
+        page: currentPage,
+        pageSize,
+      };
 
-    const res = await fetchPaginatedQuotes(filterOptions);
-    setQuotes(res.data);
-    setTotalCount(res.totalCount);
-    setTotalPages(res.totalPages);
-    setLoading(false);
+      const res = await fetchPaginatedQuotes(filterOptions);
+      setQuotes(res.data);
+      setTotalCount(res.totalCount);
+      setTotalPages(res.totalPages);
+    } catch (err: any) {
+      setErrorMsg(err.message || 'Lỗi tải dữ liệu báo giá.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const canModifyQuote = (quote: QuoteRecord): boolean => {
@@ -348,20 +351,12 @@ export const QuotationsManager = ({ onNavigateToCalculator }: QuotationsManagerP
   };
 
   const handleGoToCalculator = (quote: QuoteRecord) => {
+    const tech = quote.rfqItem?.technology_requirement || 'Rèn+Gia công';
+    const isSawedBilletTech = tech.includes('Phôi cưa');
     if (isSawedBilletTech) return;
 
-    setActiveRfqItemId(quote.rfq_item_id);
-    const tech = quote.rfqItem?.technology_requirement || 'Rèn+Gia công';
     const targetSegment = tech.includes('Đúc') ? 'casting' : 'forging';
-
-    setSegment(targetSegment);
-    setRfqField('product_name', quote.rfqItem?.product_name || 'Sản phẩm mới');
-    setRfqField('annual_volume', quote.rfqItem?.annual_volume || 10000);
-    setRfqField('target_price', quote.rfqItem?.target_price || 0);
-
-    if (onNavigateToCalculator) {
-      onNavigateToCalculator(targetSegment);
-    }
+    navigate(`/${targetSegment}/${quote.rfq_item_id}`);
   };
 
   const handleMarkItemSuccessful = async (quote: QuoteRecord) => {
@@ -555,6 +550,17 @@ export const QuotationsManager = ({ onNavigateToCalculator }: QuotationsManagerP
 
   return (
     <div className="space-y-4 animate-fade-in-up">
+      {errorMsg && (
+        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-[8px] text-sm font-medium flex items-center justify-between">
+          <div className="flex items-center space-x-2">
+            <span>{errorMsg}</span>
+          </div>
+          <button onClick={() => setErrorMsg(null)} className="text-red-500 hover:text-red-900">
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+      )}
+
       {/* SCREENSHOT-STYLE 4 TOP METRIC CARDS WITH REAL DYNAMIC APP DATA */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Card 1: TỔNG YÊU CẦU */}

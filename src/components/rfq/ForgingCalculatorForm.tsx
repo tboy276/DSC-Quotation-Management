@@ -50,13 +50,13 @@ export const ForgingCalculatorForm = () => {
         mainBlockTitle="Nhập Liệu Vật Tư"
         mainLeftContent={
           <div className="space-y-0 text-[13px]">
-            {/* Row 1: Mác Thép */}
+            {/* 1. Mác Thép */}
             <div className="flex items-center justify-between py-2 border-b border-[#EAEAEA]">
               <label className="font-bold text-[#787774]">1. Mác Thép (Từ Master Data):</label>
               <select
-                value={forging.selected_material_id}
+                value={forging.selected_material_id || ''}
                 onChange={(e) => selectMaterial(e.target.value)}
-                className="w-1/2 min-w-[200px] px-2 py-1.5 border border-[#EAEAEA] rounded-[4px] bg-white text-[#111111] font-bold text-right"
+                className="w-1/2 min-w-[200px] px-2 py-1.5 border border-[#EAEAEA] rounded-[4px] bg-white text-[#111111] font-bold text-right cursor-pointer"
               >
                 {steelMaterials.map((m) => (
                   <option key={m.id} value={m.id}>
@@ -66,19 +66,19 @@ export const ForgingCalculatorForm = () => {
               </select>
             </div>
 
-            {/* Row 2: Giá Thép */}
-            <div className="flex items-center justify-between py-2 border-b border-[#EAEAEA]">
+            {/* 2. Giá Thép */}
+            <div className="flex items-center justify-between py-2 border-b border-[#EAEAEA] bg-gray-50/50">
               <label className="font-bold text-[#787774]">2. Giá Thép (VNĐ/kg):</label>
               <input
                 type="number"
-                min="0"
                 value={forging.DG_steel}
-                onChange={(e) => setForgingField('DG_steel', Math.max(0, Number(e.target.value)))}
-                className="w-1/2 min-w-[200px] px-2 py-1.5 border border-[#EAEAEA] rounded-[4px] font-mono font-bold text-[#111111] text-right"
+                readOnly
+                className="w-1/2 min-w-[200px] px-2 py-1.5 border border-[#EAEAEA] rounded-[4px] font-mono font-bold text-gray-500 bg-gray-100 text-right cursor-not-allowed"
+                title="Tự động cập nhật theo Mác Thép"
               />
             </div>
 
-            {/* Row 3: Phí Quản Lý Vật Tư */}
+            {/* 3. Phí Quản Lý Vật Tư */}
             <div className="flex items-center justify-between py-2 border-b border-[#EAEAEA]">
               <label className="font-bold text-[#787774]">3. Phí quản lý vật tư (%):</label>
               <input
@@ -91,7 +91,7 @@ export const ForgingCalculatorForm = () => {
               />
             </div>
 
-            {/* Row 4: Đường kính */}
+            {/* 4. Đường kính */}
             <div className="flex items-center justify-between py-2 border-b border-[#EAEAEA]">
               <label className="font-bold text-[#787774]">4. Đường kính thép (d - mm):</label>
               <input
@@ -103,7 +103,7 @@ export const ForgingCalculatorForm = () => {
               />
             </div>
 
-            {/* Row 5: Chiều dài */}
+            {/* 5. Chiều dài */}
             <div className="flex items-center justify-between py-2 border-b border-[#EAEAEA]">
               <label className="font-bold text-[#787774]">5. Chiều dài cắt (L - mm):</label>
               <input
@@ -115,14 +115,14 @@ export const ForgingCalculatorForm = () => {
               />
             </div>
 
-            {/* Row 6: TL chi */}
+            {/* 6. TL chi */}
             <div className="flex items-center justify-between py-2 border-b border-[#EAEAEA]">
-              <label className="font-bold text-[#787774] flex flex-col">
-                <span>6. Trọng lượng chi (m_chi - kg):</span>
+              <div className="flex flex-col">
+                <label className="font-bold text-[#787774]">6. Trọng lượng chi (m_chi - kg):</label>
                 {refWeight > 0 && forging.m_chi < refWeight && (
-                  <span className="text-[10px] text-red-500 font-normal">⚠️ Nhỏ hơn TL lý thuyết ({refWeight.toFixed(3)}kg)</span>
+                  <span className="text-[10px] text-red-500 font-normal">⚠️ Nhỏ hơn TL tham khảo ({refWeight.toFixed(3)}kg)</span>
                 )}
-              </label>
+              </div>
               <input
                 type="number"
                 min="0"
@@ -133,7 +133,7 @@ export const ForgingCalculatorForm = () => {
               />
             </div>
 
-            {/* Row 7: TL phôi */}
+            {/* 7. TL phôi */}
             <div className="flex items-center justify-between py-2 border-b border-[#EAEAEA]">
               <label className="font-bold text-[#787774]">7. Trọng lượng phôi rèn (m_phoi - kg):</label>
               <input
@@ -146,35 +146,32 @@ export const ForgingCalculatorForm = () => {
               />
             </div>
 
-            {/* Row 8: TL tinh + Checkbox */}
-            <div className="flex flex-col py-2 border-b border-[#EAEAEA]">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-2 w-1/2">
-                  <label className="font-bold text-[#787774]">8. TL tinh sau gia công (kg):</label>
-                  <div className="flex items-center space-x-1 border border-[#EAEAEA] px-1.5 py-0.5 rounded bg-[#F9F9F9]">
-                    <input
-                      type="checkbox"
-                      id="use_m_tinh"
-                      checked={forging.use_m_tinh || false}
-                      onChange={(e) => setForgingField('use_m_tinh', e.target.checked)}
-                      className="w-3 h-3"
-                    />
-                    <label htmlFor="use_m_tinh" className="text-[10px] text-slate-500 cursor-pointer">Tính ba-via</label>
-                  </div>
+            {/* 8. TL tinh + Checkbox */}
+            <div className="flex items-center justify-between py-2 border-b border-[#EAEAEA]">
+              <div className="flex items-center space-x-2">
+                <label className="font-bold text-[#787774]">8. TL tinh sau gia công (kg):</label>
+                <div className="flex items-center space-x-1 border border-[#EAEAEA] px-1.5 py-0.5 rounded bg-[#F9F9F9] hover:bg-[#F0F0EE] transition-colors cursor-pointer" onClick={() => setForgingField('use_m_tinh', !forging.use_m_tinh)}>
+                  <input
+                    type="checkbox"
+                    id="use_m_tinh"
+                    checked={forging.use_m_tinh || false}
+                    onChange={(e) => setForgingField('use_m_tinh', e.target.checked)}
+                    className="w-3 h-3 cursor-pointer accent-[#111111]"
+                  />
+                  <label htmlFor="use_m_tinh" className="text-[10px] text-slate-500 cursor-pointer select-none font-medium">Tính theo TL tinh</label>
                 </div>
-                <input
-                  type="number"
-                  min="0"
-                  step="0.01"
-                  value={forging.m_tinh || ''}
-                  onChange={(e) => setForgingField('m_tinh', Math.max(0, Number(e.target.value)))}
-                  disabled={!forging.use_m_tinh}
-                  className={`w-1/2 min-w-[200px] px-2 py-1.5 border rounded-[4px] font-mono font-bold text-right ${forging.use_m_tinh ? 'border-blue-300 bg-blue-50/20 text-[#111111]' : 'border-[#EAEAEA] bg-gray-100 text-gray-400'}`}
-                />
               </div>
+              <input
+                type="number"
+                min="0"
+                step="0.01"
+                value={forging.m_tinh || ''}
+                onChange={(e) => setForgingField('m_tinh', Math.max(0, Number(e.target.value)))}
+                className={`w-1/2 min-w-[200px] px-2 py-1.5 border rounded-[4px] font-mono font-bold text-right ${forging.use_m_tinh ? 'border-[#111111] bg-white text-[#111111]' : 'border-[#EAEAEA] bg-gray-50 text-gray-500'}`}
+              />
             </div>
 
-            {/* Row 9: % Cháy hao */}
+            {/* 9. % Cháy hao */}
             <div className="flex items-center justify-between py-2 border-b border-[#EAEAEA]">
               <label className="font-bold text-[#787774]">9. % Cháy hao (k_loss):</label>
               <input
@@ -183,18 +180,6 @@ export const ForgingCalculatorForm = () => {
                 step="0.1"
                 value={forging.k_loss}
                 onChange={(e) => setForgingField('k_loss', Math.max(0, Number(e.target.value)))}
-                className="w-1/2 min-w-[200px] px-2 py-1.5 border border-[#EAEAEA] rounded-[4px] font-mono font-bold text-[#111111] text-right"
-              />
-            </div>
-
-            {/* Row 10: DG_scrap (Bổ sung để lấy dữ liệu tính toán hoàn chỉnh) */}
-            <div className="flex items-center justify-between py-2">
-              <label className="font-bold text-[#787774]">10. Giá phế liệu thu hồi (VNĐ/kg):</label>
-              <input
-                type="number"
-                min="0"
-                value={forging.DG_scrap}
-                onChange={(e) => setForgingField('DG_scrap', Math.max(0, Number(e.target.value)))}
                 className="w-1/2 min-w-[200px] px-2 py-1.5 border border-[#EAEAEA] rounded-[4px] font-mono font-bold text-[#111111] text-right"
               />
             </div>
