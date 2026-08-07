@@ -1268,9 +1268,9 @@ export const QuotationsManager = () => {
       </div>
 
       {/* SINGLE UNIFIED DATA TABLE (PHYSICAL TABLE REUSE) */}
-      <div className="bg-white border border-[#EAEAEA] rounded-[10px] overflow-hidden shadow-xs">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse text-xs">
+      <div className="w-full min-w-0 bg-white border border-[#EAEAEA] rounded-[10px] overflow-hidden shadow-xs">
+        <div className="w-full min-w-0 overflow-x-auto">
+          <table className="w-full text-left border-collapse text-xs min-w-[1000px]">
             <thead>
               <tr className="bg-[#FBFBFA] border-b border-[#EAEAEA] text-[#787774] font-bold uppercase tracking-wider text-[10px] select-none">
                 <th className="py-3 px-3 w-10 text-center">
