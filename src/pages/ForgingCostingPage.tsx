@@ -1,10 +1,9 @@
-import React from 'react';
 import { ArrowLeft, Check, Copy, Save, CheckCircle2, AlertCircle, AlertTriangle, Layers, Calendar, Clock } from 'lucide-react';
 import { useQuotationStore } from '../store/useQuotationStore';
 import { usePricingCalculator } from '../hooks/usePricingCalculator';
-import ForgingCalculatorForm from '../components/rfq/ForgingCalculatorForm';
-import RealtimeSummaryPanel from '../components/rfq/RealtimeSummaryPanel';
-import CloneQuoteModal from '../components/rfq/CloneQuoteModal';
+import { ForgingCalculatorForm } from '../components/rfq/ForgingCalculatorForm';
+import { RealtimeSummaryPanel } from '../components/rfq/RealtimeSummaryPanel';
+import { CloneQuoteModal } from '../components/rfq/CloneQuoteModal';
 import { QuoteStatusBadge } from '../components/rfq/QuoteStatusBadge';
 
 const formatDate = (dStr?: string) => dStr ? new Date(dStr).toLocaleDateString('vi-VN') : 'N/A';
@@ -21,7 +20,6 @@ export default function ForgingCostingPage() {
     activeDossierRecord,
     saving,
     msg,
-    setMsg,
     showCloneModal,
     setShowCloneModal,
     handleSaveDraft,

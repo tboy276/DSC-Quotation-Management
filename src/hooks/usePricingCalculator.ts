@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { useQuotationStore, SegmentType } from '../store/useQuotationStore';
+import { useQuotationStore } from '../store/useQuotationStore';
+import type { SegmentType } from '../store/useQuotationStore';
 import { saveQuoteDraft, updateQuoteStatus, fetchQuoteByItemId } from '../lib/quotation-service';
 import type { QuoteRecord, RfqItemRecord, RfqDossier } from '../types/quote';
 

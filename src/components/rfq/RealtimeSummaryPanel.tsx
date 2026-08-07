@@ -1,5 +1,5 @@
 import { useQuotationStore } from '../../store/useQuotationStore';
-import type { ForgingResult, CastingResult } from '../../lib/calculation-engine/types';
+import type { CastingResult } from '../../lib/calculation-engine/types';
 import type { CurrencyType } from '../../types/quote';
 import { Calculator, Globe } from 'lucide-react';
 
@@ -103,6 +103,12 @@ export const RealtimeSummaryPanel = () => {
     profitMarginPercent = machiningInput.k_profit_machining;
     segmentLabel = 'Chỉ Gia Công CNC (Machining Only)';
   }
+
+  const isForging = segment === 'forging';
+  const castingRes = segment === 'casting' ? getCastingResult() : null;
+  const profitAmountVnd = pre_profit_price * (profitMarginPercent / 100);
+  const targetPriceVnd = rfq.target_price || 0;
+  const deltaPriceVnd = finalPriceVnd - targetPriceVnd;
 
   const currencies: CurrencyType[] = ['VND', 'USD', 'JPY', 'EUR'];
 
