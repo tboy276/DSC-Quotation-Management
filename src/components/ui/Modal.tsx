@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { X } from 'lucide-react';
 
 export interface ModalProps {
@@ -58,7 +59,7 @@ export const Modal: React.FC<ModalProps> = ({
 
   const chosenWidth = maxWidthClass || sizeClasses[size] || 'max-w-5xl';
 
-  return (
+  const modalContent = (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-slate-900/60 backdrop-blur-xs animate-fade-in-up">
       <div className={`bg-white rounded-[12px] border border-[#EAEAEA] shadow-2xl w-full ${chosenWidth} max-h-[88vh] flex flex-col overflow-hidden text-xs text-[#111111] animate-modal-scale-in`}>
         {/* Fixed Header */}
@@ -108,4 +109,6 @@ export const Modal: React.FC<ModalProps> = ({
       </div>
     </div>
   );
+
+  return createPortal(modalContent, document.body);
 };
