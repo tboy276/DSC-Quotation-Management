@@ -62,6 +62,8 @@ export interface RfqItemRecord {
   status: RfqItemStatus;
   cancel_reason?: string;
   quoted_sent_at?: string | null;
+  technical_review_completed_at?: string | null;
+  costing_completed_at?: string | null;
   resolved_at?: string | null;
   created_at: string;
   // Joined fields

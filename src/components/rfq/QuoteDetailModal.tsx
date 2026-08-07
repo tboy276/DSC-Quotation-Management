@@ -161,6 +161,14 @@ export const QuoteDetailModal = ({ quote, onClose }: QuoteDetailModalProps) => {
     );
   };
 
+  const timelineSteps = [
+    { label: 'Tạo RFQ', date: rfqItem?.created_at },
+    { label: 'Duyệt Kỹ Thuật', date: rfqItem?.technical_review_completed_at },
+    { label: 'Tính Giá', date: rfqItem?.costing_completed_at },
+    { label: 'Gửi Báo Giá', date: rfqItem?.quoted_sent_at },
+    ...(rfqItem?.resolved_at ? [{ label: 'Đóng/Chốt', date: rfqItem?.resolved_at }] : [])
+  ];
+
   return (
     <Modal
       isOpen={true}
@@ -293,6 +301,29 @@ export const QuoteDetailModal = ({ quote, onClose }: QuoteDetailModalProps) => {
                 💬 Lý do huỷ bỏ: "{quote.cancel_reason || rfqItem?.cancel_reason}"
               </div>
             )}
+          </div>
+        </div>
+
+        {/* 2. Dòng Thời Gian (Audit Timeline) */}
+        <div className="bg-[#FBFBFA] border border-[#EAEAEA] rounded-[8px] p-3.5 mt-2 space-y-2">
+          <h4 className="text-[11px] font-bold text-[#787774] uppercase tracking-wider mb-2">
+            Dòng Thời Gian (Audit Timeline)
+          </h4>
+          <div className="flex justify-between items-start text-xs font-mono pt-1">
+            {timelineSteps.map((step, i) => (
+              <div key={i} className="flex flex-col items-center relative flex-1 text-center">
+                {/* Connector Line */}
+                {i < timelineSteps.length - 1 && (
+                  <div className={`absolute top-2.5 left-[50%] w-full h-[2px] ${step.date ? 'bg-[#346538]' : 'bg-[#EAEAEA]'}`} />
+                )}
+                {/* Dot */}
+                <div className={`w-5 h-5 rounded-full z-10 flex items-center justify-center border-2 bg-white ${step.date ? 'border-[#346538]' : 'border-[#EAEAEA]'}`}>
+                  {step.date && <div className="w-2 h-2 rounded-full bg-[#346538]" />}
+                </div>
+                <span className={`mt-2 text-[10px] uppercase font-bold tracking-tight ${step.date ? 'text-[#111111]' : 'text-[#787774]'}`}>{step.label}</span>
+                <span className="text-[9px] text-[#787774] mt-0.5">{step.date ? new Date(step.date).toLocaleString('vi-VN', { dateStyle: 'short', timeStyle: 'short' }) : '---'}</span>
+              </div>
+            ))}
           </div>
         </div>
 

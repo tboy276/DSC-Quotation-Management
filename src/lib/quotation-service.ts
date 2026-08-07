@@ -422,10 +422,18 @@ export const saveQuoteDraft = async (
     }
   }
 
+  const updatePayload: any = { status: newItemStatus };
+  if (newItemStatus === 'IN_COSTING' && currentStatus === 'PENDING_REVIEW') {
+    updatePayload.technical_review_completed_at = new Date().toISOString();
+  }
+  if (newItemStatus === 'READY_FOR_QUOTE') {
+    updatePayload.costing_completed_at = new Date().toISOString();
+  }
+
   // Update item status on Supabase rfq_items
   const { error: itemErr } = await supabase
     .from('rfq_items')
-    .update({ status: newItemStatus })
+    .update(updatePayload)
     .eq('id', itemId);
 
   if (itemErr) {
@@ -568,6 +576,18 @@ export const updateQuoteStatus = async (
 
   if (rpcErr) {
     throw new Error(`Lỗi cập nhật trạng thái đồng bộ (RPC) trên Supabase: ${rpcErr.message}`);
+  }
+
+  const timestampPayload: any = {};
+  if (itemStatus === 'IN_COSTING' && targetItem?.status === 'PENDING_REVIEW') {
+    timestampPayload.technical_review_completed_at = now;
+  }
+  if (itemStatus === 'READY_FOR_QUOTE') {
+    timestampPayload.costing_completed_at = now;
+  }
+  
+  if (Object.keys(timestampPayload).length > 0) {
+    await supabase.from('rfq_items').update(timestampPayload).eq('id', targetItemId);
   }
 
   await fetchQuotes();
