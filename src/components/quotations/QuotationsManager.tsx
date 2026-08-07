@@ -518,9 +518,9 @@ export const QuotationsManager = () => {
         id: String(Date.now()),
         product_name: `Sản phẩm ${newMultiItems.length + 1}`,
         part_number: `PN-0${newMultiItems.length + 1}`,
-        annual_volume: 5000,
+        annual_volume: 0,
         quantity_unit: 'pcs/năm',
-        target_price: 50000,
+        target_price: 0,
         technology_requirement: 'Rèn+Gia công',
       },
     ]);

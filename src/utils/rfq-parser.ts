@@ -105,9 +105,9 @@ export const parseStructuredRfqText = (rawText: string): ParsedRfqData => {
         const parts = line.split('|').map((p) => p.trim());
         let pName = '';
         let pNo = '';
-        let vol = 5000;
+        let vol = 0;
         let unit: QuantityUnitType = 'pcs/năm';
-        let target = 50000;
+        let target = 0;
         let tech: TechnologyRequirementType = 'Rèn+Gia công';
 
         let parsedSuccessfully = false;
@@ -121,13 +121,15 @@ export const parseStructuredRfqText = (rawText: string): ParsedRfqData => {
             pNo = part.substring(part.indexOf(':') + 1).trim();
           } else if (pLower.startsWith('sản lượng:')) {
             const rawVol = part.substring(part.indexOf(':') + 1).trim();
-            vol = Number(rawVol.replace(/[^\d]/g, '')) || 5000;
+            const cleanVolStr = rawVol.replace(/[^\d]/g, '');
+            vol = cleanVolStr !== '' ? Number(cleanVolStr) : 0;
             if (rawVol.includes('tháng')) unit = 'pcs/tháng';
             else if (rawVol.includes('lô')) unit = 'pcs/lô';
             else unit = 'pcs/năm';
-          } else if (pLower.startsWith('target price:')) {
+          } else if (pLower.startsWith('target price:') || pLower.startsWith('giá target:')) {
             const rawTarget = part.substring(part.indexOf(':') + 1).trim();
-            target = Number(rawTarget.replace(/[^\d]/g, '')) || 50000;
+            const cleanTargetStr = rawTarget.replace(/[^\d]/g, '');
+            target = cleanTargetStr !== '' ? Number(cleanTargetStr) : 0;
           } else if (pLower.startsWith('công nghệ:')) {
             const rawTech = part.substring(part.indexOf(':') + 1).trim();
             if (['Phôi rèn', 'Phôi đúc', 'Phôi cưa', 'Rèn+Gia công', 'Đúc+Gia công', 'Phôi cưa+Gia công'].includes(rawTech)) {
@@ -143,12 +145,18 @@ export const parseStructuredRfqText = (rawText: string): ParsedRfqData => {
           if (parts.length >= 2) {
             pName = parts[0];
             pNo = parts[1] || '';
-            if (parts[2]) vol = Number(parts[2].replace(/[^\d]/g, '')) || 5000;
+            if (parts[2]) {
+              const cleanVolStr = parts[2].replace(/[^\d]/g, '');
+              vol = cleanVolStr !== '' ? Number(cleanVolStr) : 0;
+            }
             if (parts[3]) {
               if (parts[3].includes('tháng')) unit = 'pcs/tháng';
               else if (parts[3].includes('lô')) unit = 'pcs/lô';
             }
-            if (parts[4]) target = Number(parts[4].replace(/[^\d]/g, '')) || 50000;
+            if (parts[4]) {
+              const cleanTargetStr = parts[4].replace(/[^\d]/g, '');
+              target = cleanTargetStr !== '' ? Number(cleanTargetStr) : 0;
+            }
             if (parts[5]) {
               const t = parts[5].trim();
               if (['Phôi rèn', 'Phôi đúc', 'Phôi cưa', 'Rèn+Gia công', 'Đúc+Gia công', 'Phôi cưa+Gia công'].includes(t)) {
