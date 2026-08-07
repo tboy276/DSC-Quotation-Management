@@ -169,10 +169,9 @@ export default function MachiningCostingPage() {
 
       {showCloneModal && (
         <CloneQuoteModal
-          isOpen={showCloneModal}
+          segment="machining"
           onClose={() => setShowCloneModal(false)}
-          onSelectClone={handleSelectCloneQuote}
-          targetSegment="machining"
+          onSelectQuote={handleSelectCloneQuote}
         />
       )}
     </div>

@@ -170,10 +170,9 @@ export default function CastingCostingPage() {
 
       {showCloneModal && (
         <CloneQuoteModal
-          isOpen={showCloneModal}
+          segment="casting"
           onClose={() => setShowCloneModal(false)}
-          onSelectClone={handleSelectCloneQuote}
-          targetSegment="casting"
+          onSelectQuote={handleSelectCloneQuote}
         />
       )}
     </div>

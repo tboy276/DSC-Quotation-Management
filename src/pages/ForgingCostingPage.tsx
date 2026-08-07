@@ -170,10 +170,9 @@ export default function ForgingCostingPage() {
 
       {showCloneModal && (
         <CloneQuoteModal
-          isOpen={showCloneModal}
+          segment="forging"
           onClose={() => setShowCloneModal(false)}
-          onSelectClone={handleSelectCloneQuote}
-          targetSegment="forging"
+          onSelectQuote={handleSelectCloneQuote}
         />
       )}
     </div>

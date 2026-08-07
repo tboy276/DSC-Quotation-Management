@@ -7,7 +7,7 @@ import { Modal } from '../ui/Modal';
 import { Search, Copy } from 'lucide-react';
 
 interface CloneQuoteModalProps {
-  segment: 'forging' | 'casting';
+  segment: 'forging' | 'casting' | 'sawing' | 'machining';
   onClose: () => void;
   onSelectQuote: (quote: QuoteRecord) => void;
 }

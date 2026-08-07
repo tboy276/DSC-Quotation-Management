@@ -300,8 +300,6 @@ export const QuotationsManager = () => {
     ? (selectedSingleQuote.rfqItem?.status || selectedSingleQuote.status)
     : null;
 
-  const selectedTechRequirement = selectedSingleQuote?.rfqItem?.technology_requirement || 'Rèn+Gia công';
-
   const canApproveFeasibility = selectedSingleQuote && selectedItemStatus === 'PENDING_REVIEW' && canModifyQuote(selectedSingleQuote);
   const canGoToCalculator = selectedSingleQuote && selectedItemStatus === 'IN_COSTING';
   const canMarkSentStatus = selectedSingleQuote && selectedItemStatus === 'QUOTED_SENT' && canModifyQuote(selectedSingleQuote);
@@ -773,11 +771,7 @@ export const QuotationsManager = () => {
             onClick={() => {
               if (selectedSingleQuote) handleGoToCalculator(selectedSingleQuote);
             }}
-            title={
-              isSawedBilletTech
-                ? 'Công nghệ Phôi Cưa sẽ được hỗ trợ ở bản cập nhật sau'
-                : 'Đi đến Bảng Tính Giá (Calculator)'
-            }
+            title="Đi đến Bảng Tính Giá (Calculator)"
             className="p-2 bg-[#111111] hover:bg-[#333333] text-amber-300 rounded-[6px] transition-colors cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed shadow-xs"
           >
             <Calculator className="w-4 h-4" />
