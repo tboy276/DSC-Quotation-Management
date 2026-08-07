@@ -87,9 +87,9 @@ export const QuotationPreviewPanel: React.FC<QuotationPreviewPanelProps> = ({
   };
 
   return (
-    <div className="flex flex-col lg:flex-row gap-6 h-full flex-1 min-h-0">
+    <div className="w-full min-w-0 grid grid-cols-1 lg:grid-cols-12 gap-6">
       {/* Left Column: Control Settings Panel */}
-      <div className="w-full lg:w-[40%] flex flex-col space-y-4 bg-[#FBFBFA] border border-[#EAEAEA] rounded-[10px] p-4 text-xs shrink-0">
+      <div className="lg:col-span-4 min-w-0 flex flex-col space-y-4 bg-[#FBFBFA] border border-[#EAEAEA] rounded-[10px] p-4 text-xs">
         <div className="flex items-center justify-between border-b border-[#EAEAEA] pb-3">
           <div className="flex items-center space-x-2">
             <Sliders className="w-4 h-4 text-[#111111]" />
@@ -312,7 +312,7 @@ export const QuotationPreviewPanel: React.FC<QuotationPreviewPanelProps> = ({
       </div>
 
       {/* Right Column: Live Document Preview */}
-      <div className="flex-1 border border-[#EAEAEA] rounded-[10px] overflow-hidden flex flex-col bg-slate-100 shadow-inner min-w-0">
+      <div className="lg:col-span-8 min-w-0 border border-[#EAEAEA] rounded-[10px] overflow-hidden flex flex-col bg-slate-100 shadow-inner">
         <div className="px-4 py-2.5 bg-white border-b border-[#EAEAEA] flex items-center justify-between text-[11px] font-bold text-[#787774] shrink-0">
           <div className="flex items-center space-x-2">
             <Eye className="w-4 h-4 text-[#111111]" />
