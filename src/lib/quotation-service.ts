@@ -32,10 +32,20 @@ const mapItemToQuoteRecord = (item: any, parentDossier: any): QuoteRecord => {
   const dbQuote = Array.isArray(item.quote) ? item.quote[0] : item.quote;
   const currentQuote = dbQuote; // Luôn ưu tiên dbQuote từ DB
 
+  const rawSegment = currentQuote?.inputs_json?._segment || currentQuote?.segment;
+  let realSegment: SegmentType = 'forging';
+  if (rawSegment === 'sawing' || rawSegment === 'machining' || rawSegment === 'casting' || rawSegment === 'forging') {
+    realSegment = rawSegment as SegmentType;
+  } else if (currentQuote?.results_json?.P_SAWING !== undefined) {
+    realSegment = 'sawing';
+  } else if (currentQuote?.results_json?.P_MACHINING !== undefined) {
+    realSegment = 'machining';
+  }
+
   return {
     id: currentQuote?.id || `quote-${item.id}`,
     rfq_item_id: item.id,
-    segment: currentQuote?.segment || 'forging',
+    segment: realSegment,
     status: item.status,
     currency: currentQuote?.currency || 'VND',
     exchange_rate: currentQuote?.exchange_rate || 1,
@@ -433,16 +443,18 @@ export const saveQuoteDraft = async (
   }
 
   // Insert/Upsert into Supabase 'quotes' table
+  // Map 'sawing' and 'machining' to 'forging' for DB segment column check constraint compliance
+  const dbSegment = (segment === 'sawing' || segment === 'machining') ? 'forging' : segment;
   const quotePayload = {
     rfq_item_id: itemId,
-    segment,
+    segment: dbSegment,
     status: 'DRAFT',
     currency,
     exchange_rate: exchangeRate,
     die_cost_treatment: dieTreatment,
     final_quoted_price: finalPrice,
     created_by_email: userEmail,
-    inputs_json: JSON.parse(JSON.stringify(inputs)),
+    inputs_json: JSON.parse(JSON.stringify({ ...inputs, _segment: segment })),
     results_json: JSON.parse(JSON.stringify(results)),
   };
 
