@@ -80,8 +80,8 @@ export const DashboardPage = () => {
         <Route path="/" element={<Navigate to="/quotations" replace />} />
         <Route path="/quotations" element={<QuotationsManager />} />
         <Route path="/documents" element={<QuotationDocumentsManager />} />
-        <Route path="/forging" element={<PricingCalculatorPage />} />
-        <Route path="/casting" element={<PricingCalculatorPage />} />
+        <Route path="/forging/:rfqItemId?" element={<PricingCalculatorPage />} />
+        <Route path="/casting/:rfqItemId?" element={<PricingCalculatorPage />} />
         <Route path="/master_data" element={<MasterDataContainer />} />
         <Route path="/analytics" element={<RfqAnalyticsReport />} />
         <Route path="/health_check" element={
