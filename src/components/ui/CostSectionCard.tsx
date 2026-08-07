@@ -65,16 +65,16 @@ export const CostSectionCard: React.FC<CostSectionCardProps> = ({
   isFinalTotal = false,
 }) => {
   return (
-    <div className="bg-white p-5 rounded-[4px] border border-[#EAEAEA] shadow-[0_2px_8px_rgba(0,0,0,0.03)] space-y-5 animate-fade-in-up">
+    <div className="bg-white p-4 rounded-[8px] border border-[#EAEAEA] shadow-[0_2px_6px_rgba(0,0,0,0.02)] space-y-4 animate-fade-in-up">
       {/* HEADER PHẦN */}
-      <div className="flex items-center space-x-2 border-b border-[#EAEAEA] pb-3">
+      <div className="flex items-center space-x-2 border-b border-[#EAEAEA] pb-2.5">
         {icon && <div className="text-[#111111]">{icon}</div>}
         <div>
-          <h4 className="text-[15px] font-bold text-[#111111] uppercase tracking-wider">
+          <h4 className="text-xs font-bold text-[#111111] uppercase tracking-wider">
             {title}
           </h4>
           {subtitle && (
-            <p className="text-[12px] text-[#787774] mt-0.5">
+            <p className="text-[11px] text-[#787774] mt-0.5">
               {subtitle}
             </p>
           )}
@@ -83,19 +83,19 @@ export const CostSectionCard: React.FC<CostSectionCardProps> = ({
 
       {/* TOP INPUTS */}
       {topInputs && (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
           {topInputs}
         </div>
       )}
 
       {/* MAIN BLOCK */}
       {(mainBlockTitle || mainLeftContent || mainRightContent || breakdownItems || infoBoxes) && (
-        <div className="p-5 bg-[#F9F9F9] border border-[#EAEAEA] rounded-[4px] space-y-5">
+        <div className="p-3.5 bg-[#FBFBFA] border border-[#EAEAEA] rounded-[6px] space-y-3.5">
           {/* Main Block Header */}
           {(mainBlockTitle || mainBlockHeaderRight) && (
-            <div className="flex items-center justify-between border-b border-[#EAEAEA] pb-3">
+            <div className="flex items-center justify-between border-b border-[#EAEAEA] pb-2">
               {mainBlockTitle && (
-                <h5 className="text-[12px] font-bold text-[#111111] uppercase tracking-wider">
+                <h5 className="text-[11px] font-bold text-[#111111] uppercase tracking-wider">
                   {mainBlockTitle}
                 </h5>
               )}
@@ -105,25 +105,25 @@ export const CostSectionCard: React.FC<CostSectionCardProps> = ({
             </div>
           )}
           
-          <div className="grid grid-cols-1 md:grid-cols-12 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-5">
             {/* Cột trái (hẹp hơn) - khoảng 5 cột */}
             {mainLeftContent && (
-              <div className="md:col-span-5 space-y-5">
+              <div className="md:col-span-5 space-y-3.5">
                 {mainLeftContent}
               </div>
             )}
 
             {/* Cột phải (rộng hơn) - khoảng 7 cột */}
-            <div className={mainLeftContent ? "md:col-span-7 space-y-4" : "col-span-1 md:col-span-12 space-y-4"}>
+            <div className={mainLeftContent ? "md:col-span-7 space-y-3" : "col-span-1 md:col-span-12 space-y-3"}>
               
               {mainRightContent}
 
               {/* Breakdown items */}
               {breakdownItems && breakdownItems.length > 0 && (
-                <div className="space-y-2.5 text-[13px] font-mono">
+                <div className="space-y-1.5 text-xs font-mono">
                   {breakdownItems.map((item, idx) => (
-                    <div key={idx} className="flex justify-between items-center pb-1 border-b border-dashed border-[#EAEAEA]">
-                      <span className="text-[#787774] font-sans">{item.label}</span>
+                    <div key={idx} className="flex justify-between items-center pb-1 border-b border-[#EAEAEA]">
+                      <span className="text-[#787774] font-sans text-[11px]">{item.label}</span>
                       <span className={`font-bold ${item.valueClassName || 'text-[#111111]'}`}>
                         {item.value}
                       </span>
@@ -134,11 +134,11 @@ export const CostSectionCard: React.FC<CostSectionCardProps> = ({
 
               {/* Breakdown Total */}
               {breakdownTotal && (
-                <div className="border-t-2 border-[#111111] pt-3 flex flex-wrap gap-2 justify-between items-center font-mono">
-                  <span className="text-[13px] font-bold text-[#111111] uppercase font-sans">
+                <div className="border-t border-[#111111] pt-2 flex flex-wrap gap-2 justify-between items-center font-mono">
+                  <span className="text-xs font-bold text-[#111111] uppercase font-sans">
                     {breakdownTotal.label}
                   </span>
-                  <span className="font-extrabold text-[#38517A] text-[15px]">
+                  <span className="font-extrabold text-[#111111] text-sm">
                     {breakdownTotal.value}
                   </span>
                 </div>
@@ -146,12 +146,12 @@ export const CostSectionCard: React.FC<CostSectionCardProps> = ({
 
               {/* Info Boxes */}
               {infoBoxes && infoBoxes.length > 0 && (
-                <div className="flex gap-4 pt-3">
+                <div className="flex gap-3 pt-2">
                   {infoBoxes.map((box, idx) => (
-                    <div key={idx} className="bg-[#F0F0EE] p-3.5 rounded-[4px] flex-1 text-center border-l-4 border-slate-300">
-                      <p className="text-[10px] font-bold text-[#787774] uppercase tracking-wider mb-1.5">{box.label}</p>
-                      <p className={`font-mono font-extrabold text-[#38517A] leading-none ${isFinalTotal ? 'text-[28px]' : 'text-[22px]'}`}>
-                        {box.value} {box.unit && <span className="text-[11px] font-bold text-[#111111] tracking-normal">{box.unit}</span>}
+                    <div key={idx} className="bg-white p-2.5 rounded-[6px] flex-1 text-center border border-[#EAEAEA] shadow-xs">
+                      <p className="text-[10px] font-bold text-[#787774] uppercase tracking-wider mb-1">{box.label}</p>
+                      <p className={`font-mono font-extrabold text-[#111111] leading-none ${isFinalTotal ? 'text-2xl' : 'text-lg'}`}>
+                        {box.value} {box.unit && <span className="text-[11px] font-bold text-[#787774] tracking-normal">{box.unit}</span>}
                       </p>
                     </div>
                   ))}
@@ -162,7 +162,7 @@ export const CostSectionCard: React.FC<CostSectionCardProps> = ({
 
           {/* Bottom Note */}
           {bottomNote && (
-            <div className="text-[11px] text-[#787774] italic mt-5 pt-3 border-t border-[#EAEAEA]">
+            <div className="text-[11px] text-[#787774] italic mt-3 pt-2 border-t border-[#EAEAEA]">
               {bottomNote}
             </div>
           )}
@@ -171,23 +171,23 @@ export const CostSectionCard: React.FC<CostSectionCardProps> = ({
 
       {/* FOOTER TOTAL */}
       {(footerTitle || footerTotal) && (
-        <div className={`p-4 mt-6 border rounded-[6px] flex flex-col md:flex-row items-center justify-between ${isFinalTotal ? 'bg-[#111111] border-[#111111] shadow-xl' : 'bg-[#F4F7FB] border-blue-100/50'}`}>
+        <div className={`p-3 border rounded-[6px] flex flex-col md:flex-row items-center justify-between ${isFinalTotal ? 'bg-[#111111] border-[#111111] text-white shadow-xs' : 'bg-[#FBFBFA] border-[#EAEAEA]'}`}>
           <div>
             {footerTitle && (
-              <h5 className={`font-extrabold uppercase ${isFinalTotal ? 'text-[20px] text-white' : 'text-[14px] text-slate-900'}`}>
+              <h5 className={`font-bold uppercase tracking-wider ${isFinalTotal ? 'text-sm text-white' : 'text-xs text-[#111111]'}`}>
                 {footerTitle}
               </h5>
             )}
             {footerSubtitle && (
-              <p className={`text-[11px] mt-1 font-mono ${isFinalTotal ? 'text-slate-400' : 'hidden'}`}>
+              <p className={`text-[10px] mt-0.5 font-mono ${isFinalTotal ? 'text-slate-400' : 'hidden'}`}>
                 {footerSubtitle}
               </p>
             )}
           </div>
-          <div className="text-right mt-4 md:mt-0">
+          <div className="text-right mt-2 md:mt-0">
             {footerTotal && (
-              <span className={`font-bold leading-none ${isFinalTotal ? 'text-[42px] font-sans text-emerald-400' : 'text-[18px] font-mono text-blue-600'}`}>
-                {footerTotal} {footerTotalUnit && <span className={`font-bold uppercase ml-1.5 ${isFinalTotal ? 'text-[18px] font-sans text-white' : 'text-[14px] font-sans text-blue-600'}`}>{footerTotalUnit}</span>}
+              <span className={`font-bold leading-none ${isFinalTotal ? 'text-2xl font-mono text-emerald-400' : 'text-base font-mono text-[#111111]'}`}>
+                {footerTotal} {footerTotalUnit && <span className={`font-bold uppercase ml-1 ${isFinalTotal ? 'text-xs text-white' : 'text-xs text-[#787774]'}`}>{footerTotalUnit}</span>}
               </span>
             )}
           </div>

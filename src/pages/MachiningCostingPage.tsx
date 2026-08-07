@@ -1,4 +1,4 @@
-import { ArrowLeft, Check, Copy, Save, CheckCircle2, AlertCircle, AlertTriangle, Layers, Calendar, Clock } from 'lucide-react';
+import { ArrowLeft, Check, Copy, Save, CheckCircle2, AlertCircle, AlertTriangle } from 'lucide-react';
 import { useQuotationStore } from '../store/useQuotationStore';
 import { usePricingCalculator } from '../hooks/usePricingCalculator';
 import MachiningCalculatorForm from '../components/rfq/MachiningCalculatorForm';
@@ -29,7 +29,6 @@ export default function MachiningCostingPage() {
   } = usePricingCalculator('machining');
 
   const rfq = useQuotationStore(state => state.rfq);
-  const currency = useQuotationStore(state => state.currency);
 
   if (!activeRfqItemId && !activeItemRecord) {
     return (
@@ -55,80 +54,78 @@ export default function MachiningCostingPage() {
   }
 
   return (
-    <div className="w-full space-y-5">
-      {/* Specific RFQ Item Dossier Header Banner */}
-      <div className="bg-[#111111] text-white p-4.5 rounded-[10px] shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3 animate-fade-in-up">
-        <div className="space-y-1">
-          <div className="inline-flex items-center space-x-2 text-sky-400 font-mono text-[11px] uppercase tracking-wider font-bold">
-            <Layers className="w-4 h-4" />
-            <span>Đang Tính Giá Cho Mã Sản Phẩm: {activeItemRecord?.item_code || 'N/A'}</span>
+    <div className="w-full space-y-4 animate-fade-in-up">
+      {/* Sleek Compact Header Bar (Warm Monochrome Minimalist) */}
+      <div className="bg-[#FBFBFA] p-3 rounded-[10px] border border-[#EAEAEA] shadow-[0_2px_8px_rgba(0,0,0,0.03)] flex flex-wrap items-center justify-between gap-3 text-xs">
+        {/* Left Side: Product Info & Meta */}
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+          <button
+            type="button"
+            onClick={() => navigate('/quotations')}
+            className="p-1.5 bg-white hover:bg-slate-100 text-[#111111] border border-[#EAEAEA] rounded-[6px] transition-colors cursor-pointer inline-flex items-center space-x-1 font-bold text-xs"
+            title="Quay lại danh sách RFQ"
+          >
+            <ArrowLeft className="w-3.5 h-3.5" />
+            <span>Quay lại</span>
+          </button>
+
+          <div className="h-4 w-[1px] bg-[#EAEAEA] hidden sm:block" />
+
+          <div className="space-y-0.5">
+            <div className="flex items-center space-x-2 flex-wrap">
+              <span className="font-mono font-bold text-[#111111] text-xs">
+                [{activeItemRecord?.item_code || 'N/A'}]
+              </span>
+              <h2 className="text-sm font-bold text-[#111111] tracking-tight">
+                {activeItemRecord?.product_name || rfq.product_name}
+              </h2>
+              <span className="font-mono text-xs text-[#787774]">
+                (Part No: {activeItemRecord?.part_number || 'N/A'})
+              </span>
+              <QuoteStatusBadge status={activeItemRecord?.status || 'IN_COSTING'} size="sm" />
+            </div>
+            <div className="text-[11px] text-[#787774] flex items-center space-x-3">
+              <span>Khách hàng: <strong className="text-[#111111]">{activeDossierRecord?.customer_name || rfq.customer_name}</strong></span>
+              <span>•</span>
+              <span className="font-mono">Ngày nhận: {formatDateVerbose(activeDossierRecord?.rfq_received_date)}</span>
+              <span>•</span>
+              <span className="font-mono">Deadline: {formatDate(activeDossierRecord?.customer_deadline)}</span>
+            </div>
           </div>
-          <h2 className="text-base font-extrabold tracking-tight text-white">
-            Đang tính giá cho: <span className="text-amber-300">{activeItemRecord?.product_name || rfq.product_name}</span> (Part No: <span className="font-mono text-slate-300">{activeItemRecord?.part_number || 'N/A'}</span>)
-          </h2>
-          <p className="text-xs text-slate-300 flex flex-wrap items-center gap-x-4 gap-y-1 pt-0.5">
-            <span>Khách hàng: <strong>{activeDossierRecord?.customer_name || rfq.customer_name}</strong></span>
-            <span className="inline-flex items-center font-mono">
-              <Calendar className="w-3 h-3 mr-1 text-slate-400" />
-              Ngày nhận: {formatDateVerbose(activeDossierRecord?.rfq_received_date)}
-            </span>
-            <span className="inline-flex items-center font-mono">
-              <Clock className="w-3 h-3 mr-1 text-slate-400" />
-              Deadline: {formatDate(activeDossierRecord?.customer_deadline)}
-            </span>
-          </p>
         </div>
 
-        <button
-          type="button"
-          onClick={() => navigate('/quotations')}
-          className="px-3 py-1.5 bg-white/10 hover:bg-white/20 text-white rounded-[6px] text-xs font-bold transition-all cursor-pointer inline-flex items-center space-x-1 border border-white/20"
-        >
-          <ArrowLeft className="w-3.5 h-3.5" />
-          <span>Quay Lại</span>
-        </button>
-      </div>
-
-      {/* Action Toolbar Header */}
-      <div className="bg-white p-4 rounded-[10px] border border-[#EAEAEA] shadow-[0_2px_8px_rgba(0,0,0,0.03)] flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-        <div className="flex items-center space-x-3">
-          <div>
-            <h2 className="text-sm font-bold text-[#111111] uppercase tracking-wider">
-              Bảng Tính Giá Real-time ({currency})
-            </h2>
-            <p className="text-[11px] text-[#787774]">
-              Luồng Tính Giá Chỉ Gia Công CNC
-            </p>
-          </div>
-          <QuoteStatusBadge status={activeItemRecord?.status || 'IN_COSTING'} size="sm" />
-        </div>
-
-        <div className="flex items-center space-x-1.5">
+        {/* Right Side: Action Buttons with Text Labels */}
+        <div className="flex items-center space-x-2">
           <button
             type="button"
             onClick={() => setShowCloneModal(true)}
-            className="p-2 bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-200 rounded-[6px] transition-colors cursor-pointer"
-            title="Sao chép toàn bộ thông số từ báo giá cũ tương tự (+ Copy)"
+            className="px-3 py-1.5 bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-200 rounded-[6px] transition-colors cursor-pointer inline-flex items-center space-x-1.5 text-xs font-bold"
+            title="Sao chép toàn bộ thông số từ báo giá cũ tương tự"
           >
-            <Copy className="w-4 h-4 text-amber-700" />
+            <Copy className="w-3.5 h-3.5 text-amber-700" />
+            <span>Sao chép</span>
           </button>
+
           <button
             type="button"
             onClick={handleSaveDraft}
             disabled={saving}
-            className="p-2 bg-[#F0F0EE] hover:bg-[#E0E0DE] text-[#111111] rounded-[6px] transition-colors cursor-pointer disabled:opacity-50 border border-[#EAEAEA]"
+            className="px-3 py-1.5 bg-[#F0F0EE] hover:bg-[#E0E0DE] text-[#111111] rounded-[6px] transition-colors cursor-pointer disabled:opacity-50 border border-[#EAEAEA] inline-flex items-center space-x-1.5 text-xs font-bold"
             title="Lưu bản nháp tính giá (Save Draft)"
           >
-            <Save className="w-4 h-4 text-[#111111]" />
+            <Save className="w-3.5 h-3.5 text-[#111111]" />
+            <span>Lưu nháp</span>
           </button>
+
           <button
             type="button"
             onClick={handleCompleteCosting}
             disabled={saving}
-            className="p-2 bg-[#111111] hover:bg-[#333333] active:scale-[0.98] text-white rounded-[6px] transition-all cursor-pointer disabled:opacity-50 shadow-xs"
+            className="px-3.5 py-1.5 bg-[#111111] hover:bg-[#333333] active:scale-[0.98] text-white rounded-[6px] transition-all cursor-pointer disabled:opacity-50 shadow-xs inline-flex items-center space-x-1.5 text-xs font-bold"
             title="Hoàn thành tính giá"
           >
-            <Check className="w-4 h-4 text-emerald-400 stroke-[2.5]" />
+            <Check className="w-3.5 h-3.5 text-emerald-400 stroke-[2.5]" />
+            <span>Hoàn thành</span>
           </button>
         </div>
       </div>
@@ -136,7 +133,7 @@ export default function MachiningCostingPage() {
       {/* Notification Banner */}
       {msg && (
         <div
-          className={`p-3 rounded-[8px] text-xs font-semibold flex items-center space-x-2 ${
+          className={`p-2.5 rounded-[8px] text-xs font-semibold flex items-center space-x-2 ${
             msg.type === 'success'
               ? 'bg-[#EDF3EC] text-[#346538] border border-[#C6E1C4]'
               : msg.type === 'warning'
@@ -153,16 +150,12 @@ export default function MachiningCostingPage() {
         </div>
       )}
 
-      {/* Main Layout */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 xl:grid-cols-4 gap-6 items-start">
-        <div className="lg:col-span-8 xl:col-span-3 space-y-5">
-          <div className="bg-slate-50 border border-slate-200 rounded-[8px] p-3 text-sm font-bold text-slate-800 flex items-center">
-             Luồng Tính Giá: Chỉ Gia Công CNC
-          </div>
-
+      {/* Main Layout Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
+        <div className="lg:col-span-8 space-y-4">
           <MachiningCalculatorForm />
         </div>
-        <div className="lg:col-span-4 xl:col-span-1 xl:sticky xl:top-[88px]">
+        <div className="lg:col-span-4 sticky top-20">
           <RealtimeSummaryPanel />
         </div>
       </div>
