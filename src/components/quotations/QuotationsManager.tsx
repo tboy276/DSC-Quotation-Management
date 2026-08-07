@@ -1404,51 +1404,54 @@ export const QuotationsManager = () => {
 
       {/* NEW DOSSIER QUICK ENTRY MODAL */}
       {showNewRfqModal && (
-        <Modal isOpen={true} onClose={() => setShowNewRfqModal(false)} title="+ Tạo Hồ Sơ RFQ Mới (Nhập Đa Sản Phẩm)">
-          <form onSubmit={handleCreateNewDossierSubmit} className="space-y-4 text-xs max-h-[80vh] overflow-y-auto pr-1">
-            <div className="flex items-center justify-between bg-slate-50 p-2.5 rounded-[6px] border border-[#EAEAEA]">
-              <span className="font-bold text-[#111111]">Mã Hồ Sơ RFQ: <span className="font-mono text-blue-700">{newRfqCode}</span></span>
+        <Modal isOpen={true} onClose={() => setShowNewRfqModal(false)} title="+ Tạo Hồ Sơ RFQ Mới (Nhập Đa Sản Phẩm)" maxWidthClass="max-w-[1240px]">
+          <form onSubmit={handleCreateNewDossierSubmit} className="space-y-4 text-xs max-h-[82vh] overflow-y-auto pr-1">
+            <div className="flex items-center justify-between bg-[#FBFBFA] p-3 rounded-[8px] border border-[#EAEAEA]">
+              <div className="flex items-center space-x-2">
+                <span className="text-[11px] font-bold text-[#787774] uppercase tracking-wider">Mã Hồ Sơ RFQ:</span>
+                <span className="font-mono font-bold text-[#111111] bg-white px-2 py-0.5 rounded border border-[#EAEAEA] text-xs">{newRfqCode}</span>
+              </div>
               <button
                 type="button"
                 onClick={() => setShowPasteModal(true)}
-                className="px-2.5 py-1 bg-[#111111] text-white font-bold rounded text-[11px] hover:bg-slate-800 transition-colors inline-flex items-center space-x-1 cursor-pointer"
+                className="px-3 py-1.5 bg-[#111111] text-white font-bold rounded-[6px] text-xs hover:bg-[#333333] transition-colors inline-flex items-center space-x-1.5 cursor-pointer shadow-xs"
               >
-                <Clipboard className="w-3.5 h-3.5" />
+                <Clipboard className="w-3.5 h-3.5 stroke-[2]" />
                 <span>Dán Văn Bản Tự Động Extract</span>
               </button>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
               <div>
-                <label className="block font-bold text-[#787774] mb-1 uppercase text-[10px]">Tên Khách Hàng *</label>
+                <label className="block font-bold text-[#787774] mb-1 uppercase text-[10px] tracking-wider">Tên Khách Hàng *</label>
                 <input
                   type="text"
                   required
                   value={newCustomerName}
                   onChange={(e) => setNewCustomerName(e.target.value)}
-                  placeholder="Ví dụ: Công ty Honda Việt Nam"
-                  className="w-full p-2 border border-[#EAEAEA] rounded-[6px] font-semibold text-[#111111]"
+                  placeholder="Công ty Honda Việt Nam"
+                  className="w-full px-2.5 py-1.5 border border-[#EAEAEA] rounded-[6px] font-semibold text-[#111111] focus:outline-none focus:border-[#111111] text-xs"
                 />
               </div>
 
               <div>
-                <label className="block font-bold text-[#787774] mb-1 uppercase text-[10px]">Người Gửi RFQ (Attn)</label>
+                <label className="block font-bold text-[#787774] mb-1 uppercase text-[10px] tracking-wider">Người Gửi RFQ (Attn)</label>
                 <input
                   type="text"
                   value={newCustomerContactPerson}
                   onChange={(e) => setNewCustomerContactPerson(e.target.value)}
-                  placeholder="Ví dụ: Mr. Tanaka / Phòng Mua Hàng"
-                  className="w-full p-2 border border-[#EAEAEA] rounded-[6px]"
+                  placeholder="Mr. Tanaka / Phòng Mua Hàng"
+                  className="w-full px-2.5 py-1.5 border border-[#EAEAEA] rounded-[6px] text-[#111111] focus:outline-none focus:border-[#111111] text-xs"
                 />
               </div>
 
               <div>
-                <label className="block font-bold text-[#787774] mb-1 uppercase text-[10px]">Trade Terms *</label>
+                <label className="block font-bold text-[#787774] mb-1 uppercase text-[10px] tracking-wider">Trade Terms *</label>
                 <select
                   required
                   value={newTradeTerms || ''}
                   onChange={(e) => setNewTradeTerms(e.target.value as any)}
-                  className="w-full p-2 border border-[#EAEAEA] rounded-[6px] font-bold"
+                  className="w-full px-2.5 py-1.5 border border-[#EAEAEA] rounded-[6px] font-bold text-[#111111] focus:outline-none focus:border-[#111111] bg-white text-xs"
                 >
                   <option value="">-- Chọn Điều Khoản --</option>
                   <option value="EXW">EXW - Giao tại xưởng DISOCO</option>
@@ -1459,49 +1462,56 @@ export const QuotationsManager = () => {
               </div>
 
               <div>
-                <label className="block font-bold text-[#787774] mb-1 uppercase text-[10px]">Deadline Khách Hàng</label>
+                <label className="block font-bold text-[#787774] mb-1 uppercase text-[10px] tracking-wider">Deadline Khách Hàng</label>
                 <input
                   type="date"
                   value={newCustomerDeadline}
                   onChange={(e) => setNewCustomerDeadline(e.target.value)}
-                  className="w-full p-2 border border-[#EAEAEA] rounded-[6px]"
+                  className="w-full px-2.5 py-1.5 border border-[#EAEAEA] rounded-[6px] text-[#111111] focus:outline-none focus:border-[#111111] text-xs font-mono"
                 />
               </div>
             </div>
 
-            {/* Product Items Multi-row Entry */}
-            <div className="border-t border-[#EAEAEA] pt-3">
-              <div className="flex items-center justify-between mb-2">
-                <span className="font-bold text-[#111111] uppercase tracking-wider text-[11px]">Danh Sách Sản Phẩm Yêu Cầu ({newMultiItems.length})</span>
+            {/* Product Items Table Layout - Single Row per Item */}
+            <div className="border-t border-[#EAEAEA] pt-3 space-y-2">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-2">
+                  <span className="font-bold text-[#111111] uppercase tracking-wider text-[11px]">Danh Sách Sản Phẩm Yêu Cầu</span>
+                  <span className="px-2 py-0.5 bg-[#F5F5F5] text-[#2F3437] rounded-full text-[10px] font-mono font-bold border border-[#EAEAEA]">
+                    {newMultiItems.length}
+                  </span>
+                </div>
                 <button
                   type="button"
                   onClick={handleAddRowToNewDossier}
-                  className="px-2 py-1 bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold rounded text-[11px] inline-flex items-center space-x-1 cursor-pointer"
+                  className="px-2.5 py-1.5 bg-[#F0F0EE] hover:bg-[#E0E0DE] text-[#111111] font-bold rounded-[6px] text-xs inline-flex items-center space-x-1 cursor-pointer transition-colors border border-[#EAEAEA]"
                 >
-                  <Plus className="w-3.5 h-3.5" />
+                  <Plus className="w-3.5 h-3.5 stroke-[2]" />
                   <span>Thêm Dòng Sản Phẩm</span>
                 </button>
               </div>
 
-              <div className="space-y-2">
-                {newMultiItems.map((item, idx) => (
-                  <div key={item.id} className="p-2.5 bg-slate-50 border border-[#EAEAEA] rounded-[8px] space-y-2 relative">
-                    <div className="flex items-center justify-between font-bold text-[11px] text-slate-700">
-                      <span>Dòng #{idx + 1}</span>
-                      {newMultiItems.length > 1 && (
-                        <button
-                          type="button"
-                          onClick={() => handleRemoveRowFromNewDossier(item.id)}
-                          className="text-red-500 hover:text-red-700 cursor-pointer"
-                        >
-                          <X className="w-4 h-4" />
-                        </button>
-                      )}
-                    </div>
+              <div className="border border-[#EAEAEA] rounded-[8px] overflow-hidden bg-white">
+                {/* Single Row Column Headers */}
+                <div className="bg-[#FBFBFA] border-b border-[#EAEAEA] px-3 py-2 grid grid-cols-12 gap-2 text-[10px] font-bold text-[#787774] uppercase tracking-wider select-none items-center">
+                  <div className="col-span-1 text-center">STT</div>
+                  <div className="col-span-3">Tên Sản Phẩm *</div>
+                  <div className="col-span-2">Part Number</div>
+                  <div className="col-span-3">Yêu Cầu Công Nghệ</div>
+                  <div className="col-span-1 text-right">Sản Lượng</div>
+                  <div className="col-span-1 text-right">Giá Target</div>
+                  <div className="col-span-1 text-center">Xóa</div>
+                </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                      <div>
-                        <label className="block text-[10px] text-slate-500 font-bold">Tên Sản Phẩm *</label>
+                {/* Single Row per Item */}
+                <div className="divide-y divide-[#EAEAEA] max-h-[380px] overflow-y-auto">
+                  {newMultiItems.map((item, idx) => (
+                    <div key={item.id} className="px-3 py-2 grid grid-cols-12 gap-2 items-center hover:bg-[#FBFBFA] transition-colors text-xs">
+                      <div className="col-span-1 text-center font-mono font-bold text-[#787774]">
+                        #{idx + 1}
+                      </div>
+
+                      <div className="col-span-3">
                         <input
                           type="text"
                           required
@@ -1512,13 +1522,12 @@ export const QuotationsManager = () => {
                               rows.map((r) => (r.id === item.id ? { ...r, product_name: val } : r))
                             );
                           }}
-                          placeholder="Trục khuỷu 4 cylinder"
-                          className="w-full p-1.5 bg-white border border-[#EAEAEA] rounded text-xs"
+                          placeholder="VD: Trục khuỷu 4 cylinder"
+                          className="w-full px-2 py-1 bg-white border border-[#EAEAEA] rounded text-xs text-[#111111] focus:outline-none focus:border-[#111111]"
                         />
                       </div>
 
-                      <div>
-                        <label className="block text-[10px] text-slate-500 font-bold">Part Number</label>
+                      <div className="col-span-2">
                         <input
                           type="text"
                           value={item.part_number}
@@ -1529,12 +1538,11 @@ export const QuotationsManager = () => {
                             );
                           }}
                           placeholder="PN-13405-TK"
-                          className="w-full p-1.5 bg-white border border-[#EAEAEA] rounded text-xs font-mono"
+                          className="w-full px-2 py-1 bg-white border border-[#EAEAEA] rounded text-xs font-mono text-[#111111] focus:outline-none focus:border-[#111111]"
                         />
                       </div>
 
-                      <div>
-                        <label className="block text-[10px] text-slate-500 font-bold">Yêu Cầu Công Nghệ</label>
+                      <div className="col-span-3">
                         <select
                           value={item.technology_requirement}
                           onChange={(e) => {
@@ -1543,7 +1551,7 @@ export const QuotationsManager = () => {
                               rows.map((r) => (r.id === item.id ? { ...r, technology_requirement: val } : r))
                             );
                           }}
-                          className="w-full p-1.5 bg-white border border-[#EAEAEA] rounded text-xs font-bold"
+                          className="w-full px-2 py-1 bg-white border border-[#EAEAEA] rounded text-xs font-bold text-[#111111] focus:outline-none focus:border-[#111111]"
                         >
                           <option value="Rèn+Gia công">Phân Hệ Rèn + GC</option>
                           <option value="Phôi rèn">Chỉ Phôi Rèn</option>
@@ -1555,8 +1563,7 @@ export const QuotationsManager = () => {
                         </select>
                       </div>
 
-                      <div>
-                        <label className="block text-[10px] text-slate-500 font-bold">Sản Lượng Nhu Cầu</label>
+                      <div className="col-span-1">
                         <input
                           type="number"
                           value={item.annual_volume || ''}
@@ -1567,12 +1574,11 @@ export const QuotationsManager = () => {
                             );
                           }}
                           placeholder="10000"
-                          className="w-full p-1.5 bg-white border border-[#EAEAEA] rounded text-xs font-mono"
+                          className="w-full px-2 py-1 bg-white border border-[#EAEAEA] rounded text-xs font-mono text-[#111111] text-right focus:outline-none focus:border-[#111111]"
                         />
                       </div>
 
-                      <div>
-                        <label className="block text-[10px] text-slate-500 font-bold">Giá Target KH (VNĐ)</label>
+                      <div className="col-span-1">
                         <input
                           type="number"
                           value={item.target_price || ''}
@@ -1583,12 +1589,27 @@ export const QuotationsManager = () => {
                             );
                           }}
                           placeholder="45000"
-                          className="w-full p-1.5 bg-white border border-[#EAEAEA] rounded text-xs font-mono"
+                          className="w-full px-2 py-1 bg-white border border-[#EAEAEA] rounded text-xs font-mono text-[#111111] text-right focus:outline-none focus:border-[#111111]"
                         />
                       </div>
+
+                      <div className="col-span-1 text-center">
+                        {newMultiItems.length > 1 ? (
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveRowFromNewDossier(item.id)}
+                            className="p-1 text-slate-400 hover:text-[#9F2F2D] hover:bg-[#FDEBEC] rounded transition-colors cursor-pointer"
+                            title="Xóa dòng"
+                          >
+                            <X className="w-3.5 h-3.5 stroke-[2]" />
+                          </button>
+                        ) : (
+                          <span className="text-slate-300">-</span>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
             </div>
 
@@ -1596,13 +1617,13 @@ export const QuotationsManager = () => {
               <button
                 type="button"
                 onClick={() => setShowNewRfqModal(false)}
-                className="px-4 py-2 border border-[#EAEAEA] rounded-[6px] font-bold text-slate-700 hover:bg-slate-50 cursor-pointer"
+                className="px-4 py-2 border border-[#EAEAEA] rounded-[6px] font-bold text-[#787774] hover:text-[#111111] hover:bg-[#F7F6F3] cursor-pointer transition-colors"
               >
                 Hủy
               </button>
               <button
                 type="submit"
-                className="px-4 py-2 bg-[#111111] hover:bg-[#333333] text-white font-bold rounded-[6px] cursor-pointer"
+                className="px-4 py-2 bg-[#111111] hover:bg-[#333333] text-white font-bold rounded-[6px] cursor-pointer transition-colors shadow-xs"
               >
                 Lưu Hồ Sơ RFQ
               </button>
