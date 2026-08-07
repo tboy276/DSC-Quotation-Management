@@ -275,9 +275,13 @@ export default function SawingCalculatorForm() {
         sawingOpProps={{
           t_cut_sec: sawing.t_cut_sec || 0,
           DG_sawing_machine_hour: sawing.DG_sawing_machine_hour || 0,
-          onUpdateSawingOp: (t_cut_sec, DG_sawing_machine_hour) => {
+          sawing_machine_type: sawing.sawing_machine_type || 'band_saw',
+          onUpdateSawingOp: (t_cut_sec, DG_sawing_machine_hour, sawing_machine_type) => {
             setSawingField('t_cut_sec', t_cut_sec);
             setSawingField('DG_sawing_machine_hour', DG_sawing_machine_hour);
+            if (sawing_machine_type) {
+              setSawingField('sawing_machine_type', sawing_machine_type);
+            }
           },
           C_ops_sawing: res.C_ops_sawing,
         }}

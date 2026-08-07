@@ -6,7 +6,8 @@ import { CostSectionCard } from '../ui/CostSectionCard';
 export interface SawingOpProps {
   t_cut_sec: number;
   DG_sawing_machine_hour: number;
-  onUpdateSawingOp: (t_cut_sec: number, DG_sawing_machine_hour: number) => void;
+  sawing_machine_type?: string;
+  onUpdateSawingOp: (t_cut_sec: number, DG_sawing_machine_hour: number, sawing_machine_type?: string) => void;
   C_ops_sawing: number;
 }
 
@@ -38,6 +39,9 @@ export const MachiningOpsList = ({
     { key: 'cnc_type_4', name: 'Loại IV: Máy khoan cần, máy cũ,..', ratePerHour: 182000, ratePerMinute: 182000 / 60 },
   ];
 
+  const bandSawRate = INITIAL_SYSTEM_RATES.find((r) => r.rate_key === 'sawing_machine')?.value || 120000;
+  const trimmingRate = INITIAL_SYSTEM_RATES.find((r) => r.rate_key === 'trimming_machine')?.value || 180000;
+
   const handleAddDefaultOp = () => {
     const defaultType = cncMachineTypes[2]; // Default to Loại III: Máy tiện, phay CNC
     const systemRateObj = INITIAL_SYSTEM_RATES.find((r) => r.rate_key === defaultType.key);
@@ -66,6 +70,8 @@ export const MachiningOpsList = ({
     }
   };
 
+  const currentSawingMachineType = sawingOpProps?.sawing_machine_type || (sawingOpProps?.DG_sawing_machine_hour === trimmingRate ? 'trimming_machine' : 'band_saw');
+
   const rightContent = (operations.length === 0 && !sawingOpProps) ? (
     <p className="text-xs text-[#787774] italic py-2 text-center">
       Chưa có nguyên công gia công nào. Nhấp "+ Thêm nguyên công" để chọn nhóm máy CNC.
@@ -74,61 +80,63 @@ export const MachiningOpsList = ({
     <div className="space-y-3">
       {/* Locked First Operation for Sawing if present */}
       {sawingOpProps && (
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 p-4 rounded-[6px] border border-amber-300 bg-amber-50/30 text-xs shadow-2xs">
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 p-4 rounded-[6px] border border-[#EAEAEA] bg-[#FBFBFA] text-xs">
           <div className="flex flex-wrap gap-4 flex-1">
-            {/* Tên Nguyên Công */}
+            {/* 1. Tên Nguyên Công */}
             <div className="flex-1 min-w-[150px]">
-              <div className="flex items-center space-x-1.5 mb-1.5">
-                <label className="text-[9px] font-bold text-amber-900 uppercase tracking-wider">
-                  Tên Nguyên Công
-                </label>
-                <span className="inline-flex items-center px-1.5 py-0.2 rounded bg-amber-200 text-amber-900 text-[9px] font-bold">
-                  <Lock className="w-2.5 h-2.5 mr-1" />
-                  Cố định (NC 1)
-                </span>
-              </div>
+              <label className="block text-[9px] font-bold text-[#787774] uppercase tracking-wider mb-1.5">
+                Tên Nguyên Công
+              </label>
               <input
                 type="text"
                 value="Cắt phôi cưa"
                 readOnly
-                className="w-full px-2.5 py-1.5 border border-amber-200 rounded-[4px] bg-amber-100/50 text-amber-950 font-bold text-xs cursor-not-allowed"
+                className="w-full px-2.5 py-1.5 border border-[#EAEAEA] rounded-[4px] bg-[#F0F0EE] text-[#111111] font-bold text-xs cursor-not-allowed"
               />
             </div>
 
-            {/* Đơn Giá Máy Cắt (VNĐ/giờ) */}
-            <div className="flex-[1.5] min-w-[180px]">
-              <label className="block text-[9px] font-bold text-amber-900 uppercase tracking-wider mb-1.5">
-                Đơn Giá Máy Cắt (VNĐ/giờ)
+            {/* 2. Máy Gia Công (Dropdown từ Master Data) */}
+            <div className="flex-[1.5] min-w-[200px]">
+              <label className="block text-[9px] font-bold text-[#787774] uppercase tracking-wider mb-1.5">
+                Máy Gia Công
               </label>
-              <input
-                type="number"
-                min="0"
-                step="1000"
-                value={sawingOpProps.DG_sawing_machine_hour}
-                onChange={(e) => sawingOpProps.onUpdateSawingOp(sawingOpProps.t_cut_sec, Math.max(0, Number(e.target.value)))}
-                className="w-full px-2.5 py-1.5 border border-amber-300 rounded-[4px] bg-white font-mono text-[#111111] font-bold text-xs focus:outline-none focus:border-amber-500"
-              />
+              <select
+                value={currentSawingMachineType}
+                onChange={(e) => {
+                  const newType = e.target.value;
+                  const rate = newType === 'trimming_machine' ? trimmingRate : bandSawRate;
+                  sawingOpProps.onUpdateSawingOp(sawingOpProps.t_cut_sec, rate, newType);
+                }}
+                className="w-full px-2.5 py-1.5 border border-[#EAEAEA] rounded-[4px] bg-[#F0F0EE] text-[#111111] font-bold text-xs focus:outline-none"
+              >
+                <option value="band_saw">
+                  Máy cưa vòng ({Math.round(bandSawRate / 1000)}k/h • {Math.round(bandSawRate / 60).toLocaleString('vi-VN')} đ/p)
+                </option>
+                <option value="trimming_machine">
+                  Máy cắt đột ({Math.round(trimmingRate / 1000)}k/h • {Math.round(trimmingRate / 60).toLocaleString('vi-VN')} đ/p)
+                </option>
+              </select>
             </div>
 
-            {/* Thời Gian Cắt Phôi (Giây) */}
+            {/* 3. Thời Gian Cắt (Giây) */}
             <div className="w-[140px]">
-              <label className="block text-[9px] font-bold text-amber-900 uppercase tracking-wider mb-1.5">
+              <label className="block text-[9px] font-bold text-[#787774] uppercase tracking-wider mb-1.5">
                 Thời Gian Cắt (Giây)
               </label>
               <input
                 type="number"
                 min="0"
                 value={sawingOpProps.t_cut_sec}
-                onChange={(e) => sawingOpProps.onUpdateSawingOp(Math.max(0, Number(e.target.value)), sawingOpProps.DG_sawing_machine_hour)}
-                className="w-full px-2.5 py-1.5 border border-amber-300 rounded-[4px] bg-white font-mono text-[#111111] font-bold text-xs focus:outline-none focus:border-amber-500"
+                onChange={(e) => sawingOpProps.onUpdateSawingOp(Math.max(0, Number(e.target.value)), sawingOpProps.DG_sawing_machine_hour, currentSawingMachineType)}
+                className="w-full px-2.5 py-1.5 border border-[#EAEAEA] rounded-[4px] bg-white font-mono text-[#111111] font-bold text-xs focus:outline-none focus:border-[#111111]"
               />
             </div>
           </div>
 
-          {/* Cột phải: Phép tính & Kết quả */}
+          {/* 4. Kết quả (Cột Phải) */}
           <div className="flex items-center justify-end gap-3 min-w-[150px]">
             <div className="text-right">
-              <p className="text-[10px] font-mono text-amber-800 mb-1">
+              <p className="text-[10px] font-mono font-medium text-[#787774] mb-1">
                 ({sawingOpProps.t_cut_sec}s ÷ 3600) × {Math.round(sawingOpProps.DG_sawing_machine_hour / 1000)}k
               </p>
               <p className="font-mono font-extrabold text-[#111111] text-sm">
@@ -138,10 +146,10 @@ export const MachiningOpsList = ({
             <button
               type="button"
               disabled
-              className="p-1.5 text-amber-700/50 cursor-not-allowed rounded opacity-60 self-end mb-0.5"
-              title="Nguyên công cắt phôi bắt buộc cho luồng Cưa (Không thể xóa)"
+              className="p-1.5 text-[#787774] cursor-not-allowed rounded opacity-50 self-end mb-0.5"
+              title="Nguyên công cắt phôi bắt buộc (Không thể xóa)"
             >
-              <Lock className="w-4 h-4 text-amber-800" />
+              <Lock className="w-4 h-4 text-[#787774]" />
             </button>
           </div>
         </div>
