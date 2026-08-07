@@ -6,6 +6,7 @@ import type {
   RfqItemStatus,
   QuotationFilterOptions,
   CurrencyType,
+  RfqStageCounts,
 } from '../types/quote';
 import type { ForgingInput, CastingInput, ForgingResult, CastingResult } from './calculation-engine/types';
 import type { SegmentType } from '../store/useQuotationStore';
@@ -80,6 +81,70 @@ export const fetchQuoteByItemId = async (itemId: string): Promise<QuoteRecord | 
 };
 
 /**
+ * Fetch lightweight global count of RFQ items grouped by status / stage
+ */
+export const fetchQuoteCounts = async (): Promise<RfqStageCounts> => {
+  try {
+    const { data: dbItems } = await supabase
+      .from('rfq_items')
+      .select('status');
+
+    if (!dbItems) {
+      return {
+        total: 0,
+        pendingReview: 0,
+        inCosting: 0,
+        successful: 0,
+        newStage: 0,
+        internalStage: 0,
+        sentStage: 0,
+      };
+    }
+
+    let pendingReview = 0;
+    let cancelledNotFeasible = 0;
+    let inCosting = 0;
+    let readyForQuote = 0;
+    let quotedSent = 0;
+    let successful = 0;
+    let cancelledAfterQuote = 0;
+
+    for (const item of dbItems) {
+      switch (item.status) {
+        case 'PENDING_REVIEW': pendingReview++; break;
+        case 'CANCELLED_NOT_FEASIBLE': cancelledNotFeasible++; break;
+        case 'IN_COSTING': inCosting++; break;
+        case 'READY_FOR_QUOTE': readyForQuote++; break;
+        case 'QUOTED_SENT': quotedSent++; break;
+        case 'SUCCESSFUL': successful++; break;
+        case 'CANCELLED_AFTER_QUOTE': cancelledAfterQuote++; break;
+      }
+    }
+
+    return {
+      total: dbItems.length,
+      pendingReview,
+      inCosting,
+      successful,
+      newStage: pendingReview + cancelledNotFeasible,
+      internalStage: inCosting + readyForQuote,
+      sentStage: quotedSent + successful + cancelledAfterQuote,
+    };
+  } catch (err) {
+    console.warn('Error fetching quote counts:', err);
+    return {
+      total: 0,
+      pendingReview: 0,
+      inCosting: 0,
+      successful: 0,
+      newStage: 0,
+      internalStage: 0,
+      sentStage: 0,
+    };
+  }
+};
+
+/**
  * Fetch all RFQ Items joined with Quote calculations & Dossier Headers from Supabase
  */
 export const fetchQuotes = async (filter?: QuotationFilterOptions): Promise<QuoteRecord[]> => {
@@ -109,7 +174,27 @@ export const fetchQuotes = async (filter?: QuotationFilterOptions): Promise<Quot
 
   if (!filter) return list;
 
-  // Apply filters
+  // 1. Stage filter
+  if (filter.stage) {
+    if (filter.stage === 'new') {
+      const allowed = ['PENDING_REVIEW', 'CANCELLED_NOT_FEASIBLE'];
+      list = list.filter((q) => allowed.includes(q.status || q.rfqItem?.status || ''));
+      if (filter.onlyCancelled) {
+        list = list.filter((q) => (q.status || q.rfqItem?.status) === 'CANCELLED_NOT_FEASIBLE');
+      }
+    } else if (filter.stage === 'internal') {
+      const allowed = ['IN_COSTING', 'READY_FOR_QUOTE'];
+      list = list.filter((q) => allowed.includes(q.status || q.rfqItem?.status || ''));
+    } else if (filter.stage === 'sent') {
+      const allowed = ['QUOTED_SENT', 'SUCCESSFUL', 'CANCELLED_AFTER_QUOTE'];
+      list = list.filter((q) => allowed.includes(q.status || q.rfqItem?.status || ''));
+      if (filter.onlyCancelled) {
+        list = list.filter((q) => (q.status || q.rfqItem?.status) === 'CANCELLED_AFTER_QUOTE');
+      }
+    }
+  }
+
+  // 2. Specific status sub-filter
   if (filter.status && filter.status !== 'ALL') {
     list = list.filter((q) => q.status === filter.status || q.rfqItem?.status === filter.status);
   }

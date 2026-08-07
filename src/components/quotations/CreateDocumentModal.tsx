@@ -52,11 +52,10 @@ export const CreateDocumentModal = ({
     try {
       setErrorMsg(null);
       const data = await fetchQuotes();
-      // Filter quotes in READY_FOR_QUOTE or IN_COSTING or QUOTED_SENT
+      // Filter quotes strictly in READY_FOR_QUOTE status
       const readyList = data.filter(
         (q) =>
           q.rfqItem?.status === 'READY_FOR_QUOTE' ||
-          q.rfqItem?.status === 'IN_COSTING' ||
           q.status === 'READY_FOR_QUOTE' ||
           initialSelectedQuotes.some((sq) => sq.id === q.id)
       );

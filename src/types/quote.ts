@@ -96,8 +96,20 @@ export interface QuotationFilterOptions {
   fromDate?: string;
   toDate?: string;
   segment?: SegmentType | 'ALL';
+  stage?: 'new' | 'internal' | 'sent';
+  onlyCancelled?: boolean;
   page?: number;
   pageSize?: number;
+}
+
+export interface RfqStageCounts {
+  total: number;
+  pendingReview: number;
+  inCosting: number;
+  successful: number;
+  newStage: number;
+  internalStage: number;
+  sentStage: number;
 }
 
 export interface PaginatedQuotationResponse {

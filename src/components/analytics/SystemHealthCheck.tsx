@@ -14,7 +14,6 @@ interface TableCheckResult {
 
 export const SystemHealthCheck: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(false);
-  const [results, setResults] = useState<TableCheckResult[]>([]);
   const [lastCheckTime, setLastCheckTime] = useState<string>('');
 
   const tableSpecs: Array<{ name: string; desc: string; columns: string[]; sampleRecord: (id: string) => any }> = [
@@ -98,12 +97,25 @@ export const SystemHealthCheck: React.FC = () => {
     },
   ];
 
+  const [results, setResults] = useState<TableCheckResult[]>(() =>
+    tableSpecs.map((s) => ({
+      tableName: s.name,
+      description: s.desc,
+      exists: false,
+      columnsOk: false,
+      writeOk: false,
+      status: 'ERROR',
+      details: 'Đang kiểm tra kết nối...',
+    }))
+  );
+
   const runHealthCheck = async () => {
     setLoading(true);
     const checkResults: TableCheckResult[] = [];
 
-    // --- NEW: Test Full Quotation Chain Once ---
-    const chainWriteResults: Record<string, { ok: boolean, err: string }> = {
+    try {
+      // --- NEW: Test Full Quotation Chain Once ---
+      const chainWriteResults: Record<string, { ok: boolean, err: string }> = {
       rfqs: { ok: false, err: 'Chưa thực hiện test' },
       rfq_items: { ok: false, err: 'Chưa thực hiện test' },
       quotes: { ok: false, err: 'Chưa thực hiện test' },
@@ -176,7 +188,11 @@ export const SystemHealthCheck: React.FC = () => {
       }
     };
 
-    await runQuotationChainTest();
+    try {
+      await runQuotationChainTest();
+    } catch (chainErr: any) {
+      console.warn('Lỗi kiểm thử chuỗi báo giá (Chain Test):', chainErr);
+    }
     // ----------------------------------------------
 
     for (const spec of tableSpecs) {
@@ -300,9 +316,15 @@ export const SystemHealthCheck: React.FC = () => {
       });
     }
 
-    setResults(checkResults);
-    setLastCheckTime(new Date().toLocaleTimeString('vi-VN'));
-    setLoading(false);
+    } catch (globalErr: any) {
+      console.error('Lỗi kiểm tra hệ thống:', globalErr);
+    } finally {
+      if (checkResults.length > 0) {
+        setResults(checkResults);
+      }
+      setLastCheckTime(new Date().toLocaleTimeString('vi-VN'));
+      setLoading(false);
+    }
   };
 
   useEffect(() => {

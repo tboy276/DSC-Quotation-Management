@@ -31,7 +31,7 @@ export const DashboardPage = () => {
 
   const email = profile?.email || user?.email || 'N/A';
   const role = profile?.role || 'sales';
-  const isEstimator = role === 'estimator';
+  const isEstimator = role === 'estimator' || role === 'admin';
 
   const handleTabChange = (tab: string) => {
     navigate(`/${tab}`);
@@ -93,11 +93,7 @@ export const DashboardPage = () => {
         <Route path="/machining/:rfqItemId?" element={<MachiningCostingPage />} />
         <Route path="/master_data" element={<MasterDataContainer />} />
         <Route path="/analytics" element={<RfqAnalyticsReport />} />
-        <Route path="/health_check" element={
-          <AuthWrapper requireEstimator message="Mục kiểm tra tình trạng kết nối DB chỉ dành riêng cho vai trò Cán bộ Kỹ thuật Báo giá (Estimator).">
-            <SystemHealthCheck />
-          </AuthWrapper>
-        } />
+        <Route path="/health_check" element={<SystemHealthCheck />} />
         <Route path="/users" element={
           <AuthWrapper requireEstimator message="Mục quản lý danh sách tài khoản chỉ dành riêng cho vai trò Cán bộ Kỹ thuật Báo giá (Estimator).">
             <div className="space-y-5 max-w-5xl mx-auto animate-fade-in-up">
