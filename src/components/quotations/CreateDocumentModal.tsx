@@ -8,6 +8,7 @@ import { formatCurrencyValue } from '../rfq/RealtimeSummaryPanel';
 import { Modal } from '../ui/Modal';
 import { QuotationPreviewPanel } from './QuotationPreviewPanel';
 import { FileText, Check, Building2, ArrowRight, AlertTriangle } from 'lucide-react';
+import { useAuth } from '../../context/AuthContext';
 
 interface CreateDocumentModalProps {
   selectedQuotes: QuoteRecord[];
@@ -20,6 +21,16 @@ export const CreateDocumentModal = ({
   onClose,
   onSuccess,
 }: CreateDocumentModalProps) => {
+  const { profile, user } = useAuth();
+  const currentUserEmail = profile?.email || user?.email || '';
+
+  const canManageQuote = (quote?: QuoteRecord | null): boolean => {
+    if (!quote) return false;
+    if (profile?.role === 'admin') return true;
+    const creatorEmail = quote.rfq?.created_by_email || quote.created_by_email;
+    return Boolean(currentUserEmail && creatorEmail === currentUserEmail);
+  };
+
   const [step, setStep] = useState<'form' | 'preview'>('form');
   const [allReadyQuotes, setAllReadyQuotes] = useState<QuoteRecord[]>([]);
   const [customerOptions, setCustomerOptions] = useState<string[]>([]);
@@ -52,13 +63,14 @@ export const CreateDocumentModal = ({
     try {
       setErrorMsg(null);
       const data = await fetchQuotes();
-      // Filter quotes strictly in READY_FOR_QUOTE status
-      const readyList = data.filter(
-        (q) =>
+      // Filter quotes strictly in READY_FOR_QUOTE status and owned by current user (or Admin)
+      const readyList = data.filter((q) => {
+        const isStatusReady =
           q.rfqItem?.status === 'READY_FOR_QUOTE' ||
           q.status === 'READY_FOR_QUOTE' ||
-          initialSelectedQuotes.some((sq) => sq.id === q.id)
-      );
+          initialSelectedQuotes.some((sq) => sq.id === q.id);
+        return isStatusReady && canManageQuote(q);
+      });
 
       setAllReadyQuotes(readyList);
 

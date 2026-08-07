@@ -301,20 +301,12 @@ export const QuotationsManager = () => {
     }
   };
 
-  // Technical Feasibility Approval: ONLY Estimator or Admin (B4: No creator bypass!)
-  const canApproveTechnicalFeasibility = (_quote?: QuoteRecord | null): boolean => {
-    return profile?.role === 'estimator' || profile?.role === 'admin';
-  };
-
-  // Commercial Status Marking (Tab 3): ONLY Admin OR Sales who created the RFQ
-  const canMarkCommercialStatus = (quote?: QuoteRecord | null): boolean => {
+  // Single Ownership-based Authorization Rule (Replaces role-based functions)
+  const canManageQuote = (quote?: QuoteRecord | null): boolean => {
     if (!quote) return false;
     if (profile?.role === 'admin') return true;
-    if (profile?.role === 'sales') {
-      const creatorEmail = quote.rfq?.created_by_email || quote.created_by_email;
-      return Boolean(currentUserEmail && creatorEmail === currentUserEmail);
-    }
-    return false;
+    const creatorEmail = quote.rfq?.created_by_email || quote.created_by_email;
+    return Boolean(currentUserEmail && creatorEmail === currentUserEmail);
   };
 
   // Flat Table Column Header Sort Handler
@@ -379,16 +371,22 @@ export const QuotationsManager = () => {
     ? (selectedSingleQuote.rfqItem?.status || selectedSingleQuote.status)
     : null;
 
-  const canApproveFeasibility = selectedSingleQuote && selectedItemStatus === 'PENDING_REVIEW' && canApproveTechnicalFeasibility(selectedSingleQuote);
+  const canApproveFeasibility = selectedSingleQuote && selectedItemStatus === 'PENDING_REVIEW' && canManageQuote(selectedSingleQuote);
   const canGoToCalculator = selectedSingleQuote && selectedItemStatus === 'IN_COSTING';
-  const canMarkSentStatus = selectedSingleQuote && selectedItemStatus === 'QUOTED_SENT' && canMarkCommercialStatus(selectedSingleQuote);
+  const canMarkSentStatus = selectedSingleQuote && selectedItemStatus === 'QUOTED_SENT' && canManageQuote(selectedSingleQuote);
 
   // Selected quotes list for validation
   const selectedQuotes = useMemo(() => {
     return quotes.filter((q) => selectedQuoteIds.includes(q.id));
   }, [quotes, selectedQuoteIds]);
 
-  // Validation logic for "Gộp Báo Giá" in Tab 2 (B1 & Part 2)
+  // Check if ALL selected items can be deleted by current user (Ownership rule)
+  const canDeleteSelected = useMemo(() => {
+    if (selectedQuoteIds.length === 0) return false;
+    return selectedQuotes.every((q) => canManageQuote(q));
+  }, [selectedQuoteIds, selectedQuotes, profile, currentUserEmail]);
+
+  // Validation logic for "Gộp Báo Giá" in Tab 2 (Strict 4 Conditions + Option B)
   const groupDisabledReason = useMemo((): string | null => {
     if (selectedQuoteIds.length === 0) {
       return 'Vui lòng chọn ít nhất 1 sản phẩm để gộp báo giá.';
@@ -408,8 +406,30 @@ export const QuotationsManager = () => {
       return 'Chỉ có thể gộp các sản phẩm của CÙNG MỘT khách hàng.';
     }
 
+    // Technology Segment Family Check
+    const getTechFamily = (tech?: string) => {
+      if (!tech) return 'forging';
+      if (tech.includes('Cưa')) return 'sawing';
+      if (tech.includes('Đúc')) return 'casting';
+      if (tech.includes('CNC')) return 'machining';
+      return 'forging';
+    };
+    const firstTech = getTechFamily(selectedQuotes[0]?.rfqItem?.technology_requirement);
+    const sameTech = selectedQuotes.every(
+      (q) => getTechFamily(q.rfqItem?.technology_requirement) === firstTech
+    );
+    if (!sameTech) {
+      return 'Chỉ có thể gộp các sản phẩm của CÙNG MỘT phân hệ công nghệ (Rèn, Đúc, Cưa, CNC).';
+    }
+
+    // Option B: Must be created by SAME person (or Admin)
+    const allManageable = selectedQuotes.every((q) => canManageQuote(q));
+    if (!allManageable) {
+      return 'Chỉ có thể gộp các sản phẩm do chính bạn tạo.';
+    }
+
     return null;
-  }, [selectedQuoteIds, selectedQuotes]);
+  }, [selectedQuoteIds, selectedQuotes, profile, currentUserEmail]);
 
   const handleGroupRequest = () => {
     if (groupDisabledReason) return;
@@ -417,7 +437,10 @@ export const QuotationsManager = () => {
   };
 
   const handleDeleteSelectedItems = async () => {
-    if (selectedQuoteIds.length === 0) return;
+    if (!canDeleteSelected) {
+      alert('⚠️ Không thể thực hiện: Bạn chỉ có quyền xóa các RFQ do chính mình tạo.');
+      return;
+    }
     const selectedList = quotes.filter((q) => selectedQuoteIds.includes(q.id));
     const count = selectedList.length;
 
@@ -957,7 +980,7 @@ export const QuotationsManager = () => {
             <Eye className="w-4 h-4" />
           </button>
 
-          {/* TAB 1 ACTIONS: Feasibility for PENDING_REVIEW */}
+          {/* TAB 1 ACTIONS: Feasibility for PENDING_REVIEW & + Tạo RFQ Mới */}
           {activeStage === 'new' && (
             <>
               <button
@@ -983,10 +1006,20 @@ export const QuotationsManager = () => {
               >
                 <X className="w-4 h-4 stroke-[2.5]" />
               </button>
+
+              {/* + Tạo RFQ Mới (Chỉ hiện ở Tab 1) */}
+              <button
+                type="button"
+                onClick={() => setShowNewRfqModal(true)}
+                title="+ Tạo Hồ Sơ RFQ Mới (Nhập Đa Sản Phẩm)"
+                className="p-2 bg-[#111111] hover:bg-[#333333] text-white rounded-[6px] transition-all cursor-pointer shadow-xs"
+              >
+                <Plus className="w-4 h-4 stroke-[2.5]" />
+              </button>
             </>
           )}
 
-          {/* TAB 2 ACTIONS: Calculator navigation & Gộp Báo Giá */}
+          {/* TAB 2 ACTIONS: Calculator navigation & Gộp Báo Giá & Xóa */}
           {activeStage === 'internal' && (
             <>
               <button
@@ -1001,7 +1034,7 @@ export const QuotationsManager = () => {
                 <Calculator className="w-4 h-4" />
               </button>
 
-              {/* Gộp Báo Giá (Strictly Validated B1 & Part 2) */}
+              {/* Gộp Báo Giá (Strictly Validated 4 Conditions + Option B) */}
               <button
                 type="button"
                 disabled={Boolean(groupDisabledReason)}
@@ -1012,12 +1045,18 @@ export const QuotationsManager = () => {
                 <Layers className="w-4 h-4" />
               </button>
 
-              {/* Xóa Mã Sản Phẩm */}
+              {/* Xóa Mã Sản Phẩm (Strict Ownership Check) */}
               <button
                 type="button"
-                disabled={selectedQuoteIds.length === 0}
+                disabled={selectedQuoteIds.length === 0 || !canDeleteSelected}
                 onClick={handleDeleteSelectedItems}
-                title={`Xoá (${selectedQuoteIds.length}) mã sản phẩm đã chọn khỏi Supabase DB`}
+                title={
+                  selectedQuoteIds.length === 0
+                    ? 'Vui lòng chọn sản phẩm để xoá'
+                    : !canDeleteSelected
+                    ? 'Bạn chỉ có quyền xóa các RFQ do chính mình tạo'
+                    : `Xoá (${selectedQuoteIds.length}) mã sản phẩm đã chọn khỏi Supabase DB`
+                }
                 className="p-2 bg-[#FDEBEC] hover:bg-[#F8C9CA] text-[#9F2F2D] border border-[#FADBDC] rounded-[6px] transition-all cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed"
               >
                 <Trash2 className="w-4 h-4 stroke-[2]" />
@@ -1054,15 +1093,6 @@ export const QuotationsManager = () => {
             </>
           )}
 
-          {/* Global Action 2: + Tạo RFQ Mới */}
-          <button
-            type="button"
-            onClick={() => setShowNewRfqModal(true)}
-            title="+ Tạo Hồ Sơ RFQ Mới (Nhập Đa Sản Phẩm)"
-            className="p-2 bg-[#111111] hover:bg-[#333333] text-white rounded-[6px] transition-all cursor-pointer shadow-xs"
-          >
-            <Plus className="w-4 h-4 stroke-[2.5]" />
-          </button>
 
           {/* Global Action 3: Export Excel */}
           <button

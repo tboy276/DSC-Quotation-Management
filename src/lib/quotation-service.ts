@@ -85,44 +85,36 @@ export const fetchQuoteByItemId = async (itemId: string): Promise<QuoteRecord | 
  */
 export const fetchQuoteCounts = async (): Promise<RfqStageCounts> => {
   try {
-    const { data: dbItems } = await supabase
-      .from('rfq_items')
-      .select('status');
+    const [
+      { count: totalCount },
+      { count: pendingCount },
+      { count: cancelledNotFeasibleCount },
+      { count: inCostingCount },
+      { count: readyCount },
+      { count: sentCount },
+      { count: successCount },
+      { count: cancelledAfterQuoteCount },
+    ] = await Promise.all([
+      supabase.from('rfq_items').select('*', { count: 'exact', head: true }),
+      supabase.from('rfq_items').select('*', { count: 'exact', head: true }).eq('status', 'PENDING_REVIEW'),
+      supabase.from('rfq_items').select('*', { count: 'exact', head: true }).eq('status', 'CANCELLED_NOT_FEASIBLE'),
+      supabase.from('rfq_items').select('*', { count: 'exact', head: true }).eq('status', 'IN_COSTING'),
+      supabase.from('rfq_items').select('*', { count: 'exact', head: true }).eq('status', 'READY_FOR_QUOTE'),
+      supabase.from('rfq_items').select('*', { count: 'exact', head: true }).eq('status', 'QUOTED_SENT'),
+      supabase.from('rfq_items').select('*', { count: 'exact', head: true }).eq('status', 'SUCCESSFUL'),
+      supabase.from('rfq_items').select('*', { count: 'exact', head: true }).eq('status', 'CANCELLED_AFTER_QUOTE'),
+    ]);
 
-    if (!dbItems) {
-      return {
-        total: 0,
-        pendingReview: 0,
-        inCosting: 0,
-        successful: 0,
-        newStage: 0,
-        internalStage: 0,
-        sentStage: 0,
-      };
-    }
-
-    let pendingReview = 0;
-    let cancelledNotFeasible = 0;
-    let inCosting = 0;
-    let readyForQuote = 0;
-    let quotedSent = 0;
-    let successful = 0;
-    let cancelledAfterQuote = 0;
-
-    for (const item of dbItems) {
-      switch (item.status) {
-        case 'PENDING_REVIEW': pendingReview++; break;
-        case 'CANCELLED_NOT_FEASIBLE': cancelledNotFeasible++; break;
-        case 'IN_COSTING': inCosting++; break;
-        case 'READY_FOR_QUOTE': readyForQuote++; break;
-        case 'QUOTED_SENT': quotedSent++; break;
-        case 'SUCCESSFUL': successful++; break;
-        case 'CANCELLED_AFTER_QUOTE': cancelledAfterQuote++; break;
-      }
-    }
+    const pendingReview = pendingCount || 0;
+    const cancelledNotFeasible = cancelledNotFeasibleCount || 0;
+    const inCosting = inCostingCount || 0;
+    const readyForQuote = readyCount || 0;
+    const quotedSent = sentCount || 0;
+    const successful = successCount || 0;
+    const cancelledAfterQuote = cancelledAfterQuoteCount || 0;
 
     return {
-      total: dbItems.length,
+      total: totalCount || 0,
       pendingReview,
       inCosting,
       successful,
@@ -321,8 +313,8 @@ export const createRfqDossierWithItems = async (
     quantity_unit: it.quantity_unit || 'pcs/năm',
     target_price: it.target_price,
     technology_requirement: it.technology_requirement || 'Rèn+Gia công',
-    status: it.is_feasible ? 'IN_COSTING' : 'CANCELLED_NOT_FEASIBLE',
-    cancel_reason: it.is_feasible ? null : it.cancel_reason,
+    status: it.is_feasible !== false ? 'PENDING_REVIEW' : 'CANCELLED_NOT_FEASIBLE',
+    cancel_reason: it.is_feasible !== false ? null : it.cancel_reason,
   }));
 
   const { data: dbItems, error: itemsErr } = await supabase
