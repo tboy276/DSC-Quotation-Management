@@ -527,10 +527,14 @@ export const updateQuoteStatus = async (
 
   const now = new Date().toISOString();
 
-  // Find target item ID (since we removed localQuotesCache, we find in localItemsCache)
+  // Find target item ID (strip fallback "quote-" prefix if present)
   let targetItemId = quoteId;
+  if (targetItemId.startsWith('quote-')) {
+    targetItemId = targetItemId.replace(/^quote-/, '');
+  }
+
   const targetItem = localItemsCache.find(
-    (item) => item.id === quoteId || (item.quote && (Array.isArray(item.quote) ? item.quote[0]?.id : item.quote?.id) === quoteId)
+    (item) => item.id === targetItemId || item.id === quoteId || (item.quote && (Array.isArray(item.quote) ? item.quote[0]?.id : item.quote?.id) === quoteId)
   );
   if (targetItem) targetItemId = targetItem.id;
 

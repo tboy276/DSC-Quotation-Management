@@ -516,7 +516,8 @@ export const QuotationsManager = () => {
     if (!canApproveFeasibility || selectedQuotes.length === 0) return;
     try {
       for (const quote of selectedQuotes) {
-        await updateQuoteStatus(quote.id, 'IN_COSTING');
+        const targetId = quote.rfq_item_id || quote.id;
+        await updateQuoteStatus(targetId, 'IN_COSTING');
         if (quote.rfq && !quote.rfq.technical_review_completed_at) {
           quote.rfq.technical_review_completed_at = new Date().toISOString();
         }
@@ -545,7 +546,8 @@ export const QuotationsManager = () => {
     try {
       const targetStatus: RfqItemStatus = activeStage === 'new' ? 'CANCELLED_NOT_FEASIBLE' : 'CANCELLED_AFTER_QUOTE';
       for (const quote of selectedQuotes) {
-        await updateQuoteStatus(quote.id, targetStatus, cancelReasonText.trim());
+        const targetId = quote.rfq_item_id || quote.id;
+        await updateQuoteStatus(targetId, targetStatus, cancelReasonText.trim());
       }
       setShowCancelReasonModal(false);
       setSelectedQuoteIds([]);
