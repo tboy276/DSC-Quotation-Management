@@ -199,30 +199,6 @@ export default function SawingCalculatorForm() {
           />
         </div>
       )}
-
-      {/* 12. Thời gian cắt */}
-      <div className="flex items-center justify-between py-2 border-b border-[#EAEAEA]">
-        <label className="text-[10px] font-bold text-[#787774] uppercase tracking-wider">12. Thời gian cắt phôi (giây):</label>
-        <input
-          type="number"
-          min="0"
-          value={sawing.t_cut_sec}
-          onChange={(e) => setSawingField('t_cut_sec', Math.max(0, Number(e.target.value)))}
-          className="w-1/2 min-w-[200px] px-2.5 py-1.5 border border-[#EAEAEA] rounded-[4px] font-mono font-bold text-[#111111] text-right"
-        />
-      </div>
-
-      {/* 13. Đơn giá máy cắt */}
-      <div className="flex items-center justify-between py-2">
-        <label className="text-[10px] font-bold text-[#787774] uppercase tracking-wider">13. Đơn giá máy cắt (VNĐ/giờ):</label>
-        <input
-          type="number"
-          min="0"
-          value={sawing.DG_sawing_machine_hour}
-          onChange={(e) => setSawingField('DG_sawing_machine_hour', Math.max(0, Number(e.target.value)))}
-          className="w-1/2 min-w-[200px] px-2.5 py-1.5 border border-[#EAEAEA] rounded-[4px] font-mono font-bold text-[#111111] text-right"
-        />
-      </div>
     </div>
   );
 
@@ -274,10 +250,10 @@ export default function SawingCalculatorForm() {
 
   return (
     <div className="space-y-4 animate-fade-in-up">
-      {/* 1. Section Vật Liệu & Cắt Phôi (Material & Sawing Inputs) */}
+      {/* 1. Section Vật Liệu (Material Inputs) */}
       <CostSectionCard
         icon={<Workflow className="w-5 h-5 text-[#111111]" />}
-        title="SECTION 1: VẬT LIỆU THÉP & CẮT PHÔI"
+        title="SECTION 1: VẬT LIỆU THÉP"
         mainBlockTitle="Nhập Liệu Vật Tư"
         mainLeftContent={section1Left}
         mainRightContent={section1Right}
@@ -287,7 +263,7 @@ export default function SawingCalculatorForm() {
         footerTotalUnit="VNĐ/SP"
       />
 
-      {/* 2. Machining */}
+      {/* 2. Machining & Sawing Process */}
       <MachiningOpsList
         operations={sawing.machining_operations || []}
         totalMachiningCost={res.C_machining}
@@ -296,6 +272,15 @@ export default function SawingCalculatorForm() {
         onUpdateOp={updateOp}
         onRemoveOp={removeOp}
         onUpdateNotes={(notes) => setSawingField('machining_notes', notes)}
+        sawingOpProps={{
+          t_cut_sec: sawing.t_cut_sec || 0,
+          DG_sawing_machine_hour: sawing.DG_sawing_machine_hour || 0,
+          onUpdateSawingOp: (t_cut_sec, DG_sawing_machine_hour) => {
+            setSawingField('t_cut_sec', t_cut_sec);
+            setSawingField('DG_sawing_machine_hour', DG_sawing_machine_hour);
+          },
+          C_ops_sawing: res.C_ops_sawing,
+        }}
       />
 
       {/* 3. Summary */}

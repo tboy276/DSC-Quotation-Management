@@ -1,7 +1,14 @@
 import type { MachiningOperation } from '../../lib/calculation-engine/types';
 import { INITIAL_SYSTEM_RATES } from '../../lib/master-data-service';
-import { Plus, Trash2, Cpu } from 'lucide-react';
+import { Plus, Trash2, Cpu, Lock } from 'lucide-react';
 import { CostSectionCard } from '../ui/CostSectionCard';
+
+export interface SawingOpProps {
+  t_cut_sec: number;
+  DG_sawing_machine_hour: number;
+  onUpdateSawingOp: (t_cut_sec: number, DG_sawing_machine_hour: number) => void;
+  C_ops_sawing: number;
+}
 
 interface MachiningOpsListProps {
   operations: MachiningOperation[];
@@ -11,6 +18,7 @@ interface MachiningOpsListProps {
   onUpdateOp: (index: number, op: MachiningOperation) => void;
   onRemoveOp: (index: number) => void;
   onUpdateNotes: (notes: string) => void;
+  sawingOpProps?: SawingOpProps;
 }
 
 export const MachiningOpsList = ({
@@ -21,6 +29,7 @@ export const MachiningOpsList = ({
   onUpdateOp,
   onRemoveOp,
   onUpdateNotes,
+  sawingOpProps,
 }: MachiningOpsListProps) => {
   const cncMachineTypes = [
     { key: 'cnc_type_1', name: 'Loại I: TT Gia công tổ hợp, ngang, đứng', ratePerHour: 390000, ratePerMinute: 6500 },
@@ -34,8 +43,9 @@ export const MachiningOpsList = ({
     const systemRateObj = INITIAL_SYSTEM_RATES.find((r) => r.rate_key === defaultType.key);
     const hourlyRate = systemRateObj?.value || defaultType.ratePerHour;
 
+    const opNum = sawingOpProps ? operations.length + 2 : operations.length + 1;
     onAddOp({
-      name: `Nguyên công ${operations.length + 1}`,
+      name: `Nguyên công ${opNum}`,
       t_prep_min: 2.0,
       t_man_min: 3.0,
       DG_machine_hour: hourlyRate,
@@ -56,12 +66,88 @@ export const MachiningOpsList = ({
     }
   };
 
-  const rightContent = operations.length === 0 ? (
+  const rightContent = (operations.length === 0 && !sawingOpProps) ? (
     <p className="text-xs text-[#787774] italic py-2 text-center">
       Chưa có nguyên công gia công nào. Nhấp "+ Thêm nguyên công" để chọn nhóm máy CNC.
     </p>
   ) : (
     <div className="space-y-3">
+      {/* Locked First Operation for Sawing if present */}
+      {sawingOpProps && (
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 p-4 rounded-[6px] border border-amber-300 bg-amber-50/30 text-xs shadow-2xs">
+          <div className="flex flex-wrap gap-4 flex-1">
+            {/* Tên Nguyên Công */}
+            <div className="flex-1 min-w-[150px]">
+              <div className="flex items-center space-x-1.5 mb-1.5">
+                <label className="text-[9px] font-bold text-amber-900 uppercase tracking-wider">
+                  Tên Nguyên Công
+                </label>
+                <span className="inline-flex items-center px-1.5 py-0.2 rounded bg-amber-200 text-amber-900 text-[9px] font-bold">
+                  <Lock className="w-2.5 h-2.5 mr-1" />
+                  Cố định (NC 1)
+                </span>
+              </div>
+              <input
+                type="text"
+                value="Cắt phôi cưa"
+                readOnly
+                className="w-full px-2.5 py-1.5 border border-amber-200 rounded-[4px] bg-amber-100/50 text-amber-950 font-bold text-xs cursor-not-allowed"
+              />
+            </div>
+
+            {/* Đơn Giá Máy Cắt (VNĐ/giờ) */}
+            <div className="flex-[1.5] min-w-[180px]">
+              <label className="block text-[9px] font-bold text-amber-900 uppercase tracking-wider mb-1.5">
+                Đơn Giá Máy Cắt (VNĐ/giờ)
+              </label>
+              <input
+                type="number"
+                min="0"
+                step="1000"
+                value={sawingOpProps.DG_sawing_machine_hour}
+                onChange={(e) => sawingOpProps.onUpdateSawingOp(sawingOpProps.t_cut_sec, Math.max(0, Number(e.target.value)))}
+                className="w-full px-2.5 py-1.5 border border-amber-300 rounded-[4px] bg-white font-mono text-[#111111] font-bold text-xs focus:outline-none focus:border-amber-500"
+              />
+            </div>
+
+            {/* Thời Gian Cắt Phôi (Giây) */}
+            <div className="w-[140px]">
+              <label className="block text-[9px] font-bold text-amber-900 uppercase tracking-wider mb-1.5">
+                Thời Gian Cắt (Giây)
+              </label>
+              <input
+                type="number"
+                min="0"
+                value={sawingOpProps.t_cut_sec}
+                onChange={(e) => sawingOpProps.onUpdateSawingOp(Math.max(0, Number(e.target.value)), sawingOpProps.DG_sawing_machine_hour)}
+                className="w-full px-2.5 py-1.5 border border-amber-300 rounded-[4px] bg-white font-mono text-[#111111] font-bold text-xs focus:outline-none focus:border-amber-500"
+              />
+            </div>
+          </div>
+
+          {/* Cột phải: Phép tính & Kết quả */}
+          <div className="flex items-center justify-end gap-3 min-w-[150px]">
+            <div className="text-right">
+              <p className="text-[10px] font-mono text-amber-800 mb-1">
+                ({sawingOpProps.t_cut_sec}s ÷ 3600) × {Math.round(sawingOpProps.DG_sawing_machine_hour / 1000)}k
+              </p>
+              <p className="font-mono font-extrabold text-[#111111] text-sm">
+                {Math.round(sawingOpProps.C_ops_sawing).toLocaleString('vi-VN')} <span className="text-[9px] font-sans font-bold uppercase tracking-wider text-[#787774]">VNĐ</span>
+              </p>
+            </div>
+            <button
+              type="button"
+              disabled
+              className="p-1.5 text-amber-700/50 cursor-not-allowed rounded opacity-60 self-end mb-0.5"
+              title="Nguyên công cắt phôi bắt buộc cho luồng Cưa (Không thể xóa)"
+            >
+              <Lock className="w-4 h-4 text-amber-800" />
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Dynamic CNC operations */}
       {operations.map((op, idx) => {
         // Find matching CNC type based on rate, or default to Loại III
         const matchedCncKey = cncMachineTypes.find((c) => {
@@ -74,6 +160,7 @@ export const MachiningOpsList = ({
 
         // Calculate cost for this specific op
         const opCost = (op.t_prep_min + op.t_man_min) * (op.DG_machine_hour / 60);
+        const opDisplayNum = sawingOpProps ? idx + 2 : idx + 1;
 
         return (
           <div
@@ -91,7 +178,7 @@ export const MachiningOpsList = ({
                   type="text"
                   value={op.name || ''}
                   onChange={(e) => onUpdateOp(idx, { ...op, name: e.target.value })}
-                  placeholder={`Nguyên công ${idx + 1}`}
+                  placeholder={`Nguyên công ${opDisplayNum}`}
                   className="w-full px-2.5 py-1.5 border border-[#EAEAEA] rounded-[4px] bg-white text-[#111111] font-mono text-xs focus:outline-none focus:border-[#111111] transition-colors"
                 />
               </div>
@@ -187,10 +274,14 @@ export const MachiningOpsList = ({
     </div>
   );
 
+  const grandTotalCost = sawingOpProps
+    ? Math.round(sawingOpProps.C_ops_sawing + totalMachiningCost)
+    : Math.round(totalMachiningCost);
+
   return (
     <CostSectionCard
       icon={<Cpu className="w-5 h-5" />}
-      title="SECTION 3: GIA CÔNG CƠ KHÍ (CNC OPS)"
+      title={sawingOpProps ? "SECTION 3: QUY TRÌNH CẮT PHÔI & GIA CÔNG CƠ KHÍ" : "SECTION 3: GIA CÔNG CƠ KHÍ (CNC OPS)"}
       mainBlockTitle="Danh Sách Các Nguyên Công"
       mainBlockHeaderRight={
         <button
@@ -203,9 +294,9 @@ export const MachiningOpsList = ({
         </button>
       }
       mainRightContent={rightContent}
-      footerTitle="TỔNG CHI PHÍ GIA CÔNG (PHẦN C)"
-      footerSubtitle="= Tổng chi phí các nguyên công cộng lại"
-      footerTotal={Math.round(totalMachiningCost).toLocaleString('vi-VN')}
+      footerTitle={sawingOpProps ? "TỔNG CHI PHÍ QUY TRÌNH CẮT & GIA CÔNG" : "TỔNG CHI PHÍ GIA CÔNG (PHẦN C)"}
+      footerSubtitle={sawingOpProps ? "= Chi phí cắt phôi + Tổng chi phí các nguyên công CNC" : "= Tổng chi phí các nguyên công cộng lại"}
+      footerTotal={grandTotalCost.toLocaleString('vi-VN')}
       footerTotalUnit="VNĐ/SP"
     />
   );
