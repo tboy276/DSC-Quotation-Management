@@ -1,0 +1,72 @@
+import React from 'react';
+import { useQuotationStore } from '../../store/useQuotationStore';
+import { MachiningOpsList } from './MachiningOpsList';
+import { Section5SummaryCard } from './Section5SummaryCard';
+import { Wrench } from 'lucide-react';
+import { CostSectionCard } from '../ui/CostSectionCard';
+
+export default function MachiningCalculatorForm() {
+  const machining = useQuotationStore((state) => state.machiningInput);
+  const setMachiningField = useQuotationStore((state) => state.setMachiningField);
+  
+  const addOp = useQuotationStore((state) => state.addMachiningOp);
+  const updateOp = useQuotationStore((state) => state.updateMachiningOp);
+  const removeOp = useQuotationStore((state) => state.removeMachiningOp);
+  const getMachiningResult = useQuotationStore((state) => state.getMachiningResult);
+
+  const res = getMachiningResult();
+
+  return (
+    <div className="space-y-5 animate-fade-in-up">
+      <CostSectionCard
+        icon={<Wrench className="w-5 h-5 text-emerald-500" />}
+        title="THÔNG SỐ SẢN PHẨM"
+        mainBlockTitle="Thông số vật tư (Khách hàng cấp phôi)"
+      >
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+          <div className="space-y-1.5">
+            <label className="text-[11px] font-bold text-[#787774] uppercase tracking-wider">Trọng Lượng Tinh Sau GC - m_tinh (kg)</label>
+            <input
+              type="number"
+              step="0.001"
+              value={machining.m_tinh || ''}
+              onChange={(e) => setMachiningField('m_tinh', parseFloat(e.target.value) || 0)}
+              className="w-full px-3 py-2 bg-white border border-[#EAEAEA] rounded-[8px] focus:ring-2 focus:ring-amber-500 focus:border-amber-500 text-[13px] transition-all"
+            />
+            <p className="text-[10px] text-gray-500">Dùng để tính phí bao gói, vận chuyển</p>
+          </div>
+        </div>
+      </CostSectionCard>
+
+      {/* Machining */}
+      <MachiningOpsList
+        operations={machining.machining_operations || []}
+        totalMachiningCost={res.C_machining}
+        machiningNotes={machining.machining_notes}
+        onAddOp={addOp}
+        onUpdateOp={updateOp}
+        onRemoveOp={removeOp}
+        onUpdateNotes={(notes) => setMachiningField('machining_notes', notes)}
+      />
+
+      {/* Summary */}
+      <Section5SummaryCard
+        k_mgmt={machining.k_mgmt}
+        onKMgmtChange={(val) => setMachiningField('k_mgmt', val)}
+        DG_trans_kg={machining.DG_trans_kg}
+        onDGTransChange={(val) => setMachiningField('DG_trans_kg', val)}
+        DG_pack_kg={machining.DG_pack_kg || 0}
+        onDGPackChange={(val) => setMachiningField('DG_pack_kg', val)}
+        k_profit={machining.k_profit_machining}
+        onKProfitChange={(val) => setMachiningField('k_profit_machining', val)}
+        COGS={res.COGS}
+        C_mgmt={res.COGS * (machining.k_mgmt / 100)}
+        C_trans={(machining.m_tinh || 0) * machining.DG_trans_kg}
+        C_pack={machining.DG_pack_kg ? (machining.m_tinh || 0) * machining.DG_pack_kg : (machining.C_pack || 0)}
+        pre_profit_price={res.pre_profit_price}
+        profit_amount={res.P_MACHINING - res.pre_profit_price}
+        final_price={res.P_MACHINING}
+      />
+    </div>
+  );
+}

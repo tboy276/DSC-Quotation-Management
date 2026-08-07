@@ -301,10 +301,9 @@ export const QuotationsManager = () => {
     : null;
 
   const selectedTechRequirement = selectedSingleQuote?.rfqItem?.technology_requirement || 'Rèn+Gia công';
-  const isSawedBilletTech = selectedTechRequirement === 'Phôi cưa' || selectedTechRequirement === 'Phôi cưa+Gia công';
 
   const canApproveFeasibility = selectedSingleQuote && selectedItemStatus === 'PENDING_REVIEW' && canModifyQuote(selectedSingleQuote);
-  const canGoToCalculator = selectedSingleQuote && selectedItemStatus === 'IN_COSTING' && !isSawedBilletTech;
+  const canGoToCalculator = selectedSingleQuote && selectedItemStatus === 'IN_COSTING';
   const canMarkSentStatus = selectedSingleQuote && selectedItemStatus === 'QUOTED_SENT' && canModifyQuote(selectedSingleQuote);
 
   const handleDeleteSelectedItems = async () => {
@@ -352,10 +351,16 @@ export const QuotationsManager = () => {
 
   const handleGoToCalculator = (quote: QuoteRecord) => {
     const tech = quote.rfqItem?.technology_requirement || 'Rèn+Gia công';
-    const isSawedBilletTech = tech.includes('Phôi cưa');
-    if (isSawedBilletTech) return;
 
-    const targetSegment = tech.includes('Đúc') ? 'casting' : 'forging';
+    let targetSegment = 'forging';
+    if (tech.includes('Phôi cưa') || tech.includes('Cưa')) {
+      targetSegment = 'sawing';
+    } else if (tech.includes('Chỉ gia công CNC') || tech.includes('Gia công CNC')) {
+      targetSegment = 'machining';
+    } else if (tech.includes('Đúc')) {
+      targetSegment = 'casting';
+    }
+
     navigate(`/${targetSegment}/${quote.rfq_item_id}`);
   };
 

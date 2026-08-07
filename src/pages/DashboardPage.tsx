@@ -4,7 +4,10 @@ import { useAuth } from '../context/AuthContext';
 import { Layout } from '../components/Layout';
 import { StatusBadge } from '../components/StatusBadge';
 import { MasterDataContainer } from '../components/master-data/MasterDataContainer';
-import { PricingCalculatorPage } from './PricingCalculatorPage';
+import ForgingCostingPage from './ForgingCostingPage';
+import CastingCostingPage from './CastingCostingPage';
+import SawingCostingPage from './SawingCostingPage';
+import MachiningCostingPage from './MachiningCostingPage';
 import { QuotationsManager } from '../components/quotations/QuotationsManager';
 import { QuotationDocumentsManager } from '../components/quotations/QuotationDocumentsManager';
 import { RfqAnalyticsReport } from '../components/analytics/RfqAnalyticsReport';
@@ -44,6 +47,10 @@ export const DashboardPage = () => {
         return 'Tính Giá Báo Giá Rèn Dập (Forging Costing)';
       case 'casting':
         return 'Tính Giá Báo Giá Đúc Gang (Iron Casting Costing)';
+      case 'sawing':
+        return 'Tính Giá Phôi Cưa & Gia Công (Sawing Costing)';
+      case 'machining':
+        return 'Tính Giá Chỉ Gia Công CNC (Machining Only)';
       case 'master_data':
         return 'Quản Lý Master Data (Dữ Liệu Cơ Sở)';
       case 'analytics':
@@ -80,8 +87,10 @@ export const DashboardPage = () => {
         <Route path="/" element={<Navigate to="/quotations" replace />} />
         <Route path="/quotations" element={<QuotationsManager />} />
         <Route path="/documents" element={<QuotationDocumentsManager />} />
-        <Route path="/forging/:rfqItemId?" element={<PricingCalculatorPage />} />
-        <Route path="/casting/:rfqItemId?" element={<PricingCalculatorPage />} />
+        <Route path="/forging/:rfqItemId?" element={<ForgingCostingPage />} />
+        <Route path="/casting/:rfqItemId?" element={<CastingCostingPage />} />
+        <Route path="/sawing/:rfqItemId?" element={<SawingCostingPage />} />
+        <Route path="/machining/:rfqItemId?" element={<MachiningCostingPage />} />
         <Route path="/master_data" element={<MasterDataContainer />} />
         <Route path="/analytics" element={<RfqAnalyticsReport />} />
         <Route path="/health_check" element={

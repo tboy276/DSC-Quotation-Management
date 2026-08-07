@@ -34,36 +34,75 @@ export const RealtimeSummaryPanel = () => {
 
   const forgingInput = useQuotationStore((state) => state.forgingInput);
   const castingInput = useQuotationStore((state) => state.castingInput);
+  const sawingInput = useQuotationStore((state) => state.sawingInput);
+  const machiningInput = useQuotationStore((state) => state.machiningInput);
 
   const getForgingResult = useQuotationStore((state) => state.getForgingResult);
   const getCastingResult = useQuotationStore((state) => state.getCastingResult);
+  const getSawingResult = useQuotationStore((state) => state.getSawingResult);
+  const getMachiningResult = useQuotationStore((state) => state.getMachiningResult);
 
-  const isForging = segment === 'forging';
+  let C_mat = 0;
+  let C_ops = 0;
+  let C_machining = 0;
+  let C_amortization = 0;
+  let COGS = 0;
+  let pre_profit_price = 0;
+  let finalPriceVnd = 0;
+  let profitMarginPercent = 0;
+  let isSeparateTooling = false;
+  let separateToolingAmountVnd = 0;
+  let segmentLabel = '';
 
-  const forgingRes = isForging ? getForgingResult() : null;
-  const castingRes = !isForging ? getCastingResult() : null;
-
-  const C_mat = isForging ? (forgingRes as ForgingResult).C_mat_forging : (castingRes as CastingResult).C_metal_casting;
-  const C_ops = isForging ? (forgingRes as ForgingResult).C_ops_forging : (castingRes as CastingResult).C_ops_casting;
-  const C_machining = isForging ? (forgingRes as ForgingResult).C_machining : (castingRes as CastingResult).C_machining_casting;
-  const C_amortization = isForging ? (forgingRes as ForgingResult).C_die_amortization : (castingRes as CastingResult).C_pattern_amortization;
-  const COGS = isForging ? (forgingRes as ForgingResult).COGS : (castingRes as CastingResult).COGS;
-  const pre_profit_price = isForging ? (forgingRes as ForgingResult).pre_profit_price : (castingRes as CastingResult).pre_profit_price;
-  const finalPriceVnd = isForging ? (forgingRes as ForgingResult).P_FORGING : (castingRes as CastingResult).P_CASTING;
-
-  const profitMarginPercent = isForging ? forgingInput.k_profit_forging : castingInput.k_profit_casting;
-  const profitAmountVnd = pre_profit_price * (profitMarginPercent / 100);
-
-  const targetPriceVnd = rfq.target_price || 0;
-  const deltaPriceVnd = finalPriceVnd - targetPriceVnd;
-
-  const isSeparateTooling = isForging
-    ? forgingInput.die_cost_treatment === 'separate'
-    : castingInput.pattern_cost_treatment === 'separate';
-
-  const separateToolingAmountVnd = isForging
-    ? forgingInput.C_die_total || 0
-    : castingInput.C_pattern_total || 0;
+  if (segment === 'forging') {
+    const res = getForgingResult();
+    C_mat = res.C_mat_forging;
+    C_ops = res.C_ops_forging;
+    C_machining = res.C_machining;
+    C_amortization = res.C_die_amortization;
+    COGS = res.COGS;
+    pre_profit_price = res.pre_profit_price;
+    finalPriceVnd = res.P_FORGING;
+    profitMarginPercent = forgingInput.k_profit_forging;
+    isSeparateTooling = forgingInput.die_cost_treatment === 'separate';
+    separateToolingAmountVnd = forgingInput.C_die_total || 0;
+    segmentLabel = 'Công Nghệ Rèn Dập (Forging)';
+  } else if (segment === 'casting') {
+    const res = getCastingResult();
+    C_mat = res.C_metal_casting;
+    C_ops = res.C_ops_casting;
+    C_machining = res.C_machining_casting;
+    C_amortization = res.C_pattern_amortization;
+    COGS = res.COGS;
+    pre_profit_price = res.pre_profit_price;
+    finalPriceVnd = res.P_CASTING;
+    profitMarginPercent = castingInput.k_profit_casting;
+    isSeparateTooling = castingInput.pattern_cost_treatment === 'separate';
+    separateToolingAmountVnd = castingInput.C_pattern_total || 0;
+    segmentLabel = 'Công Nghệ Đúc Gang (Iron Casting)';
+  } else if (segment === 'sawing') {
+    const res = getSawingResult();
+    C_mat = res.C_mat_sawing;
+    C_ops = res.C_ops_sawing;
+    C_machining = res.C_machining;
+    C_amortization = 0;
+    COGS = res.COGS;
+    pre_profit_price = res.pre_profit_price;
+    finalPriceVnd = res.P_SAWING;
+    profitMarginPercent = sawingInput.k_profit_sawing;
+    segmentLabel = 'Phôi Cưa & Gia Công (Sawing)';
+  } else if (segment === 'machining') {
+    const res = getMachiningResult();
+    C_mat = 0;
+    C_ops = 0;
+    C_machining = res.C_machining;
+    C_amortization = 0;
+    COGS = res.COGS;
+    pre_profit_price = res.pre_profit_price;
+    finalPriceVnd = res.P_MACHINING;
+    profitMarginPercent = machiningInput.k_profit_machining;
+    segmentLabel = 'Chỉ Gia Công CNC (Machining Only)';
+  }
 
   const currencies: CurrencyType[] = ['VND', 'USD', 'JPY', 'EUR'];
 
@@ -80,7 +119,7 @@ export const RealtimeSummaryPanel = () => {
               Bảng Tổng Hợp Chi Phí Real-time
             </h3>
             <p className="text-[10px] text-[#787774]">
-              {isForging ? 'Công Nghệ Rèn Dập (Forging)' : 'Công Nghệ Đúc Gang (Iron Casting)'}
+              {segmentLabel}
             </p>
           </div>
         </div>

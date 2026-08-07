@@ -109,6 +109,7 @@ export interface ForgingResult {
 // ----------------------------------------------------------------------
 
 export interface CastingInput {
+  m_tinh?: number;           // Trọng lượng tinh sau gia công (kg) - Mới
   // Section 1 — Cast Metal (Vật đúc & Hao hụt)
   m_cast: number;            // Khối lượng vật đúc tinh (kg)
   Y_yield: number;           // Thu hồi kim loại % (VD: 57 = 57%)
@@ -197,4 +198,73 @@ export interface CastingResult {
   separate_pattern_cost?: number; // Khoản chi phí mẫu trả riêng nếu pattern_cost_treatment = 'separate'
   actual_C_pattern_total?: number;
   actual_L_pattern_life?: number;
+}
+
+// ----------------------------------------------------------------------
+// SAWING (CƯA/CẮT PHÔI + GIA CÔNG) TYPES
+// ----------------------------------------------------------------------
+
+export interface SawingInput {
+  m_tinh?: number;     // Trọng lượng tinh sau gia công (kg)
+  m_phoi: number;      // Trọng lượng phôi cắt (kg)
+  m_chi: number;       // Trọng lượng chi phôi đầu vào (kg)
+  d_cut?: number;      // Đường kính cắt (mm)
+  l_cut?: number;      // Chiều dài cắt (mm)
+  k_loss: number;      // Phần trăm cháy hao %
+  DG_steel: number;    // Đơn giá thép phôi (VNĐ/kg)
+  DG_scrap: number;    // Đơn giá thu hồi ba-via (VNĐ/kg)
+  k_mgmt_mat?: number; // Chi phí quản lý vật tư (%)
+  use_m_tinh?: boolean;// Tính chi phí vật tư theo TL sau gia công
+
+  sawing_machine_type?: 'band_saw' | 'punch_cut'; 
+  t_cut_sec?: number;              // Thời gian cắt phôi (giây)
+  DG_sawing_machine_hour?: number; // Đơn giá máy cưa (VNĐ/giờ)
+  C_ops_override?: number;
+
+  machining_operations?: MachiningOperation[];
+  C_machining_override?: number;
+  machining_notes?: string;
+
+  N_order?: number;           // Số lượng đơn hàng
+  k_mgmt: number;             // Phần trăm chi phí quản lý %
+  C_pack?: number;            // Chi phí đóng gói (VNĐ/chi tiết)
+  DG_pack_kg?: number;        // Đơn giá đóng gói (VNĐ/kg)
+  DG_trans_kg: number;        // Đơn giá vận chuyển (VNĐ/kg)
+  k_profit_sawing: number;    // Phần trăm lợi nhuận %
+}
+
+export interface SawingResult {
+  m_bavia: number;            // Khối lượng ba-via (kg)
+  C_mat_sawing: number;       // Chi phí vật liệu (VNĐ)
+  C_ops_sawing: number;       // Chi phí công nghệ cắt (VNĐ)
+  C_machining: number;        // Chi phí gia công cơ khí (VNĐ)
+  COGS: number;               // Giá vốn hàng bán (VNĐ)
+  pre_profit_price: number;   // Giá trước lợi nhuận (VNĐ)
+  P_SAWING: number;           // Giá bán cuối cùng (VNĐ/cái)
+}
+
+// ----------------------------------------------------------------------
+// MACHINING (CHỈ GIA CÔNG CNC) TYPES
+// ----------------------------------------------------------------------
+
+export interface MachiningInput {
+  m_tinh?: number;     // Trọng lượng tinh sau gia công (kg)
+
+  machining_operations?: MachiningOperation[];
+  C_machining_override?: number;
+  machining_notes?: string;
+
+  N_order?: number;           // Số lượng đơn hàng
+  k_mgmt: number;             // Phần trăm chi phí quản lý %
+  C_pack?: number;            // Chi phí đóng gói (VNĐ/chi tiết)
+  DG_pack_kg?: number;        // Đơn giá đóng gói (VNĐ/kg)
+  DG_trans_kg: number;        // Đơn giá vận chuyển (VNĐ/kg)
+  k_profit_machining: number; // Phần trăm lợi nhuận %
+}
+
+export interface MachiningResult {
+  C_machining: number;        // Chi phí gia công cơ khí (VNĐ)
+  COGS: number;               // Giá vốn hàng bán (VNĐ)
+  pre_profit_price: number;   // Giá trước lợi nhuận (VNĐ)
+  P_MACHINING: number;        // Giá bán cuối cùng (VNĐ/cái)
 }

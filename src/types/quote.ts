@@ -20,7 +20,8 @@ export type TechnologyRequirementType =
   | 'Phôi cưa'
   | 'Rèn+Gia công'
   | 'Đúc+Gia công'
-  | 'Phôi cưa+Gia công';
+  | 'Phôi cưa+Gia công'
+  | 'Chỉ gia công CNC';
 
 // Backward compatibility status type mapping
 export type QuoteStatus = RfqItemStatus | 'DRAFT' | 'SENT' | 'PENDING' | 'APPROVED' | 'REJECTED' | 'CANCELLED';

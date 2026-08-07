@@ -6,6 +6,7 @@ import type { CastingInput, CastingResult } from './types';
  */
 export function calculateCastingPrice(input: CastingInput): CastingResult {
   const {
+    m_tinh,
     m_cast,
     Y_yield,
     k_burn_loss = 0,
@@ -166,8 +167,9 @@ export function calculateCastingPrice(input: CastingInput): CastingResult {
   const COGS = C_metal_casting + C_ops_casting + C_machining_casting + C_part_b_total + patternInCogs;
 
   const C_admin = COGS * (k_mgmt_cast / 100);
-  const C_transport = m_cast * DG_trans_kg;
-  const actual_C_pack = DG_pack_kg !== undefined ? DG_pack_kg * m_cast : C_pack;
+  const final_weight = m_tinh || m_cast || 0;
+  const C_transport = final_weight * DG_trans_kg;
+  const actual_C_pack = DG_pack_kg !== undefined && DG_pack_kg > 0 ? DG_pack_kg * final_weight : (C_pack || 0);
   const pre_profit_price = COGS + C_admin + actual_C_pack + C_transport;
 
   const P_CASTING = Math.round(pre_profit_price * (1 + k_profit_casting / 100));

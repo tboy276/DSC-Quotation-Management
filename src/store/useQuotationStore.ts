@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import type { ForgingInput, CastingInput, MachiningOperation } from '../lib/calculation-engine/types';
+import type { ForgingInput, CastingInput, SawingInput, MachiningInput, MachiningOperation } from '../lib/calculation-engine/types';
 import type { CurrencyType, QuoteRecord } from '../types/quote';
 import { calculateForgingPrice } from '../lib/calculation-engine/forging-calculator';
 import { calculateCastingPrice } from '../lib/calculation-engine/casting-calculator';
@@ -15,7 +15,10 @@ import {
   fetchLiquidMetalPriceForGrade,
 } from '../lib/master-data-service';
 
-export type SegmentType = 'forging' | 'casting';
+import { calculateSawingPrice } from '../lib/calculation-engine/sawing-calculator';
+import { calculateMachiningPrice } from '../lib/calculation-engine/machining-calculator';
+
+export type SegmentType = 'forging' | 'casting' | 'sawing' | 'machining';
 export type TradeTermType = 'EXW' | 'FOB' | 'CIF' | 'DAP';
 
 export interface RfqHeaderState {
@@ -43,6 +46,14 @@ export interface QuotationStoreState {
   castingInput: CastingInput & {
     selected_casting_grade_id: string;
   };
+
+  // 4. Sawing State
+  sawingInput: SawingInput & {
+    selected_material_id: string;
+  };
+
+  // 5. Machining State
+  machiningInput: MachiningInput;
 
   // Actions
   setRfqField: (field: keyof RfqHeaderState, value: any) => void;
@@ -75,9 +86,24 @@ export interface QuotationStoreState {
   removeCastingPatternComponent: (index: number) => void;
   selectCastingGrade: (gradeId: string) => void;
 
+  // Sawing Actions
+  setSawingField: (field: string, value: any) => void;
+  addSawingMachiningOp: (op: MachiningOperation) => void;
+  updateSawingMachiningOp: (index: number, op: MachiningOperation) => void;
+  removeSawingMachiningOp: (index: number) => void;
+  selectSawingMaterial: (materialId: string) => void;
+
+  // Machining Actions
+  setMachiningField: (field: string, value: any) => void;
+  addMachiningOp: (op: MachiningOperation) => void;
+  updateMachiningOp: (index: number, op: MachiningOperation) => void;
+  removeMachiningOp: (index: number) => void;
+
   // Computed Getters
   getForgingResult: () => ReturnType<typeof calculateForgingPrice>;
   getCastingResult: () => ReturnType<typeof calculateCastingPrice>;
+  getSawingResult: () => ReturnType<typeof calculateSawingPrice>;
+  getMachiningResult: () => ReturnType<typeof calculateMachiningPrice>;
 }
 
 // Initial Forging Defaults
@@ -196,6 +222,47 @@ export const useQuotationStore = create<QuotationStoreState>((set, get) => ({
     DG_trans_kg: defaultTransRate,
     DG_pack_kg: 0,
     k_profit_casting: 12,
+  },
+
+  // 4. Sawing Initial Input State
+  sawingInput: {
+    m_phoi: 1.2,
+    m_chi: 1.531,
+    k_loss: 2.0,
+    k_mgmt_mat: 0,
+    use_m_tinh: false,
+    selected_material_id: defaultForgingMaterial.id,
+    DG_steel: defaultForgingMaterial.latest_price || 22000,
+    DG_scrap: defaultForgingMaterial.scrap_price || 8000,
+
+    sawing_machine_type: 'band_saw',
+    t_cut_sec: 15,
+    DG_sawing_machine_hour: defaultSawingRate,
+
+    machining_operations: [
+      { name: 'Phay rãnh then CNC', t_prep_min: 1.5, t_man_min: 1.8, DG_machine_hour: 234000 },
+    ],
+    machining_notes: '',
+
+    N_order: 20000,
+    k_mgmt: 8,
+    DG_trans_kg: defaultTransRate,
+    DG_pack_kg: 0,
+    k_profit_sawing: 15,
+  },
+
+  // 5. Machining Initial Input State
+  machiningInput: {
+    machining_operations: [
+      { name: 'Tiện CNC', t_prep_min: 2.0, t_man_min: 3.5, DG_machine_hour: 234000 },
+    ],
+    machining_notes: '',
+
+    N_order: 20000,
+    k_mgmt: 8,
+    DG_trans_kg: defaultTransRate,
+    DG_pack_kg: 0,
+    k_profit_machining: 15,
   },
 
   // Actions
@@ -467,13 +534,84 @@ export const useQuotationStore = create<QuotationStoreState>((set, get) => ({
   },
 
   // Real-time Calculation Getters using Calculation Engine (Phase 1)
-  getForgingResult: () => {
-    const input = get().forgingInput;
-    return calculateForgingPrice(input);
+  // Sawing Actions
+  setSawingField: (field, value) =>
+    set((state) => ({
+      sawingInput: { ...state.sawingInput, [field]: value },
+    })),
+
+  addSawingMachiningOp: (op) =>
+    set((state) => ({
+      sawingInput: {
+        ...state.sawingInput,
+        machining_operations: [...(state.sawingInput.machining_operations || []), op],
+      },
+    })),
+
+  updateSawingMachiningOp: (index, op) =>
+    set((state) => {
+      const ops = [...(state.sawingInput.machining_operations || [])];
+      ops[index] = op;
+      return {
+        sawingInput: { ...state.sawingInput, machining_operations: ops },
+      };
+    }),
+
+  removeSawingMachiningOp: (index) =>
+    set((state) => ({
+      sawingInput: {
+        ...state.sawingInput,
+        machining_operations: (state.sawingInput.machining_operations || []).filter((_, i) => i !== index),
+      },
+    })),
+
+  selectSawingMaterial: (materialId) => {
+    const mat = INITIAL_MATERIALS.find((m) => m.id === materialId);
+    if (mat) {
+      set((state) => ({
+        sawingInput: {
+          ...state.sawingInput,
+          selected_material_id: materialId,
+          DG_steel: mat.latest_price || 0,
+          DG_scrap: mat.scrap_price || 0,
+        },
+      }));
+    }
   },
 
-  getCastingResult: () => {
-    const input = get().castingInput;
-    return calculateCastingPrice(input);
-  },
+  // Machining Actions
+  setMachiningField: (field, value) =>
+    set((state) => ({
+      machiningInput: { ...state.machiningInput, [field]: value },
+    })),
+
+  addMachiningOp: (op) =>
+    set((state) => ({
+      machiningInput: {
+        ...state.machiningInput,
+        machining_operations: [...(state.machiningInput.machining_operations || []), op],
+      },
+    })),
+
+  updateMachiningOp: (index, op) =>
+    set((state) => {
+      const ops = [...(state.machiningInput.machining_operations || [])];
+      ops[index] = op;
+      return {
+        machiningInput: { ...state.machiningInput, machining_operations: ops },
+      };
+    }),
+
+  removeMachiningOp: (index) =>
+    set((state) => ({
+      machiningInput: {
+        ...state.machiningInput,
+        machining_operations: (state.machiningInput.machining_operations || []).filter((_, i) => i !== index),
+      },
+    })),
+
+  getForgingResult: () => calculateForgingPrice(get().forgingInput),
+  getCastingResult: () => calculateCastingPrice(get().castingInput),
+  getSawingResult: () => calculateSawingPrice(get().sawingInput),
+  getMachiningResult: () => calculateMachiningPrice(get().machiningInput),
 }));
