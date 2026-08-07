@@ -108,8 +108,16 @@ export const createQuotationDocument = async (
     throw new Error(`Lỗi liên kết dòng sản phẩm Văn bản Báo giá Supabase: ${itemsErr.message}`);
   }
 
-  // 3. Update status of all selected items to QUOTED_SENT
+  // 3. Update status & quoted_sent_at of all selected items to QUOTED_SENT
+  const now = new Date().toISOString();
   for (const quoteId of payload.selected_quote_ids) {
+    let targetItemId = quoteId.startsWith('quote-') ? quoteId.replace(/^quote-/, '') : quoteId;
+
+    await supabase
+      .from('rfq_items')
+      .update({ status: 'QUOTED_SENT', quoted_sent_at: now })
+      .eq('id', targetItemId);
+
     await updateQuoteStatus(quoteId, 'QUOTED_SENT');
   }
 

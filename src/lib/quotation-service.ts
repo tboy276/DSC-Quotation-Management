@@ -585,6 +585,9 @@ export const updateQuoteStatus = async (
   if (itemStatus === 'READY_FOR_QUOTE') {
     timestampPayload.costing_completed_at = now;
   }
+  if (itemStatus === 'QUOTED_SENT') {
+    timestampPayload.quoted_sent_at = now;
+  }
   
   if (Object.keys(timestampPayload).length > 0) {
     await supabase.from('rfq_items').update(timestampPayload).eq('id', targetItemId);

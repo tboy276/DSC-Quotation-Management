@@ -162,11 +162,11 @@ export const QuoteDetailModal = ({ quote, onClose }: QuoteDetailModalProps) => {
   };
 
   const timelineSteps = [
-    { label: 'Tạo RFQ', date: rfqItem?.created_at },
+    { label: 'Tạo RFQ', date: rfqItem?.created_at || rfq?.rfq_received_date || quote.created_at },
     { label: 'Duyệt Kỹ Thuật', date: rfqItem?.technical_review_completed_at },
     { label: 'Tính Giá', date: rfqItem?.costing_completed_at },
     { label: 'Gửi Báo Giá', date: rfqItem?.quoted_sent_at },
-    ...(rfqItem?.resolved_at ? [{ label: 'Đóng/Chốt', date: rfqItem?.resolved_at }] : [])
+    { label: 'Kết Luận', date: rfqItem?.resolved_at },
   ];
 
   return (
