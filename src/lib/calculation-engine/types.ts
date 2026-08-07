@@ -244,8 +244,10 @@ export interface SawingResult {
   C_mat_sawing: number;       // Chi phí vật liệu (VNĐ)
   C_ops_sawing: number;       // Chi phí công nghệ cắt (VNĐ)
   C_machining: number;        // Chi phí gia công cơ khí (VNĐ)
-  COGS: number;               // Giá vốn hàng bán (VNĐ)
+  COGS: number;               // Giá vốn hàng bán thuần (VNĐ)
+  C_mgmt: number;             // Chi phí quản lý (VNĐ)
   pre_profit_price: number;   // Giá trước lợi nhuận (VNĐ)
+  C_profit: number;           // Lợi nhuận (VNĐ)
   P_SAWING: number;           // Giá bán cuối cùng (VNĐ/cái)
 }
 
@@ -270,7 +272,9 @@ export interface MachiningInput {
 
 export interface MachiningResult {
   C_machining: number;        // Chi phí gia công cơ khí (VNĐ)
-  COGS: number;               // Giá vốn hàng bán (VNĐ)
+  COGS: number;               // Giá vốn hàng bán thuần (VNĐ)
+  C_mgmt: number;             // Chi phí quản lý (VNĐ)
   pre_profit_price: number;   // Giá trước lợi nhuận (VNĐ)
+  C_profit: number;           // Lợi nhuận (VNĐ)
   P_MACHINING: number;        // Giá bán cuối cùng (VNĐ/cái)
 }

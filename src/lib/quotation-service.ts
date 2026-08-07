@@ -357,6 +357,7 @@ export const saveQuoteDraft = async (
   inputs: ForgingInput | CastingInput | any,
   results: ForgingResult | CastingResult | any,
   existingQuoteId?: string,
+  targetStatus: RfqItemStatus = 'IN_COSTING',
   userEmail: string = 'estimator@disoco.vn'
 ): Promise<QuoteRecord> => {
   let finalPrice = 0;
@@ -403,10 +404,28 @@ export const saveQuoteDraft = async (
     itemId = dossier.items![0].id;
   }
 
+  // Status Demotion Guard logic:
+  // Determine new item status based on targetStatus and current status
+  const existingItem = localItemsCache.find((it) => it.id === itemId);
+  const currentStatus = existingItem?.status;
+
+  let newItemStatus: RfqItemStatus = 'IN_COSTING';
+  if (targetStatus === 'READY_FOR_QUOTE') {
+    newItemStatus = 'READY_FOR_QUOTE';
+  } else {
+    // When saving draft:
+    // If status is ALREADY IN_COSTING or READY_FOR_QUOTE, preserve it (don't demote READY_FOR_QUOTE)
+    if (currentStatus === 'READY_FOR_QUOTE' || currentStatus === 'IN_COSTING') {
+      newItemStatus = currentStatus;
+    } else {
+      newItemStatus = 'IN_COSTING';
+    }
+  }
+
   // Update item status on Supabase rfq_items
   const { error: itemErr } = await supabase
     .from('rfq_items')
-    .update({ status: 'READY_FOR_QUOTE' })
+    .update({ status: newItemStatus })
     .eq('id', itemId);
 
   if (itemErr) {
@@ -470,7 +489,7 @@ export const sendQuote = async (
   existingQuoteId?: string,
   userEmail: string = 'estimator@disoco.vn'
 ): Promise<QuoteRecord> => {
-  const record = await saveQuoteDraft(rfqItem, segment, currency, exchangeRate, inputs, results, existingQuoteId, userEmail);
+  const record = await saveQuoteDraft(rfqItem, segment, currency, exchangeRate, inputs, results, existingQuoteId, 'READY_FOR_QUOTE', userEmail);
   const now = new Date().toISOString();
 
   // Update item status & quoted_sent_at on Supabase

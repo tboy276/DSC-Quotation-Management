@@ -431,7 +431,7 @@ export const QuotationsManager = () => {
     });
   }, [selectedQuotes, profile, currentUserEmail]);
 
-  const canGoToCalculator = selectedSingleQuote && selectedItemStatus === 'IN_COSTING';
+  const canGoToCalculator = selectedSingleQuote && (selectedItemStatus === 'IN_COSTING' || selectedItemStatus === 'READY_FOR_QUOTE');
   const canMarkSentStatus = selectedSingleQuote && selectedItemStatus === 'QUOTED_SENT' && canManageQuote(selectedSingleQuote);
 
   // Check if ALL selected items can be deleted by current user (Ownership rule)

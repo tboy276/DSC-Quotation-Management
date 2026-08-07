@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { useQuotationStore } from '../store/useQuotationStore';
-import type { QuoteRecord } from '../types/quote';
+import type { QuoteRecord, RfqItemStatus } from '../types/quote';
 
 describe('P0 Requirements Unit Tests', () => {
   beforeEach(() => {
@@ -99,6 +99,26 @@ describe('P0 Requirements Unit Tests', () => {
       useQuotationStore.getState().cloneInputsFromQuote(itemAQuote as QuoteRecord);
       expect(useQuotationStore.getState().forgingInput.m_phoi).toBe(9.9);
       expect(useQuotationStore.getState().forgingInput.forging_line).toBe('80kJ');
+    });
+  });
+
+  describe('Module 1: Status Demotion Guard Rules', () => {
+    const computeTargetStatus = (currentStatus: RfqItemStatus, targetStatus: RfqItemStatus): RfqItemStatus => {
+      if (targetStatus === 'READY_FOR_QUOTE') return 'READY_FOR_QUOTE';
+      if (currentStatus === 'READY_FOR_QUOTE' || currentStatus === 'IN_COSTING') return currentStatus;
+      return 'IN_COSTING';
+    };
+
+    it('preserves READY_FOR_QUOTE status when targetStatus is IN_COSTING', () => {
+      expect(computeTargetStatus('READY_FOR_QUOTE', 'IN_COSTING')).toBe('READY_FOR_QUOTE');
+    });
+
+    it('promotes PENDING_REVIEW to IN_COSTING when saving draft', () => {
+      expect(computeTargetStatus('PENDING_REVIEW', 'IN_COSTING')).toBe('IN_COSTING');
+    });
+
+    it('updates status to READY_FOR_QUOTE when handleCompleteCosting is triggered', () => {
+      expect(computeTargetStatus('IN_COSTING', 'READY_FOR_QUOTE')).toBe('READY_FOR_QUOTE');
     });
   });
 });

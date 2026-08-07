@@ -114,7 +114,7 @@ export function usePricingCalculator(fixedSegment: SegmentType) {
     setMsg(null);
     try {
       const { inp, res, rfqPayload } = getPayloads();
-      const record = await saveQuoteDraft(rfqPayload, fixedSegment, currency, exchangeRate, inp, res, currentQuoteId);
+      const record = await saveQuoteDraft(rfqPayload, fixedSegment, currency, exchangeRate, inp, res, currentQuoteId, 'IN_COSTING');
       setCurrentQuoteId(record.id);
 
       setMsg({
@@ -133,7 +133,7 @@ export function usePricingCalculator(fixedSegment: SegmentType) {
     setMsg(null);
     try {
       const { inp, res, rfqPayload } = getPayloads();
-      const record = await saveQuoteDraft(rfqPayload, fixedSegment, currency, exchangeRate, inp, res, currentQuoteId);
+      const record = await saveQuoteDraft(rfqPayload, fixedSegment, currency, exchangeRate, inp, res, currentQuoteId, 'READY_FOR_QUOTE');
       await updateQuoteStatus(record.id, 'READY_FOR_QUOTE');
 
       setMsg({

@@ -160,7 +160,7 @@ describe('DSC-Quotation-Management Calculation Engine', () => {
   // TEST CASE 3: CƯA/CẮT PHÔI (SAWING)
   // ------------------------------------------------------------------
   describe('Test Case 3: Cưa/Cắt Phôi (Sawing)', () => {
-    it('Tính chính xác m_bavia, C_mat_sawing, P_SAWING', () => {
+    it('Tính chính xác m_bavia, COGS thuần, C_mgmt, C_profit và P_SAWING làm tròn integer', () => {
       const input: SawingInput = {
         m_phoi: 1.2,
         m_chi: 1.531,
@@ -174,7 +174,11 @@ describe('DSC-Quotation-Management Calculation Engine', () => {
 
       const result = calculateSawingPrice(input);
       expect(result.m_bavia).toBeCloseTo((1.531 - 1.2) * 0.98, 4);
-      expect(result.P_SAWING).toBeGreaterThan(0);
+      // COGS is pure COGS (without C_mgmt)
+      expect(result.COGS).toBe(result.C_mat_sawing + result.C_ops_sawing + result.C_machining);
+      expect(result.C_mgmt).toBe(result.COGS * 0.08);
+      expect(result.P_SAWING).toBe(Math.round(result.pre_profit_price * 1.15));
+      expect(Number.isInteger(result.P_SAWING)).toBe(true);
     });
   });
 });

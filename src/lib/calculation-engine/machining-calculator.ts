@@ -34,22 +34,23 @@ export function calculateMachiningPrice(input: MachiningInput): MachiningResult 
   }
   const C_trans = final_weight * DG_trans_kg;
 
-  // Tổng Giá vốn hàng bán (COGS)
-  const base_COGS = C_machining;
-  const C_mgmt = base_COGS * (k_mgmt / 100);
-  const COGS = base_COGS + C_mgmt;
+  // Tổng Giá vốn hàng bán (COGS thuần - không gồm C_mgmt)
+  const COGS = C_machining;
+  const C_mgmt = COGS * (k_mgmt / 100);
 
   // Tổng Giá Trước Lợi Nhuận
-  const pre_profit_price = COGS + computed_C_pack + C_trans;
+  const pre_profit_price = COGS + C_mgmt + computed_C_pack + C_trans;
 
-  // Giá Bán Cuối Cùng
+  // Giá Bán Cuối Cùng (Làm tròn VNĐ)
   const C_profit = pre_profit_price * (k_profit_machining / 100);
-  const P_MACHINING = pre_profit_price + C_profit;
+  const P_MACHINING = Math.round(pre_profit_price + C_profit);
 
   return {
     C_machining,
     COGS,
+    C_mgmt,
     pre_profit_price,
+    C_profit,
     P_MACHINING,
   };
 }

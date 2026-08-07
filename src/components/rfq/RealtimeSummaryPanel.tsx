@@ -65,7 +65,7 @@ export const RealtimeSummaryPanel = () => {
     finalPriceVnd = res.P_FORGING;
     profitMarginPercent = forgingInput.k_profit_forging;
     isSeparateTooling = forgingInput.die_cost_treatment === 'separate';
-    separateToolingAmountVnd = forgingInput.C_die_total || 0;
+    separateToolingAmountVnd = isSeparateTooling ? (res.actual_C_die_total ?? (forgingInput.C_die_total || 0)) : 0;
     segmentLabel = 'Công Nghệ Rèn Dập (Forging)';
   } else if (segment === 'casting') {
     const res = getCastingResult();
@@ -78,7 +78,7 @@ export const RealtimeSummaryPanel = () => {
     finalPriceVnd = res.P_CASTING;
     profitMarginPercent = castingInput.k_profit_casting;
     isSeparateTooling = castingInput.pattern_cost_treatment === 'separate';
-    separateToolingAmountVnd = castingInput.C_pattern_total || 0;
+    separateToolingAmountVnd = isSeparateTooling ? (res.actual_C_pattern_total ?? (castingInput.C_pattern_total || 0)) : 0;
     segmentLabel = 'Công Nghệ Đúc Gang (Iron Casting)';
   } else if (segment === 'sawing') {
     const res = getSawingResult();

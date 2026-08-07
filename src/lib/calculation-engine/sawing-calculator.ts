@@ -73,17 +73,16 @@ export function calculateSawingPrice(input: SawingInput): SawingResult {
   }
   const C_trans = final_weight * DG_trans_kg;
 
-  // Tổng Giá vốn hàng bán (COGS)
-  const base_COGS = C_mat_sawing + C_ops_sawing + C_machining;
-  const C_mgmt = base_COGS * (k_mgmt / 100);
-  const COGS = base_COGS + C_mgmt;
+  // Tổng Giá vốn hàng bán (COGS thuần - không gồm C_mgmt)
+  const COGS = C_mat_sawing + C_ops_sawing + C_machining;
+  const C_mgmt = COGS * (k_mgmt / 100);
 
   // Tổng Giá Trước Lợi Nhuận
-  const pre_profit_price = COGS + computed_C_pack + C_trans;
+  const pre_profit_price = COGS + C_mgmt + computed_C_pack + C_trans;
 
-  // Giá Bán Cuối Cùng
+  // Giá Bán Cuối Cùng (Làm tròn VNĐ)
   const C_profit = pre_profit_price * (k_profit_sawing / 100);
-  const P_SAWING = pre_profit_price + C_profit;
+  const P_SAWING = Math.round(pre_profit_price + C_profit);
 
   return {
     m_bavia,
@@ -93,7 +92,9 @@ export function calculateSawingPrice(input: SawingInput): SawingResult {
     C_ops_sawing,
     C_machining,
     COGS,
+    C_mgmt,
     pre_profit_price,
+    C_profit,
     P_SAWING,
   };
 }

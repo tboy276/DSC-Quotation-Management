@@ -22,13 +22,11 @@ export function calculateLiquidMetalPrice(
     (item) => item.casting_grade_id === casting_grade_id
   );
 
-  let totalWeight = 0;
+  const totalWeight = gradeBomItems.reduce((sum, item) => sum + item.weight_kg, 0);
   let totalBatchCost = 0;
   let returnScrapPrice = 0;
 
   const bomItemsCalculated = gradeBomItems.map((item) => {
-    totalWeight += item.weight_kg;
-
     // Tìm giá hiệu lực mới nhất của vật tư này từ lịch sử giá
     const materialPrices = priceHistoryList
       .filter((ph) => ph.material_id === item.material_id)
