@@ -676,6 +676,8 @@ export const QuotationsManager = () => {
             <option value="ALL">Tất cả Công Nghệ</option>
             <option value="forging">Phân Hệ Rèn Dập</option>
             <option value="casting">Phân Hệ Đúc Gang</option>
+            <option value="sawing">Phôi Cưa & GC</option>
+            <option value="machining">Chỉ Gia Công CNC</option>
           </select>
 
           {/* Advanced Filters Popover Button */}
@@ -1579,8 +1581,9 @@ export const QuotationsManager = () => {
                               <option value="Phôi rèn">Phôi rèn</option>
                               <option value="Đúc+Gia công">Đúc+Gia công</option>
                               <option value="Phôi đúc">Phôi đúc</option>
-                              <option value="Phôi cưa">Phôi cưa (Chờ tính giá)</option>
-                              <option value="Phôi cưa+Gia công">Phôi cưa+Gia công (Chờ)</option>
+                              <option value="Phôi cưa">Phôi cưa</option>
+                              <option value="Phôi cưa+Gia công">Phôi cưa+Gia công</option>
+                              <option value="Chỉ gia công CNC">Chỉ gia công CNC</option>
                             </select>
                           </td>
                           <td className="py-2 px-3 text-center">
