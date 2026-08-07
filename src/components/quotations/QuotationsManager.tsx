@@ -48,6 +48,9 @@ import {
   Clock,
   FileText,
   ArrowRight,
+  Inbox,
+  SlidersHorizontal,
+  Send,
 } from 'lucide-react';
 
 interface ColumnDef {
@@ -810,12 +813,13 @@ export const QuotationsManager = () => {
           onClick={() => handleStageChange('new')}
           className={`px-4 py-2.5 text-xs font-bold transition-all border-b-2 flex items-center space-x-2 cursor-pointer ${
             activeStage === 'new'
-              ? 'border-[#0F172A] text-[#0F172A] bg-white'
-              : 'border-transparent text-slate-500 hover:text-slate-900 hover:border-slate-300'
+              ? 'border-[#111111] text-[#111111] bg-white'
+              : 'border-transparent text-[#787774] hover:text-[#111111] hover:border-[#EAEAEA]'
           }`}
         >
-          <span>📥 1. RFQ Mới / Đánh Giá</span>
-          <span className="px-2 py-0.5 rounded-full text-[10px] font-mono bg-slate-100 text-slate-700 font-bold border border-slate-200">
+          <Inbox className="w-3.5 h-3.5 stroke-[2]" />
+          <span>1. RFQ Mới / Đánh Giá</span>
+          <span className="px-2 py-0.5 rounded-full text-[10px] font-mono bg-[#F5F5F5] text-[#2F3437] font-bold border border-[#EAEAEA]">
             {globalCounts.newStage}
           </span>
         </button>
@@ -825,12 +829,13 @@ export const QuotationsManager = () => {
           onClick={() => handleStageChange('internal')}
           className={`px-4 py-2.5 text-xs font-bold transition-all border-b-2 flex items-center space-x-2 cursor-pointer ${
             activeStage === 'internal'
-              ? 'border-[#0F172A] text-[#0F172A] bg-white'
-              : 'border-transparent text-slate-500 hover:text-slate-900 hover:border-slate-300'
+              ? 'border-[#111111] text-[#111111] bg-white'
+              : 'border-transparent text-[#787774] hover:text-[#111111] hover:border-[#EAEAEA]'
           }`}
         >
-          <span>⚙️ 2. Đang Xử Lý Nội Bộ</span>
-          <span className="px-2 py-0.5 rounded-full text-[10px] font-mono bg-amber-50 text-amber-800 font-bold border border-amber-200">
+          <SlidersHorizontal className="w-3.5 h-3.5 stroke-[2]" />
+          <span>2. Đang Xử Lý Nội Bộ</span>
+          <span className="px-2 py-0.5 rounded-full text-[10px] font-mono bg-[#FBF3DB] text-[#956400] font-bold border border-[#F5E5B8]">
             {globalCounts.internalStage}
           </span>
         </button>
@@ -840,12 +845,13 @@ export const QuotationsManager = () => {
           onClick={() => handleStageChange('sent')}
           className={`px-4 py-2.5 text-xs font-bold transition-all border-b-2 flex items-center space-x-2 cursor-pointer ${
             activeStage === 'sent'
-              ? 'border-[#0F172A] text-[#0F172A] bg-white'
-              : 'border-transparent text-slate-500 hover:text-slate-900 hover:border-slate-300'
+              ? 'border-[#111111] text-[#111111] bg-white'
+              : 'border-transparent text-[#787774] hover:text-[#111111] hover:border-[#EAEAEA]'
           }`}
         >
-          <span>✈️ 3. Đã Gửi Khách Hàng</span>
-          <span className="px-2 py-0.5 rounded-full text-[10px] font-mono bg-emerald-50 text-emerald-800 font-bold border border-emerald-200">
+          <Send className="w-3.5 h-3.5 stroke-[2]" />
+          <span>3. Đã Gửi Khách Hàng</span>
+          <span className="px-2 py-0.5 rounded-full text-[10px] font-mono bg-[#EDF3EC] text-[#346538] font-bold border border-[#C6E1C4]">
             {globalCounts.sentStage}
           </span>
         </button>
