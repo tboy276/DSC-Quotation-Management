@@ -14,7 +14,8 @@ import {
 } from '../../lib/master-data-service';
 import type { CastingGrade, MoldingRecipeItem } from '../../types/master-data';
 import { Modal } from '../ui/Modal';
-import { FileText, Eye } from 'lucide-react';
+import { FileText, Eye, Workflow } from 'lucide-react';
+import { CostSectionCard } from '../ui/CostSectionCard';
 
 export const CastingCalculatorForm = () => {
   const casting = useQuotationStore((state) => state.castingInput);
@@ -88,265 +89,225 @@ export const CastingCalculatorForm = () => {
   const coreCostPerKg = m_cast > 0 ? totalCoreCostPerProduct / m_cast : 0;
   const partA_per_kg = (dg_liquid_final / yield_ratio) + coreCostPerKg;
 
-  return (
-    <div className="space-y-5 animate-fade-in-up">
-      {/* SECTION 1 & 2: PHẦN A (Bespoke UI) */}
-      <div className="space-y-4 animate-fade-in-up">
-        {/* Header Card */}
-        <div className="border border-slate-200 rounded-[8px] p-4 bg-white flex items-start gap-3 shadow-[0_2px_8px_rgba(0,0,0,0.03)]">
-          <div className="w-5 h-5 bg-slate-100 rounded-[4px] mt-0.5 flex-shrink-0"></div>
-          <div>
-            <h2 className="text-[16px] font-bold text-slate-900 uppercase tracking-wide">
-              PHẦN A: VẬT LIỆU & TẠO KHUÔN
-            </h2>
-            <p className="text-[13px] text-slate-500 mt-0.5">
-              Áp dụng phương pháp tính theo mẻ chuẩn 1,000kg kim loại lỏng.
-            </p>
-          </div>
-        </div>
-
-        {/* Main Card */}
-        <div className="border border-slate-200 rounded-[8px] p-5 bg-white shadow-[0_2px_8px_rgba(0,0,0,0.03)]">
-          {/* Header of Main Card */}
-          <div className="flex justify-between items-center mb-6">
-            <h3 className="text-[14px] font-bold text-slate-600 uppercase tracking-wider">
-              NHẬP LIỆU VẬT TƯ & KHUÔN
-            </h3>
-            <button
-              type="button"
-              onClick={() => setShowRecipeModal(true)}
-              className="px-3 py-1.5 bg-white text-[#111111] border border-slate-200 rounded-[6px] text-[12px] font-bold inline-flex items-center space-x-2 cursor-pointer hover:bg-slate-50 shadow-sm transition-colors"
-            >
-              <Eye className="w-4 h-4 text-slate-500" />
-              <span>3 Vật Tư Khuôn</span>
-            </button>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
-            {/* Left Column - Inputs */}
-            <div className="md:col-span-5 border border-slate-200 rounded-[8px] p-5 flex flex-col gap-5">
-              {/* 1. Khối lượng */}
-              <div className="flex items-center justify-between">
-                <label className="text-[13px] font-medium text-slate-700">1. Khối lượng vật đúc (kg):</label>
-                <input
-                  type="number"
-                  step="0.1"
-                  min="0"
-                  value={casting.m_cast ?? ''}
-                  onChange={(e) => setCastingField('m_cast', Math.max(0, Number(e.target.value)))}
-                  className="w-28 px-3 py-2 bg-slate-50 border border-slate-200 rounded-[6px] font-mono text-[14px] text-slate-900 text-right focus:outline-none focus:border-blue-400 focus:bg-white transition-colors"
-                />
-              </div>
-
-              {/* 2. Tỷ lệ thu hồi */}
-              <div className="flex items-center justify-between">
-                <label className="text-[13px] font-medium text-slate-700">2. Tỷ lệ thu hồi kim loại (%):</label>
-                <input
-                  type="number"
-                  step="1"
-                  min="0"
-                  value={casting.Y_yield ?? ''}
-                  onChange={(e) => setCastingField('Y_yield', Math.max(0, Number(e.target.value)))}
-                  className="w-28 px-3 py-2 bg-slate-50 border border-slate-200 rounded-[6px] font-mono text-[14px] text-slate-900 text-right focus:outline-none focus:border-blue-400 focus:bg-white transition-colors"
-                />
-              </div>
-
-              {/* 3. % Hao hụt hồi liệu */}
-              <div className="flex items-center justify-between">
-                <label className="text-[13px] font-medium text-slate-700">3. % Hao hụt hồi liệu:</label>
-                <input
-                  type="number"
-                  step="0.05"
-                  min="0"
-                  value={casting.k_burn_loss !== undefined ? casting.k_burn_loss : 2.15}
-                  onChange={(e) => setCastingField('k_burn_loss', Math.max(0, Number(e.target.value)))}
-                  className="w-28 px-3 py-2 bg-slate-50 border border-slate-200 rounded-[6px] font-mono text-[14px] text-slate-900 text-right focus:outline-none focus:border-blue-400 focus:bg-white transition-colors"
-                />
-              </div>
-
-              {/* 4. Mác gang đúc */}
-              <div className="flex items-center justify-between">
-                <label className="text-[13px] font-medium text-slate-700">4. Mác gang đúc:</label>
-                <select
-                  value={casting.selected_casting_grade_id}
-                  onChange={(e) => selectGrade(e.target.value)}
-                  className="w-36 px-3 py-2 bg-slate-50 border border-slate-200 rounded-[6px] text-slate-900 text-[13px] font-medium focus:outline-none focus:border-blue-400 focus:bg-white transition-colors"
-                >
-                  {(grades.length > 0 ? grades : INITIAL_CASTING_GRADES).map((g) => (
-                    <option key={g.id} value={g.id}>
-                      {g.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              {/* 5. Trọng lượng thao nhựa */}
-              <div className="flex items-center justify-between">
-                <label className="text-[13px] font-medium text-slate-700">5. Trọng lượng thao nhựa (kg):</label>
-                <input
-                  type="number"
-                  step="0.1"
-                  min="0"
-                  value={casting.m_resin_core ?? 0}
-                  onChange={(e) => setCastingField('m_resin_core', Math.max(0, Number(e.target.value)))}
-                  className="w-28 px-3 py-2 bg-slate-50 border border-slate-200 rounded-[6px] font-mono text-[14px] text-slate-900 text-right focus:outline-none focus:border-blue-400 focus:bg-white transition-colors"
-                />
-              </div>
-            </div>
-
-            {/* Right Column - Calculations */}
-            <div className="md:col-span-7 border border-slate-200 rounded-[8px] p-5 flex flex-col justify-center">
-              <div className="flex-1 space-y-3.5">
-                {/* I */}
-                <div className="flex justify-between items-center border-b border-dashed border-slate-200 pb-2.5">
-                  <div>
-                    <div className="text-[13px] font-bold text-slate-900">I. Chi phí vật tư nấu luyện:</div>
-                    <div className="text-[10px] font-mono text-slate-400 uppercase mt-0.5">1000KG × DG_LIQUID</div>
-                  </div>
-                  <div className="font-mono text-[15px] font-bold text-slate-900">{cost_metal_1000.toLocaleString('vi-VN')} đ</div>
-                </div>
-
-                {/* II */}
-                <div className="flex justify-between items-center border-b border-dashed border-slate-200 pb-2.5">
-                  <div>
-                    <div className="text-[13px] font-bold text-slate-900">II. Hồi liệu thu hồi (-):</div>
-                    <div className="text-[10px] font-mono text-slate-400 uppercase mt-0.5">SCRAP_KG × DG_CAST_SCRAP</div>
-                  </div>
-                  <div className="font-mono text-[15px] font-bold text-emerald-500">- {cost_scrap_1000.toLocaleString('vi-VN')} đ</div>
-                </div>
-
-                {/* III */}
-                <div className="flex justify-between items-center border-b border-dashed border-slate-200 pb-2.5">
-                  <div>
-                    <div className="text-[13px] font-bold text-slate-900">III. Chi phí nấu luyện (Lò & Gầu):</div>
-                    <div className="text-[10px] font-mono text-slate-400 uppercase mt-0.5">ĐỊNH MỨC HỆ THỐNG</div>
-                  </div>
-                  <div className="font-mono text-[15px] font-bold text-slate-900">{cost_furnace_1000.toLocaleString('vi-VN')} đ</div>
-                </div>
-
-                {/* IV */}
-                <div className="flex justify-between items-center border-b border-dashed border-slate-200 pb-2.5">
-                  <div>
-                    <div className="text-[13px] font-bold text-slate-900">IV. Chi phí làm khuôn cát:</div>
-                    <div className="text-[10px] font-mono text-slate-400 uppercase mt-0.5">ĐỊNH MỨC HỆ THỐNG</div>
-                  </div>
-                  <div className="font-mono text-[15px] font-bold text-slate-900">{cost_molding_1000.toLocaleString('vi-VN')} đ</div>
-                </div>
-
-                {/* V */}
-                <div className="flex justify-between items-center border-b border-dashed border-slate-200 pb-2.5">
-                  <div>
-                    <div className="text-[13px] font-bold text-slate-900">V. Đơn giá thành phẩm:</div>
-                    <div className="text-[10px] font-mono text-slate-400 uppercase mt-0.5">TỔNG CHI PHÍ MẺ ÷ (1000KG × TỶ LỆ THU HỒI)</div>
-                  </div>
-                  <div className="font-mono text-[15px] font-bold text-slate-900">{Math.round(dg_liquid_final / yield_ratio).toLocaleString('vi-VN')} VNĐ/kg</div>
-                </div>
-
-                {/* VI */}
-                <div className="flex justify-between items-center pb-1">
-                  <div>
-                    <div className="text-[13px] font-bold text-slate-900">VI. Phí thao quy đổi:</div>
-                    <div className="text-[10px] font-mono text-slate-400 uppercase mt-0.5">ĐỊNH MỨC HỆ THỐNG</div>
-                  </div>
-                  <div className="font-mono text-[15px] font-bold text-slate-900">{Math.round(coreCostPerKg).toLocaleString('vi-VN')} VNĐ/kg</div>
-                </div>
-              </div>
-
-              {/* Total Box */}
-              <div className="mt-3 bg-[#F4F7FB] border border-blue-100/50 rounded-[8px] p-4 flex justify-between items-end">
-                <div>
-                  <div className="text-[15px] font-extrabold text-slate-900 uppercase">TỔNG CHI PHÍ VẬT TƯ ĐÚC</div>
-                  <div className="text-[10px] font-mono text-slate-500 uppercase mt-1">ĐƠN GIÁ/KG × TRỌNG LƯỢNG VẬT ĐÚC</div>
-                </div>
-                <div className="text-right">
-                  <div className="text-[12px] font-mono text-blue-500 mb-1">
-                    ({Math.round(dg_liquid_final / yield_ratio).toLocaleString('vi-VN')} + {Math.round(coreCostPerKg).toLocaleString('vi-VN')}) × {m_cast.toLocaleString('vi-VN')}
-                  </div>
-                  <div className="text-[26px] leading-none font-mono font-extrabold text-blue-600">
-                    {Math.round(partA_per_kg * m_cast).toLocaleString('vi-VN')} đ
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
+  const section1Left = (
+    <div className="space-y-3 text-xs">
+      <div className="flex items-center justify-between">
+        <label className="text-[10px] font-bold text-[#787774] uppercase tracking-wider">1. Khối lượng vật đúc (kg):</label>
+        <input
+          type="number"
+          step="0.1"
+          min="0"
+          value={casting.m_cast ?? ''}
+          onChange={(e) => setCastingField('m_cast', Math.max(0, Number(e.target.value)))}
+          className="w-28 px-2.5 py-1.5 border border-[#EAEAEA] rounded-[4px] font-mono text-xs font-bold text-[#111111] bg-white text-right focus:outline-none focus:border-[#111111]"
+        />
       </div>
 
-      {/* SECTION B: CHI PHÍ PHÂN XƯỞNG ĐÚC (Bespoke UI) */}
-      <div className="border border-slate-200 rounded-[8px] p-5 bg-white shadow-[0_2px_8px_rgba(0,0,0,0.03)] animate-fade-in-up">
+      <div className="flex items-center justify-between">
+        <label className="text-[10px] font-bold text-[#787774] uppercase tracking-wider">2. Tỷ lệ thu hồi kim loại (%):</label>
+        <input
+          type="number"
+          step="1"
+          min="0"
+          value={casting.Y_yield ?? ''}
+          onChange={(e) => setCastingField('Y_yield', Math.max(0, Number(e.target.value)))}
+          className="w-28 px-2.5 py-1.5 border border-[#EAEAEA] rounded-[4px] font-mono text-xs font-bold text-[#111111] bg-white text-right focus:outline-none focus:border-[#111111]"
+        />
+      </div>
+
+      <div className="flex items-center justify-between">
+        <label className="text-[10px] font-bold text-[#787774] uppercase tracking-wider">3. % Hao hụt hồi liệu:</label>
+        <input
+          type="number"
+          step="0.05"
+          min="0"
+          value={casting.k_burn_loss !== undefined ? casting.k_burn_loss : 2.15}
+          onChange={(e) => setCastingField('k_burn_loss', Math.max(0, Number(e.target.value)))}
+          className="w-28 px-2.5 py-1.5 border border-[#EAEAEA] rounded-[4px] font-mono text-xs font-bold text-[#111111] bg-white text-right focus:outline-none focus:border-[#111111]"
+        />
+      </div>
+
+      <div className="flex items-center justify-between">
+        <label className="text-[10px] font-bold text-[#787774] uppercase tracking-wider">4. Mác gang đúc:</label>
+        <select
+          value={casting.selected_casting_grade_id}
+          onChange={(e) => selectGrade(e.target.value)}
+          className="w-36 px-2.5 py-1.5 border border-[#EAEAEA] rounded-[4px] font-bold text-xs text-[#111111] bg-white focus:outline-none focus:border-[#111111]"
+        >
+          {(grades.length > 0 ? grades : INITIAL_CASTING_GRADES).map((g) => (
+            <option key={g.id} value={g.id}>
+              {g.name}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      <div className="flex items-center justify-between">
+        <label className="text-[10px] font-bold text-[#787774] uppercase tracking-wider">5. Trọng lượng thao nhựa (kg):</label>
+        <input
+          type="number"
+          step="0.1"
+          min="0"
+          value={casting.m_resin_core ?? 0}
+          onChange={(e) => setCastingField('m_resin_core', Math.max(0, Number(e.target.value)))}
+          className="w-28 px-2.5 py-1.5 border border-[#EAEAEA] rounded-[4px] font-mono text-xs font-bold text-[#111111] bg-white text-right focus:outline-none focus:border-[#111111]"
+        />
+      </div>
+    </div>
+  );
+
+  const section1Right = (
+    <div className="space-y-2 text-xs font-mono">
+      <div className="flex justify-between items-center py-1 border-b border-[#EAEAEA]">
+        <div>
+          <div className="text-[11px] font-bold text-[#111111] font-sans">I. Phí vật tư nấu luyện:</div>
+          <div className="text-[10px] font-mono text-[#787774]">1000KG × DG_LIQUID</div>
+        </div>
+        <div className="font-bold text-[#111111]">{cost_metal_1000.toLocaleString('vi-VN')} VNĐ</div>
+      </div>
+
+      <div className="flex justify-between items-center py-1 border-b border-[#EAEAEA]">
+        <div>
+          <div className="text-[11px] font-bold text-[#111111] font-sans">II. Hồi liệu thu hồi (-):</div>
+          <div className="text-[10px] font-mono text-[#787774]">SCRAP_KG × DG_SCRAP</div>
+        </div>
+        <div className="font-bold text-[#346538]">- {cost_scrap_1000.toLocaleString('vi-VN')} VNĐ</div>
+      </div>
+
+      <div className="flex justify-between items-center py-1 border-b border-[#EAEAEA]">
+        <div>
+          <div className="text-[11px] font-bold text-[#111111] font-sans">III. Phí nấu luyện (Lò & Gầu):</div>
+          <div className="text-[10px] font-mono text-[#787774]">ĐỊNH MỨC HỆ THỐNG</div>
+        </div>
+        <div className="font-bold text-[#111111]">{cost_furnace_1000.toLocaleString('vi-VN')} VNĐ</div>
+      </div>
+
+      <div className="flex justify-between items-center py-1 border-b border-[#EAEAEA]">
+        <div>
+          <div className="text-[11px] font-bold text-[#111111] font-sans">IV. Phí làm khuôn cát:</div>
+          <div className="text-[10px] font-mono text-[#787774]">ĐỊNH MỨC HỆ THỐNG</div>
+        </div>
+        <div className="font-bold text-[#111111]">{cost_molding_1000.toLocaleString('vi-VN')} VNĐ</div>
+      </div>
+
+      <div className="flex justify-between items-center py-1 border-b border-[#EAEAEA]">
+        <div>
+          <div className="text-[11px] font-bold text-[#111111] font-sans">V. Đơn giá thành phẩm:</div>
+          <div className="text-[10px] font-mono text-[#787774]">CHI PHÍ MẺ ÷ (1000KG × TỶ LỆ THU HỒI)</div>
+        </div>
+        <div className="font-bold text-[#111111]">{Math.round(dg_liquid_final / yield_ratio).toLocaleString('vi-VN')} VNĐ/kg</div>
+      </div>
+
+      <div className="flex justify-between items-center py-1">
+        <div>
+          <div className="text-[11px] font-bold text-[#111111] font-sans">VI. Phí thao quy đổi:</div>
+          <div className="text-[10px] font-mono text-[#787774]">ĐỊNH MỨC HỆ THỐNG</div>
+        </div>
+        <div className="font-bold text-[#111111]">{Math.round(coreCostPerKg).toLocaleString('vi-VN')} VNĐ/kg</div>
+      </div>
+    </div>
+  );
+
+  return (
+    <div className="space-y-4 animate-fade-in-up">
+      {/* SECTION 1: VẬT LIỆU KIM LOẠI LỎNG & KHUÔN (PHẦN A) */}
+      <CostSectionCard
+        icon={<Workflow className="w-5 h-5 text-[#111111]" />}
+        title="SECTION 1: VẬT LIỆU KIM LOẠI LỎNG & TẠO KHUÔN (PHẦN A)"
+        mainBlockTitle="Nhập Liệu Vật Tư & Khuôn Mẻ 1,000kg"
+        mainBlockHeaderRight={
+          <button
+            type="button"
+            onClick={() => setShowRecipeModal(true)}
+            className="px-3 py-1.5 bg-[#111111] hover:bg-[#333333] active:scale-[0.98] text-white rounded-[4px] text-xs font-bold inline-flex items-center space-x-1.5 cursor-pointer shadow-xs transition-colors"
+          >
+            <Eye className="w-3.5 h-3.5" />
+            <span>3 Vật Tư Khuôn</span>
+          </button>
+        }
+        mainLeftContent={section1Left}
+        mainRightContent={section1Right}
+        footerTitle="TỔNG CHI PHÍ VẬT TƯ ĐÚC (PHẦN A)"
+        footerSubtitle="= Đơn giá/kg × Trọng lượng vật đúc"
+        footerTotal={Math.round(partA_per_kg * m_cast).toLocaleString('vi-VN')}
+        footerTotalUnit="VNĐ/SP"
+      />
+
+      {/* SECTION 2: CHI PHÍ PHÂN XƯỞNG ĐÚC (PHẦN B) */}
+      <div className="bg-white border border-[#EAEAEA] rounded-[8px] p-4 shadow-xs space-y-4 animate-fade-in-up">
         {/* Header */}
-        <div className="flex items-center gap-3 mb-6">
-          <div className="w-8 h-8 bg-slate-100 rounded-[6px] flex items-center justify-center flex-shrink-0">
-            <FileText className="w-4 h-4 text-slate-700" />
-          </div>
-          <h2 className="text-[15px] font-bold text-slate-900 uppercase tracking-wide">
-            PHẦN B: CHI PHÍ PHÂN XƯỞNG ĐÚC
+        <div className="flex items-center gap-2 border-b border-[#EAEAEA] pb-2.5">
+          <FileText className="w-4 h-4 text-[#111111] stroke-[2]" />
+          <h2 className="text-xs font-bold text-[#111111] uppercase tracking-wider">
+            SECTION 2: CHI PHÍ PHÂN XƯỞNG ĐÚC (PHẦN B)
           </h2>
         </div>
 
         {/* List of items */}
-        <div className="flex flex-col space-y-4">
-          {/* I */}
-          <div className="flex justify-between items-center border-b border-slate-100 pb-3">
+        <div className="space-y-2 text-xs font-mono">
+          <div className="flex justify-between items-center py-1 border-b border-[#EAEAEA]">
             <div>
-              <div className="text-[13px] font-bold text-slate-900">I. Vật Tư HTSP:</div>
-              <div className="text-[10px] font-mono text-slate-400 uppercase mt-1">
-                {(casting.DG_finishing_per_kg || 771.82).toLocaleString('vi-VN', { maximumFractionDigits: 2 })} Đ/KG × {m_cast} KG
+              <div className="text-[11px] font-bold text-[#111111] font-sans">I. Vật Tư HTSP:</div>
+              <div className="text-[10px] font-mono text-[#787774]">
+                {(casting.DG_finishing_per_kg || 771.82).toLocaleString('vi-VN', { maximumFractionDigits: 2 })} VNĐ/KG × {m_cast} KG
               </div>
             </div>
-            <div className="font-mono text-[14px] font-bold text-slate-900">{res.C_finishing.toLocaleString('vi-VN')} đ</div>
+            <div className="font-bold text-[#111111]">{res.C_finishing.toLocaleString('vi-VN')} VNĐ</div>
           </div>
 
-          {/* II */}
-          <div className="flex justify-between items-center border-b border-slate-100 pb-3">
+          <div className="flex justify-between items-center py-1 border-b border-[#EAEAEA]">
             <div>
-              <div className="text-[13px] font-bold text-slate-900">II. Điện + Nước Tiêu Hao Xưởng:</div>
-              <div className="text-[10px] font-mono text-slate-400 uppercase mt-1">
-                {(casting.DG_utility_per_kg || 3687.6).toLocaleString('vi-VN', { maximumFractionDigits: 2 })} Đ/KG × {m_cast} KG
+              <div className="text-[11px] font-bold text-[#111111] font-sans">II. Điện + Nước Tiêu Hao Xưởng:</div>
+              <div className="text-[10px] font-mono text-[#787774]">
+                {(casting.DG_utility_per_kg || 3687.6).toLocaleString('vi-VN', { maximumFractionDigits: 2 })} VNĐ/KG × {m_cast} KG
               </div>
             </div>
-            <div className="font-mono text-[14px] font-bold text-slate-900">{res.C_utility.toLocaleString('vi-VN')} đ</div>
+            <div className="font-bold text-[#111111]">{res.C_utility.toLocaleString('vi-VN')} VNĐ</div>
           </div>
 
-          {/* III */}
-          <div className="flex justify-between items-center border-b border-slate-100 pb-3">
+          <div className="flex justify-between items-center py-1 border-b border-[#EAEAEA]">
             <div>
-              <div className="text-[13px] font-bold text-slate-900">III. Lương Trực Tiếp & Gián Tiếp:</div>
-              <div className="text-[10px] font-mono text-slate-400 uppercase mt-1">
-                {(casting.DG_labor_per_kg || 2461).toLocaleString('vi-VN', { maximumFractionDigits: 2 })} Đ/KG × {m_cast} KG
+              <div className="text-[11px] font-bold text-[#111111] font-sans">III. Lương Trực Tiếp & Gián Tiếp:</div>
+              <div className="text-[10px] font-mono text-[#787774]">
+                {(casting.DG_labor_per_kg || 2461).toLocaleString('vi-VN', { maximumFractionDigits: 2 })} VNĐ/KG × {m_cast} KG
               </div>
             </div>
-            <div className="font-mono text-[14px] font-bold text-slate-900">{res.C_labor.toLocaleString('vi-VN')} đ</div>
+            <div className="font-bold text-[#111111]">{res.C_labor.toLocaleString('vi-VN')} VNĐ</div>
           </div>
 
-          {/* IV */}
-          <div className="flex justify-between items-center border-b border-slate-100 pb-3">
+          <div className="flex justify-between items-center py-1 border-b border-[#EAEAEA]">
             <div>
-              <div className="text-[13px] font-bold text-slate-900">IV. Quản Lý Phân Xưởng:</div>
-              <div className="text-[10px] font-mono text-slate-400 uppercase mt-1">
-                {(casting.DG_workshop_mgmt_per_kg || 0).toLocaleString('vi-VN', { maximumFractionDigits: 2 })} Đ/KG × {m_cast} KG
+              <div className="text-[11px] font-bold text-[#111111] font-sans">IV. Quản Lý Phân Xưởng:</div>
+              <div className="text-[10px] font-mono text-[#787774]">
+                {(casting.DG_workshop_mgmt_per_kg || 0).toLocaleString('vi-VN', { maximumFractionDigits: 2 })} VNĐ/KG × {m_cast} KG
               </div>
             </div>
-            <div className="font-mono text-[14px] font-bold text-slate-900">{res.C_workshop_mgmt.toLocaleString('vi-VN')} đ</div>
+            <div className="font-bold text-[#111111]">{res.C_workshop_mgmt.toLocaleString('vi-VN')} VNĐ</div>
           </div>
 
-          {/* V */}
-          <div className="flex justify-between items-center pb-2">
+          <div className="flex justify-between items-center py-1">
             <div>
-              <div className="text-[13px] font-bold text-slate-900">V. Khấu Hao Thiết Bị Xưởng:</div>
-              <div className="text-[10px] font-mono text-slate-400 uppercase mt-1">
-                {(casting.DG_equipment_depr_per_kg || 4000).toLocaleString('vi-VN', { maximumFractionDigits: 2 })} Đ/KG × {m_cast} KG
+              <div className="text-[11px] font-bold text-[#111111] font-sans">V. Khấu Hao Thiết Bị Xưởng:</div>
+              <div className="text-[10px] font-mono text-[#787774]">
+                {(casting.DG_equipment_depr_per_kg || 4000).toLocaleString('vi-VN', { maximumFractionDigits: 2 })} VNĐ/KG × {m_cast} KG
               </div>
             </div>
-            <div className="font-mono text-[14px] font-bold text-slate-900">{res.C_equipment_depreciation.toLocaleString('vi-VN')} đ</div>
+            <div className="font-bold text-[#111111]">{res.C_equipment_depreciation.toLocaleString('vi-VN')} VNĐ</div>
           </div>
 
-          {/* Total Box */}
-          <div className="mt-2 bg-[#F4F7FB] border border-blue-100/50 rounded-[6px] p-4 flex justify-between items-center">
-            <div className="text-[14px] font-extrabold text-slate-900 uppercase">TỔNG PHẦN B XƯỞNG:</div>
-            <div className="text-[18px] font-mono font-bold text-blue-600">
-              {Math.round(res.C_part_b_total).toLocaleString('vi-VN')} <span className="text-[14px] font-bold uppercase">VNĐ/SP</span>
+          {/* Signature Dark Obsidian Total Box for Part B */}
+          <div className="mt-3 bg-[#111111] text-white rounded-[6px] p-3.5 flex items-center justify-between border border-[#111111] shadow-xs">
+            <div>
+              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">
+                TỔNG PHẦN B PHÂN XƯỞNG ĐÚC
+              </p>
+              <p className="font-mono font-extrabold text-2xl text-emerald-400 leading-none">
+                {Math.round(res.C_part_b_total).toLocaleString('vi-VN')}
+              </p>
             </div>
+            <span className="font-mono font-bold text-xs text-white uppercase">
+              VNĐ / Chi tiết
+            </span>
           </div>
         </div>
       </div>
