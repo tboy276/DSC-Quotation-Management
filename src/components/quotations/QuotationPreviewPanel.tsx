@@ -88,14 +88,14 @@ export const QuotationPreviewPanel: React.FC<QuotationPreviewPanelProps> = ({
   };
 
   const handleDownloadPDF = () => {
-    const element = document.getElementById('quotation-pdf-content');
+    const element = window.document.getElementById('quotation-pdf-content');
     if (!element) return;
 
     const isLandscape = config.layoutOrientation === 'landscape';
     const filename = `DISOCO_Bao_Gia_${document.id || 'Export'}.pdf`;
 
     const opt = {
-      margin:       [5, 5, 5, 5],
+      margin:       5,
       filename:     filename,
       image:        { type: 'jpeg', quality: 0.98 },
       html2canvas:  { scale: 2, useCORS: true, logging: false },
