@@ -84,6 +84,7 @@ export const QuotationPdfContent: React.FC<QuotationPdfContentProps> = ({
           <img
             src="https://res.cloudinary.com/ppzbydbc/image/upload/v1783387548/logo.png"
             alt="DISOCO Logo"
+            crossOrigin="anonymous"
             className="h-16 w-auto max-w-full object-contain"
           />
         </div>
