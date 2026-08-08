@@ -13,6 +13,7 @@ import {
   getFurnaceLadleCostPer1000kg,
 } from '../../lib/master-data-service';
 import type { CastingGrade, MoldingRecipeItem } from '../../types/master-data';
+import { ActionButton } from '../ui/ActionButton';
 import { Modal } from '../ui/Modal';
 import { FileText, Eye, Workflow } from 'lucide-react';
 import { CostSectionCard } from '../ui/CostSectionCard';
@@ -376,13 +377,11 @@ export const CastingCalculatorForm = () => {
         title="Công Thức 3 Vật Tư Khuôn Cố Định (Mẻ 1,000 kg)"
         size="lg"
         footer={
-          <button
-            type="button"
+          <ActionButton
+            variant="primary"
             onClick={() => setShowRecipeModal(false)}
-            className="px-4 py-1.5 bg-[#111111] text-white font-bold text-xs rounded-[6px]"
-          >
-            Đóng Màn Hình
-          </button>
+            label="Đóng Màn Hình"
+          />
         }
       >
         <div className="space-y-3 text-xs">

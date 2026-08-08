@@ -12,6 +12,7 @@ import {
 import { calculateLiquidMetalPrice } from '../../lib/calculation-engine/liquid-metal-calculator';
 import { DataTable, type DataTableColumn, type DataTableAction } from '../ui/DataTable';
 import { Modal } from '../ui/Modal';
+import { ActionButton } from '../ui/ActionButton';
 import { Plus, Edit2, Trash2, Check, RotateCcw, AlertCircle } from 'lucide-react';
 
 interface CastingBomManagerProps {
@@ -339,21 +340,18 @@ export const CastingBomManager = ({ isEstimator }: CastingBomManagerProps) => {
         title={`Thêm Thành Phần Vào BOM — ${currentGrade?.name}`}
         footer={
           <>
-            <button
-              type="button"
+            <ActionButton
+              variant="neutral"
               onClick={() => setShowAddModal(false)}
-              className="px-3.5 py-1.5 bg-[#F0F0EE] hover:bg-[#E0E0DE] text-[#111111] font-semibold rounded-[6px] cursor-pointer"
-            >
-              Hủy
-            </button>
-            <button
+              label="Hủy"
+            />
+            <ActionButton
               type="submit"
               form="add-bom-item-form"
-              className="px-4 py-1.5 bg-[#111111] hover:bg-[#333333] text-white font-bold rounded-[6px] inline-flex items-center space-x-1 cursor-pointer"
-            >
-              <Check className="w-4 h-4" />
-              <span>Thêm Vào BOM</span>
-            </button>
+              variant="primary"
+              icon={Check}
+              label="Thêm Vào BOM"
+            />
           </>
         }
       >
@@ -413,21 +411,18 @@ export const CastingBomManager = ({ isEstimator }: CastingBomManagerProps) => {
         title={`Sửa Khối Lượng BOM — ${editingBomItem?.material?.name}`}
         footer={
           <>
-            <button
-              type="button"
+            <ActionButton
+              variant="neutral"
               onClick={() => setShowEditWeightModal(false)}
-              className="px-3.5 py-1.5 bg-[#F0F0EE] hover:bg-[#E0E0DE] text-[#111111] font-semibold rounded-[6px] cursor-pointer"
-            >
-              Hủy
-            </button>
-            <button
+              label="Hủy"
+            />
+            <ActionButton
               type="submit"
               form="edit-weight-form"
-              className="px-4 py-1.5 bg-[#111111] hover:bg-[#333333] text-white font-bold rounded-[6px] inline-flex items-center space-x-1 cursor-pointer"
-            >
-              <Check className="w-4 h-4" />
-              <span>Cập Nhật Khối Lượng</span>
-            </button>
+              variant="primary"
+              icon={Check}
+              label="Cập Nhật Khối Lượng"
+            />
           </>
         }
       >

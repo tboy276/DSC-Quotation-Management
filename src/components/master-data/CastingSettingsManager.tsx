@@ -6,6 +6,7 @@ import {
   getFurnaceLadleCostPer1000kg,
 } from '../../lib/master-data-service';
 import { Settings, Save, Check, Flame, Factory } from 'lucide-react';
+import { ActionButton } from '../ui/ActionButton';
 
 export const CastingSettingsManager = () => {
   const [settings, setSettings] = useState<CastingFactorySettings>({
@@ -82,24 +83,14 @@ export const CastingSettingsManager = () => {
           </p>
         </div>
 
-        <button
-          type="button"
+        <ActionButton
+          variant="primary"
           disabled={saving || loading}
           onClick={handleSave}
-          className="px-4 py-2 bg-[#111111] hover:bg-[#333333] text-white rounded-[6px] text-xs font-bold inline-flex items-center space-x-1.5 cursor-pointer shadow-2xs disabled:opacity-50"
-        >
-          {savedSuccess ? (
-            <>
-              <Check className="w-4 h-4 text-emerald-400 stroke-[3]" />
-              <span className="text-emerald-400">Đã Lưu Thành Công</span>
-            </>
-          ) : (
-            <>
-              <Save className="w-4 h-4 stroke-[2.5]" />
-              <span>{saving ? 'Đang Lưu...' : 'Lưu Cài Đặt Xưởng'}</span>
-            </>
-          )}
-        </button>
+          icon={savedSuccess ? Check : Save}
+          label={savedSuccess ? 'Đã Lưu Thành Công' : (saving ? 'Đang Lưu...' : 'Lưu Cài Đặt Xưởng')}
+          className={savedSuccess ? 'bg-emerald-50 text-emerald-600 hover:bg-emerald-100 border border-emerald-200' : ''}
+        />
       </div>
 
       {loading ? (

@@ -4,6 +4,7 @@ import { fetchSystemUnitRates, INITIAL_SYSTEM_RATES } from '../../lib/master-dat
 import { useAuth } from '../../context/AuthContext';
 import { DataTable, type DataTableColumn, type DataTableAction } from '../ui/DataTable';
 import { Modal } from '../ui/Modal';
+import { ActionButton } from '../ui/ActionButton';
 import { Cpu, Edit2, Zap, Truck, Layers, Check } from 'lucide-react';
 
 export const SystemRatesManager = () => {
@@ -216,21 +217,18 @@ export const SystemRatesManager = () => {
         subtitle={editingRate?.rate_name}
         footer={
           <>
-            <button
-              type="button"
+            <ActionButton
+              variant="neutral"
               onClick={() => setEditingRate(null)}
-              className="px-3.5 py-1.5 bg-[#F0F0EE] hover:bg-[#E0E0DE] text-[#111111] font-semibold rounded-[6px] cursor-pointer"
-            >
-              Hủy
-            </button>
-            <button
+              label="Hủy"
+            />
+            <ActionButton
               type="submit"
               form="edit-system-rate-form"
-              className="px-4 py-1.5 bg-[#111111] hover:bg-[#333333] text-white font-bold rounded-[6px] inline-flex items-center space-x-1 cursor-pointer"
-            >
-              <Check className="w-4 h-4" />
-              <span>Lưu Đơn Giá Mới</span>
-            </button>
+              variant="primary"
+              icon={Check}
+              label="Lưu Đơn Giá Mới"
+            />
           </>
         }
       >

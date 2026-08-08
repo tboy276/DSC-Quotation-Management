@@ -9,6 +9,7 @@ import {
 import { useAuth } from '../../context/AuthContext';
 import { DataTable, type DataTableColumn, type DataTableAction } from '../ui/DataTable';
 import { Modal } from '../ui/Modal';
+import { ActionButton } from '../ui/ActionButton';
 import { Workflow, Plus, Trash2, Shield, Hammer } from 'lucide-react';
 
 export const ForgingRatesManager = () => {
@@ -282,20 +283,17 @@ export const ForgingRatesManager = () => {
         title="Thêm Dải Tải Trọng Máy Dập"
         footer={
           <>
-            <button
-              type="button"
+            <ActionButton
+              variant="neutral"
               onClick={() => setShowAddPressModal(false)}
-              className="px-3.5 py-1.5 bg-[#F0F0EE] hover:bg-[#E0E0DE] text-[#111111] font-semibold rounded-[6px] cursor-pointer"
-            >
-              Hủy
-            </button>
-            <button
+              label="Hủy"
+            />
+            <ActionButton
               type="submit"
               form="add-press-rate-form"
-              className="px-4 py-1.5 bg-[#111111] hover:bg-[#333333] text-white font-bold rounded-[6px] cursor-pointer"
-            >
-              Lưu Dải Cước
-            </button>
+              variant="primary"
+              label="Lưu Dải Cước"
+            />
           </>
         }
       >
@@ -348,20 +346,17 @@ export const ForgingRatesManager = () => {
         title="Thêm Dải Năng Lượng Máy Búa"
         footer={
           <>
-            <button
-              type="button"
+            <ActionButton
+              variant="neutral"
               onClick={() => setShowAddHammerModal(false)}
-              className="px-3.5 py-1.5 bg-[#F0F0EE] hover:bg-[#E0E0DE] text-[#111111] font-semibold rounded-[6px] cursor-pointer"
-            >
-              Hủy
-            </button>
-            <button
+              label="Hủy"
+            />
+            <ActionButton
               type="submit"
               form="add-hammer-rate-form"
-              className="px-4 py-1.5 bg-[#111111] hover:bg-[#333333] text-white font-bold rounded-[6px] cursor-pointer"
-            >
-              Lưu Dải Cước
-            </button>
+              variant="primary"
+              label="Lưu Dải Cước"
+            />
           </>
         }
       >

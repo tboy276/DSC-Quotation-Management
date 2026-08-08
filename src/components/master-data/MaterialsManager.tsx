@@ -12,6 +12,7 @@ import {
 import { INITIAL_QUOTES } from '../../lib/quotation-service';
 import { DataTable, type DataTableColumn, type DataTableAction } from '../ui/DataTable';
 import { Modal } from '../ui/Modal';
+import { ActionButton } from '../ui/ActionButton';
 import { Plus, Edit2, Trash2, TrendingUp, History, Check, AlertTriangle } from 'lucide-react';
 
 interface MaterialsManagerProps {
@@ -362,21 +363,18 @@ export const MaterialsManager = ({ isEstimator }: MaterialsManagerProps) => {
         title={editingMaterial ? 'Sửa Thông Tin Vật Tư' : 'Thêm Vật Tư Mới'}
         footer={
           <>
-            <button
-              type="button"
+            <ActionButton
+              variant="neutral"
               onClick={() => setShowMaterialModal(false)}
-              className="px-3.5 py-1.5 bg-[#F0F0EE] hover:bg-[#E0E0DE] text-[#111111] font-semibold rounded-[6px] cursor-pointer"
-            >
-              Hủy
-            </button>
-            <button
+              label="Hủy"
+            />
+            <ActionButton
               type="submit"
               form="save-material-form"
-              className="px-4 py-1.5 bg-[#111111] hover:bg-[#333333] text-white font-bold rounded-[6px] inline-flex items-center space-x-1 cursor-pointer"
-            >
-              <Check className="w-4 h-4" />
-              <span>Lưu Thông Tin</span>
-            </button>
+              variant="primary"
+              icon={Check}
+              label="Lưu Thông Tin"
+            />
           </>
         }
       >
@@ -448,21 +446,18 @@ export const MaterialsManager = ({ isEstimator }: MaterialsManagerProps) => {
         subtitle="Thêm dòng mới vào lịch sử giá"
         footer={
           <>
-            <button
-              type="button"
+            <ActionButton
+              variant="neutral"
               onClick={() => setShowPriceModal(false)}
-              className="px-3.5 py-1.5 bg-[#F0F0EE] hover:bg-[#E0E0DE] text-[#111111] font-semibold rounded-[6px] cursor-pointer"
-            >
-              Hủy
-            </button>
-            <button
+              label="Hủy"
+            />
+            <ActionButton
               type="submit"
               form="save-price-form"
-              className="px-4 py-1.5 bg-[#111111] hover:bg-[#333333] text-white font-bold rounded-[6px] inline-flex items-center space-x-1 cursor-pointer"
-            >
-              <Check className="w-4 h-4" />
-              <span>Lưu Giá Mới</span>
-            </button>
+              variant="primary"
+              icon={Check}
+              label="Lưu Giá Mới"
+            />
           </>
         }
       >
@@ -524,13 +519,11 @@ export const MaterialsManager = ({ isEstimator }: MaterialsManagerProps) => {
         title={`Lịch Sử Đơn Giá — ${historyMaterial?.name}`}
         subtitle={`Nhóm: ${historyMaterial?.category} | ĐVT: ${historyMaterial?.unit}`}
         footer={
-          <button
-            type="button"
+          <ActionButton
+            variant="primary"
             onClick={() => setShowHistoryModal(false)}
-            className="px-4 py-1.5 bg-[#111111] hover:bg-[#333333] text-white font-bold rounded-[6px] cursor-pointer"
-          >
-            Đóng
-          </button>
+            label="Đóng"
+          />
         }
       >
         <div className="space-y-2">
@@ -568,14 +561,12 @@ export const MaterialsManager = ({ isEstimator }: MaterialsManagerProps) => {
                     <td className="p-2 text-[#787774]">{h.updated_by || 'Estimator'}</td>
                     <td className="p-2 text-right">
                       {isEstimator && (
-                        <button
-                          type="button"
+                        <ActionButton
+                          variant="danger"
+                          icon={Trash2}
                           onClick={() => handleDeleteHistoryRow(h.id)}
-                          className="p-1 text-[#9F2F2D] hover:bg-[#FDEBEC] rounded cursor-pointer"
                           title="Xoá dòng lịch sử này"
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </button>
+                        />
                       )}
                     </td>
                   </tr>

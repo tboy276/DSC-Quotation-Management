@@ -8,6 +8,7 @@ import { formatCurrencyValue } from '../rfq/RealtimeSummaryPanel';
 import { Modal } from '../ui/Modal';
 import { QuotationPreviewPanel } from './QuotationPreviewPanel';
 import { FileText, Check, Building2, ArrowRight, AlertTriangle } from 'lucide-react';
+import { ActionButton } from '../ui/ActionButton';
 import { useAuth } from '../../context/AuthContext';
 
 interface CreateDocumentModalProps {
@@ -251,22 +252,21 @@ export const CreateDocumentModal = ({
         footer={
           step === 'form' ? (
             <>
-              <button
-                type="button"
+              <ActionButton
+                variant="neutral"
                 onClick={onClose}
-                className="px-3.5 py-1.5 bg-[#F0F0EE] hover:bg-[#E0E0DE] text-[#111111] font-semibold rounded-[6px] cursor-pointer"
-              >
-                Hủy
-              </button>
-              <button
+                label="Hủy"
+              />
+              <ActionButton
                 type="button"
                 disabled={selectedQuoteIds.length === 0}
                 onClick={() => handleGoToPreview()}
-                className="px-4 py-2 bg-[#111111] hover:bg-[#333333] active:scale-[0.98] text-white font-bold rounded-[6px] transition-all cursor-pointer disabled:opacity-40 inline-flex items-center space-x-1.5 shadow-sm text-xs"
-              >
-                <span>Tiếp theo — Xem trước & Tuỳ chỉnh</span>
-                <ArrowRight className="w-4 h-4 text-emerald-400 stroke-[2.5]" />
-              </button>
+                variant="primary"
+                icon={ArrowRight}
+                iconPosition="right"
+                label="Tiếp theo — Xem trước & Tuỳ chỉnh"
+                className="active:scale-[0.98]"
+              />
             </>
           ) : null
         }
@@ -518,22 +518,19 @@ export const CreateDocumentModal = ({
         title="Xác Nhận Gửi Báo Giá Cho Khách Hàng"
         footer={
           <>
-            <button
-              type="button"
+            <ActionButton
+              variant="neutral"
               onClick={() => setShowConfirmSendDialog(false)}
-              className="px-3.5 py-1.5 bg-[#F0F0EE] hover:bg-[#E0E0DE] text-[#111111] font-semibold rounded-[6px] cursor-pointer"
-            >
-              Hủy
-            </button>
-            <button
+              label="Hủy"
+            />
+            <ActionButton
               type="button"
               disabled={submitting}
               onClick={() => handleConfirmFinalSubmit()}
-              className="px-4 py-1.5 bg-[#111111] hover:bg-[#333333] text-white font-bold rounded-[6px] inline-flex items-center space-x-1 cursor-pointer disabled:opacity-40"
-            >
-              <Check className="w-4 h-4 text-emerald-400" />
-              <span>{submitting ? 'Đang Phát Hành...' : 'Xác Nhận & Gửi Ngay'}</span>
-            </button>
+              variant="primary"
+              icon={Check}
+              label={submitting ? 'Đang Phát Hành...' : 'Xác Nhận & Gửi Ngay'}
+            />
           </>
         }
       >

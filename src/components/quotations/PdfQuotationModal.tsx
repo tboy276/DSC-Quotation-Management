@@ -1,6 +1,7 @@
 import type { QuotationDocument } from '../../types/quotation-document';
 import { Printer } from 'lucide-react';
 import { Modal } from '../ui/Modal';
+import { ActionButton } from '../ui/ActionButton';
 import { QuotationPdfContent } from './QuotationPdfContent';
 
 interface PdfQuotationModalProps {
@@ -24,13 +25,13 @@ export const PdfQuotationModal = ({ document, onClose }: PdfQuotationModalProps)
       title="Xem Trước Thư Báo Giá DISOCO (PDF Quotation Preview)"
       subtitle={`#${document.id.substring(0, 8)}`}
       headerExtra={
-        <button
+        <ActionButton
           onClick={handlePrint}
-          className="flex items-center space-x-1.5 px-4 py-1.5 bg-[#111111] hover:bg-[#333333] active:scale-[0.98] text-white text-xs font-bold rounded-[6px] transition-all cursor-pointer shadow-xs mr-2"
-        >
-          <Printer className="w-4 h-4" />
-          <span>In / Tải PDF</span>
-        </button>
+          variant="primary"
+          icon={Printer}
+          label="In / Tải PDF"
+          className="mr-2"
+        />
       }
     >
       <QuotationPdfContent document={document} />

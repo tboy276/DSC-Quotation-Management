@@ -4,6 +4,7 @@ import { fetchQuotes } from '../../lib/quotation-service';
 import { formatCurrencyValue } from './RealtimeSummaryPanel';
 import { formatDate } from '../../lib/format-date';
 import { Modal } from '../ui/Modal';
+import { ActionButton } from '../ui/ActionButton';
 import { Search, Copy } from 'lucide-react';
 
 interface CloneQuoteModalProps {
@@ -55,13 +56,11 @@ export const CloneQuoteModal = ({ segment, onClose, onSelectQuote }: CloneQuoteM
       title={`Sao Chép Từ Báo Giá Cũ Tương Tự (${segment === 'forging' ? 'Rèn Dập' : 'Đúc Gang'})`}
       subtitle="Chọn 1 bản ghi báo giá quá khứ để nạp sẵn toàn bộ thông số 5 Section vào form"
       footer={
-        <button
-          type="button"
+        <ActionButton
+          variant="neutral"
           onClick={onClose}
-          className="px-4 py-1.5 bg-[#F0F0EE] hover:bg-[#E0E0DE] text-[#111111] font-bold rounded-[6px] cursor-pointer"
-        >
-          Đóng
-        </button>
+          label="Đóng"
+        />
       }
     >
       <div className="space-y-4">

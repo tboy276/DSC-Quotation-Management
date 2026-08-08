@@ -10,6 +10,7 @@ import { formatDate } from '../../lib/format-date';
 import { PdfQuotationModal } from './PdfQuotationModal';
 import { QuotationPreviewPanel } from './QuotationPreviewPanel';
 import { Modal } from '../ui/Modal';
+import { ActionButton } from '../ui/ActionButton';
 import {
   FileText,
   FileSpreadsheet,
@@ -129,12 +130,11 @@ export const DocumentDetailModal = ({
           </div>
         }
         footer={
-          <button
+          <ActionButton
+            variant="primary"
             onClick={onClose}
-            className="px-4 py-1.5 bg-[#111111] hover:bg-[#333333] text-white font-bold rounded-[6px] cursor-pointer text-xs"
-          >
-            Đóng Cửa Sổ
-          </button>
+            label="Đóng Cửa Sổ"
+          />
         }
       >
         <div className="space-y-5 text-xs text-[#111111]">

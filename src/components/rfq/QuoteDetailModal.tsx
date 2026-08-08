@@ -5,6 +5,7 @@ import { QuoteStatusBadge } from './QuoteStatusBadge';
 import { formatCurrencyValue } from './RealtimeSummaryPanel';
 import { formatDate } from '../../lib/format-date';
 import { Modal } from '../ui/Modal';
+import { ActionButton } from '../ui/ActionButton';
 import { FileText, Layers, ListFilter } from 'lucide-react';
 
 interface QuoteDetailModalProps {
@@ -219,12 +220,11 @@ export const QuoteDetailModal = ({ quote, onClose }: QuoteDetailModalProps) => {
         </div>
       }
       footer={
-        <button
+        <ActionButton
+          variant="primary"
           onClick={onClose}
-          className="px-4 py-1.5 bg-[#111111] hover:bg-[#333333] text-white font-bold rounded-[6px] cursor-pointer text-xs"
-        >
-          Đóng Cửa Sổ
-        </button>
+          label="Đóng Cửa Sổ"
+        />
       }
     >
 

@@ -7,6 +7,7 @@ import {
   getMoldingRecipeTotalCost1000kg,
 } from '../../lib/master-data-service';
 import { Modal } from '../ui/Modal';
+import { ActionButton } from '../ui/ActionButton';
 import { Layers, Plus, Trash2, Edit2, Check, Info } from 'lucide-react';
 
 export const MoldingRecipeManager = () => {
@@ -98,14 +99,13 @@ export const MoldingRecipeManager = () => {
             </span>
           </div>
 
-          <button
-            type="button"
+          <ActionButton
+            variant="primary"
             onClick={handleOpenAdd}
-            className="px-3 py-2 bg-[#111111] hover:bg-[#333333] text-white rounded-[6px] text-xs font-bold inline-flex items-center space-x-1.5 cursor-pointer shadow-2xs"
-          >
-            <Plus className="w-4 h-4 stroke-[2.5]" />
-            <span>Thêm Dòng Vật Tư</span>
-          </button>
+            icon={Plus}
+            label="Thêm Dòng Vật Tư"
+            className="px-3 py-2"
+          />
         </div>
       </div>
 
@@ -175,22 +175,20 @@ export const MoldingRecipeManager = () => {
                     <td className="py-2.5 px-4 text-[#787774] italic">{item.notes || '—'}</td>
                     <td className="py-2.5 px-4 text-center">
                       <div className="flex items-center justify-center space-x-1">
-                        <button
-                          type="button"
+                        <ActionButton
+                          variant="neutral"
                           onClick={() => handleOpenEdit(item)}
-                          className="p-1 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded transition-colors"
+                          icon={Edit2}
                           title="Sửa vật tư"
-                        >
-                          <Edit2 className="w-3.5 h-3.5" />
-                        </button>
-                        <button
-                          type="button"
+                          className="p-1.5"
+                        />
+                        <ActionButton
+                          variant="danger"
                           onClick={() => handleDelete(item.id, item.material_name)}
-                          className="p-1 text-rose-600 hover:text-rose-800 hover:bg-rose-50 rounded transition-colors"
+                          icon={Trash2}
                           title="Xóa vật tư"
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </button>
+                          className="p-1.5"
+                        />
                       </div>
                     </td>
                   </tr>
@@ -209,22 +207,19 @@ export const MoldingRecipeManager = () => {
         size="md"
         footer={
           <>
-            <button
-              type="button"
+            <ActionButton
+              variant="neutral"
               onClick={() => setShowModal(false)}
-              className="px-3 py-1.5 bg-[#F0F0EE] hover:bg-[#E0E0DE] text-[#111111] font-medium text-xs rounded-[6px]"
-            >
-              Hủy
-            </button>
-            <button
+              label="Hủy"
+            />
+            <ActionButton
               type="button"
               disabled={saving}
               onClick={handleSave}
-              className="px-4 py-1.5 bg-[#111111] hover:bg-[#333333] text-white font-bold text-xs rounded-[6px] inline-flex items-center space-x-1.5"
-            >
-              <Check className="w-4 h-4 stroke-[2.5]" />
-              <span>{saving ? 'Đang lưu...' : 'Lưu Dòng Vật Tư'}</span>
-            </button>
+              variant="primary"
+              icon={Check}
+              label={saving ? 'Đang lưu...' : 'Lưu Dòng Vật Tư'}
+            />
           </>
         }
       >

@@ -3,6 +3,7 @@ import { useAuth } from '../context/AuthContext';
 import { resetSystemData } from '../lib/quotation-service';
 import { Modal } from './ui/Modal';
 import { Search, Bell, RotateCw, LogOut, ChevronDown, AlertTriangle, Check } from 'lucide-react';
+import { ActionButton } from './ui/ActionButton';
 import { StatusBadge } from './StatusBadge';
 
 interface PageHeaderProps {
@@ -144,22 +145,19 @@ export const PageHeader = ({ title }: PageHeaderProps) => {
         title="Xác Nhận Reset Data Hệ Thống (Admin Only)"
         footer={
           <>
-            <button
-              type="button"
+            <ActionButton
+              variant="neutral"
               onClick={() => setShowResetModal(false)}
-              className="px-3.5 py-1.5 bg-[#F0F0EE] hover:bg-[#E0E0DE] text-[#111111] font-semibold rounded-[6px] cursor-pointer"
-            >
-              Hủy
-            </button>
-            <button
+              label="Hủy"
+            />
+            <ActionButton
               type="button"
               disabled={isResetting}
               onClick={handleConfirmReset}
-              className="px-4 py-1.5 bg-[#9F2F2D] hover:bg-[#7F2321] text-white font-bold rounded-[6px] inline-flex items-center space-x-1.5 cursor-pointer disabled:opacity-50"
-            >
-              <Check className="w-4 h-4 stroke-[2.5]" />
-              <span>{isResetting ? 'Đang Reset...' : 'Xác Nhận Reset Dữ Liệu'}</span>
-            </button>
+              variant="danger"
+              icon={Check}
+              label={isResetting ? 'Đang Reset...' : 'Xác Nhận Reset Dữ Liệu'}
+            />
           </>
         }
       >

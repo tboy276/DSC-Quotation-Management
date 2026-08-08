@@ -13,6 +13,7 @@ import {
 } from '../../lib/master-data-service';
 import { useAuth } from '../../context/AuthContext';
 import { Modal } from '../ui/Modal';
+import { ActionButton } from '../ui/ActionButton';
 import {
   Cpu,
   Edit2,
@@ -295,13 +296,13 @@ export const EquipmentRatesManager = () => {
                     </td>
                     <td className="py-3.5 px-4 text-center">
                       {isEstimator ? (
-                        <button
+                        <ActionButton
+                          variant="neutral"
                           onClick={() => handleOpenEdit(item)}
-                          className="inline-flex items-center gap-1 px-2.5 py-1 rounded-[4px] border border-[#EAEAEA] bg-white hover:bg-[#F0F0EE] text-[#111111] text-xs font-semibold transition-colors shadow-xs"
-                        >
-                          <Edit2 className="w-3 h-3 text-[#787774]" />
-                          Sửa giá
-                        </button>
+                          icon={Edit2}
+                          label="Sửa giá"
+                          className="px-2.5 py-1"
+                        />
                       ) : (
                         <span className="text-[11px] text-[#A0A09E] italic">Chỉ xem</span>
                       )}
@@ -356,26 +357,18 @@ export const EquipmentRatesManager = () => {
             </div>
 
             <div className="flex justify-end gap-2 pt-2 border-t border-[#EAEAEA]">
-              <button
-                type="button"
+              <ActionButton
+                variant="neutral"
                 onClick={() => setEditingItem(null)}
-                className="px-4 py-2 border border-[#EAEAEA] rounded-[4px] text-xs font-bold text-[#787774] hover:bg-[#F0F0EE] transition-colors"
-              >
-                Hủy
-              </button>
-              <button
+                label="Hủy"
+              />
+              <ActionButton
                 type="submit"
-                className="flex items-center gap-1.5 px-4 py-2 bg-[#111111] text-white rounded-[4px] text-xs font-bold hover:bg-[#222222] transition-colors shadow-sm"
-              >
-                {saveSuccess ? (
-                  <>
-                    <Check className="w-3.5 h-3.5 text-emerald-400" />
-                    Đã Lưu
-                  </>
-                ) : (
-                  'Lưu Thay Đổi'
-                )}
-              </button>
+                variant="primary"
+                icon={saveSuccess ? Check : undefined}
+                label={saveSuccess ? 'Đã Lưu' : 'Lưu Thay Đổi'}
+                className={saveSuccess ? 'bg-emerald-50 text-emerald-600 hover:bg-emerald-100 border border-emerald-200' : ''}
+              />
             </div>
           </form>
         </Modal>

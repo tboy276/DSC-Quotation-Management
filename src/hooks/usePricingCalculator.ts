@@ -68,8 +68,16 @@ export function usePricingCalculator(fixedSegment: SegmentType) {
 
         if (target.inputs_json && typeof target.inputs_json === 'object' && Object.keys(target.inputs_json).length > 0) {
           cloneInputsFromQuote(target);
+          setTimeout(() => {
+            const { inp } = getPayloads();
+            setInitialSnapshot(JSON.stringify(inp));
+          }, 0);
         } else {
           resetSegmentInput(fixedSegment);
+          setTimeout(() => {
+            const { inp } = getPayloads();
+            setInitialSnapshot(JSON.stringify(inp));
+          }, 0);
         }
 
         // CLEAR BANNER LỖI/CẢNH BÁO KHI LOAD THÀNH CÔNG (YÊU CẦU CỦA USER)
@@ -109,6 +117,12 @@ export function usePricingCalculator(fixedSegment: SegmentType) {
     return { inp, res, rfqPayload };
   };
 
+  const [initialSnapshot, setInitialSnapshot] = useState<string>('');
+
+  // Compute isDirty
+  const { inp: currentInp } = getPayloads();
+  const isDirty = initialSnapshot !== '' && initialSnapshot !== JSON.stringify(currentInp);
+
   const handleSaveDraft = async () => {
     setSaving(true);
     setMsg(null);
@@ -116,6 +130,7 @@ export function usePricingCalculator(fixedSegment: SegmentType) {
       const { inp, res, rfqPayload } = getPayloads();
       const record = await saveQuoteDraft(rfqPayload, fixedSegment, currency, exchangeRate, inp, res, currentQuoteId, 'IN_COSTING');
       setCurrentQuoteId(record.id);
+      setInitialSnapshot(JSON.stringify(inp)); // Update snapshot after save
 
       setMsg({
         type: 'success',
@@ -135,6 +150,7 @@ export function usePricingCalculator(fixedSegment: SegmentType) {
       const { inp, res, rfqPayload } = getPayloads();
       const record = await saveQuoteDraft(rfqPayload, fixedSegment, currency, exchangeRate, inp, res, currentQuoteId, 'READY_FOR_QUOTE');
       await updateQuoteStatus(record.id, 'READY_FOR_QUOTE');
+      setInitialSnapshot(JSON.stringify(inp));
 
       setMsg({
         type: 'success',
@@ -154,6 +170,7 @@ export function usePricingCalculator(fixedSegment: SegmentType) {
   const handleSelectCloneQuote = (selectedQuote: QuoteRecord) => {
     cloneInputsFromQuote(selectedQuote);
     setShowCloneModal(false);
+    // Note: We don't update snapshot here so it becomes dirty immediately
     setMsg({ type: 'success', text: `Đã sao chép cấu hình từ báo giá #${selectedQuote.id.substring(0, 8)}` });
   };
 
@@ -170,6 +187,7 @@ export function usePricingCalculator(fixedSegment: SegmentType) {
     handleSaveDraft,
     handleCompleteCosting,
     handleSelectCloneQuote,
-    navigate
+    navigate,
+    isDirty
   };
 }

@@ -1,5 +1,6 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { ArrowUp, ArrowDown, ArrowUpDown, Settings, Columns } from 'lucide-react';
+import { ActionButton } from './ActionButton';
 
 export interface DataTableColumn<T> {
   key: string;
@@ -181,26 +182,21 @@ export function DataTable<T>({
               {toolbarActions.map((action) => {
                 const isEnabled = action.enabled(selectedCount, selectedRows);
 
-                let buttonStyle = 'bg-[#111111] text-white hover:bg-[#333333]';
-                if (action.variant === 'secondary') {
-                  buttonStyle = 'bg-[#F0F0EE] text-[#111111] hover:bg-[#E0E0DE] border border-[#EAEAEA]';
-                } else if (action.variant === 'danger') {
-                  buttonStyle = 'bg-[#FDEBEC] text-[#9F2F2D] border border-[#FADBDC] hover:bg-[#F8C9CA]';
-                } else if (action.variant === 'success') {
-                  buttonStyle = 'bg-[#EDF3EC] text-[#346538] border border-[#C6E1C4] hover:bg-[#DDF0DC]';
-                }
+                let variant: 'primary' | 'neutral' | 'danger' | 'positive' = 'primary';
+                if (action.variant === 'secondary') variant = 'neutral';
+                if (action.variant === 'danger') variant = 'danger';
+                if (action.variant === 'success') variant = 'positive';
 
                 return (
-                  <button
+                  <ActionButton
                     key={action.key}
-                    type="button"
+                    variant={variant}
                     disabled={!isEnabled}
                     onClick={() => action.onClick(selectedRows)}
-                    title={action.tooltip || (typeof action.label === 'string' ? action.label : undefined)}
-                    className={`flex items-center justify-center p-2 sm:px-3 sm:py-1.5 rounded-[6px] text-xs font-bold transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed shadow-xs ${buttonStyle}`}
-                  >
-                    {action.icon || action.label}
-                  </button>
+                    title={action.tooltip}
+                    icon={action.icon}
+                    label={typeof action.label === 'string' ? action.label : undefined}
+                  />
                 );
               })}
             </div>
@@ -208,14 +204,12 @@ export function DataTable<T>({
 
           {/* Section A: Column Visibility Settings Toggle Menu */}
           <div className="relative">
-            <button
-              type="button"
+            <ActionButton
+              variant="neutral"
+              icon={Columns}
               onClick={() => setShowColSettings(!showColSettings)}
-              className="p-2 bg-[#F0F0EE] hover:bg-[#E0E0DE] text-[#111111] border border-[#EAEAEA] rounded-[6px] transition-colors cursor-pointer"
               title="Cấu hình ẩn/hiện cột bảng (Excel Column Visibility)"
-            >
-              <Columns className="w-4 h-4 text-[#111111]" />
-            </button>
+            />
 
             {showColSettings && (
               <div className="absolute right-0 mt-2 w-56 bg-white rounded-[10px] border border-[#EAEAEA] shadow-xl p-3 z-50 text-xs text-[#111111] space-y-2 animate-fade-in-up">

@@ -1,15 +1,12 @@
 import { useState } from 'react';
 import {
-  Workflow,
-  Box,
   FileText,
   Users,
   Database,
   Layers,
   TrendingUp,
   Activity,
-  Scissors,
-  Wrench,
+  Calculator,
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -28,12 +25,9 @@ export const Sidebar = ({
   const mainNavItems = [
     { id: 'quotations', label: 'Quản Lý RFQ / Báo Giá', icon: FileText, shortcut: '⌘1' },
     { id: 'documents', label: 'Văn Bản Báo Giá Gộp', icon: Layers, shortcut: '⌘2' },
-    { id: 'forging', label: 'Tính Giá Rèn Dập', icon: Workflow, shortcut: '⌘3' },
-    { id: 'casting', label: 'Tính Giá Đúc Gang', icon: Box, shortcut: '⌘4' },
-    { id: 'sawing', label: 'Tính Giá Phôi Cưa & GC', icon: Scissors, shortcut: '⌘5' },
-    { id: 'machining', label: 'Tính Giá Chỉ Gia Công CNC', icon: Wrench, shortcut: '⌘6' },
-    { id: 'master_data', label: 'Quản Lý Master Data', icon: Database, shortcut: '⌘7' },
-    { id: 'analytics', label: 'Báo Cáo Thống Kê RFQ', icon: TrendingUp, shortcut: '⌘8' },
+    { id: 'pricing-tools', label: 'Công Cụ Tính Giá', icon: Calculator, shortcut: '⌘3' },
+    { id: 'master_data', label: 'Quản Lý Master Data', icon: Database, shortcut: '⌘4' },
+    { id: 'analytics', label: 'Báo Cáo Thống Kê RFQ', icon: TrendingUp, shortcut: '⌘5' },
   ];
 
   const adminNavItems = [

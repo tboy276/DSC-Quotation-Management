@@ -1,4 +1,4 @@
-import { useLocation, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
+import { useLocation, Routes, Route, Navigate, useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 // Removed useQuotationStore
 import { Layout } from '../components/Layout';
@@ -20,6 +20,15 @@ import {
 } from 'lucide-react';
 
 import { SystemHealthCheck } from '../components/analytics/SystemHealthCheck';
+import { PricingToolsPage } from './PricingToolsPage';
+
+function LegacyPricingRedirect({ segment }: { segment: string }) {
+  const { rfqItemId } = useParams();
+  const target = rfqItemId 
+    ? `/pricing-tools/${segment}/${rfqItemId}` 
+    : `/pricing-tools/${segment}`;
+  return <Navigate to={target} replace />;
+}
 
 export const DashboardPage = () => {
   const { user, profile, refreshProfile } = useAuth();
@@ -87,10 +96,22 @@ export const DashboardPage = () => {
         <Route path="/" element={<Navigate to="/quotations" replace />} />
         <Route path="/quotations" element={<QuotationsManager />} />
         <Route path="/documents" element={<QuotationDocumentsManager />} />
-        <Route path="/forging/:rfqItemId?" element={<ForgingCostingPage />} />
-        <Route path="/casting/:rfqItemId?" element={<CastingCostingPage />} />
-        <Route path="/sawing/:rfqItemId?" element={<SawingCostingPage />} />
-        <Route path="/machining/:rfqItemId?" element={<MachiningCostingPage />} />
+        
+        {/* Legacy redirect routes */}
+        <Route path="/forging/:rfqItemId?" element={<LegacyPricingRedirect segment="forging" />} />
+        <Route path="/casting/:rfqItemId?" element={<LegacyPricingRedirect segment="casting" />} />
+        <Route path="/sawing/:rfqItemId?" element={<LegacyPricingRedirect segment="sawing" />} />
+        <Route path="/machining/:rfqItemId?" element={<LegacyPricingRedirect segment="machining" />} />
+
+        {/* New unified Pricing Tools route group */}
+        <Route path="/pricing-tools" element={<PricingToolsPage />}>
+          <Route index element={<Navigate to="forging" replace />} />
+          <Route path="forging/:rfqItemId?" element={<ForgingCostingPage />} />
+          <Route path="casting/:rfqItemId?" element={<CastingCostingPage />} />
+          <Route path="sawing/:rfqItemId?" element={<SawingCostingPage />} />
+          <Route path="machining/:rfqItemId?" element={<MachiningCostingPage />} />
+        </Route>
+
         <Route path="/master_data" element={<MasterDataContainer />} />
         <Route path="/analytics" element={<RfqAnalyticsReport />} />
         <Route path="/health_check" element={<SystemHealthCheck />} />

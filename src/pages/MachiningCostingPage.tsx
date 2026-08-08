@@ -1,10 +1,13 @@
 import { ArrowLeft, Check, Copy, Save, CheckCircle2, AlertCircle, AlertTriangle } from 'lucide-react';
+import { useEffect } from 'react';
+import { useOutletContext } from 'react-router-dom';
 import { useQuotationStore } from '../store/useQuotationStore';
 import { usePricingCalculator } from '../hooks/usePricingCalculator';
 import MachiningCalculatorForm from '../components/rfq/MachiningCalculatorForm';
 import { RealtimeSummaryPanel } from '../components/rfq/RealtimeSummaryPanel';
 import { CloneQuoteModal } from '../components/rfq/CloneQuoteModal';
 import { QuoteStatusBadge } from '../components/rfq/QuoteStatusBadge';
+import { ActionButton } from '../components/ui/ActionButton';
 
 const formatDate = (dStr?: string) => dStr ? new Date(dStr).toLocaleDateString('vi-VN') : 'N/A';
 const formatDateVerbose = (dStr?: string) => {
@@ -25,8 +28,17 @@ export default function MachiningCostingPage() {
     handleSaveDraft,
     handleCompleteCosting,
     handleSelectCloneQuote,
-    navigate
+    navigate,
+    isDirty
   } = usePricingCalculator('machining');
+
+  const { setIsChildDirty } = (useOutletContext<any>() || {});
+
+  useEffect(() => {
+    if (setIsChildDirty) {
+      setIsChildDirty(isDirty);
+    }
+  }, [isDirty, setIsChildDirty]);
 
   const rfq = useQuotationStore(state => state.rfq);
 
@@ -42,13 +54,13 @@ export default function MachiningCostingPage() {
             Vui lòng chọn 1 dòng sản phẩm từ danh sách Quản Lý RFQ để bắt đầu tính giá.
           </p>
         </div>
-        <button
+        <ActionButton
+          variant="neutral"
+          icon={ArrowLeft}
+          label="Quay Lại Màn Hình Quản Lý RFQ"
           onClick={() => navigate('/quotations')}
-          className="flex items-center space-x-2 text-[#787774] hover:text-[#111111] transition-colors bg-white px-3 py-1.5 rounded-[8px] shadow-[0_2px_8px_rgba(0,0,0,0.03)] border border-[#EAEAEA] select-none cursor-pointer mx-auto"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          <span>Quay Lại Màn Hình Quản Lý RFQ</span>
-        </button>
+          className="mx-auto bg-white shadow-[0_2px_8px_rgba(0,0,0,0.03)]"
+        />
       </div>
     );
   }
@@ -59,15 +71,13 @@ export default function MachiningCostingPage() {
       <div className="bg-[#FBFBFA] p-3 rounded-[10px] border border-[#EAEAEA] shadow-[0_2px_8px_rgba(0,0,0,0.03)] flex flex-wrap items-center justify-between gap-3 text-xs">
         {/* Left Side: Product Info & Meta */}
         <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-          <button
-            type="button"
+          <ActionButton
+            variant="neutral"
+            icon={ArrowLeft}
+            label="Quay lại"
             onClick={() => navigate('/quotations')}
-            className="p-1.5 bg-white hover:bg-slate-100 text-[#111111] border border-[#EAEAEA] rounded-[6px] transition-colors cursor-pointer inline-flex items-center space-x-1 font-bold text-xs"
             title="Quay lại danh sách RFQ"
-          >
-            <ArrowLeft className="w-3.5 h-3.5" />
-            <span>Quay lại</span>
-          </button>
+          />
 
           <div className="h-4 w-[1px] bg-[#EAEAEA] hidden sm:block" />
 
@@ -96,37 +106,31 @@ export default function MachiningCostingPage() {
 
         {/* Right Side: Action Buttons with Text Labels */}
         <div className="flex items-center space-x-2">
-          <button
-            type="button"
+          <ActionButton
+            variant="neutral"
+            icon={Copy}
+            label="Sao chép"
             onClick={() => setShowCloneModal(true)}
-            className="px-3 py-1.5 bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-200 rounded-[6px] transition-colors cursor-pointer inline-flex items-center space-x-1.5 text-xs font-bold"
             title="Sao chép toàn bộ thông số từ báo giá cũ tương tự"
-          >
-            <Copy className="w-3.5 h-3.5 text-amber-700" />
-            <span>Sao chép</span>
-          </button>
+          />
 
-          <button
-            type="button"
+          <ActionButton
+            variant="neutral"
+            icon={Save}
+            label="Lưu nháp"
             onClick={handleSaveDraft}
             disabled={saving}
-            className="px-3 py-1.5 bg-[#F0F0EE] hover:bg-[#E0E0DE] text-[#111111] rounded-[6px] transition-colors cursor-pointer disabled:opacity-50 border border-[#EAEAEA] inline-flex items-center space-x-1.5 text-xs font-bold"
             title="Lưu bản nháp tính giá (Save Draft)"
-          >
-            <Save className="w-3.5 h-3.5 text-[#111111]" />
-            <span>Lưu nháp</span>
-          </button>
+          />
 
-          <button
-            type="button"
+          <ActionButton
+            variant="primary"
+            icon={<Check className="text-emerald-400 stroke-[2.5]" />}
+            label="Hoàn thành"
             onClick={handleCompleteCosting}
             disabled={saving}
-            className="px-3.5 py-1.5 bg-[#111111] hover:bg-[#333333] active:scale-[0.98] text-white rounded-[6px] transition-all cursor-pointer disabled:opacity-50 shadow-xs inline-flex items-center space-x-1.5 text-xs font-bold"
             title="Hoàn thành tính giá"
-          >
-            <Check className="w-3.5 h-3.5 text-emerald-400 stroke-[2.5]" />
-            <span>Hoàn thành</span>
-          </button>
+          />
         </div>
       </div>
 
