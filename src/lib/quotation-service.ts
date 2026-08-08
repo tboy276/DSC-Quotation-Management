@@ -124,16 +124,8 @@ export const fetchQuoteCounts = async (): Promise<RfqStageCounts> => {
       sentStage: quotedSent + successful + cancelledAfterQuote,
     };
   } catch (err) {
-    console.warn('Error fetching quote counts:', err);
-    return {
-      total: 0,
-      pendingReview: 0,
-      inCosting: 0,
-      successful: 0,
-      newStage: 0,
-      internalStage: 0,
-      sentStage: 0,
-    };
+    console.error('Error fetching quote counts:', err);
+    throw err;
   }
 };
 

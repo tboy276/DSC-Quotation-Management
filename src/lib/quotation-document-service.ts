@@ -109,16 +109,24 @@ export const createQuotationDocument = async (
   }
 
   // 3. Update status & quoted_sent_at of all selected items to QUOTED_SENT
-  const now = new Date().toISOString();
+  const successQuoteIds: string[] = [];
+  const failedQuoteIds: string[] = [];
+  let firstError: Error | null = null;
+
   for (const quoteId of payload.selected_quote_ids) {
-    let targetItemId = quoteId.startsWith('quote-') ? quoteId.replace(/^quote-/, '') : quoteId;
+    try {
+      await updateQuoteStatus(quoteId, 'QUOTED_SENT');
+      successQuoteIds.push(quoteId);
+    } catch (err: any) {
+      console.error(`Failed to update status for quote ${quoteId}:`, err);
+      failedQuoteIds.push(quoteId);
+      if (!firstError) firstError = err;
+      break;
+    }
+  }
 
-    await supabase
-      .from('rfq_items')
-      .update({ status: 'QUOTED_SENT', quoted_sent_at: now })
-      .eq('id', targetItemId);
-
-    await updateQuoteStatus(quoteId, 'QUOTED_SENT');
+  if (failedQuoteIds.length > 0) {
+    throw new Error(`Lỗi cập nhật trạng thái QUOTED_SENT.\nĐã xử lý thành công: ${successQuoteIds.length} items.\nLỗi tại item: ${failedQuoteIds[0]}.\nChi tiết: ${firstError?.message}`);
   }
 
   const createdDoc = await supabase

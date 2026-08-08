@@ -314,7 +314,9 @@ export const QuotationsManager = () => {
     setErrorMsg(null);
     try {
       // 1. Fetch lightweight global counts for Summary Cards & Stage Badges
-      fetchQuoteCounts().then((counts) => setGlobalCounts(counts)).catch(console.warn);
+      fetchQuoteCounts()
+        .then((counts) => setGlobalCounts(counts))
+        .catch((err) => setErrorMsg(`Lỗi tải số liệu thống kê: ${err.message || err}`));
 
       // 2. Fetch paginated quotes for active stage & filters
       const filterOptions: QuotationFilterOptions = {
@@ -1626,21 +1628,30 @@ export const QuotationsManager = () => {
 
       {/* NEW DOSSIER QUICK ENTRY MODAL */}
       {showNewRfqModal && (
-        <Modal isOpen={true} onClose={() => setShowNewRfqModal(false)} title="+ Tạo Hồ Sơ RFQ Mới (Nhập Đa Sản Phẩm)" maxWidthClass="max-w-[1240px]">
+        <Modal
+          isOpen={true}
+          onClose={() => setShowNewRfqModal(false)}
+          title="+ Tạo Hồ Sơ RFQ Mới (Nhập Đa Sản Phẩm)"
+          subtitle="Nhập thông tin chung của hồ sơ và thêm nhanh nhiều dòng sản phẩm cần báo giá."
+          icon={<Plus className="w-4 h-4 stroke-[2]" />}
+          headerExtra={
+            <button
+              type="button"
+              onClick={() => setShowPasteModal(true)}
+              className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-[6px] text-xs shadow-sm transition-colors cursor-pointer inline-flex items-center space-x-1.5"
+            >
+              <Clipboard className="w-3.5 h-3.5 stroke-[2]" />
+              <span>Dán Văn Bản Tự Động Extract</span>
+            </button>
+          }
+          maxWidthClass="max-w-[1240px]"
+        >
           <form onSubmit={handleCreateNewDossierSubmit} className="space-y-4 text-xs max-h-[82vh] overflow-y-auto pr-1">
             <div className="flex items-center justify-between bg-[#FBFBFA] p-3 rounded-[8px] border border-[#EAEAEA]">
               <div className="flex items-center space-x-2">
                 <span className="text-[11px] font-bold text-[#787774] uppercase tracking-wider">Mã Hồ Sơ RFQ:</span>
                 <span className="font-mono font-bold text-[#111111] bg-white px-2 py-0.5 rounded border border-[#EAEAEA] text-xs">{newRfqCode}</span>
               </div>
-              <button
-                type="button"
-                onClick={() => setShowPasteModal(true)}
-                className="px-3 py-1.5 bg-[#111111] text-white font-bold rounded-[6px] text-xs hover:bg-[#333333] transition-colors inline-flex items-center space-x-1.5 cursor-pointer shadow-xs"
-              >
-                <Clipboard className="w-3.5 h-3.5 stroke-[2]" />
-                <span>Dán Văn Bản Tự Động Extract</span>
-              </button>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
