@@ -295,7 +295,7 @@ export const DocumentDetailModal = ({
         >
           <QuotationPreviewPanel
             document={document}
-            readOnly={false}
+            readOnly={true}
             onBack={() => setShowCustomizeModal(false)}
             onSaveAndSend={async (newConfig) => {
               await updateDocumentDisplayConfig(document.id, newConfig);

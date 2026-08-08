@@ -2,7 +2,8 @@ import React, { useState } from 'react';
 import type { QuotationDocument, DocumentDisplayConfig, DocumentRemarkLine } from '../../types/quotation-document';
 import { DEFAULT_DISPLAY_CONFIG } from '../../types/quotation-document';
 import { QuotationPdfContent } from './QuotationPdfContent';
-import { ArrowLeft, Check, Plus, Trash2, ArrowUp, ArrowDown, Eye, Sliders } from 'lucide-react';
+import { ArrowLeft, Check, Plus, Trash2, ArrowUp, ArrowDown, Eye, Sliders, Download, X } from 'lucide-react';
+import html2pdf from 'html2pdf.js';
 
 interface QuotationPreviewPanelProps {
   document: QuotationDocument;
@@ -84,6 +85,24 @@ export const QuotationPreviewPanel: React.FC<QuotationPreviewPanelProps> = ({
       ...prev,
       remarks: newRemarks,
     }));
+  };
+
+  const handleDownloadPDF = () => {
+    const element = document.getElementById('quotation-pdf-content');
+    if (!element) return;
+
+    const isLandscape = config.layoutOrientation === 'landscape';
+    const filename = `DISOCO_Bao_Gia_${document.id || 'Export'}.pdf`;
+
+    const opt = {
+      margin:       [5, 5, 5, 5],
+      filename:     filename,
+      image:        { type: 'jpeg', quality: 0.98 },
+      html2canvas:  { scale: 2, useCORS: true, logging: false },
+      jsPDF:        { unit: 'mm', format: 'a4', orientation: isLandscape ? 'landscape' : 'portrait' }
+    };
+
+    html2pdf().set(opt).from(element).save();
   };
 
   return (
@@ -297,7 +316,7 @@ export const QuotationPreviewPanel: React.FC<QuotationPreviewPanelProps> = ({
             <div />
           )}
 
-          {!readOnly && (
+          {!readOnly ? (
             <button
               type="button"
               disabled={isSubmitting}
@@ -307,6 +326,27 @@ export const QuotationPreviewPanel: React.FC<QuotationPreviewPanelProps> = ({
               <Check className="w-4 h-4 text-emerald-400 stroke-[2.5]" />
               <span>{isSubmitting ? 'Đang Xử Lý...' : 'Xác Nhận & Gửi Báo Giá'}</span>
             </button>
+          ) : (
+            <div className="flex items-center space-x-2">
+              <button
+                type="button"
+                onClick={handleDownloadPDF}
+                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 active:scale-[0.98] text-white font-bold rounded-[6px] transition-all cursor-pointer inline-flex items-center space-x-1.5 shadow-sm text-xs"
+              >
+                <Download className="w-4 h-4 stroke-[2.5]" />
+                <span>Tải File PDF Trực Tiếp</span>
+              </button>
+              {onBack && (
+                <button
+                  type="button"
+                  onClick={onBack}
+                  className="px-4 py-2 bg-[#111111] hover:bg-[#333333] active:scale-[0.98] text-white font-bold rounded-[6px] transition-all cursor-pointer inline-flex items-center space-x-1.5 shadow-sm text-xs"
+                >
+                  <X className="w-4 h-4 stroke-[2.5]" />
+                  <span>Đóng</span>
+                </button>
+              )}
+            </div>
           )}
         </div>
       </div>

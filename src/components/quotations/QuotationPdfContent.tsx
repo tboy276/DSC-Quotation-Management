@@ -66,7 +66,7 @@ export const QuotationPdfContent: React.FC<QuotationPdfContentProps> = ({
       className={`flex-1 overflow-y-auto p-6 sm:p-10 space-y-6 text-[#111111] font-sans text-xs bg-white print:p-0 print:overflow-visible transition-all ${
         isLandscape ? 'max-w-[1140px] w-full mx-auto' : 'max-w-[840px] w-full mx-auto'
       }`}
-      id="printable-quotation"
+      id="quotation-pdf-content"
     >
       <style>{`
         @media print {
