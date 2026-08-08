@@ -24,7 +24,7 @@ export interface DocumentDisplayConfig {
 
 export const DEFAULT_DISPLAY_CONFIG: DocumentDisplayConfig = {
   language: 'both',
-  layoutOrientation: 'portrait',
+  layoutOrientation: 'landscape',
   showWeight: true,
   showMOQ: true,
   showFormingCost: true,

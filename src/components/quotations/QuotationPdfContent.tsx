@@ -58,6 +58,11 @@ export const QuotationPdfContent: React.FC<QuotationPdfContentProps> = ({
     return `${viText} / ${enText}`;
   };
 
+  const formatNum = (val: number | null | undefined) => {
+    if (!val || val === 0) return '-';
+    return Math.round(val).toLocaleString('vi-VN');
+  };
+
   return (
     <div
       className={`flex-1 overflow-y-auto p-6 sm:p-10 space-y-6 text-[#111111] font-sans text-xs bg-white print:p-0 print:overflow-visible transition-all ${
@@ -68,7 +73,7 @@ export const QuotationPdfContent: React.FC<QuotationPdfContentProps> = ({
       <style>{`
         @media print {
           @page {
-            size: ${isLandscape ? 'landscape' : 'portrait'};
+            size: ${isLandscape ? 'A4 landscape' : 'A4 portrait'};
             margin: 8mm;
           }
         }
@@ -117,7 +122,7 @@ export const QuotationPdfContent: React.FC<QuotationPdfContentProps> = ({
       </div>
 
       {/* Customer Info Block */}
-      <div className="space-y-1 text-xs">
+      <div className="space-y-1 text-xs text-center">
         <p>
           <strong className="uppercase underline">
             {lang === 'vi' ? 'Kính gửi' : 'To'} : {document.customer_name}
@@ -126,7 +131,10 @@ export const QuotationPdfContent: React.FC<QuotationPdfContentProps> = ({
         <p className="italic text-gray-800">
           Attn: {document.contact_person || 'Purchasing Department'} &lt;{document.contact_email || 'N/A'}&gt;
         </p>
-        <p className="pt-1 font-medium text-gray-900">
+      </div>
+
+      <div className="text-xs pt-1 pb-2 font-medium text-gray-900 text-left">
+        <p>
           {lang === 'vi'
             ? 'Công ty DISOCO trân trọng gửi tới Quý khách hàng bảng báo giá chi tiết sản phẩm dưới đây:'
             : lang === 'en'
@@ -273,40 +281,40 @@ export const QuotationPdfContent: React.FC<QuotationPdfContentProps> = ({
                   {/* Active Cost Columns */}
                   {config.showFormingCost && (
                     <td className="border border-black p-1.5 font-mono text-right">
-                      {formatCurrencyValue(formingCostVnd, currency, exchangeRate)}
+                      {formatNum(formingCostVnd)}
                     </td>
                   )}
                   {config.showMachiningCost && (
                     <td className="border border-black p-1.5 font-mono text-right">
-                      {formatCurrencyValue(machiningCostVnd, currency, exchangeRate)}
+                      {formatNum(machiningCostVnd)}
                     </td>
                   )}
                   {config.showPackageCost && (
                     <td className="border border-black p-1.5 font-mono text-right">
-                      {packageCostVnd > 0 ? formatCurrencyValue(packageCostVnd, currency, exchangeRate) : '-'}
+                      {formatNum(packageCostVnd)}
                     </td>
                   )}
                   {config.showDeliveryCost && (
                     <td className="border border-black p-1.5 font-mono text-right">
-                      {deliveryCostVnd > 0 ? formatCurrencyValue(deliveryCostVnd, currency, exchangeRate) : '-'}
+                      {formatNum(deliveryCostVnd)}
                     </td>
                   )}
                   {config.showSgaP && (
                     <td className="border border-black p-1.5 font-mono text-right">
-                      {formatCurrencyValue(sgaAndPVnd, currency, exchangeRate)}
+                      {formatNum(sgaAndPVnd)}
                     </td>
                   )}
 
                   {/* Final Unit Price */}
                   <td className="border border-black p-1.5 font-mono font-extrabold text-right bg-gray-50">
-                    {formatCurrencyValue(unitPriceVnd, currency, exchangeRate)}
+                    {formatNum(unitPriceVnd)}
                   </td>
 
                   {/* Tooling Price */}
                   {config.showToolingPrice && (
                     <td className="border border-black p-1.5 font-mono text-right">
                       {isSeparateTooling ? (
-                        formatCurrencyValue(toolingPriceVnd || 0, currency, exchangeRate)
+                        formatNum(toolingPriceVnd || 0)
                       ) : (
                         <span className="text-[9px] italic text-gray-600 font-sans">
                           {lang === 'vi' ? 'Đã phân bổ vào giá' : 'Amortized into price'}
@@ -356,6 +364,20 @@ export const QuotationPdfContent: React.FC<QuotationPdfContentProps> = ({
           <p className="text-[10px] text-gray-500 font-normal capitalize">
             {lang === 'vi' ? 'Đại diện DISOCO ký tên' : 'Authorized Representative'}
           </p>
+        </div>
+      </div>
+
+      {/* Footer ISO */}
+      <div className="mt-16 pt-2 text-[9px] text-gray-700 flex justify-between items-end italic font-serif">
+        <div className="text-left leading-tight">
+          <p>BM/05-000-006</p>
+          <p>Ban hành lần: 2</p>
+        </div>
+        <div className="text-center">
+          <p>Ban hành ngày: 01/3/2025</p>
+        </div>
+        <div className="text-right">
+          <p>Trang số: 1/1</p>
         </div>
       </div>
     </div>
