@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Outlet, useLocation, useNavigate, useParams, useBlocker } from 'react-router-dom';
+import { Outlet, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { Workflow, Box, Scissors, Wrench } from 'lucide-react';
 import { fetchQuoteByItemId } from '../lib/quotation-service';
 
@@ -51,25 +51,13 @@ export const PricingToolsPage = () => {
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);
   }, [isChildDirty]);
 
-  // Intercept all React Router navigations (Sidebar, Back button, navigate calls)
-  const blocker = useBlocker(
-    ({ currentLocation, nextLocation }) =>
-      isChildDirty && currentLocation.pathname !== nextLocation.pathname
-  );
-
+  // Phát event toàn cục để chặn Sidebar
   useEffect(() => {
-    if (blocker.state === 'blocked') {
-      const confirmLeave = window.confirm(
-        "Bạn có dữ liệu tính giá chưa lưu. Rời khỏi trang sẽ làm mất các thông số đã nhập. Bạn có chắc chắn muốn tiếp tục?"
-      );
-      if (confirmLeave) {
-        setIsChildDirty(false);
-        blocker.proceed();
-      } else {
-        blocker.reset();
-      }
-    }
-  }, [blocker, isChildDirty]);
+    window.dispatchEvent(new CustomEvent('app-dirty-change', { detail: isChildDirty }));
+    return () => {
+      window.dispatchEvent(new CustomEvent('app-dirty-change', { detail: false }));
+    };
+  }, [isChildDirty]);
 
   const safeNavigate = (targetPath: string) => {
     if (isChildDirty) {
@@ -79,7 +67,6 @@ export const PricingToolsPage = () => {
       if (!confirmLeave) return;
     }
     setIsChildDirty(false);
-    if (blocker.state === 'blocked') blocker.proceed();
     navigate(targetPath);
   };
 

@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import { useLocation, Routes, Route, Navigate, useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 // Removed useQuotationStore
@@ -38,11 +39,27 @@ export const DashboardPage = () => {
   const path = location.pathname.split('/')[1] || 'quotations';
   const activeTab = path;
 
+  const [isGlobalDirty, setIsGlobalDirty] = useState(false);
+
+  useEffect(() => {
+    const handleDirtyChange = (e: any) => setIsGlobalDirty(Boolean(e.detail));
+    window.addEventListener('app-dirty-change', handleDirtyChange);
+    return () => window.removeEventListener('app-dirty-change', handleDirtyChange);
+  }, []);
+
   const email = profile?.email || user?.email || 'N/A';
   const role = profile?.role || 'sales';
   const isEstimator = role === 'estimator' || role === 'admin';
 
   const handleTabChange = (tab: string) => {
+    if (tab === activeTab) return;
+    if (isGlobalDirty) {
+      const confirmLeave = window.confirm(
+        "Bạn có dữ liệu tính giá chưa lưu. Rời khỏi trang sẽ làm mất các thông số đã nhập. Bạn có chắc chắn muốn tiếp tục?"
+      );
+      if (!confirmLeave) return;
+    }
+    setIsGlobalDirty(false);
     navigate(`/${tab}`);
   };
 
