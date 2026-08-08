@@ -22,6 +22,7 @@ import { QuoteDetailModal } from '../rfq/QuoteDetailModal';
 import { CreateDocumentModal } from './CreateDocumentModal';
 import { formatCurrencyValue } from '../rfq/RealtimeSummaryPanel';
 import { useAuth } from '../../context/AuthContext';
+import { ActionButton } from '../ui/ActionButton';
 
 import { parseStructuredRfqText } from '../../utils/rfq-parser';
 import { formatDate } from '../../lib/format-date';
@@ -571,7 +572,7 @@ export const QuotationsManager = () => {
       targetSegment = 'casting';
     }
 
-    navigate(`/${targetSegment}/${quote.rfq_item_id}`);
+    navigate(`/pricing-tools/${targetSegment}/${quote.rfq_item_id}`);
   };
 
   const handleMarkItemSuccessful = async (quote: QuoteRecord) => {
@@ -1042,8 +1043,9 @@ export const QuotationsManager = () => {
         {/* Middle Group: TAB 1 FEASIBILITY ACTION BUTTONS (Chuyển tính giá & Không phù hợp) */}
         {activeStage === 'new' && (
           <div className="flex items-center space-x-2 px-2.5 py-1 bg-[#FBFBFA] border border-[#EAEAEA] rounded-[8px]">
-            <button
-              type="button"
+            <ActionButton
+              variant="primary"
+              label="Chuyển tính giá"
               disabled={!canApproveFeasibility}
               onClick={handleApproveFeasibility}
               title={
@@ -1053,13 +1055,11 @@ export const QuotationsManager = () => {
                   ? 'Bạn chỉ có quyền chuyển tính giá các RFQ do chính mình tạo'
                   : `Chuyển (${selectedQuotes.length}) sản phẩm đã chọn sang giai đoạn tính giá`
               }
-              className="px-3.5 py-1.5 bg-[#111111] hover:bg-[#333333] text-white font-bold rounded-[6px] text-xs transition-all disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer shadow-xs"
-            >
-              Chuyển tính giá
-            </button>
+            />
 
-            <button
-              type="button"
+            <ActionButton
+              variant="danger"
+              label="Không phù hợp"
               disabled={!canRejectFeasibility}
               onClick={() => handleOpenItemCancelModal('CANCELLED_NOT_FEASIBLE')}
               title={
@@ -1069,174 +1069,156 @@ export const QuotationsManager = () => {
                   ? 'Bạn chỉ có quyền hủy các RFQ do chính mình tạo'
                   : `Đánh dấu (${selectedQuotes.length}) sản phẩm đã chọn là không phù hợp`
               }
-              className="px-3.5 py-1.5 bg-[#FDEBEC] hover:bg-[#F8C9CA] text-[#9F2F2D] border border-[#FADBDC] font-bold rounded-[6px] text-xs transition-all disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
-            >
-              Không phù hợp
-            </button>
+            />
           </div>
         )}
 
         {/* Right Side: CONTEXTUAL STAGE ACTION BUTTONS */}
         <div className="flex items-center space-x-1.5">
-          {/* Global Action 1: Xem Chi Tiết (Ẩn ở Tab 1) */}
-          {activeStage !== 'new' && (
-            <button
-              type="button"
-              disabled={selectedQuoteIds.length !== 1}
-              onClick={() => {
-                if (selectedSingleQuote) setSelectedQuote(selectedSingleQuote);
-              }}
-              title="Xem chi tiết bóc tách sản phẩm"
-              className="p-2 bg-[#F0F0EE] hover:bg-[#E0E0DE] text-[#111111] rounded-[6px] transition-colors cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed border border-[#EAEAEA]"
-            >
-              <Eye className="w-4 h-4" />
-            </button>
+
+          {/* CỤM NÚT ĐỘNG: CHỈ HIỆN KHI CÓ ÍT NHẤT 1 DÒNG ĐƯỢC CHỌN */}
+          {selectedQuoteIds.length > 0 && (
+            <>
+              {/* Global View Detail (Hiện ở Tab 2 & Tab 3) */}
+              {activeStage !== 'new' && (
+                <ActionButton
+                  variant="neutral"
+                  icon={Eye}
+                  disabled={selectedQuoteIds.length !== 1}
+                  onClick={() => {
+                    if (selectedSingleQuote) setSelectedQuote(selectedSingleQuote);
+                  }}
+                  title={selectedQuoteIds.length !== 1 ? 'Vui lòng chọn đúng 1 sản phẩm để xem chi tiết' : 'Xem chi tiết bóc tách sản phẩm'}
+                />
+              )}
+
+              {/* Tab 1 Actions */}
+              {activeStage === 'new' && (
+                <>
+                  <ActionButton
+                    variant="neutral"
+                    icon={Pencil}
+                    disabled={selectedQuoteIds.length !== 1 || !canManageQuote(selectedSingleQuote)}
+                    onClick={() => {
+                      if (selectedSingleQuote) handleOpenEditModal(selectedSingleQuote);
+                    }}
+                    title={
+                      selectedQuoteIds.length !== 1
+                        ? 'Vui lòng chọn đúng 1 sản phẩm để sửa'
+                        : !canManageQuote(selectedSingleQuote)
+                        ? 'Bạn chỉ có quyền sửa các RFQ do chính mình tạo'
+                        : 'Chỉnh sửa thông tin dòng sản phẩm RFQ đã chọn'
+                    }
+                  />
+
+                  <ActionButton
+                    variant="danger"
+                    icon={Trash2}
+                    disabled={!canDeleteSelected}
+                    onClick={handleDeleteSelectedItems}
+                    title={
+                      !canDeleteSelected
+                        ? 'Bạn chỉ có quyền xóa các RFQ do chính mình tạo'
+                        : `Xoá (${selectedQuoteIds.length}) mã sản phẩm đã chọn khỏi Supabase DB`
+                    }
+                  />
+                </>
+              )}
+
+              {/* Tab 2 Actions */}
+              {activeStage === 'internal' && (
+                <>
+                  <ActionButton
+                    variant="neutral"
+                    icon={Calculator}
+                    disabled={selectedQuoteIds.length !== 1 || !canGoToCalculator}
+                    onClick={() => {
+                      if (selectedSingleQuote) handleGoToCalculator(selectedSingleQuote);
+                    }}
+                    title={
+                      selectedQuoteIds.length !== 1
+                        ? 'Vui lòng chọn đúng 1 sản phẩm để đi đến Bảng Tính Giá'
+                        : !canGoToCalculator
+                        ? 'Vui lòng chọn đúng 1 sản phẩm ở trạng thái Đang tính giá'
+                        : 'Đi đến Bảng Tính Giá (Calculator)'
+                    }
+                  />
+
+                  <ActionButton
+                    variant="positive"
+                    icon={Layers}
+                    disabled={Boolean(groupDisabledReason)}
+                    onClick={handleGroupRequest}
+                    title={groupDisabledReason || `Gộp (${selectedQuoteIds.length}) mã sản phẩm thành Báo Giá`}
+                  />
+
+                  <ActionButton
+                    variant="danger"
+                    icon={Trash2}
+                    disabled={!canDeleteSelected}
+                    onClick={handleDeleteSelectedItems}
+                    title={
+                      !canDeleteSelected
+                        ? 'Bạn chỉ có quyền xóa các RFQ do chính mình tạo'
+                        : `Xoá (${selectedQuoteIds.length}) mã sản phẩm đã chọn khỏi Supabase DB`
+                    }
+                  />
+                </>
+              )}
+
+              {/* Tab 3 Actions */}
+              {activeStage === 'sent' && (
+                <>
+                  <ActionButton
+                    variant="positive"
+                    icon={CheckCircle}
+                    disabled={!canMarkSentStatus}
+                    onClick={() => {
+                      if (selectedSingleQuote) handleMarkItemSuccessful(selectedSingleQuote);
+                    }}
+                    title={!canMarkSentStatus ? 'Vui lòng chọn đúng 1 sản phẩm đã gửi báo giá' : 'Đánh dấu Thành Công (Khách nhận giá & chốt đơn)'}
+                  />
+
+                  <ActionButton
+                    variant="danger"
+                    icon={XCircle}
+                    disabled={!canMarkSentStatus}
+                    onClick={() => handleOpenItemCancelModal('CANCELLED_AFTER_QUOTE')}
+                    title={!canMarkSentStatus ? 'Vui lòng chọn đúng 1 sản phẩm đã gửi báo giá' : 'Đánh dấu Từ Chối / Huỷ sau báo giá'}
+                  />
+                </>
+              )}
+            </>
           )}
 
-          {/* TAB 1 ACTIONS: Sửa, Xóa & + Tạo RFQ Mới */}
+          {/* CỤM NÚT TOÀN CỤC: LUÔN HIỂN THỊ KHÔNG PHỤ THUỘC VÀO SELECTION */}
           {activeStage === 'new' && (
-            <>
-              {/* Nút Sửa Sản Phẩm */}
-              <button
-                type="button"
-                disabled={selectedQuoteIds.length !== 1 || !canManageQuote(selectedSingleQuote)}
-                onClick={() => {
-                  if (selectedSingleQuote) handleOpenEditModal(selectedSingleQuote);
-                }}
-                title={
-                  selectedQuoteIds.length !== 1
-                    ? 'Vui lòng chọn đúng 1 sản phẩm để sửa'
-                    : !canManageQuote(selectedSingleQuote)
-                    ? 'Bạn chỉ có quyền sửa các RFQ do chính mình tạo'
-                    : 'Chỉnh sửa thông tin dòng sản phẩm RFQ đã chọn'
-                }
-                className="p-2 bg-[#F0F0EE] hover:bg-[#E0E0DE] text-[#111111] border border-[#EAEAEA] rounded-[6px] transition-all cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed"
-              >
-                <Pencil className="w-4 h-4 stroke-[2]" />
-              </button>
-
-              {/* Nút Xóa Sản Phẩm */}
-              <button
-                type="button"
-                disabled={selectedQuoteIds.length === 0 || !canDeleteSelected}
-                onClick={handleDeleteSelectedItems}
-                title={
-                  selectedQuoteIds.length === 0
-                    ? 'Vui lòng chọn sản phẩm để xoá'
-                    : !canDeleteSelected
-                    ? 'Bạn chỉ có quyền xóa các RFQ do chính mình tạo'
-                    : `Xoá (${selectedQuoteIds.length}) mã sản phẩm đã chọn khỏi Supabase DB`
-                }
-                className="p-2 bg-[#FDEBEC] hover:bg-[#F8C9CA] text-[#9F2F2D] border border-[#FADBDC] rounded-[6px] transition-all cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed"
-              >
-                <Trash2 className="w-4 h-4 stroke-[2]" />
-              </button>
-
-              {/* + Tạo RFQ Mới */}
-              <button
-                type="button"
-                onClick={() => setShowNewRfqModal(true)}
-                title="+ Tạo Hồ Sơ RFQ Mới (Nhập Đa Sản Phẩm)"
-                className="p-2 bg-[#111111] hover:bg-[#333333] text-white rounded-[6px] transition-all cursor-pointer shadow-xs"
-              >
-                <Plus className="w-4 h-4 stroke-[2.5]" />
-              </button>
-            </>
-          )}
-
-          {/* TAB 2 ACTIONS: Calculator navigation & Gộp Báo Giá & Xóa */}
-          {activeStage === 'internal' && (
-            <>
-              <button
-                type="button"
-                disabled={!canGoToCalculator}
-                onClick={() => {
-                  if (selectedSingleQuote) handleGoToCalculator(selectedSingleQuote);
-                }}
-                title="Đi đến Bảng Tính Giá (Calculator)"
-                className="p-2 bg-[#111111] hover:bg-[#333333] text-amber-300 rounded-[6px] transition-colors cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed shadow-xs"
-              >
-                <Calculator className="w-4 h-4" />
-              </button>
-
-              {/* Gộp Báo Giá (Strictly Validated 4 Conditions + Option B) */}
-              <button
-                type="button"
-                disabled={Boolean(groupDisabledReason)}
-                onClick={handleGroupRequest}
-                title={groupDisabledReason || `Gộp (${selectedQuoteIds.length}) mã sản phẩm thành Báo Giá`}
-                className="p-2 bg-[#EDF3EC] text-[#346538] border border-[#C6E1C4] hover:bg-[#DDF0DC] rounded-[6px] transition-all cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed"
-              >
-                <Layers className="w-4 h-4" />
-              </button>
-
-              {/* Xóa Mã Sản Phẩm (Strict Ownership Check) */}
-              <button
-                type="button"
-                disabled={selectedQuoteIds.length === 0 || !canDeleteSelected}
-                onClick={handleDeleteSelectedItems}
-                title={
-                  selectedQuoteIds.length === 0
-                    ? 'Vui lòng chọn sản phẩm để xoá'
-                    : !canDeleteSelected
-                    ? 'Bạn chỉ có quyền xóa các RFQ do chính mình tạo'
-                    : `Xoá (${selectedQuoteIds.length}) mã sản phẩm đã chọn khỏi Supabase DB`
-                }
-                className="p-2 bg-[#FDEBEC] hover:bg-[#F8C9CA] text-[#9F2F2D] border border-[#FADBDC] rounded-[6px] transition-all cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed"
-              >
-                <Trash2 className="w-4 h-4 stroke-[2]" />
-              </button>
-            </>
-          )}
-
-          {/* TAB 3 ACTIONS: Commercial Status Marking */}
-          {activeStage === 'sent' && (
-            <>
-              <button
-                type="button"
-                disabled={!canMarkSentStatus}
-                onClick={() => {
-                  if (selectedSingleQuote) handleMarkItemSuccessful(selectedSingleQuote);
-                }}
-                title="Đánh dấu Thành Công (Khách nhận giá & chốt đơn)"
-                className="p-2 bg-[#EDF3EC] hover:bg-[#DDF0DC] text-[#346538] border border-[#C6E1C4] rounded-[6px] transition-colors cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed"
-              >
-                <CheckCircle className="w-4 h-4" />
-              </button>
-
-              <button
-                type="button"
-                disabled={!canMarkSentStatus}
-                onClick={() => handleOpenItemCancelModal('CANCELLED_AFTER_QUOTE')}
-                title="Đánh dấu Từ Chối / Huỷ sau báo giá"
-                className="p-2 bg-[#FDEBEC] hover:bg-[#F8C9CA] text-[#9F2F2D] border border-[#FADBDC] rounded-[6px] transition-colors cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed"
-              >
-                <XCircle className="w-4 h-4" />
-              </button>
-            </>
+            <ActionButton
+              variant="primary"
+              icon={Plus}
+              onClick={() => setShowNewRfqModal(true)}
+              title="+ Tạo Hồ Sơ RFQ Mới (Nhập Đa Sản Phẩm)"
+            />
           )}
 
 
           {/* Global Action 3: Export Excel */}
-          <button
-            type="button"
+          <ActionButton
+            variant="neutral"
+            icon={FileSpreadsheet}
             onClick={handleExportExcel}
             title="Xuất Excel danh sách RFQ theo bộ lọc"
-            className="p-2 bg-[#F0F0EE] hover:bg-[#E0E0DE] text-[#111111] border border-[#EAEAEA] rounded-[6px] transition-colors cursor-pointer"
-          >
-            <FileSpreadsheet className="w-4 h-4 text-emerald-600" />
-          </button>
+            className="text-emerald-600"
+          />
 
           {/* Column Visibility Menu */}
           <div className="relative">
-            <button
-              type="button"
+            <ActionButton
+              variant="neutral"
+              icon={Columns}
               onClick={() => setShowColMenu(!showColMenu)}
-              className="p-2 bg-[#F0F0EE] hover:bg-[#E0E0DE] text-[#111111] border border-[#EAEAEA] rounded-[6px] transition-colors cursor-pointer"
               title="Cấu hình ẩn/hiện cột bảng"
-            >
-              <Columns className="w-4 h-4 text-[#111111]" />
-            </button>
+            />
 
             {showColMenu && (
               <div className="absolute right-0 mt-2 w-64 bg-white rounded-[10px] border border-[#EAEAEA] shadow-xl p-3 z-50 text-xs text-[#111111] space-y-2 animate-fade-in-up">
@@ -1550,19 +1532,16 @@ export const QuotationsManager = () => {
             </div>
 
             <div className="flex justify-end space-x-2 pt-3 border-t border-[#EAEAEA]">
-              <button
-                type="button"
+              <ActionButton
+                variant="neutral"
                 onClick={() => setShowEditItemModal(false)}
-                className="px-4 py-2 border border-[#EAEAEA] rounded-[6px] font-bold text-[#787774] hover:text-[#111111] hover:bg-[#F7F6F3] cursor-pointer transition-colors"
-              >
-                Hủy
-              </button>
-              <button
+                label="Hủy"
+              />
+              <ActionButton
                 type="submit"
-                className="px-4 py-2 bg-[#111111] hover:bg-[#333333] text-white font-bold rounded-[6px] cursor-pointer transition-colors shadow-xs"
-              >
-                Lưu Thay Đổi
-              </button>
+                variant="primary"
+                label="Lưu Thay Đổi"
+              />
             </div>
           </form>
         </Modal>
@@ -1608,19 +1587,16 @@ export const QuotationsManager = () => {
               />
             </div>
             <div className="flex justify-end space-x-2 pt-2">
-              <button
-                type="button"
+              <ActionButton
+                variant="neutral"
                 onClick={() => setShowCancelReasonModal(false)}
-                className="px-3 py-1.5 border border-[#EAEAEA] rounded-[6px] font-bold text-slate-700 hover:bg-slate-50 cursor-pointer"
-              >
-                Hủy
-              </button>
-              <button
+                label="Hủy"
+              />
+              <ActionButton
                 type="submit"
-                className="px-3 py-1.5 bg-[#9F2F2D] hover:bg-[#7F2321] text-white font-bold rounded-[6px] cursor-pointer"
-              >
-                Xác Nhận Hủy
-              </button>
+                variant="danger"
+                label="Xác Nhận Hủy"
+              />
             </div>
           </form>
         </Modal>
@@ -1847,19 +1823,16 @@ export const QuotationsManager = () => {
             </div>
 
             <div className="flex justify-end space-x-2 pt-2 border-t border-[#EAEAEA]">
-              <button
-                type="button"
+              <ActionButton
+                variant="neutral"
                 onClick={() => setShowNewRfqModal(false)}
-                className="px-4 py-2 border border-[#EAEAEA] rounded-[6px] font-bold text-[#787774] hover:text-[#111111] hover:bg-[#F7F6F3] cursor-pointer transition-colors"
-              >
-                Hủy
-              </button>
-              <button
+                label="Hủy"
+              />
+              <ActionButton
                 type="submit"
-                className="px-4 py-2 bg-[#111111] hover:bg-[#333333] text-white font-bold rounded-[6px] cursor-pointer transition-colors shadow-xs"
-              >
-                Lưu Hồ Sơ RFQ
-              </button>
+                variant="primary"
+                label="Lưu Hồ Sơ RFQ"
+              />
             </div>
           </form>
         </Modal>
@@ -1887,20 +1860,16 @@ export const QuotationsManager = () => {
               </div>
             )}
             <div className="flex justify-end space-x-2 pt-2">
-              <button
-                type="button"
+              <ActionButton
+                variant="neutral"
                 onClick={() => setShowPasteModal(false)}
-                className="px-3 py-1.5 border border-[#EAEAEA] rounded-[6px] font-bold text-slate-700 hover:bg-slate-50 cursor-pointer"
-              >
-                Hủy
-              </button>
-              <button
-                type="button"
+                label="Hủy"
+              />
+              <ActionButton
+                variant="primary"
                 onClick={handleParsePasteText}
-                className="px-3 py-1.5 bg-[#111111] text-white font-bold rounded-[6px] cursor-pointer"
-              >
-                Trích Xuất & Điền Vào Form
-              </button>
+                label="Trích Xuất & Điền Vào Form"
+              />
             </div>
           </div>
         </Modal>
