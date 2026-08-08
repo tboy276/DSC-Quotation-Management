@@ -94,7 +94,7 @@ export const QuotationPreviewPanel: React.FC<QuotationPreviewPanelProps> = ({
     const isLandscape = config.layoutOrientation === 'landscape';
     const filename = `DISOCO_Bao_Gia_${document.id || 'Export'}.pdf`;
 
-    const opt = {
+    const opt: any = {
       margin:       5,
       filename:     filename,
       image:        { type: 'jpeg', quality: 0.98 },
