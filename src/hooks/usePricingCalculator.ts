@@ -68,16 +68,12 @@ export function usePricingCalculator(fixedSegment: SegmentType) {
 
         if (target.inputs_json && typeof target.inputs_json === 'object' && Object.keys(target.inputs_json).length > 0) {
           cloneInputsFromQuote(target);
-          setTimeout(() => {
-            const { inp } = getPayloads();
-            setInitialSnapshot(JSON.stringify(inp));
-          }, 0);
+          const { inp } = getPayloads(true);
+          setInitialSnapshot(JSON.stringify(inp));
         } else {
           resetSegmentInput(fixedSegment);
-          setTimeout(() => {
-            const { inp } = getPayloads();
-            setInitialSnapshot(JSON.stringify(inp));
-          }, 0);
+          const { inp } = getPayloads(true);
+          setInitialSnapshot(JSON.stringify(inp));
         }
 
         // CLEAR BANNER LỖI/CẢNH BÁO KHI LOAD THÀNH CÔNG (YÊU CẦU CỦA USER)
@@ -88,22 +84,24 @@ export function usePricingCalculator(fixedSegment: SegmentType) {
     }
   };
 
-  const getPayloads = () => {
+  const getPayloads = (useLatestFromStore = false) => {
     let inp: any = null;
     let res: any = null;
+    
+    const state = useQuotationStore.getState();
 
     if (fixedSegment === 'forging') {
-      inp = forgingInput;
-      res = getForgingResult();
+      inp = useLatestFromStore ? state.forgingInput : forgingInput;
+      res = useLatestFromStore ? state.getForgingResult() : getForgingResult();
     } else if (fixedSegment === 'casting') {
-      inp = castingInput;
-      res = getCastingResult();
+      inp = useLatestFromStore ? state.castingInput : castingInput;
+      res = useLatestFromStore ? state.getCastingResult() : getCastingResult();
     } else if (fixedSegment === 'sawing') {
-      inp = sawingInput;
-      res = getSawingResult();
+      inp = useLatestFromStore ? state.sawingInput : sawingInput;
+      res = useLatestFromStore ? state.getSawingResult() : getSawingResult();
     } else if (fixedSegment === 'machining') {
-      inp = machiningInput;
-      res = getMachiningResult();
+      inp = useLatestFromStore ? state.machiningInput : machiningInput;
+      res = useLatestFromStore ? state.getMachiningResult() : getMachiningResult();
     }
 
     const rfqPayload = {
