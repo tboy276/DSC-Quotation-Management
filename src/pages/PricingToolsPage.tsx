@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Outlet, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { Workflow, Box, Scissors, Wrench } from 'lucide-react';
+import { fetchQuoteByItemId } from '../lib/quotation-service';
 
 export const PricingToolsPage = () => {
   const navigate = useNavigate();
@@ -9,6 +10,56 @@ export const PricingToolsPage = () => {
   
   // Track if the current child tab has unsaved changes
   const [isChildDirty, setIsChildDirty] = useState(false);
+  const [itemTech, setItemTech] = useState<string>('');
+
+  const currentSegment = location.pathname.split('/')[2] || 'forging';
+
+  useEffect(() => {
+    if (rfqItemId) {
+      fetchQuoteByItemId(rfqItemId).then((res) => {
+        // FIX BUG: technology_requirement nằm trong res.rfqItem chứ không nằm trực tiếp ở res!
+        const techReq = res?.rfqItem?.technology_requirement || '';
+        
+        if (techReq) {
+          setItemTech(techReq);
+          const tech = techReq.toLowerCase();
+
+          let correctTab = 'forging';
+          if (tech.includes('cưa')) correctTab = 'sawing';
+          else if (tech.includes('đúc')) correctTab = 'casting';
+          else if (tech.includes('cnc')) correctTab = 'machining';
+
+          if (currentSegment !== correctTab) {
+            navigate(`/pricing-tools/${correctTab}/${rfqItemId}`, { replace: true });
+          }
+        }
+      });
+    } else {
+      setItemTech('');
+    }
+  }, [rfqItemId, currentSegment, navigate]);
+
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (isChildDirty) {
+        e.preventDefault();
+        e.returnValue = '';
+      }
+    };
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [isChildDirty]);
+
+  const safeNavigate = (targetPath: string) => {
+    if (isChildDirty) {
+      const confirmLeave = window.confirm(
+        "Bạn có dữ liệu tính giá chưa lưu. Rời khỏi trang sẽ làm mất các thông số đã nhập. Bạn có chắc chắn muốn tiếp tục?"
+      );
+      if (!confirmLeave) return;
+    }
+    setIsChildDirty(false);
+    navigate(targetPath);
+  };
 
   const tabs = [
     { id: 'forging', label: 'Rèn Dập', icon: Workflow },
@@ -17,26 +68,23 @@ export const PricingToolsPage = () => {
     { id: 'machining', label: 'Chỉ Gia Công CNC', icon: Wrench },
   ];
 
-  const currentSegment = location.pathname.split('/')[2] || 'forging';
-
   const handleTabClick = (tabId: string) => {
     if (tabId === currentSegment) return;
-
-    if (isChildDirty) {
-      const confirmLeave = window.confirm("Bạn có thay đổi chưa lưu ở form hiện tại. Chuyển tab sẽ làm mất dữ liệu chưa lưu. Tiếp tục?");
-      if (!confirmLeave) {
-        return; // Abort navigation
+    
+    // Check if locked
+    if (rfqItemId && itemTech) {
+      const tech = itemTech.toLowerCase();
+      let correctTab = 'forging';
+      if (tech.includes('cưa')) correctTab = 'sawing';
+      else if (tech.includes('đúc')) correctTab = 'casting';
+      else if (tech.includes('cnc')) correctTab = 'machining';
+      
+      if (tabId !== correctTab) {
+        return; // Locked
       }
     }
 
-    // Clear dirty state immediately to prevent double prompts if there's a delay
-    setIsChildDirty(false);
-    
-    if (rfqItemId) {
-      navigate(`/pricing-tools/${tabId}/${rfqItemId}`);
-    } else {
-      navigate(`/pricing-tools/${tabId}`);
-    }
+    safeNavigate(rfqItemId ? `/pricing-tools/${tabId}/${rfqItemId}` : `/pricing-tools/${tabId}`);
   };
 
   return (
@@ -48,14 +96,29 @@ export const PricingToolsPage = () => {
           {tabs.map(tab => {
             const Icon = tab.icon;
             const isActive = currentSegment === tab.id;
+            
+            let isLocked = false;
+            if (rfqItemId && itemTech) {
+              const tech = itemTech.toLowerCase();
+              let correctTab = 'forging';
+              if (tech.includes('cưa')) correctTab = 'sawing';
+              else if (tech.includes('đúc')) correctTab = 'casting';
+              else if (tech.includes('cnc')) correctTab = 'machining';
+              isLocked = (tab.id !== correctTab);
+            }
+
             return (
               <button
                 key={tab.id}
                 onClick={() => handleTabClick(tab.id)}
+                disabled={isLocked}
+                title={isLocked ? `Sản phẩm này thuộc phân hệ công nghệ [${itemTech}], không thể tính giá ở tab khác.` : undefined}
                 className={`flex items-center space-x-2 px-4 py-2 rounded-md text-sm font-semibold transition-colors ${
-                  isActive
+                  isLocked
+                    ? 'opacity-40 cursor-not-allowed text-[#787774] hover:bg-transparent'
+                    : isActive
                     ? 'bg-white text-[#111111] shadow-sm'
-                    : 'text-[#787774] hover:text-[#111111] hover:bg-[#EAEAEA]'
+                    : 'text-[#787774] hover:text-[#111111] hover:bg-[#EAEAEA] cursor-pointer'
                 }`}
               >
                 <Icon className="w-4 h-4 stroke-[2]" />
@@ -68,7 +131,7 @@ export const PricingToolsPage = () => {
 
       {/* Child Content */}
       <div className="flex-1 overflow-auto">
-        <Outlet context={{ setIsChildDirty }} />
+        <Outlet context={{ setIsChildDirty, safeNavigate }} />
       </div>
     </div>
   );
