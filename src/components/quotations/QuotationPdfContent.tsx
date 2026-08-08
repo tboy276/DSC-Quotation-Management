@@ -3,7 +3,6 @@ import type { QuotationDocument, DocumentDisplayConfig } from '../../types/quota
 import { DEFAULT_DISPLAY_CONFIG } from '../../types/quotation-document';
 import type { CurrencyType } from '../../types/quote';
 import { DISOCO_COMPANY_CONFIG } from '../../config/company-config';
-import { formatCurrencyValue } from '../rfq/RealtimeSummaryPanel';
 
 interface QuotationPdfContentProps {
   document: QuotationDocument;
@@ -17,7 +16,6 @@ export const QuotationPdfContent: React.FC<QuotationPdfContentProps> = ({
   const config = propConfig || document.display_config || DEFAULT_DISPLAY_CONFIG;
   const items = [...(document.items || [])].sort((a, b) => a.display_order - b.display_order);
   const currency: CurrencyType = document.currency || 'VND';
-  const exchangeRate = document.exchange_rate || 1;
   const lang = config.language || 'both';
 
   // Check segment mix
