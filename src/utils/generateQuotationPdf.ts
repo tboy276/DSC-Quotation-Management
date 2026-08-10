@@ -193,9 +193,10 @@ export async function generateQuotationPdf(document: QuotationDocument) {
 
   const head = headRow2.length > 0 ? [headRow1, headRow2] : [headRow1];
 
-  const body: any[][] = items.map((item, idx) => {
-    const q = item.quote;
-    if (!q) return [];
+  const validItems = items.filter(item => item && item.quote);
+  
+  const body: any[][] = validItems.map((item, idx) => {
+    const q = item.quote!;
     
     const inp = q.inputs_json as any;
     const res = q.results_json as any;
