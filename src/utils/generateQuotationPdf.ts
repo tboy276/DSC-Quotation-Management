@@ -368,7 +368,7 @@ export async function generateQuotationPdf(document: QuotationDocument) {
   doc.text(lang === 'vi' ? 'Đại diện DISOCO ký tên' : 'Authorized Representative', pageWidth * 0.75, currentY, { align: 'center' });
 
   // Footer ISO on ALL pages
-  const totalPages = doc.internal.getNumberOfPages();
+  const totalPages = (doc as any).internal.getNumberOfPages();
   for (let i = 1; i <= totalPages; i++) {
     doc.setPage(i);
     doc.setFont('Roboto', 'italic');
