@@ -3,8 +3,7 @@ import type { QuotationDocument, DocumentDisplayConfig, DocumentRemarkLine } fro
 import { DEFAULT_DISPLAY_CONFIG } from '../../types/quotation-document';
 import { QuotationPdfContent } from './QuotationPdfContent';
 import { ArrowLeft, Check, Plus, Trash2, ArrowUp, ArrowDown, Eye, Sliders, Download, X } from 'lucide-react';
-import html2canvas from 'html2canvas-pro';
-import { jsPDF } from 'jspdf';
+import { generateQuotationPdf } from '../../utils/generateQuotationPdf';
 
 interface QuotationPreviewPanelProps {
   document: QuotationDocument;
@@ -90,45 +89,9 @@ export const QuotationPreviewPanel: React.FC<QuotationPreviewPanelProps> = ({
   };
 
   const handleDownloadPDF = async () => {
-    const element = window.document.getElementById('quotation-pdf-content');
-    if (!element) {
-      alert('Không tìm thấy nội dung báo giá để xuất PDF.');
-      return;
-    }
-
     setIsExportingPdf(true);
     try {
-      // 1. Render DOM sang Canvas
-      const canvas = await html2canvas(element, {
-        scale: 2, // Tăng nét
-        useCORS: true, // Cho phép tải logo Cloudinary
-        allowTaint: true,
-        logging: false,
-        backgroundColor: '#ffffff',
-      });
-
-      const imgData = canvas.toDataURL('image/jpeg', 0.98);
-      const isLandscape = config.layoutOrientation === 'landscape';
-
-      // 2. Khởi tạo jsPDF A4
-      const pdf = new jsPDF({
-        orientation: isLandscape ? 'landscape' : 'portrait',
-        unit: 'mm',
-        format: 'a4',
-      });
-
-      const pageWidth = pdf.internal.pageSize.getWidth();
-      const pageHeight = pdf.internal.pageSize.getHeight();
-
-      // Căn chỉnh tỷ lệ ảnh vừa A4
-      const imgWidth = pageWidth;
-      const imgHeight = (canvas.height * imgWidth) / canvas.width;
-
-      pdf.addImage(imgData, 'JPEG', 0, 0, imgWidth, Math.min(imgHeight, pageHeight));
-
-      // 3. Tải file về máy
-      const docId = document?.id || 'DISOCO';
-      pdf.save(`DISOCO_Bao_Gia_${docId}.pdf`);
+      await generateQuotationPdf(document);
     } catch (err: any) {
       console.error('Lỗi xuất PDF:', err);
       alert(`❌ Không thể tạo file PDF: ${err?.message || err}`);
