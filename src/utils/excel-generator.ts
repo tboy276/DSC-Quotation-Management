@@ -27,6 +27,8 @@ export const exportDocumentToExcel = (document: QuotationDocument) => {
     const seg = q?.segment;
     const isForging = seg === 'forging';
     const isCasting = seg === 'casting';
+    const inp = q?.inputs_json as any || {};
+    const res = q?.results_json as any || {};
 
     let materialCostVnd = 0;
     let formingCostVnd = 0;
