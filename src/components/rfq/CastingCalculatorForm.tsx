@@ -361,6 +361,12 @@ export const CastingCalculatorForm = () => {
         onDGPackChange={(val) => setCastingField('DG_pack_kg', val)}
         k_profit={casting.k_profit_casting ?? 12}
         onKProfitChange={(val) => setCastingField('k_profit_casting', val)}
+        quoted_moq={casting.quoted_moq}
+        onMoqChange={(val) => setCastingField('quoted_moq', val)}
+        DG_heat_treat_per_kg={casting.DG_heat_treat_per_kg}
+        onDGHeatTreatChange={(val) => setCastingField('DG_heat_treat_per_kg', val)}
+        DG_paint_per_kg={casting.DG_paint_per_kg}
+        onDGPaintChange={(val) => setCastingField('DG_paint_per_kg', val)}
         COGS={res.COGS}
         C_mgmt={res.COGS * ((casting.k_mgmt_cast || 0) / 100)}
         C_trans={(casting.DG_trans_kg || 0) * m_cast}

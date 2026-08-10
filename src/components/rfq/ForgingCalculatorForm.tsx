@@ -329,18 +329,7 @@ export const ForgingCalculatorForm = () => {
               />
             </div>
 
-            {/* 5. Đơn giá nhiệt luyện */}
-            <div className="flex items-center justify-between py-2 border-b border-[#EAEAEA]">
-              <label className="font-bold text-[#787774]">5. Đơn giá nhiệt luyện (VNĐ/kg):</label>
-              <input
-                type="number"
-                min="0"
-                value={forging.DG_heat_treat_kg ?? ''}
-                onChange={(e) => setForgingField('DG_heat_treat_kg', Math.max(0, Number(e.target.value)))}
-                className="w-1/2 min-w-[200px] px-2 py-1.5 border border-[#EAEAEA] rounded-[4px] font-mono font-bold text-[#111111] text-right"
-              />
-            </div>
-
+            {/* 5. Đơn giá nhiệt luyện (Đã chuyển xuống Section 5) */}
             {/* 6. Đơn giá phun bi */}
             <div className="flex items-center justify-between py-2">
               <label className="font-bold text-[#787774]">6. Đơn giá phun bi (VNĐ/kg):</label>
@@ -462,6 +451,15 @@ export const ForgingCalculatorForm = () => {
         onDGPackChange={(val) => setForgingField('DG_pack_kg', val)}
         k_profit={forging.k_profit_forging ?? 15}
         onKProfitChange={(val) => setForgingField('k_profit_forging', val)}
+        quoted_moq={forging.quoted_moq}
+        onMoqChange={(val) => setForgingField('quoted_moq', val)}
+        DG_heat_treat_per_kg={forging.DG_heat_treat_per_kg ?? forging.DG_heat_treat_kg}
+        onDGHeatTreatChange={(val) => {
+          setForgingField('DG_heat_treat_per_kg', val);
+          setForgingField('DG_heat_treat_kg', val); // Keep legacy in sync
+        }}
+        DG_paint_per_kg={forging.DG_paint_per_kg}
+        onDGPaintChange={(val) => setForgingField('DG_paint_per_kg', val)}
         COGS={res.COGS}
         C_mgmt={res.COGS * ((forging.k_mgmt || 0) / 100)}
         C_trans={(forging.DG_trans_kg || 0) * res.m_phoi}

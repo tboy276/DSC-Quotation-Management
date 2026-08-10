@@ -24,6 +24,8 @@ export function calculateSawingPrice(input: SawingInput): SawingResult {
     DG_pack_kg,
     DG_trans_kg,
     k_profit_sawing,
+    DG_heat_treat_per_kg = 0,
+    DG_paint_per_kg = 0,
   } = input;
 
   // Section 1 — Vật liệu
@@ -73,8 +75,11 @@ export function calculateSawingPrice(input: SawingInput): SawingResult {
   }
   const C_trans = final_weight * DG_trans_kg;
 
+  const C_heat_treat = final_weight * DG_heat_treat_per_kg;
+  const C_paint = final_weight * DG_paint_per_kg;
+
   // Tổng Giá vốn hàng bán (COGS thuần - không gồm C_mgmt)
-  const COGS = C_mat_sawing + C_ops_sawing + C_machining;
+  const COGS = C_mat_sawing + C_ops_sawing + C_machining + C_heat_treat + C_paint;
   const C_mgmt = COGS * (k_mgmt / 100);
 
   // Tổng Giá Trước Lợi Nhuận
@@ -91,6 +96,8 @@ export function calculateSawingPrice(input: SawingInput): SawingResult {
     C_mat_sawing,
     C_ops_sawing,
     C_machining,
+    C_heat_treat,
+    C_paint,
     COGS,
     C_mgmt,
     pre_profit_price,

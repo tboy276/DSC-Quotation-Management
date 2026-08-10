@@ -13,6 +13,8 @@ export function calculateMachiningPrice(input: MachiningInput): MachiningResult 
     DG_pack_kg,
     DG_trans_kg,
     k_profit_machining,
+    DG_heat_treat_per_kg = 0,
+    DG_paint_per_kg = 0,
   } = input;
 
   // Section 1 — Gia công cơ khí (Machining)
@@ -34,8 +36,11 @@ export function calculateMachiningPrice(input: MachiningInput): MachiningResult 
   }
   const C_trans = final_weight * DG_trans_kg;
 
+  const C_heat_treat = final_weight * DG_heat_treat_per_kg;
+  const C_paint = final_weight * DG_paint_per_kg;
+
   // Tổng Giá vốn hàng bán (COGS thuần - không gồm C_mgmt)
-  const COGS = C_machining;
+  const COGS = C_machining + C_heat_treat + C_paint;
   const C_mgmt = COGS * (k_mgmt / 100);
 
   // Tổng Giá Trước Lợi Nhuận
@@ -47,6 +52,8 @@ export function calculateMachiningPrice(input: MachiningInput): MachiningResult 
 
   return {
     C_machining,
+    C_heat_treat,
+    C_paint,
     COGS,
     C_mgmt,
     pre_profit_price,

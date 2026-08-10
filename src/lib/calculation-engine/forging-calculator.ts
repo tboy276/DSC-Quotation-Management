@@ -73,10 +73,9 @@ export function calculateForgingPrice(input: ForgingInput): ForgingResult {
     // Simplify: (8 * DG_forging_machine_hour) / expected_productivity
     const safeProductivity = expected_productivity > 0 ? expected_productivity : 1;
     const C_forging_op = (8 * DG_forging_machine_hour) / safeProductivity;
-    const C_heat_treat = m_chi * DG_heat_treat_kg;
     const C_clean = m_chi * DG_clean_kg;
 
-    C_ops_forging = C_cut + C_heat_induction + C_forging_op + C_heat_treat + C_clean;
+    C_ops_forging = C_cut + C_heat_induction + C_forging_op + C_clean;
   }
 
   // Section 3 — Gia công cơ khí
@@ -126,7 +125,10 @@ export function calculateForgingPrice(input: ForgingInput): ForgingResult {
   const dieInCogs = die_cost_treatment === 'amortized' ? C_die_amortization : 0;
   const separate_die_cost = die_cost_treatment === 'separate' ? C_die_amortization : undefined;
 
-  const COGS = C_mat_forging + C_ops_forging + C_machining + dieInCogs;
+  const C_heat_treat = m_phoi * (input.DG_heat_treat_per_kg ?? input.DG_heat_treat_kg ?? 0);
+  const C_paint = m_phoi * (input.DG_paint_per_kg ?? 0);
+
+  const COGS = C_mat_forging + C_ops_forging + C_machining + C_heat_treat + C_paint + dieInCogs;
 
   const final_weight = m_tinh || m_phoi || m_chi || 0;
   const actual_C_pack = DG_pack_kg !== undefined && DG_pack_kg > 0 ? DG_pack_kg * final_weight : (C_pack || 0);
@@ -143,6 +145,8 @@ export function calculateForgingPrice(input: ForgingInput): ForgingResult {
     C_mat_forging,
     C_ops_forging,
     C_machining,
+    C_heat_treat,
+    C_paint,
     C_die_amortization,
     COGS,
     pre_profit_price,

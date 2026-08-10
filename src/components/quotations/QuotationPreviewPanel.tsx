@@ -222,13 +222,13 @@ export const QuotationPreviewPanel: React.FC<QuotationPreviewPanelProps> = ({
             </label>
             <div className="grid grid-cols-2 gap-2 bg-white p-3 border border-[#EAEAEA] rounded-[8px]">
               {[
-                { key: 'showWeight', label: 'Trọng lượng phôi' },
+                { key: 'showWeightChi', label: 'Trọng lượng chi' },
+                { key: 'showWeightPhoi', label: 'Trọng lượng phôi' },
+                { key: 'showWeightTinh', label: 'Trọng lượng tinh' },
                 { key: 'showMOQ', label: 'Quy mô lô (MOQ)' },
-                { key: 'showFormingCost', label: 'Chi phí tạo phôi' },
-                { key: 'showMachiningCost', label: 'Chi phí gia công' },
-                { key: 'showPackageCost', label: 'Chi phí bao gói' },
-                { key: 'showDeliveryCost', label: 'Chi phí vận chuyển' },
-                { key: 'showSgaP', label: 'Quản lý & Lợi nhuận' },
+                { key: 'showMaterialCost', label: 'Chi phí Vật tư' },
+                { key: 'showProcessCost', label: 'Chi phí Gia công & XLB' },
+                { key: 'showSgaP', label: 'S.G.A & P' },
                 { key: 'showToolingPrice', label: 'Tiền khuôn / mẫu' },
                 { key: 'showToolingUsage', label: 'Tuổi thọ khuôn' },
               ].map((col) => (

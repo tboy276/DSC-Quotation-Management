@@ -10,12 +10,12 @@ export interface DocumentRemarkLine {
 export interface DocumentDisplayConfig {
   language: 'vi' | 'en' | 'both';
   layoutOrientation?: 'portrait' | 'landscape';
-  showWeight: boolean;
+  showWeightChi: boolean;
+  showWeightPhoi: boolean;
+  showWeightTinh: boolean;
   showMOQ: boolean;
-  showFormingCost: boolean;
-  showMachiningCost: boolean;
-  showPackageCost: boolean;
-  showDeliveryCost: boolean;
+  showMaterialCost: boolean;
+  showProcessCost: boolean;
   showSgaP: boolean;
   showToolingPrice: boolean;
   showToolingUsage: boolean;
@@ -25,12 +25,12 @@ export interface DocumentDisplayConfig {
 export const DEFAULT_DISPLAY_CONFIG: DocumentDisplayConfig = {
   language: 'both',
   layoutOrientation: 'landscape',
-  showWeight: true,
+  showWeightChi: false,
+  showWeightPhoi: true,
+  showWeightTinh: false,
   showMOQ: true,
-  showFormingCost: true,
-  showMachiningCost: true,
-  showPackageCost: true,
-  showDeliveryCost: true,
+  showMaterialCost: true,
+  showProcessCost: true,
   showSgaP: true,
   showToolingPrice: true,
   showToolingUsage: true,

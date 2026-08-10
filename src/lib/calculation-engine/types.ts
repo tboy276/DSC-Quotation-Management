@@ -60,6 +60,8 @@ export interface ForgingInput {
   expected_productivity?: number;  // Năng suất dự kiến (Cái/ca)
   DG_forging_machine_hour?: number;// Đơn giá máy dập/búa (VNĐ/giờ)
   DG_heat_treat_kg?: number;       // Đơn giá nhiệt luyện (VNĐ/kg)
+  DG_heat_treat_per_kg?: number;   // Đơn giá nhiệt luyện (VNĐ/kg) - Alias mới
+  DG_paint_per_kg?: number;        // Đơn giá sơn (VNĐ/kg)
   DG_clean_kg?: number;            // Đơn giá làm sạch/phun bi (VNĐ/kg)
 
   // Optional override for Section 2 ops (cho trường hợp nhập tổng sẵn)
@@ -82,6 +84,7 @@ export interface ForgingInput {
   C_die_amortization_override?: number;
 
   // Section 5 — Summary Parameters (Tổng hợp)
+  quoted_moq?: number;        // MOQ Báo Giá (cái/lô)
   N_order?: number;           // Số lượng sản lượng đơn hàng (chi tiết), mặc định 1
   k_mgmt: number;             // Phần trăm chi phí quản lý % (VD: 8 = 8%)
   C_pack?: number;            // Chi phí đóng gói (VNĐ/chi tiết)
@@ -98,6 +101,8 @@ export interface ForgingResult {
   C_mat_forging: number;      // Chi phí vật liệu rèn (VNĐ)
   C_ops_forging: number;      // Chi phí công nghệ rèn (VNĐ)
   C_machining: number;        // Chi phí gia công cơ khí (VNĐ)
+  C_heat_treat: number;       // Chi phí xử lý nhiệt (VNĐ)
+  C_paint: number;            // Chi phí sơn (VNĐ)
   C_die_amortization: number; // Chi phí khấu hao khuôn (/chi tiết) (VNĐ)
   COGS: number;               // Giá vốn hàng bán (VNĐ)
   pre_profit_price: number;   // Giá trước lợi nhuận (VNĐ)
@@ -142,8 +147,10 @@ export interface CastingInput {
   DG_equipment_depr_per_kg?: number;// Đơn giá Khấu hao Thiết bị/kg thành phẩm (VNĐ/kg)
 
   // Section 3 — Machining & QA (Gia công & QC)
+  DG_heat_treat_per_kg?: number; // Đơn giá nhiệt luyện (VNĐ/kg)
+  DG_paint_per_kg?: number;      // Đơn giá sơn (VNĐ/kg)
   machining_operations?: MachiningOperation[];
-  C_coating?: number;         // Chi phí sơn/mạ (VNĐ/cái)
+  C_coating?: number;         // Chi phí mạ (VNĐ/cái)
   C_QA?: number;              // Chi phí kiểm định QA/QC (VNĐ/cái)
   C_machining_override?: number;
   machining_notes?: string;
@@ -160,6 +167,7 @@ export interface CastingInput {
   C_pattern_amortization_override?: number;
 
   // Section 5 — Summary Parameters (Tổng hợp)
+  quoted_moq?: number;        // MOQ Báo Giá (cái/lô)
   N_order?: number;           // Số lượng sản lượng đơn hàng (chi tiết), mặc định 1
   k_mgmt_cast: number;        // Phần trăm chi phí quản lý công ty % (VD: 10 = 10%)
   C_pack?: number;            // Chi phí đóng gói (VNĐ/chi tiết)
@@ -191,6 +199,8 @@ export interface CastingResult {
   workshop_cost_per_kg: number;  // Giá thành phân xưởng / kg thành phẩm (Part A + Part B / m_cast) (VNĐ/kg)
 
   // Section 3 & 4
+  C_heat_treat: number;          // Chi phí xử lý nhiệt (VNĐ)
+  C_paint: number;               // Chi phí sơn (VNĐ)
   C_machining_casting: number;   // Tổng chi phí gia công & QA (VNĐ)
   C_pattern_amortization: number;// Chi phí khấu hao mẫu (/chi tiết) (VNĐ)
 
@@ -228,7 +238,10 @@ export interface SawingInput {
   machining_operations?: MachiningOperation[];
   C_machining_override?: number;
   machining_notes?: string;
+  DG_heat_treat_per_kg?: number;
+  DG_paint_per_kg?: number;
 
+  quoted_moq?: number;        // MOQ Báo Giá (cái/lô)
   N_order?: number;           // Số lượng đơn hàng
   k_mgmt: number;             // Phần trăm chi phí quản lý %
   C_pack?: number;            // Chi phí đóng gói (VNĐ/chi tiết)
@@ -244,6 +257,8 @@ export interface SawingResult {
   C_mat_sawing: number;       // Chi phí vật liệu (VNĐ)
   C_ops_sawing: number;       // Chi phí công nghệ cắt (VNĐ)
   C_machining: number;        // Chi phí gia công cơ khí (VNĐ)
+  C_heat_treat: number;       // Chi phí xử lý nhiệt (VNĐ)
+  C_paint: number;            // Chi phí sơn (VNĐ)
   COGS: number;               // Giá vốn hàng bán thuần (VNĐ)
   C_mgmt: number;             // Chi phí quản lý (VNĐ)
   pre_profit_price: number;   // Giá trước lợi nhuận (VNĐ)
@@ -261,7 +276,10 @@ export interface MachiningInput {
   machining_operations?: MachiningOperation[];
   C_machining_override?: number;
   machining_notes?: string;
+  DG_heat_treat_per_kg?: number;
+  DG_paint_per_kg?: number;
 
+  quoted_moq?: number;        // MOQ Báo Giá (cái/lô)
   N_order?: number;           // Số lượng đơn hàng
   k_mgmt: number;             // Phần trăm chi phí quản lý %
   C_pack?: number;            // Chi phí đóng gói (VNĐ/chi tiết)
@@ -272,6 +290,8 @@ export interface MachiningInput {
 
 export interface MachiningResult {
   C_machining: number;        // Chi phí gia công cơ khí (VNĐ)
+  C_heat_treat: number;       // Chi phí xử lý nhiệt (VNĐ)
+  C_paint: number;            // Chi phí sơn (VNĐ)
   COGS: number;               // Giá vốn hàng bán thuần (VNĐ)
   C_mgmt: number;             // Chi phí quản lý (VNĐ)
   pre_profit_price: number;   // Giá trước lợi nhuận (VNĐ)

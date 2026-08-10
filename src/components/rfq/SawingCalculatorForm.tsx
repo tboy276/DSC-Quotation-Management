@@ -298,6 +298,12 @@ export default function SawingCalculatorForm() {
         onDGPackChange={(val) => setSawingField('DG_pack_kg', val)}
         k_profit={sawing.k_profit_sawing}
         onKProfitChange={(val) => setSawingField('k_profit_sawing', val)}
+        quoted_moq={sawing.quoted_moq}
+        onMoqChange={(val) => setSawingField('quoted_moq', val)}
+        DG_heat_treat_per_kg={sawing.DG_heat_treat_per_kg}
+        onDGHeatTreatChange={(val) => setSawingField('DG_heat_treat_per_kg', val)}
+        DG_paint_per_kg={sawing.DG_paint_per_kg}
+        onDGPaintChange={(val) => setSawingField('DG_paint_per_kg', val)}
         COGS={res.COGS}
         C_mgmt={res.COGS * (sawing.k_mgmt / 100)}
         C_trans={(sawing.m_tinh || sawing.m_phoi || 0) * sawing.DG_trans_kg}

@@ -60,6 +60,12 @@ export default function MachiningCalculatorForm() {
         onDGPackChange={(val) => setMachiningField('DG_pack_kg', val)}
         k_profit={machining.k_profit_machining}
         onKProfitChange={(val) => setMachiningField('k_profit_machining', val)}
+        quoted_moq={machining.quoted_moq}
+        onMoqChange={(val) => setMachiningField('quoted_moq', val)}
+        DG_heat_treat_per_kg={machining.DG_heat_treat_per_kg}
+        onDGHeatTreatChange={(val) => setMachiningField('DG_heat_treat_per_kg', val)}
+        DG_paint_per_kg={machining.DG_paint_per_kg}
+        onDGPaintChange={(val) => setMachiningField('DG_paint_per_kg', val)}
         COGS={res.COGS}
         C_mgmt={res.COGS * (machining.k_mgmt / 100)}
         C_trans={(machining.m_tinh || 0) * machining.DG_trans_kg}

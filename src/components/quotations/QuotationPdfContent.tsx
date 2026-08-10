@@ -31,10 +31,8 @@ export const QuotationPdfContent: React.FC<QuotationPdfContentProps> = ({
 
   // Count active cost columns
   const activeCostCols = [
-    config.showFormingCost,
-    config.showMachiningCost,
-    config.showPackageCost,
-    config.showDeliveryCost,
+    config.showMaterialCost,
+    config.showProcessCost,
     config.showSgaP,
   ].filter(Boolean).length;
 
@@ -160,9 +158,22 @@ export const QuotationPdfContent: React.FC<QuotationPdfContentProps> = ({
                 {getText('Mác VL', 'Material')}
               </th>
 
-              {config.showWeight && (
-                <th rowSpan={2} className="border border-black p-1.5 w-16">
-                  {getText('Trọng lượng', 'Weight (Kg)')}
+              {config.showWeightChi && (
+                <th rowSpan={2} className="border border-black p-1.5 w-14">
+                  {getText('TL Chi', 'Gross Wt')}
+                  <br />(Kg)
+                </th>
+              )}
+              {config.showWeightPhoi && (
+                <th rowSpan={2} className="border border-black p-1.5 w-14">
+                  {getText('TL Phôi', 'Net Wt')}
+                  <br />(Kg)
+                </th>
+              )}
+              {config.showWeightTinh && (
+                <th rowSpan={2} className="border border-black p-1.5 w-14">
+                  {getText('TL Tinh', 'Final Wt')}
+                  <br />(Kg)
                 </th>
               )}
 
@@ -200,11 +211,9 @@ export const QuotationPdfContent: React.FC<QuotationPdfContentProps> = ({
 
             {activeCostCols > 0 && (
               <tr className="bg-gray-50 text-center font-semibold text-[9px]">
-                {config.showFormingCost && <th className="border border-black p-1">{formingCostHeader}</th>}
-                {config.showMachiningCost && <th className="border border-black p-1">{getText('Gia công', 'Machining')}</th>}
-                {config.showPackageCost && <th className="border border-black p-1">{getText('Bao gói', 'Package')}</th>}
-                {config.showDeliveryCost && <th className="border border-black p-1">{getText('Vận chuyển', 'Delivery')}</th>}
-                {config.showSgaP && <th className="border border-black p-1">{getText('Quản lý & LN', 'S.G.A & P')}</th>}
+                {config.showMaterialCost && <th className="border border-black p-1">{getText('Phí Vật Tư', 'Material Cost')}</th>}
+                {config.showProcessCost && <th className="border border-black p-1">{getText('Phí Gia Công & XLB', 'Process Cost')}</th>}
+                {config.showSgaP && <th className="border border-black p-1">{getText('S.G.A&P', 'S.G.A&P')}</th>}
               </tr>
             )}
           </thead>
@@ -217,40 +226,40 @@ export const QuotationPdfContent: React.FC<QuotationPdfContentProps> = ({
               const inp = q.inputs_json as any;
               const res = q.results_json as any;
 
-              const weightKg = isForging ? res.m_phoi || inp.m_tinh : inp.m_cast;
+              const weightChiKg = seg === 'casting' ? res.m_liquid : inp.m_chi;
+              const weightPhoiKg = seg === 'casting' ? inp.m_cast : (res.m_phoi || inp.m_phoi);
+              const weightTinhKg = inp.m_tinh;
 
-              const seg = q.segment;
-              let formingCostVnd = 0;
-              let machiningCostVnd = 0;
+              let materialCostVnd = 0;
+              let processCostVnd = 0;
               let fallbackPrice = 0;
 
               if (seg === 'forging') {
-                formingCostVnd = (res.C_mat_forging ?? 0) + (res.C_ops_forging ?? 0);
-                machiningCostVnd = res.C_machining ?? 0;
+                materialCostVnd = res.C_mat_forging ?? 0;
+                processCostVnd = (res.C_ops_forging ?? 0) + (res.C_machining ?? 0) + (res.C_heat_treat ?? 0) + (res.C_paint ?? 0);
                 fallbackPrice = res.P_FORGING ?? 0;
               } else if (seg === 'casting') {
-                formingCostVnd = (res.C_metal_casting ?? 0) + (res.C_ops_casting ?? 0);
-                machiningCostVnd = res.C_machining_casting ?? 0;
+                materialCostVnd = res.C_metal_casting ?? 0;
+                processCostVnd = (res.C_ops_casting ?? 0) + (res.C_part_b_total ?? 0) + (res.C_machining_casting ?? 0) + (res.C_heat_treat ?? 0) + (res.C_paint ?? 0);
                 fallbackPrice = res.P_CASTING ?? 0;
               } else if (seg === 'sawing') {
-                formingCostVnd = (res.C_mat_sawing ?? 0) + (res.C_ops_sawing ?? 0);
-                machiningCostVnd = res.C_machining ?? 0;
+                materialCostVnd = res.C_mat_sawing ?? 0;
+                processCostVnd = (res.C_ops_sawing ?? 0) + (res.C_machining ?? 0) + (res.C_heat_treat ?? 0) + (res.C_paint ?? 0);
                 fallbackPrice = res.P_SAWING ?? 0;
               } else if (seg === 'machining') {
-                formingCostVnd = 0;
-                machiningCostVnd = res.C_machining ?? 0;
+                materialCostVnd = 0;
+                processCostVnd = (res.C_machining ?? 0) + (res.C_heat_treat ?? 0) + (res.C_paint ?? 0);
                 fallbackPrice = res.P_MACHINING ?? 0;
               }
 
-              const packageCostVnd = inp.C_pack ?? 0;
-              const deliveryCostVnd = (weightKg ?? 0) * (inp.DG_trans_kg ?? 0);
-
               const unitPriceVnd = q.final_quoted_price ?? fallbackPrice;
-              const sgaAndPVnd = unitPriceVnd - (formingCostVnd + machiningCostVnd + packageCostVnd + deliveryCostVnd);
+              const sgaAndPVnd = unitPriceVnd - materialCostVnd - processCostVnd;
 
               const isSeparateTooling = (seg === 'forging' || seg === 'casting') && q.die_cost_treatment === 'separate';
               const toolingPriceVnd = seg === 'forging' ? inp.C_die_total : seg === 'casting' ? inp.C_pattern_total : 0;
               const toolingLife = seg === 'forging' ? inp.L_die_life : seg === 'casting' ? inp.L_pattern_life : 0;
+              
+              const quotedMoq = inp.quoted_moq || inp.N_order || (q.rfqItem?.annual_volume ? Math.round(q.rfqItem.annual_volume / 12) : 1000);
 
               return (
                 <tr key={item.id} className="border-b border-black text-center">
@@ -265,37 +274,37 @@ export const QuotationPdfContent: React.FC<QuotationPdfContentProps> = ({
                     {inp.selected_material_id || 'S45C'}
                   </td>
 
-                  {config.showWeight && (
+                  {config.showWeightChi && (
                     <td className="border border-black p-1.5 font-mono">
-                      {Number(weightKg).toFixed(2)}
+                      {weightChiKg ? Number(weightChiKg).toFixed(2) : '-'}
+                    </td>
+                  )}
+                  {config.showWeightPhoi && (
+                    <td className="border border-black p-1.5 font-mono">
+                      {weightPhoiKg ? Number(weightPhoiKg).toFixed(2) : '-'}
+                    </td>
+                  )}
+                  {config.showWeightTinh && (
+                    <td className="border border-black p-1.5 font-mono">
+                      {weightTinhKg ? Number(weightTinhKg).toFixed(2) : '-'}
                     </td>
                   )}
 
                   {config.showMOQ && (
                     <td className="border border-black p-1.5 font-mono">
-                      {inp.N_order || (q.rfqItem?.annual_volume ? Math.round(q.rfqItem.annual_volume / 12) : 1000)}
+                      {quotedMoq.toLocaleString('vi-VN')}
                     </td>
                   )}
 
                   {/* Active Cost Columns */}
-                  {config.showFormingCost && (
+                  {config.showMaterialCost && (
                     <td className="border border-black p-1.5 font-mono text-right">
-                      {formatNum(formingCostVnd)}
+                      {formatNum(materialCostVnd)}
                     </td>
                   )}
-                  {config.showMachiningCost && (
+                  {config.showProcessCost && (
                     <td className="border border-black p-1.5 font-mono text-right">
-                      {formatNum(machiningCostVnd)}
-                    </td>
-                  )}
-                  {config.showPackageCost && (
-                    <td className="border border-black p-1.5 font-mono text-right">
-                      {formatNum(packageCostVnd)}
-                    </td>
-                  )}
-                  {config.showDeliveryCost && (
-                    <td className="border border-black p-1.5 font-mono text-right">
-                      {formatNum(deliveryCostVnd)}
+                      {formatNum(processCostVnd)}
                     </td>
                   )}
                   {config.showSgaP && (

@@ -29,11 +29,14 @@ export function calculateCastingPrice(input: CastingInput): CastingResult {
     DG_workshop_mgmt_per_kg = 0,
     DG_equipment_depr_per_kg = 0,
 
-    // Section 3 — Machining & QA
+    // Section 3 — Machining & QA (Gia công & QC)
+    DG_heat_treat_per_kg = 0,
+    DG_paint_per_kg = 0,
     machining_operations = [],
     C_coating = 0,
     C_QA = 0,
     C_machining_override,
+    machining_notes,
 
     // Section 4 — Pattern Amortization
     pattern_components = [],
@@ -130,6 +133,9 @@ export function calculateCastingPrice(input: CastingInput): CastingResult {
 
     C_machining_casting = C_machining + C_coating + C_QA;
   }
+  
+  const C_heat_treat = m_cast * DG_heat_treat_per_kg;
+  const C_paint = m_cast * DG_paint_per_kg;
 
   // ----------------------------------------------------------------------
   // Section 4 — Pattern Amortization (Khấu hao mẫu)
@@ -163,8 +169,8 @@ export function calculateCastingPrice(input: CastingInput): CastingResult {
   const patternInCogs = pattern_cost_treatment === 'amortized' ? C_pattern_amortization : 0;
   const separate_pattern_cost = pattern_cost_treatment === 'separate' ? C_pattern_amortization : undefined;
 
-  // Updated COGS includes Part A + Part B + Machining + Pattern Amortization
-  const COGS = C_metal_casting + C_ops_casting + C_machining_casting + C_part_b_total + patternInCogs;
+  // Updated COGS includes Part A + Part B + Machining + Heat Treat + Paint + Pattern Amortization
+  const COGS = C_metal_casting + C_ops_casting + C_machining_casting + C_heat_treat + C_paint + C_part_b_total + patternInCogs;
 
   const C_admin = COGS * (k_mgmt_cast / 100);
   const final_weight = m_tinh || m_cast || 0;
@@ -191,6 +197,8 @@ export function calculateCastingPrice(input: CastingInput): CastingResult {
     C_equipment_depreciation,
     C_part_b_total,
     workshop_cost_per_kg,
+    C_heat_treat,
+    C_paint,
     C_machining_casting,
     C_pattern_amortization,
     COGS,

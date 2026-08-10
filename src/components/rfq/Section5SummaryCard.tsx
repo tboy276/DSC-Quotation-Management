@@ -78,6 +78,13 @@ interface Section5SummaryCardProps {
   k_profit: number;
   onKProfitChange: (val: number) => void;
 
+  quoted_moq?: number;
+  onMoqChange?: (val: number) => void;
+  DG_heat_treat_per_kg?: number;
+  onDGHeatTreatChange?: (val: number) => void;
+  DG_paint_per_kg?: number;
+  onDGPaintChange?: (val: number) => void;
+
   // Breakdown values
   COGS: number;
   C_mgmt: number;
@@ -97,6 +104,12 @@ export const Section5SummaryCard: React.FC<Section5SummaryCardProps> = ({
   onDGPackChange,
   k_profit,
   onKProfitChange,
+  quoted_moq,
+  onMoqChange,
+  DG_heat_treat_per_kg,
+  onDGHeatTreatChange,
+  DG_paint_per_kg,
+  onDGPaintChange,
   COGS,
   C_mgmt,
   C_trans,
@@ -117,8 +130,67 @@ export const Section5SummaryCard: React.FC<Section5SummaryCardProps> = ({
 
       {/* 2-Column Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-start">
-        {/* Left Column: 4 Slider Cards */}
+        {/* Left Column: Sliders & Inputs */}
         <div className="lg:col-span-5 space-y-2.5">
+          {/* MOQ Báo Giá */}
+          {onMoqChange && (
+            <div className="bg-white border border-[#EAEAEA] rounded-[6px] p-3 shadow-2xs hover:border-[#111111] transition-all flex items-center justify-between">
+              <label className="text-[10px] font-bold text-[#787774] uppercase tracking-wider">
+                MOQ BÁO GIÁ (CÁI/LÔ)
+              </label>
+              <input
+                type="number"
+                min={0}
+                value={quoted_moq || ''}
+                placeholder="-"
+                onChange={(e) => onMoqChange(Math.max(0, Number(e.target.value)))}
+                className="w-24 px-2 py-1 border border-[#EAEAEA] rounded-[4px] text-right font-mono font-bold text-xs text-[#111111] bg-white outline-none focus:border-[#111111]"
+              />
+            </div>
+          )}
+          
+          {/* Xử Lý Nhiệt & Sơn */}
+          {(onDGHeatTreatChange || onDGPaintChange) && (
+            <div className="grid grid-cols-2 gap-2">
+              {onDGHeatTreatChange && (
+                <div className="bg-white border border-[#EAEAEA] rounded-[6px] p-3 shadow-2xs hover:border-[#111111] transition-all space-y-2">
+                  <label className="text-[10px] font-bold text-[#787774] uppercase tracking-wider block">
+                    ĐƠN GIÁ NHIỆT LUYỆN
+                  </label>
+                  <div className="flex items-center gap-1">
+                    <input
+                      type="number"
+                      min={0}
+                      value={DG_heat_treat_per_kg || ''}
+                      placeholder="0"
+                      onChange={(e) => onDGHeatTreatChange(Math.max(0, Number(e.target.value)))}
+                      className="w-full px-2 py-1 border border-[#EAEAEA] rounded-[4px] text-right font-mono font-bold text-xs text-[#111111] bg-white outline-none focus:border-[#111111]"
+                    />
+                    <span className="text-[9px] font-bold text-[#787774]">VNĐ/KG</span>
+                  </div>
+                </div>
+              )}
+              {onDGPaintChange && (
+                <div className="bg-white border border-[#EAEAEA] rounded-[6px] p-3 shadow-2xs hover:border-[#111111] transition-all space-y-2">
+                  <label className="text-[10px] font-bold text-[#787774] uppercase tracking-wider block">
+                    ĐƠN GIÁ SƠN
+                  </label>
+                  <div className="flex items-center gap-1">
+                    <input
+                      type="number"
+                      min={0}
+                      value={DG_paint_per_kg || ''}
+                      placeholder="0"
+                      onChange={(e) => onDGPaintChange(Math.max(0, Number(e.target.value)))}
+                      className="w-full px-2 py-1 border border-[#EAEAEA] rounded-[4px] text-right font-mono font-bold text-xs text-[#111111] bg-white outline-none focus:border-[#111111]"
+                    />
+                    <span className="text-[9px] font-bold text-[#787774]">VNĐ/KG</span>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
           {/* 1. Chi phí quản lý chung */}
           <SliderCard
             label="CHI PHÍ QUẢN LÝ CHUNG"
