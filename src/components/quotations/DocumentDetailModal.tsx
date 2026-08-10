@@ -7,7 +7,6 @@ import { exportDocumentToExcel } from '../../utils/excel-generator';
 import { QuoteStatusBadge } from '../rfq/QuoteStatusBadge';
 import { formatCurrencyValue } from '../rfq/RealtimeSummaryPanel';
 import { formatDate } from '../../lib/format-date';
-import { PdfQuotationModal } from './PdfQuotationModal';
 import { QuotationPreviewPanel } from './QuotationPreviewPanel';
 import { Modal } from '../ui/Modal';
 import { ActionButton } from '../ui/ActionButton';
@@ -36,7 +35,6 @@ export const DocumentDetailModal = ({
   if (!document) return null;
 
   const [items, setItems] = useState<QuotationDocumentItem[]>([]);
-  const [showPdfModal, setShowPdfModal] = useState<boolean>(false);
   const [showCustomizeModal, setShowCustomizeModal] = useState<boolean>(false);
 
   useEffect(() => {
@@ -103,20 +101,11 @@ export const DocumentDetailModal = ({
           <div className="flex items-center space-x-2 mr-2">
             <button
               onClick={() => setShowCustomizeModal(true)}
-              className="px-3 py-1.5 bg-[#F0F0EE] hover:bg-[#E0E0DE] text-[#111111] font-bold rounded-[6px] text-xs transition-colors cursor-pointer inline-flex items-center space-x-1 border border-[#EAEAEA]"
-              title="Xem trước & Tuỳ chỉnh hiển thị (Cột / Ghi chú / Ngôn ngữ)"
-            >
-              <Sliders className="w-3.5 h-3.5 text-[#111111] stroke-[2]" />
-              <span>Tuỳ Chỉnh Hiển Thị</span>
-            </button>
-
-            <button
-              onClick={() => setShowPdfModal(true)}
               className="px-3 py-1.5 bg-[#111111] hover:bg-[#333333] active:scale-[0.98] text-white font-bold rounded-[6px] text-xs transition-all cursor-pointer inline-flex items-center space-x-1 shadow-xs"
-              title="Xem trước & In Thư Báo Giá PDF DISOCO"
+              title="Xem Trước & Tải PDF"
             >
               <Download className="w-3.5 h-3.5 text-sky-300 stroke-[2]" />
-              <span>Xuất PDF</span>
+              <span>Xem Trước & Tải PDF</span>
             </button>
 
             <button
@@ -282,15 +271,14 @@ export const DocumentDetailModal = ({
         </div>
       </Modal>
 
-      {/* Customize Display Config Modal */}
       {showCustomizeModal && (
         <Modal
           isOpen={true}
           onClose={() => setShowCustomizeModal(false)}
           size="full"
           maxWidthClass="max-w-[98vw] max-h-[96vh]"
-          icon={<Sliders className="w-4 h-4" />}
-          title="Xem Trước & Tuỳ Chỉnh Thư Báo Giá DISOCO"
+          icon={<Download className="w-4 h-4" />}
+          title="Xem Trước & Tải Thư Báo Giá PDF DISOCO"
           subtitle={`Văn bản #${document.id.substring(0, 10)} - ${document.customer_name}`}
         >
           <QuotationPreviewPanel
@@ -304,14 +292,6 @@ export const DocumentDetailModal = ({
             }}
           />
         </Modal>
-      )}
-
-      {/* PDF Quotation Preview Modal */}
-      {showPdfModal && (
-        <PdfQuotationModal
-          document={document}
-          onClose={() => setShowPdfModal(false)}
-        />
       )}
     </>
   );

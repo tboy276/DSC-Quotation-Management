@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react';
 import type { QuotationDocument } from '../../types/quotation-document';
-import { fetchQuotationDocuments } from '../../lib/quotation-document-service';
+import { fetchQuotationDocuments, updateDocumentDisplayConfig } from '../../lib/quotation-document-service';
 import { DocumentDetailModal } from './DocumentDetailModal';
+import { QuotationPreviewPanel } from './QuotationPreviewPanel';
+import { Modal } from '../ui/Modal';
 import { exportDocumentToExcel } from '../../utils/excel-generator';
 import { formatCurrencyValue } from '../rfq/RealtimeSummaryPanel';
 import { formatDate } from '../../lib/format-date';
@@ -22,6 +24,7 @@ export const QuotationDocumentsManager = () => {
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [selectedDocIds, setSelectedDocIds] = useState<string[]>([]);
   const [selectedDoc, setSelectedDoc] = useState<QuotationDocument | null>(null);
+  const [pdfPreviewDoc, setPdfPreviewDoc] = useState<QuotationDocument | null>(null);
 
   useEffect(() => {
     loadDocuments();
@@ -137,7 +140,7 @@ export const QuotationDocumentsManager = () => {
       icon: <Download className="w-3.5 h-3.5 text-red-600" />,
       variant: 'secondary',
       enabled: (count) => count === 1,
-      onClick: (selectedRows) => setSelectedDoc(selectedRows[0]),
+      onClick: (selectedRows) => setPdfPreviewDoc(selectedRows[0]),
     },
     {
       key: 'export_excel',
@@ -213,6 +216,30 @@ export const QuotationDocumentsManager = () => {
         onClose={() => setSelectedDoc(null)}
         onRefresh={loadDocuments}
       />
+
+      {/* Direct PDF Preview Modal */}
+      {pdfPreviewDoc && (
+        <Modal
+          isOpen={true}
+          onClose={() => setPdfPreviewDoc(null)}
+          size="full"
+          maxWidthClass="max-w-[98vw] max-h-[96vh]"
+          icon={<Download className="w-4 h-4" />}
+          title="Xem Trước & Tải Thư Báo Giá PDF DISOCO"
+          subtitle={`Văn bản #${pdfPreviewDoc.id.substring(0, 10)} - ${pdfPreviewDoc.customer_name}`}
+        >
+          <QuotationPreviewPanel
+            document={pdfPreviewDoc}
+            readOnly={true}
+            onBack={() => setPdfPreviewDoc(null)}
+            onSaveAndSend={async (newConfig) => {
+              await updateDocumentDisplayConfig(pdfPreviewDoc.id, newConfig);
+              setPdfPreviewDoc(null);
+              loadDocuments();
+            }}
+          />
+        </Modal>
+      )}
     </div>
   );
 };
