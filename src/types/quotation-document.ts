@@ -15,7 +15,12 @@ export interface DocumentDisplayConfig {
   showWeightTinh: boolean;
   showMOQ: boolean;
   showMaterialCost: boolean;
-  showProcessCost: boolean;
+  showFormingCost: boolean;
+  showMachiningCost: boolean;
+  showHeatTreatCost: boolean;
+  showPaintCost: boolean;
+  showPackageCost: boolean;
+  showDeliveryCost: boolean;
   showSgaP: boolean;
   showToolingPrice: boolean;
   showToolingUsage: boolean;
@@ -30,7 +35,12 @@ export const DEFAULT_DISPLAY_CONFIG: DocumentDisplayConfig = {
   showWeightTinh: false,
   showMOQ: true,
   showMaterialCost: true,
-  showProcessCost: true,
+  showFormingCost: true,
+  showMachiningCost: true,
+  showHeatTreatCost: true,
+  showPaintCost: true,
+  showPackageCost: true,
+  showDeliveryCost: true,
   showSgaP: true,
   showToolingPrice: true,
   showToolingUsage: true,

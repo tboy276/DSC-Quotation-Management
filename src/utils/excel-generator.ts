@@ -24,22 +24,60 @@ export const exportDocumentToExcel = (document: QuotationDocument) => {
   const summaryRows = document.items.map((item, idx) => {
     const q = item.quote;
     const rfqItem = q?.rfqItem;
-    const isForging = q?.segment === 'forging';
-    const inp = q?.inputs_json as any || {};
-    const res = q?.results_json as any || {};
+    const seg = q?.segment;
+    const isForging = seg === 'forging';
+    const isCasting = seg === 'casting';
 
-    const weightKg = isForging ? inp.m_phoi : inp.m_cast;
-    const materialCostVnd = isForging ? (res.C_mat_forging || 0) : (res.C_metal_casting || 0);
-    const processCostVnd = isForging 
-        ? (res.C_ops_forging || 0) + (res.C_machining || 0) + (res.C_heat_treat || 0) + (res.C_paint || 0)
-        : (res.C_ops_casting || 0) + (res.C_part_b_total || 0) + (res.C_machining_casting || 0) + (res.C_heat_treat || 0) + (res.C_paint || 0);
+    let materialCostVnd = 0;
+    let formingCostVnd = 0;
+    let machiningCostVnd = 0;
+    let heatTreatCostVnd = 0;
+    let paintCostVnd = 0;
+    let packageCostVnd = 0;
+    let deliveryCostVnd = 0;
+    let fallbackPrice = 0;
 
-    const unitPriceVnd = q?.final_quoted_price || (isForging ? res.P_FORGING : res.P_CASTING) || 0;
-    const sgaAndPVnd = unitPriceVnd - materialCostVnd - processCostVnd;
+    if (seg === 'forging') {
+      materialCostVnd = res.C_mat_forging ?? 0;
+      formingCostVnd = res.C_ops_forging ?? 0;
+      machiningCostVnd = res.C_machining ?? 0;
+      heatTreatCostVnd = res.C_heat_treat ?? 0;
+      paintCostVnd = res.C_paint ?? 0;
+      fallbackPrice = res.P_FORGING ?? 0;
+    } else if (seg === 'casting') {
+      materialCostVnd = 0; // As requested, set Material Cost to 0 for Casting
+      formingCostVnd = (res.C_metal_casting ?? 0) + (res.C_ops_casting ?? 0) + (res.C_part_b_total ?? 0);
+      machiningCostVnd = res.C_machining_casting ?? 0;
+      heatTreatCostVnd = res.C_heat_treat ?? 0;
+      paintCostVnd = res.C_paint ?? 0;
+      fallbackPrice = res.P_CASTING ?? 0;
+    } else if (seg === 'sawing') {
+      materialCostVnd = res.C_mat_sawing ?? 0;
+      formingCostVnd = res.C_ops_sawing ?? 0;
+      machiningCostVnd = res.C_machining ?? 0;
+      heatTreatCostVnd = res.C_heat_treat ?? 0;
+      paintCostVnd = res.C_paint ?? 0;
+      fallbackPrice = res.P_SAWING ?? 0;
+    } else if (seg === 'machining') {
+      materialCostVnd = 0;
+      formingCostVnd = 0;
+      machiningCostVnd = res.C_machining ?? 0;
+      heatTreatCostVnd = res.C_heat_treat ?? 0;
+      paintCostVnd = res.C_paint ?? 0;
+      fallbackPrice = res.P_MACHINING ?? 0;
+    }
 
-    const isSeparateTooling = q?.die_cost_treatment === 'separate';
-    const toolingPriceVnd = isForging ? inp.C_die_total : inp.C_pattern_total;
-    const toolingLife = isForging ? inp.L_die_life : inp.L_pattern_life;
+    const weightKg = isCasting ? inp.m_cast : (inp.m_phoi || inp.m_chi || 0);
+    const finalWeight = inp.m_tinh || weightKg || 0;
+    packageCostVnd = inp.DG_pack_kg !== undefined && inp.DG_pack_kg > 0 ? (inp.DG_pack_kg * finalWeight) : (inp.C_pack || 0);
+    deliveryCostVnd = finalWeight * (inp.DG_trans_kg || 0);
+
+    const unitPriceVnd = q?.final_quoted_price || fallbackPrice || 0;
+    const sgaAndPVnd = unitPriceVnd - (materialCostVnd + formingCostVnd + machiningCostVnd + heatTreatCostVnd + paintCostVnd + packageCostVnd + deliveryCostVnd);
+
+    const isSeparateTooling = (seg === 'forging' || seg === 'casting') && q?.die_cost_treatment === 'separate';
+    const toolingPriceVnd = seg === 'forging' ? inp.C_die_total : seg === 'casting' ? inp.C_pattern_total : 0;
+    const toolingLife = seg === 'forging' ? inp.L_die_life : seg === 'casting' ? inp.L_pattern_life : 0;
 
     const rowData: Record<string, any> = {
       'STT / No.': idx + 1,
@@ -66,11 +104,26 @@ export const exportDocumentToExcel = (document: QuotationDocument) => {
     if (config.showMaterialCost) {
       rowData[`Vật Tư (${currency})`] = formatCurrencyValue(materialCostVnd, currency, exchangeRate);
     }
-    if (config.showProcessCost) {
-      rowData[`Gia công & XLB (${currency})`] = formatCurrencyValue(processCostVnd, currency, exchangeRate);
+    if (config.showFormingCost) {
+      rowData[`Phí Chế Tạo (${currency})`] = formatCurrencyValue(formingCostVnd, currency, exchangeRate);
+    }
+    if (config.showMachiningCost) {
+      rowData[`Gia Công CNC (${currency})`] = formatCurrencyValue(machiningCostVnd, currency, exchangeRate);
+    }
+    if (config.showHeatTreatCost) {
+      rowData[`Nhiệt Luyện (${currency})`] = formatCurrencyValue(heatTreatCostVnd, currency, exchangeRate);
+    }
+    if (config.showPaintCost) {
+      rowData[`Sơn/Bề Mặt (${currency})`] = formatCurrencyValue(paintCostVnd, currency, exchangeRate);
+    }
+    if (config.showPackageCost) {
+      rowData[`Bao Gói (${currency})`] = formatCurrencyValue(packageCostVnd, currency, exchangeRate);
+    }
+    if (config.showDeliveryCost) {
+      rowData[`Vận Chuyển (${currency})`] = formatCurrencyValue(deliveryCostVnd, currency, exchangeRate);
     }
     if (config.showSgaP) {
-      rowData[`S.G.A&P (${currency})`] = formatCurrencyValue(sgaAndPVnd, currency, exchangeRate);
+      rowData[`Quản Lý & LN (${currency})`] = formatCurrencyValue(sgaAndPVnd, currency, exchangeRate);
     }
 
     rowData[`Đơn Giá Báo (${currency})`] = formatCurrencyValue(unitPriceVnd, currency, exchangeRate);

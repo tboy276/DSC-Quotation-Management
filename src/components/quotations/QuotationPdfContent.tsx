@@ -21,7 +21,12 @@ export const QuotationPdfContent: React.FC<QuotationPdfContentProps> = ({
   // Count active cost columns
   const activeCostCols = [
     config.showMaterialCost,
-    config.showProcessCost,
+    config.showFormingCost,
+    config.showMachiningCost,
+    config.showHeatTreatCost,
+    config.showPaintCost,
+    config.showPackageCost,
+    config.showDeliveryCost,
     config.showSgaP,
   ].filter(Boolean).length;
 
@@ -200,9 +205,14 @@ export const QuotationPdfContent: React.FC<QuotationPdfContentProps> = ({
 
             {activeCostCols > 0 && (
               <tr className="bg-gray-50 text-center font-semibold text-[9px]">
-                {config.showMaterialCost && <th className="border border-black p-1">{getText('Phí Vật Tư', 'Material Cost')}</th>}
-                {config.showProcessCost && <th className="border border-black p-1">{getText('Phí Gia Công & XLB', 'Process Cost')}</th>}
-                {config.showSgaP && <th className="border border-black p-1">{getText('S.G.A&P', 'S.G.A&P')}</th>}
+                {config.showMaterialCost && <th className="border border-black p-1">{getText('Vật Tư', 'Material')}</th>}
+                {config.showFormingCost && <th className="border border-black p-1">{getText('Phí Chế Tạo', 'Forming')}</th>}
+                {config.showMachiningCost && <th className="border border-black p-1">{getText('Gia Công CNC', 'Machining')}</th>}
+                {config.showHeatTreatCost && <th className="border border-black p-1">{getText('Nhiệt Luyện', 'Heat Treat')}</th>}
+                {config.showPaintCost && <th className="border border-black p-1">{getText('Sơn/Bề Mặt', 'Paint')}</th>}
+                {config.showPackageCost && <th className="border border-black p-1">{getText('Bao Gói', 'Package')}</th>}
+                {config.showDeliveryCost && <th className="border border-black p-1">{getText('Vận Chuyển', 'Delivery')}</th>}
+                {config.showSgaP && <th className="border border-black p-1">{getText('Quản Lý & LN', 'S.G.A & P')}</th>}
               </tr>
             )}
           </thead>
@@ -219,29 +229,50 @@ export const QuotationPdfContent: React.FC<QuotationPdfContentProps> = ({
               const weightTinhKg = inp.m_tinh;
 
               let materialCostVnd = 0;
-              let processCostVnd = 0;
+              let formingCostVnd = 0;
+              let machiningCostVnd = 0;
+              let heatTreatCostVnd = 0;
+              let paintCostVnd = 0;
+              let packageCostVnd = 0;
+              let deliveryCostVnd = 0;
               let fallbackPrice = 0;
 
               if (seg === 'forging') {
                 materialCostVnd = res.C_mat_forging ?? 0;
-                processCostVnd = (res.C_ops_forging ?? 0) + (res.C_machining ?? 0) + (res.C_heat_treat ?? 0) + (res.C_paint ?? 0);
+                formingCostVnd = res.C_ops_forging ?? 0;
+                machiningCostVnd = res.C_machining ?? 0;
+                heatTreatCostVnd = res.C_heat_treat ?? 0;
+                paintCostVnd = res.C_paint ?? 0;
                 fallbackPrice = res.P_FORGING ?? 0;
               } else if (seg === 'casting') {
-                materialCostVnd = res.C_metal_casting ?? 0;
-                processCostVnd = (res.C_ops_casting ?? 0) + (res.C_part_b_total ?? 0) + (res.C_machining_casting ?? 0) + (res.C_heat_treat ?? 0) + (res.C_paint ?? 0);
+                materialCostVnd = 0; // As requested, set Material Cost to 0 for Casting
+                formingCostVnd = (res.C_metal_casting ?? 0) + (res.C_ops_casting ?? 0) + (res.C_part_b_total ?? 0);
+                machiningCostVnd = res.C_machining_casting ?? 0;
+                heatTreatCostVnd = res.C_heat_treat ?? 0;
+                paintCostVnd = res.C_paint ?? 0;
                 fallbackPrice = res.P_CASTING ?? 0;
               } else if (seg === 'sawing') {
                 materialCostVnd = res.C_mat_sawing ?? 0;
-                processCostVnd = (res.C_ops_sawing ?? 0) + (res.C_machining ?? 0) + (res.C_heat_treat ?? 0) + (res.C_paint ?? 0);
+                formingCostVnd = res.C_ops_sawing ?? 0;
+                machiningCostVnd = res.C_machining ?? 0;
+                heatTreatCostVnd = res.C_heat_treat ?? 0;
+                paintCostVnd = res.C_paint ?? 0;
                 fallbackPrice = res.P_SAWING ?? 0;
               } else if (seg === 'machining') {
                 materialCostVnd = 0;
-                processCostVnd = (res.C_machining ?? 0) + (res.C_heat_treat ?? 0) + (res.C_paint ?? 0);
+                formingCostVnd = 0;
+                machiningCostVnd = res.C_machining ?? 0;
+                heatTreatCostVnd = res.C_heat_treat ?? 0;
+                paintCostVnd = res.C_paint ?? 0;
                 fallbackPrice = res.P_MACHINING ?? 0;
               }
 
+              const finalWeight = inp.m_tinh || weightPhoiKg || weightChiKg || 0;
+              packageCostVnd = inp.DG_pack_kg !== undefined && inp.DG_pack_kg > 0 ? (inp.DG_pack_kg * finalWeight) : (inp.C_pack || 0);
+              deliveryCostVnd = finalWeight * (inp.DG_trans_kg || 0);
+
               const unitPriceVnd = q.final_quoted_price ?? fallbackPrice;
-              const sgaAndPVnd = unitPriceVnd - materialCostVnd - processCostVnd;
+              const sgaAndPVnd = unitPriceVnd - (materialCostVnd + formingCostVnd + machiningCostVnd + heatTreatCostVnd + paintCostVnd + packageCostVnd + deliveryCostVnd);
 
               const isSeparateTooling = (seg === 'forging' || seg === 'casting') && q.die_cost_treatment === 'separate';
               const toolingPriceVnd = seg === 'forging' ? inp.C_die_total : seg === 'casting' ? inp.C_pattern_total : 0;
@@ -290,9 +321,34 @@ export const QuotationPdfContent: React.FC<QuotationPdfContentProps> = ({
                       {formatNum(materialCostVnd)}
                     </td>
                   )}
-                  {config.showProcessCost && (
+                  {config.showFormingCost && (
                     <td className="border border-black p-1.5 font-mono text-right">
-                      {formatNum(processCostVnd)}
+                      {formatNum(formingCostVnd)}
+                    </td>
+                  )}
+                  {config.showMachiningCost && (
+                    <td className="border border-black p-1.5 font-mono text-right">
+                      {formatNum(machiningCostVnd)}
+                    </td>
+                  )}
+                  {config.showHeatTreatCost && (
+                    <td className="border border-black p-1.5 font-mono text-right">
+                      {formatNum(heatTreatCostVnd)}
+                    </td>
+                  )}
+                  {config.showPaintCost && (
+                    <td className="border border-black p-1.5 font-mono text-right">
+                      {formatNum(paintCostVnd)}
+                    </td>
+                  )}
+                  {config.showPackageCost && (
+                    <td className="border border-black p-1.5 font-mono text-right">
+                      {formatNum(packageCostVnd)}
+                    </td>
+                  )}
+                  {config.showDeliveryCost && (
+                    <td className="border border-black p-1.5 font-mono text-right">
+                      {formatNum(deliveryCostVnd)}
                     </td>
                   )}
                   {config.showSgaP && (
