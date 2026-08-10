@@ -18,7 +18,6 @@ import {
   CheckCircle,
   XCircle,
   Download,
-  Sliders,
 } from 'lucide-react';
 
 interface DocumentDetailModalProps {
