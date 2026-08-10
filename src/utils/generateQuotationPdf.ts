@@ -7,6 +7,7 @@ import { DISOCO_COMPANY_CONFIG } from '../config/company-config';
 // Import Fonts Base64
 import { RobotoRegularBase64 } from '../assets/fonts/Roboto-Regular';
 import { RobotoBoldBase64 } from '../assets/fonts/Roboto-Bold';
+import { RobotoItalicBase64 } from '../assets/fonts/Roboto-Italic';
 
 function removeVietnameseTones(str: string) {
   str = str.replace(/à|á|ạ|ả|ã|â|ầ|ấ|ậ|ẩ|ẫ|ă|ằ|ắ|ặ|ẳ|ẵ/g, "a");
@@ -79,6 +80,8 @@ export async function generateQuotationPdf(document: QuotationDocument) {
   doc.addFont('Roboto-Regular.ttf', 'Roboto', 'normal');
   doc.addFileToVFS('Roboto-Bold.ttf', RobotoBoldBase64);
   doc.addFont('Roboto-Bold.ttf', 'Roboto', 'bold');
+  doc.addFileToVFS('Roboto-Italic.ttf', RobotoItalicBase64);
+  doc.addFont('Roboto-Italic.ttf', 'Roboto', 'italic');
   
   doc.setFont('Roboto', 'normal');
 
