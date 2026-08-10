@@ -3,7 +3,7 @@ import type { QuotationDocument, DocumentDisplayConfig, DocumentRemarkLine } fro
 import { DEFAULT_DISPLAY_CONFIG } from '../../types/quotation-document';
 import { QuotationPdfContent } from './QuotationPdfContent';
 import { ArrowLeft, Check, Plus, Trash2, ArrowUp, ArrowDown, Eye, Sliders, Download, X } from 'lucide-react';
-import html2canvas from 'html2canvas';
+import html2canvas from 'html2canvas-pro';
 import { jsPDF } from 'jspdf';
 
 interface QuotationPreviewPanelProps {
