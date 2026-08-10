@@ -23,12 +23,6 @@ export const QuotationPdfContent: React.FC<QuotationPdfContentProps> = ({
   const hasCasting = items.some((it) => it.quote?.segment === 'casting');
   const isMixed = hasForging && hasCasting;
 
-  const formingCostHeader = lang === 'en'
-    ? (isMixed ? 'Forming Cost' : hasForging ? 'Forging Cost' : 'Casting Cost')
-    : lang === 'vi'
-    ? (isMixed ? 'Chi phí tạo phôi' : hasForging ? 'Chi phí rèn phôi' : 'Chi phí đúc phôi')
-    : (isMixed ? 'Chi phí tạo phôi / Forming Cost' : hasForging ? 'Rèn phôi / Forging Cost' : 'Đúc phôi / Casting Cost');
-
   // Count active cost columns
   const activeCostCols = [
     config.showMaterialCost,
@@ -222,10 +216,9 @@ export const QuotationPdfContent: React.FC<QuotationPdfContentProps> = ({
               const q = item.quote;
               if (!q) return null;
 
-              const isForging = q.segment === 'forging';
               const inp = q.inputs_json as any;
               const res = q.results_json as any;
-
+              const seg = q.segment;
               const weightChiKg = seg === 'casting' ? res.m_liquid : inp.m_chi;
               const weightPhoiKg = seg === 'casting' ? inp.m_cast : (res.m_phoi || inp.m_phoi);
               const weightTinhKg = inp.m_tinh;

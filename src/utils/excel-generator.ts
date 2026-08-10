@@ -29,15 +29,13 @@ export const exportDocumentToExcel = (document: QuotationDocument) => {
     const res = q?.results_json as any || {};
 
     const weightKg = isForging ? inp.m_phoi : inp.m_cast;
-    const formingCostVnd = isForging
-      ? (res.C_mat_forging || 0) + (res.C_ops_forging || 0)
-      : (res.C_metal_casting || 0) + (res.C_ops_casting || 0);
+    const materialCostVnd = isForging ? (res.C_mat_forging || 0) : (res.C_metal_casting || 0);
+    const processCostVnd = isForging 
+        ? (res.C_ops_forging || 0) + (res.C_machining || 0) + (res.C_heat_treat || 0) + (res.C_paint || 0)
+        : (res.C_ops_casting || 0) + (res.C_part_b_total || 0) + (res.C_machining_casting || 0) + (res.C_heat_treat || 0) + (res.C_paint || 0);
 
-    const machiningCostVnd = isForging ? res.C_machining || 0 : res.C_machining_casting || 0;
-    const packageCostVnd = inp.C_pack || 0;
-    const deliveryCostVnd = (weightKg || 0) * (inp.DG_trans_kg || 0);
     const unitPriceVnd = q?.final_quoted_price || (isForging ? res.P_FORGING : res.P_CASTING) || 0;
-    const sgaAndPVnd = unitPriceVnd - (formingCostVnd + machiningCostVnd + packageCostVnd + deliveryCostVnd);
+    const sgaAndPVnd = unitPriceVnd - materialCostVnd - processCostVnd;
 
     const isSeparateTooling = q?.die_cost_treatment === 'separate';
     const toolingPriceVnd = isForging ? inp.C_die_total : inp.C_pattern_total;
@@ -51,28 +49,28 @@ export const exportDocumentToExcel = (document: QuotationDocument) => {
       'Sản Lượng (Pcs/năm)': rfqItem?.annual_volume || 0,
     };
 
-    if (config.showWeight) {
-      rowData['Trọng lượng phôi (Kg)'] = weightKg ? Number(weightKg).toFixed(2) : '-';
+    if (config.showWeightChi) {
+      rowData['TL Chi (Kg)'] = (inp.m_chi || res.m_liquid) ? Number(inp.m_chi || res.m_liquid).toFixed(2) : '-';
+    }
+    if (config.showWeightPhoi) {
+      rowData['TL Phôi (Kg)'] = weightKg ? Number(weightKg).toFixed(2) : '-';
+    }
+    if (config.showWeightTinh) {
+      rowData['TL Tinh (Kg)'] = inp.m_tinh ? Number(inp.m_tinh).toFixed(2) : '-';
     }
 
     if (config.showMOQ) {
-      rowData['MOQ (pcs/lô)'] = inp.N_order || (rfqItem?.annual_volume ? Math.round(rfqItem.annual_volume / 12) : 1000);
+      rowData['MOQ (pcs/lô)'] = inp.quoted_moq || inp.N_order || (rfqItem?.annual_volume ? Math.round(rfqItem.annual_volume / 12) : 1000);
     }
 
-    if (config.showFormingCost) {
-      rowData[`Tạo phôi (${currency})`] = formatCurrencyValue(formingCostVnd, currency, exchangeRate);
+    if (config.showMaterialCost) {
+      rowData[`Vật Tư (${currency})`] = formatCurrencyValue(materialCostVnd, currency, exchangeRate);
     }
-    if (config.showMachiningCost) {
-      rowData[`Gia công (${currency})`] = formatCurrencyValue(machiningCostVnd, currency, exchangeRate);
-    }
-    if (config.showPackageCost) {
-      rowData[`Bao gói (${currency})`] = packageCostVnd > 0 ? formatCurrencyValue(packageCostVnd, currency, exchangeRate) : '-';
-    }
-    if (config.showDeliveryCost) {
-      rowData[`Vận chuyển (${currency})`] = deliveryCostVnd > 0 ? formatCurrencyValue(deliveryCostVnd, currency, exchangeRate) : '-';
+    if (config.showProcessCost) {
+      rowData[`Gia công & XLB (${currency})`] = formatCurrencyValue(processCostVnd, currency, exchangeRate);
     }
     if (config.showSgaP) {
-      rowData[`Quản lý & LN (${currency})`] = formatCurrencyValue(sgaAndPVnd, currency, exchangeRate);
+      rowData[`S.G.A&P (${currency})`] = formatCurrencyValue(sgaAndPVnd, currency, exchangeRate);
     }
 
     rowData[`Đơn Giá Báo (${currency})`] = formatCurrencyValue(unitPriceVnd, currency, exchangeRate);

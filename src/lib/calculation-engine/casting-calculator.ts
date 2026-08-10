@@ -36,7 +36,6 @@ export function calculateCastingPrice(input: CastingInput): CastingResult {
     C_coating = 0,
     C_QA = 0,
     C_machining_override,
-    machining_notes,
 
     // Section 4 — Pattern Amortization
     pattern_components = [],
