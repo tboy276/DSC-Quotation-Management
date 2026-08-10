@@ -18,11 +18,6 @@ export const QuotationPdfContent: React.FC<QuotationPdfContentProps> = ({
   const currency: CurrencyType = document.currency || 'VND';
   const lang = config.language || 'both';
 
-  // Check segment mix
-  const hasForging = items.some((it) => it.quote?.segment === 'forging');
-  const hasCasting = items.some((it) => it.quote?.segment === 'casting');
-  const isMixed = hasForging && hasCasting;
-
   // Count active cost columns
   const activeCostCols = [
     config.showMaterialCost,
