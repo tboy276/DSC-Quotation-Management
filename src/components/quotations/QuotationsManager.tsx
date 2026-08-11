@@ -570,17 +570,9 @@ export const QuotationsManager = () => {
   };
 
   const handleGoToCalculator = (quote: QuoteRecord) => {
-    const tech = quote.rfqItem?.technology_requirement || 'Rèn+Gia công';
-
-    let targetSegment = 'forging';
-    if (tech.includes('Phôi cưa') || tech.includes('Cưa')) {
-      targetSegment = 'sawing';
-    } else if (tech.includes('Chỉ gia công CNC') || tech.includes('Gia công CNC')) {
-      targetSegment = 'machining';
-    } else if (tech.includes('Đúc')) {
-      targetSegment = 'casting';
-    }
-
+    const tech = quote.rfqItem?.technology_requirement;
+    const family = getTechFamily(tech);
+    const targetSegment = family === 'unspecified' ? 'forging' : family;
     navigate(`/pricing-tools/${targetSegment}/${quote.rfq_item_id}`);
   };
 
