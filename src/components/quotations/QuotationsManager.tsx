@@ -26,6 +26,7 @@ import { useAuth } from '../../context/AuthContext';
 import { ActionButton } from '../ui/ActionButton';
 
 import { parseStructuredRfqText } from '../../utils/rfq-parser';
+import { getTechFamily } from '../../utils/tech-family';
 import { formatDate } from '../../lib/format-date';
 import * as XLSX from 'xlsx';
 import {
@@ -479,13 +480,6 @@ export const QuotationsManager = () => {
     }
 
     // Technology Segment Family Check
-    const getTechFamily = (tech?: string) => {
-      if (!tech) return 'forging';
-      if (tech.includes('Cưa')) return 'sawing';
-      if (tech.includes('Đúc')) return 'casting';
-      if (tech.includes('CNC')) return 'machining';
-      return 'forging';
-    };
     const firstTech = getTechFamily(selectedQuotes[0]?.rfqItem?.technology_requirement);
     const sameTech = selectedQuotes.every(
       (q) => getTechFamily(q.rfqItem?.technology_requirement) === firstTech
