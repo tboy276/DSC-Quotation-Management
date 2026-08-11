@@ -30,6 +30,8 @@ export const QuotationPdfContent: React.FC<QuotationPdfContentProps> = ({
     config.showSgaP,
   ].filter(Boolean).length;
 
+  const hasSubHeader = activeCostCols > 0;
+
   const formattedDate = new Date(document.quotation_date).toLocaleDateString(
     lang === 'vi' ? 'vi-VN' : 'en-US',
     {

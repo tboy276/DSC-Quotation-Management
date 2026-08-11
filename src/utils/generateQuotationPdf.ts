@@ -92,6 +92,7 @@ export async function generateQuotationPdf(document: QuotationDocument) {
 
   // Logo
   try {
+    const logoBase64 = await getBase64ImageFromUrl('https://res.cloudinary.com/ppzbydbc/image/upload/v1783387548/logo.png');
     // Original logo ratio is approx 2.14:1 (e.g., 3000x1400). Let's use 26x12.
     doc.addImage(logoBase64, 'PNG', margin, currentY, 26, 12);
   } catch (e) {
