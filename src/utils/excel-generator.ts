@@ -3,6 +3,7 @@ import type { QuotationDocument } from '../types/quotation-document';
 import { DEFAULT_DISPLAY_CONFIG } from '../types/quotation-document';
 import type { ForgingInput, CastingInput, ForgingResult, CastingResult } from '../lib/calculation-engine/types';
 import { formatCurrencyValue } from '../components/rfq/RealtimeSummaryPanel';
+import { getToolingColumnFlags } from './quotation-tooling-columns';
 
 /**
  * Export Quotation Document to multi-sheet Excel file (.xlsx)
@@ -21,10 +22,7 @@ export const exportDocumentToExcel = (document: QuotationDocument) => {
   // ----------------------------------------------------
   // SHEET 1: TỔNG HỢP VĂN BẢN BÁO GIÁ (Summary Sheet)
   // ----------------------------------------------------
-  const showDieAmortizedCol = document.items.some(item => {
-    const seg = item.quote?.segment;
-    return seg === 'forging' || seg === 'casting';
-  });
+  const { showDieAmortizedCost, showToolingPrice, showToolingUsage } = getToolingColumnFlags(document.items, config);
 
   const summaryRows = document.items.map((item, idx) => {
     const q = item.quote;
@@ -129,7 +127,7 @@ export const exportDocumentToExcel = (document: QuotationDocument) => {
     if (config.showPaintCost) {
       rowData[`Sơn/Bề Mặt (${currency})`] = formatCurrencyValue(paintCostVnd, currency, exchangeRate);
     }
-    if (showDieAmortizedCol) {
+    if (showDieAmortizedCost) {
       rowData[`Khuôn (${currency}/cái)`] = (isForging || isCasting) ? (q?.die_cost_treatment === 'amortized' ? formatCurrencyValue(dieAmortizedVnd, currency, exchangeRate) : '-') : '';
     }
     if (config.showPackageCost) {
@@ -144,11 +142,11 @@ export const exportDocumentToExcel = (document: QuotationDocument) => {
 
     rowData[`Đơn Giá Báo (${currency})`] = formatCurrencyValue(unitPriceVnd, currency, exchangeRate);
 
-    if (config.showToolingPrice) {
+    if (showToolingPrice) {
       rowData[`Tiền Khuôn (${currency})`] = isSeparateTooling ? formatCurrencyValue(toolingPriceVnd || 0, currency, exchangeRate) : '-';
     }
-    if (config.showToolingUsage) {
-      rowData['Tuổi Thọ Khuôn (Lần)'] = toolingLife || '-';
+    if (showToolingUsage) {
+      rowData['Tuổi Thọ Khuôn (Lần)'] = isSeparateTooling ? toolingLife || '-' : '-';
     }
 
     rowData['Điều Kiện Giao Hàng'] = document.trade_terms || 'FOB';

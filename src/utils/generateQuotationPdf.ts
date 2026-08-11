@@ -2,12 +2,14 @@ import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import type { QuotationDocument } from '../types/quotation-document';
 import { DEFAULT_DISPLAY_CONFIG } from '../types/quotation-document';
-import { DISOCO_COMPANY_CONFIG } from '../config/company-config';
+
+import { DISOCO_COMPANY_CONFIG, DOCUMENT_FORM_CODE, DOCUMENT_REVISION_NO, DOCUMENT_ISSUE_DATE } from '../config/company-config';
 
 // Import Fonts Base64
 import { RobotoRegularBase64 } from '../assets/fonts/Roboto-Regular';
 import { RobotoBoldBase64 } from '../assets/fonts/Roboto-Bold';
 import { RobotoItalicBase64 } from '../assets/fonts/Roboto-Italic';
+import { getToolingColumnFlags } from './quotation-tooling-columns';
 
 function removeVietnameseTones(str: string) {
   str = str.replace(/à|á|ạ|ả|ã|â|ầ|ấ|ậ|ẩ|ẫ|ă|ằ|ắ|ặ|ẳ|ẵ/g, "a");
@@ -172,10 +174,7 @@ export async function generateQuotationPdf(document: QuotationDocument) {
   // Table Setup
   const items = [...(document.items || [])].sort((a, b) => a.display_order - b.display_order);
   
-  const showDieAmortizedCol = (document.items || []).some(item => {
-    const seg = item.quote?.segment;
-    return seg === 'forging' || seg === 'casting';
-  });
+  const { showDieAmortizedCost, showToolingPrice, showToolingUsage } = getToolingColumnFlags(items, config);
 
   const activeCostCols = [
     { key: 'showMaterialCost', labelVi: 'Vật Tư', labelEn: 'Material' },
@@ -183,7 +182,7 @@ export async function generateQuotationPdf(document: QuotationDocument) {
     { key: 'showMachiningCost', labelVi: 'Gia Công CNC', labelEn: 'Machining' },
     { key: 'showHeatTreatCost', labelVi: 'Nhiệt Luyện', labelEn: 'Heat Treat' },
     { key: 'showPaintCost', labelVi: 'Sơn/Bề Mặt', labelEn: 'Paint' },
-    ...(showDieAmortizedCol ? [{ key: 'showDieAmortizedCost', labelVi: 'Khuôn', labelEn: 'Die', alwaysShow: true }] : []),
+    ...(showDieAmortizedCost ? [{ key: 'showDieAmortizedCost', labelVi: 'Khuôn', labelEn: 'Die', alwaysShow: true }] : []),
     { key: 'showPackageCost', labelVi: 'Bao Gói', labelEn: 'Package' },
     { key: 'showDeliveryCost', labelVi: 'Vận Chuyển', labelEn: 'Delivery' },
     { key: 'showSgaP', labelVi: 'Quản Lý & LN', labelEn: 'S.G.A & P' }
@@ -209,8 +208,8 @@ export async function generateQuotationPdf(document: QuotationDocument) {
 
   headRow1.push({ content: getText('Đơn giá', 'Unit Price') + `\n(${currency})`, rowSpan: hasSubHeader ? 2 : 1 });
 
-  if (config.showToolingPrice) headRow1.push({ content: getText('Tiền khuôn', 'Tooling price') + `\n(${currency}/Bộ)`, rowSpan: hasSubHeader ? 2 : 1 });
-  if (config.showToolingUsage) headRow1.push({ content: getText('Tuổi thọ khuôn', 'Tooling usage') + '\n(Cái/bộ)', rowSpan: hasSubHeader ? 2 : 1 });
+  if (showToolingPrice) headRow1.push({ content: getText('Tiền khuôn', 'Tooling price') + `\n(${currency}/Bộ)`, rowSpan: hasSubHeader ? 2 : 1 });
+  if (showToolingUsage) headRow1.push({ content: getText('Tuổi thọ khuôn', 'Tooling usage') + '\n(Cái/bộ)', rowSpan: hasSubHeader ? 2 : 1 });
 
   const headRow2: any[] = [];
   if (activeCostCols.length > 0) {
@@ -307,18 +306,18 @@ export async function generateQuotationPdf(document: QuotationDocument) {
     if (config.showMachiningCost) row.push(formatNum(machiningCostVnd));
     if (config.showHeatTreatCost) row.push(formatNum(heatTreatCostVnd));
     if (config.showPaintCost) row.push(formatNum(paintCostVnd));
-    if (showDieAmortizedCol) row.push((seg === 'forging' || seg === 'casting') ? (q.die_cost_treatment === 'amortized' ? formatNum(dieAmortizedVnd) : '-') : '');
+    if (showDieAmortizedCost) row.push((seg === 'forging' || seg === 'casting') ? (q.die_cost_treatment === 'amortized' ? formatNum(dieAmortizedVnd) : '-') : '');
     if (config.showPackageCost) row.push(formatNum(packageCostVnd));
     if (config.showDeliveryCost) row.push(formatNum(deliveryCostVnd));
     if (config.showSgaP) row.push(formatNum(sgaAndPVnd));
 
     row.push(formatNum(unitPriceVnd));
 
-    if (config.showToolingPrice) {
+    if (showToolingPrice) {
       row.push(isSeparateTooling ? formatNum(toolingPriceVnd || 0) : "-");
     }
-    if (config.showToolingUsage) {
-      row.push((toolingLife || 0).toLocaleString('vi-VN'));
+    if (showToolingUsage) {
+      row.push(isSeparateTooling ? (toolingLife || 0).toLocaleString('vi-VN') : "-");
     }
 
     return row;
@@ -403,12 +402,13 @@ export async function generateQuotationPdf(document: QuotationDocument) {
     doc.setPage(i);
     doc.setFont('Roboto', 'italic');
     doc.setFontSize(8);
-    // Left: Ma hieu
-    doc.text(`BM/05-000-006`, margin, pageHeight - 8);
+    // Left: Ma hieu + Ban hanh lan
+    doc.text(DOCUMENT_FORM_CODE, margin, pageHeight - 11);
+    doc.text(DOCUMENT_REVISION_NO, margin, pageHeight - 7);
     // Center: Ngay ban hanh
-    doc.text(`Ban hành ngày: 01/3/2025`, pageWidth / 2, pageHeight - 8, { align: 'center' });
+    doc.text(DOCUMENT_ISSUE_DATE, pageWidth / 2, pageHeight - 11, { align: 'center' });
     // Right: Trang i/totalPages
-    doc.text(`Trang ${i}/${totalPages}`, pageWidth - margin, pageHeight - 8, { align: 'right' });
+    doc.text(`Trang ${i}/${totalPages}`, pageWidth - margin, pageHeight - 11, { align: 'right' });
   }
 
   const filename = generatePdfFilename(document.customer_name, document.id, document.document_code);

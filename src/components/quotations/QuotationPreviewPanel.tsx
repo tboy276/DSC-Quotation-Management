@@ -6,6 +6,7 @@ import type { TradeTermType } from '../../store/useQuotationStore';
 import { QuotationPdfContent } from './QuotationPdfContent';
 import { ArrowLeft, Check, Plus, Trash2, ArrowUp, ArrowDown, Eye, Sliders, Download, X } from 'lucide-react';
 import { generateQuotationPdf } from '../../utils/generateQuotationPdf';
+import { getToolingColumnFlags } from '../../utils/quotation-tooling-columns';
 
 export interface DocFields {
   contact_person: string;
@@ -47,6 +48,8 @@ export const QuotationPreviewPanel: React.FC<QuotationPreviewPanelProps> = ({
   const liveDocument = { ...document, ...docFields };
 
   const [isExportingPdf, setIsExportingPdf] = useState(false);
+
+  const { hasSeparateDieItem } = getToolingColumnFlags(document.items, config);
 
   const toggleColumn = (key: keyof Omit<DocumentDisplayConfig, 'language' | 'remarks'>) => {
     if (readOnly) return;
@@ -296,14 +299,14 @@ export const QuotationPreviewPanel: React.FC<QuotationPreviewPanelProps> = ({
               ].map((col) => (
                 <label
                   key={col.key}
-                  className="flex items-center space-x-2 text-[11px] font-medium text-[#111111] cursor-pointer hover:text-black"
+                  className={`flex items-center space-x-2 text-[11px] font-medium text-[#111111] cursor-pointer hover:text-black ${(!hasSeparateDieItem && (col.key === 'showToolingPrice' || col.key === 'showToolingUsage')) ? 'opacity-50 cursor-not-allowed' : ''}`}
                 >
                   <input
                     type="checkbox"
-                    disabled={readOnly}
+                    disabled={readOnly || (!hasSeparateDieItem && (col.key === 'showToolingPrice' || col.key === 'showToolingUsage'))}
                     checked={!!(config as any)[col.key]}
                     onChange={() => toggleColumn(col.key as any)}
-                    className="rounded accent-[#111111] w-3.5 h-3.5 cursor-pointer"
+                    className="rounded accent-[#111111] w-3.5 h-3.5 cursor-pointer disabled:cursor-not-allowed"
                   />
                   <span>{col.label}</span>
                 </label>
