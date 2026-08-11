@@ -199,14 +199,14 @@ export const QuotationPdfContent: React.FC<QuotationPdfContentProps> = ({
                 <br />({currency})
               </th>
 
-              {config.showToolingPrice && (
+              {showToolingPrice && (
                 <th rowSpan={2} className="border border-black p-1.5 w-20">
                   {getText('Tiền khuôn', 'Tooling price')}
                   <br />({currency}/Bộ)
                 </th>
               )}
 
-              {config.showToolingUsage && (
+              {showToolingUsage && (
                 <th rowSpan={2} className="border border-black p-1.5 w-16">
                   {getText('Tuổi thọ khuôn', 'Tooling usage')}
                   <br />(Cái/bộ)
