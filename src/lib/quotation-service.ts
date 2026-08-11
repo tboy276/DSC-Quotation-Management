@@ -307,12 +307,12 @@ export const createRfqDossierWithItems = async (
   }
   
   let dbDossier: any = null;
-  const maxRetries = dossier.rfq_code ? 1 : 5; // Chỉ retry nếu không truyền mã rfq_code cố định
+  const maxRetries = 5; // Luôn cho phép retry tối đa 5 lần
   let attempts = 0;
   let lastError: any = null;
   
   while (attempts < maxRetries) {
-    if (!dossier.rfq_code) {
+    if (!rfqCode || (attempts > 0 && lastError?.code === '23505')) {
       rfqCode = await generateNextRfqCode(dateStr);
     }
     
@@ -338,7 +338,7 @@ export const createRfqDossierWithItems = async (
     if (error) {
       lastError = error;
       // 23505 = unique_violation trong PostgreSQL
-      if (error.code === '23505' && !dossier.rfq_code) {
+      if (error.code === '23505') {
         attempts++;
         continue; // Thử lại với mã tiếp theo
       }

@@ -91,5 +91,50 @@ describe('quotation-service', () => {
       expect(insertAttempt).toBe(2);
       expect(result).toHaveProperty('id', 'dossier-1');
     });
+
+    it('should retry insertion on unique_violation even if rfq_code is provided', async () => {
+      const mockInsert = vi.fn().mockReturnThis();
+      
+      let insertAttempt = 0;
+      (supabase.from as any).mockImplementation((table: string) => {
+        if (table === 'rfq_items') {
+          return {
+            insert: vi.fn().mockReturnThis(),
+            select: vi.fn().mockResolvedValue({ data: [], error: null }),
+          };
+        }
+        return {
+          select: vi.fn().mockImplementation((col) => {
+            if (col === 'rfq_code') {
+              return {
+                like: vi.fn().mockResolvedValue({ data: [{ rfq_code: '20260811-001' }], error: null }),
+              };
+            }
+            return {
+              single: vi.fn().mockImplementation(() => {
+                insertAttempt++;
+                if (insertAttempt === 1) {
+                  return Promise.resolve({ data: null, error: { code: '23505', message: 'duplicate key value violates unique constraint' } });
+                }
+                return Promise.resolve({ data: { id: 'dossier-2', rfq_code: '20260811-002' }, error: null });
+              }),
+            };
+          }),
+          insert: mockInsert,
+        };
+      });
+
+      const dossier = {
+        customer_name: 'Test Customer',
+        rfq_received_date: '2026-08-11',
+        customer_deadline: '2026-08-18',
+        rfq_code: '20260811-001',
+      };
+      
+      const result = await createRfqDossierWithItems(dossier, [], 'test@test.com');
+      
+      expect(insertAttempt).toBe(2);
+      expect(result).toHaveProperty('rfq_code', '20260811-002');
+    });
   });
 });

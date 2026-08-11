@@ -632,7 +632,6 @@ export const QuotationsManager = () => {
       const dossierData = {
         customer_name: newCustomerName.trim(),
         customer_address: newCustomerAddress.trim() || undefined,
-        rfq_code: newRfqCode.trim() || undefined,
         customer_contact_person: newCustomerContactPerson.trim() || undefined,
         rfq_received_date: newRfqReceivedDate,
         customer_deadline: newCustomerDeadline,
@@ -652,7 +651,9 @@ export const QuotationsManager = () => {
         is_feasible: true,
       }));
 
-      await createRfqDossierWithItems(dossierData, itemsData, currentUserEmail);
+      const newDossier = await createRfqDossierWithItems(dossierData, itemsData, currentUserEmail);
+
+      setMsg({ text: `Đã tạo Hồ sơ RFQ ${newDossier.rfq_code || ''} thành công với ${itemsData.length} sản phẩm!` });
 
       setShowNewRfqModal(false);
       setNewCustomerName('');
