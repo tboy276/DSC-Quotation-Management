@@ -87,6 +87,18 @@ export interface QuotationDocumentItem {
 
 export interface QuotationDocument {
   id: string;
+  /**
+   * Mã báo giá gộp, dạng BG-[rfq_code]-rev-XX. Được hệ thống tự sinh khi tạo văn bản,
+   * bất biến sau khi phát hành. Dùng để tra cứu ngược từ PDF về RFQ gốc.
+   */
+  document_code?: string;
+  /**
+   * Mã RFQ cha (định dạng YYYYMMDD-XXX) mà TẤT CẢ các dòng sản phẩm trong văn bản này
+   * bắt buộc phải cùng thuộc về. Lưu denormalized để tra cứu nhanh không cần join.
+   */
+  rfq_code?: string;
+  /** Số thứ tự phiên bản báo giá đã phát hành cho cùng 1 rfq_code (bắt đầu từ 1). */
+  revision?: number;
   customer_name: string;
   contact_person: string; // Attn
   contact_email: string;
@@ -104,6 +116,11 @@ export interface QuotationDocument {
 }
 
 export interface CreateQuotationDocumentPayload {
+  /**
+   * Mã RFQ cha chung của toàn bộ các dòng được chọn. Bắt buộc — service sẽ từ chối
+   * tạo văn bản nếu không có giá trị này.
+   */
+  rfq_code: string;
   customer_name: string;
   contact_person: string;
   contact_email: string;

@@ -30,7 +30,7 @@ function removeVietnameseTones(str: string) {
   return str;
 }
 
-export function generatePdfFilename(customerName: string, id: string): string {
+export function generatePdfFilename(customerName: string, id: string, documentCode?: string): string {
   const dateStr = new Date().toISOString().split('T')[0].replace(/-/g, '');
   const shortId = id.substring(0, 8);
   let slugName = customerName || 'KhachHang';
@@ -38,7 +38,9 @@ export function generatePdfFilename(customerName: string, id: string): string {
   slugName = slugName.replace(/[^a-zA-Z0-9]/g, '_');
   slugName = slugName.replace(/_+/g, '_');
   slugName = slugName.replace(/^_|_$/g, '');
-  return `DISOCO_BaoGia_${slugName}_${dateStr}_${shortId}.pdf`;
+  // Ưu tiên dùng document_code (BG-[rfq_code]-rev-XX) để tên file tự thể hiện mã tra cứu
+  const codePart = documentCode ? documentCode.replace(/[^a-zA-Z0-9-]/g, '_') : shortId;
+  return `DISOCO_BaoGia_${slugName}_${dateStr}_${codePart}.pdf`;
 }
 
 async function getBase64ImageFromUrl(imageUrl: string): Promise<string> {
@@ -135,6 +137,15 @@ export async function generateQuotationPdf(document: QuotationDocument) {
   doc.setFontSize(16);
   const titleText = lang === 'vi' ? 'BẢNG BÁO GIÁ' : lang === 'en' ? 'QUOTATION' : 'THƯ BÁO GIÁ / QUOTATION';
   doc.text(titleText, pageWidth / 2, currentY, { align: 'center' });
+
+  // Document Code (Số báo giá) — cho phép tra cứu ngược về RFQ gốc
+  if (document.document_code) {
+    currentY += 5;
+    doc.setFont('Roboto', 'bold');
+    doc.setFontSize(9);
+    const noLabel = lang === 'vi' ? 'Số' : 'No.';
+    doc.text(`${noLabel}: ${document.document_code}`, pageWidth / 2, currentY, { align: 'center' });
+  }
 
   // Customer Info
   currentY += 8;
@@ -400,6 +411,6 @@ export async function generateQuotationPdf(document: QuotationDocument) {
     doc.text(`Trang ${i}/${totalPages}`, pageWidth - margin, pageHeight - 8, { align: 'right' });
   }
 
-  const filename = generatePdfFilename(document.customer_name, document.id);
+  const filename = generatePdfFilename(document.customer_name, document.id, document.document_code);
   doc.save(filename);
 }

@@ -7,7 +7,7 @@ import { createQuotationDocument, DEFAULT_PAYMENT_TERMS, DEFAULT_DELIVERY_NOTES 
 import { formatCurrencyValue } from '../rfq/RealtimeSummaryPanel';
 import { Modal } from '../ui/Modal';
 import { QuotationPreviewPanel } from './QuotationPreviewPanel';
-import { FileText, Check, Building2, ArrowRight, AlertTriangle } from 'lucide-react';
+import { FileText, Check, Building2, ArrowRight, AlertTriangle, Hash } from 'lucide-react';
 import { ActionButton } from '../ui/ActionButton';
 import { useAuth } from '../../context/AuthContext';
 
@@ -36,6 +36,7 @@ export const CreateDocumentModal = ({
   const [allReadyQuotes, setAllReadyQuotes] = useState<QuoteRecord[]>([]);
   const [customerOptions, setCustomerOptions] = useState<string[]>([]);
   const [selectedCustomer, setSelectedCustomer] = useState<string>('');
+  const [selectedRfqCode, setSelectedRfqCode] = useState<string>('');
   const [selectedQuoteIds, setSelectedQuoteIds] = useState<string[]>([]);
   const [tradeTermWarning, setTradeTermWarning] = useState<string | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
@@ -86,9 +87,15 @@ export const CreateDocumentModal = ({
         initialSelectedQuotes[0]?.rfq?.customer_name || customers[0] || '';
       setSelectedCustomer(initialCustomer);
 
-      // Default selected IDs matching selected customer & same Trade Term
+      // Default RFQ code: theo dòng đầu tiên được truyền vào (nếu có)
+      const initialRfqCode = initialSelectedQuotes[0]?.rfq?.rfq_code || '';
+      setSelectedRfqCode(initialRfqCode);
+
+      // Default selected IDs: cùng khách hàng + CÙNG 1 MÃ RFQ CHA + cùng Trade Term
       const matchingQuotes = initialSelectedQuotes.filter(
-        (q) => (q.rfq?.customer_name || '') === initialCustomer
+        (q) =>
+          (q.rfq?.customer_name || '') === initialCustomer &&
+          (!initialRfqCode || (q.rfq?.rfq_code || '') === initialRfqCode)
       );
 
       if (matchingQuotes.length > 0) {
@@ -105,9 +112,22 @@ export const CreateDocumentModal = ({
     }
   };
 
-  // Filter available items for the selected customer ONLY
+  // Danh sách mã RFQ cha sẵn có (có dòng READY_FOR_QUOTE) của khách hàng đang chọn
+  const rfqCodeOptionsForCustomer = Array.from(
+    new Set(
+      allReadyQuotes
+        .filter((q) => (q.rfq?.customer_name || '') === selectedCustomer)
+        .map((q) => q.rfq?.rfq_code || '')
+        .filter(Boolean)
+    )
+  );
+
+  // Chỉ liệt kê các dòng CÙNG khách hàng VÀ CÙNG 1 mã RFQ cha đang chọn
+  // (Quy tắc bắt buộc: 1 văn bản báo giá gộp chỉ chứa các dòng của 1 rfq_code duy nhất)
   const availableItemsForCustomer = allReadyQuotes.filter(
-    (q) => (q.rfq?.customer_name || '') === selectedCustomer
+    (q) =>
+      (q.rfq?.customer_name || '') === selectedCustomer &&
+      (!selectedRfqCode || (q.rfq?.rfq_code || '') === selectedRfqCode)
   );
 
   const selectedQuoteObjects = allReadyQuotes.filter((q) =>
@@ -117,7 +137,45 @@ export const CreateDocumentModal = ({
   const handleCustomerChange = (cust: string) => {
     setSelectedCustomer(cust);
     setTradeTermWarning(null);
-    const matching = allReadyQuotes.filter((q) => (q.rfq?.customer_name || '') === cust);
+
+    const rfqCodesForCust = Array.from(
+      new Set(
+        allReadyQuotes
+          .filter((q) => (q.rfq?.customer_name || '') === cust)
+          .map((q) => q.rfq?.rfq_code || '')
+          .filter(Boolean)
+      )
+    );
+    // Nếu khách hàng chỉ có đúng 1 mã RFQ sẵn sàng báo giá thì tự động chọn luôn
+    const nextRfqCode = rfqCodesForCust.length === 1 ? rfqCodesForCust[0] : '';
+    setSelectedRfqCode(nextRfqCode);
+
+    const matching = allReadyQuotes.filter(
+      (q) =>
+        (q.rfq?.customer_name || '') === cust &&
+        (!nextRfqCode || (q.rfq?.rfq_code || '') === nextRfqCode)
+    );
+    if (matching.length > 0) {
+      const firstTerm = matching[0].rfq?.trade_terms;
+      const validQuotes = firstTerm
+        ? matching.filter((q) => !q.rfq?.trade_terms || q.rfq.trade_terms === firstTerm)
+        : matching;
+      setSelectedQuoteIds(validQuotes.map((q) => q.id));
+      if (firstTerm) setTradeTerms(firstTerm);
+    } else {
+      setSelectedQuoteIds([]);
+    }
+  };
+
+  const handleRfqCodeChange = (rfqCode: string) => {
+    setSelectedRfqCode(rfqCode);
+    setTradeTermWarning(null);
+
+    const matching = allReadyQuotes.filter(
+      (q) =>
+        (q.rfq?.customer_name || '') === selectedCustomer &&
+        (q.rfq?.rfq_code || '') === rfqCode
+    );
     if (matching.length > 0) {
       const firstTerm = matching[0].rfq?.trade_terms;
       const validQuotes = firstTerm
@@ -139,10 +197,27 @@ export const CreateDocumentModal = ({
       return;
     }
 
-    // Checking new quote: Check Trade Term consistency (A0)
+    // Checking new quote: Check RFQ code consistency (mọi dòng trong văn bản BẮT BUỘC cùng 1 rfq_code)
     const targetQuote = allReadyQuotes.find((q) => q.id === id);
     if (!targetQuote) return;
 
+    const targetRfqCode = targetQuote.rfq?.rfq_code;
+    const currentSelectedRfqCodes = selectedQuoteObjects
+      .map((q) => q.rfq?.rfq_code)
+      .filter(Boolean) as string[];
+
+    if (currentSelectedRfqCodes.length > 0 && targetRfqCode) {
+      const existingRfqCode = currentSelectedRfqCodes[0];
+      if (targetRfqCode !== existingRfqCode) {
+        const prodName = targetQuote.rfqItem?.product_name || 'Chi tiết';
+        setTradeTermWarning(
+          `Không thể gộp: "${prodName}" thuộc Mã RFQ [${targetRfqCode}] khác với các sản phẩm khác trong văn bản ([${existingRfqCode}]). Mỗi văn bản báo giá gộp chỉ được chứa 1 mã RFQ cha duy nhất.`
+        );
+        return;
+      }
+    }
+
+    // Check Trade Term consistency (A0)
     const targetTerm = targetQuote.rfq?.trade_terms;
 
     // Check currently selected items' trade terms
@@ -165,21 +240,25 @@ export const CreateDocumentModal = ({
     if (targetTerm) {
       setTradeTerms(targetTerm);
     }
+    if (targetRfqCode && !selectedRfqCode) {
+      setSelectedRfqCode(targetRfqCode);
+    }
   };
 
   const handleGoToPreview = (e?: React.FormEvent) => {
     if (e) e.preventDefault();
-    if (selectedQuoteIds.length === 0 || !selectedCustomer.trim()) return;
+    if (selectedQuoteIds.length === 0 || !selectedCustomer.trim() || !selectedRfqCode.trim()) return;
     setStep('preview');
   };
 
   const handleConfirmFinalSubmit = async (customConfig?: DocumentDisplayConfig) => {
-    if (selectedQuoteIds.length === 0 || !selectedCustomer.trim()) return;
+    if (selectedQuoteIds.length === 0 || !selectedCustomer.trim() || !selectedRfqCode.trim()) return;
 
     setSubmitting(true);
 
     try {
       await createQuotationDocument({
+        rfq_code: selectedRfqCode,
         customer_name: selectedCustomer,
         contact_person: contactPerson,
         contact_email: contactEmail,
@@ -210,6 +289,8 @@ export const CreateDocumentModal = ({
   // Construct temp document object for preview panel
   const tempDocument: QuotationDocument = {
     id: `PREVIEW-${Date.now()}`,
+    document_code: selectedRfqCode ? `BG-${selectedRfqCode}-rev-XX` : undefined,
+    rfq_code: selectedRfqCode || undefined,
     customer_name: selectedCustomer || 'Tên Khách Hàng',
     contact_person: contactPerson,
     contact_email: contactEmail,
@@ -246,7 +327,7 @@ export const CreateDocumentModal = ({
         }
         subtitle={
           step === 'form'
-            ? 'Bước 1/2: Chọn mã sản phẩm cùng Khách hàng & Trade Term'
+            ? 'Bước 1/2: Chọn mã sản phẩm cùng Khách hàng, cùng 1 Mã RFQ & cùng Trade Term'
             : `Bước 2/2: Bật/tắt cột chi phí & dòng ghi chú trước khi phát hành cho ${selectedCustomer}`
         }
         footer={
@@ -259,7 +340,7 @@ export const CreateDocumentModal = ({
               />
               <ActionButton
                 type="button"
-                disabled={selectedQuoteIds.length === 0}
+                disabled={selectedQuoteIds.length === 0 || !selectedRfqCode.trim()}
                 onClick={() => handleGoToPreview()}
                 variant="primary"
                 icon={ArrowRight}
@@ -310,12 +391,46 @@ export const CreateDocumentModal = ({
               </select>
             </div>
 
-            {/* Step 2: Select Items for Quote Document */}
+            {/* Step 1b: RFQ Code Selection — BẮT BUỘC, mỗi văn bản chỉ gộp 1 mã RFQ cha */}
             {selectedCustomer && (
+              <div className="p-3.5 bg-[#FBFBFA] border border-[#EAEAEA] rounded-[8px] space-y-2">
+                <div className="flex items-center space-x-2">
+                  <Hash className="w-3.5 h-3.5 text-[#111111]" />
+                  <h4 className="text-[11px] font-bold text-[#787774] uppercase tracking-wider">
+                    Bước 1b: Chọn Mã RFQ Cha (Mỗi Văn Bản Chỉ Gộp 1 Mã RFQ)
+                  </h4>
+                </div>
+
+                {rfqCodeOptionsForCustomer.length === 0 ? (
+                  <p className="text-xs text-[#787774] italic p-2">
+                    Khách hàng này chưa có RFQ nào có dòng sản phẩm READY_FOR_QUOTE.
+                  </p>
+                ) : (
+                  <select
+                    value={selectedRfqCode}
+                    onChange={(e) => handleRfqCodeChange(e.target.value)}
+                    className="w-full p-2 border border-[#EAEAEA] bg-white rounded-[6px] text-xs font-bold font-mono text-[#111111] focus:outline-none focus:border-[#111111]"
+                  >
+                    <option value="">-- Chọn mã RFQ cha --</option>
+                    {rfqCodeOptionsForCustomer.map((code) => (
+                      <option key={code} value={code}>
+                        {code}
+                      </option>
+                    ))}
+                  </select>
+                )}
+                <p className="text-[10px] text-[#787774]">
+                  Mã báo giá gộp sẽ được tự động sinh dạng <strong className="font-mono">BG-{selectedRfqCode || '[rfq_code]'}-rev-XX</strong>, cho phép tra cứu ngược về RFQ gốc từ bản PDF.
+                </p>
+              </div>
+            )}
+
+            {/* Step 2: Select Items for Quote Document */}
+            {selectedCustomer && selectedRfqCode && (
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <h4 className="text-[11px] font-bold text-[#787774] uppercase tracking-wider">
-                    Bước 2: Chọn Đa Sản Phẩm Thuộc "{selectedCustomer}" ({availableItemsForCustomer.length} sẵn sàng)
+                    Bước 2: Chọn Đa Sản Phẩm Thuộc RFQ "{selectedRfqCode}" ({availableItemsForCustomer.length} sẵn sàng)
                   </h4>
                   <span className="text-[10px] text-[#787774] font-mono">
                     Đã chọn {selectedQuoteIds.length}/{availableItemsForCustomer.length} sản phẩm

@@ -94,8 +94,8 @@ export const DocumentDetailModal = ({
         onClose={onClose}
         size="2xl"
         icon={<FileText className="w-4 h-4" />}
-        title={`Chi Tiết Văn Bản Báo Giá #${document.id.substring(0, 10)}`}
-        subtitle={`Tên khách hàng: ${document.customer_name} | Ngày lập: ${formatDate(document.quotation_date)}`}
+        title={`Chi Tiết Văn Bản Báo Giá ${document.document_code || `#${document.id.substring(0, 10)}`}`}
+        subtitle={`Mã RFQ: ${document.rfq_code || 'N/A'} | Khách hàng: ${document.customer_name} | Ngày lập: ${formatDate(document.quotation_date)}`}
         headerExtra={
           <div className="flex items-center space-x-2 mr-2">
             <button
@@ -129,6 +129,14 @@ export const DocumentDetailModal = ({
           {/* Thông Tin Văn Bản Báo Giá */}
           <div className="bg-[#FBFBFA] border border-[#EAEAEA] rounded-[8px] p-3.5 space-y-2">
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 text-xs">
+              <div>
+                <span className="text-[#787774] block text-[10px]">Mã Báo Giá:</span>
+                <strong className="font-mono text-[#111111]">{document.document_code || 'N/A'}</strong>
+              </div>
+              <div>
+                <span className="text-[#787774] block text-[10px]">Mã RFQ Cha:</span>
+                <strong className="font-mono text-[#111111]">{document.rfq_code || 'N/A'}</strong>
+              </div>
               <div>
                 <span className="text-[#787774] block text-[10px]">Người nhận (Attn):</span>
                 <strong className="text-[#111111]">{document.contact_person || 'N/A'}</strong>

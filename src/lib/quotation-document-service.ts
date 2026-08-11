@@ -65,16 +65,56 @@ export const fetchQuotationDocuments = async (): Promise<QuotationDocument[]> =>
 };
 
 /**
+ * Xác định số revision (phiên bản) kế tiếp cho 1 mã RFQ cha, dựa trên số văn bản báo giá
+ * gộp đã từng phát hành cho cùng rfq_code đó. Bắt đầu từ 1.
+ */
+const getNextRevisionForRfqCode = async (rfqCode: string): Promise<number> => {
+  const { data, error } = await supabase
+    .from('quotation_documents')
+    .select('revision')
+    .eq('rfq_code', rfqCode)
+    .order('revision', { ascending: false })
+    .limit(1);
+
+  if (error) {
+    throw new Error(`Lỗi truy vấn số revision cho RFQ ${rfqCode}: ${error.message}`);
+  }
+
+  const maxRevision = data && data.length > 0 ? (data[0].revision || 0) : 0;
+  return maxRevision + 1;
+};
+
+/**
+ * Sinh mã Văn Bản Báo Giá theo quy tắc: BG-[rfq_code]-rev-XX
+ */
+const buildDocumentCode = (rfqCode: string, revision: number): string =>
+  `BG-${rfqCode}-rev-${String(revision).padStart(2, '0')}`;
+
+/**
  * Create a new Quotation Document with grouped quote items and mark items QUOTED_SENT
  * Strictly inserts into Supabase DB! Throws explicit error if write fails.
  */
 export const createQuotationDocument = async (
   payload: CreateQuotationDocumentPayload
 ): Promise<QuotationDocument> => {
+  const rfqCode = payload.rfq_code?.trim();
+  if (!rfqCode) {
+    throw new Error(
+      'Không xác định được Mã RFQ cha (rfq_code) chung cho các dòng sản phẩm đã chọn. Mỗi văn bản báo giá gộp chỉ được phép chứa các dòng sản phẩm thuộc cùng 1 RFQ.'
+    );
+  }
+
+  // 0. Xác định số revision & sinh document_code = BG-[rfq_code]-rev-XX
+  const revision = await getNextRevisionForRfqCode(rfqCode);
+  const documentCode = buildDocumentCode(rfqCode, revision);
+
   // 1. Insert into quotation_documents table
   const { data: docData, error: docErr } = await supabase
     .from('quotation_documents')
     .insert({
+      document_code: documentCode,
+      rfq_code: rfqCode,
+      revision,
       customer_name: payload.customer_name,
       contact_person: payload.contact_person,
       contact_email: payload.contact_email,

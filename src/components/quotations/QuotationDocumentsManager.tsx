@@ -44,12 +44,16 @@ export const QuotationDocumentsManager = () => {
   };
 
   const filteredDocs = searchQuery.trim()
-    ? documents.filter(
-        (doc) =>
-          doc.customer_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          doc.contact_person.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          doc.id.toLowerCase().includes(searchQuery.toLowerCase())
-      )
+    ? documents.filter((doc) => {
+        const q = searchQuery.toLowerCase();
+        return (
+          doc.customer_name.toLowerCase().includes(q) ||
+          doc.contact_person.toLowerCase().includes(q) ||
+          doc.id.toLowerCase().includes(q) ||
+          (doc.document_code || '').toLowerCase().includes(q) ||
+          (doc.rfq_code || '').toLowerCase().includes(q)
+        );
+      })
     : documents;
 
   // Tính tóm tắt trạng thái các dòng bên trong (VD: "3 SENT, 1 SUCCESSFUL")
@@ -69,6 +73,20 @@ export const QuotationDocumentsManager = () => {
 
   // DataTable Column Definitions
   const columns: DataTableColumn<QuotationDocument>[] = [
+    {
+      key: 'document_code',
+      header: 'Mã Báo Giá',
+      sortable: true,
+      className: 'font-mono font-bold text-[#111111]',
+      render: (doc) => doc.document_code || <span className="text-[#787774] italic">N/A</span>,
+    },
+    {
+      key: 'rfq_code',
+      header: 'Mã RFQ',
+      sortable: true,
+      className: 'font-mono text-[#787774]',
+      render: (doc) => doc.rfq_code || '-',
+    },
     {
       key: 'customer_name',
       header: 'Tên Khách Hàng',
@@ -186,7 +204,7 @@ export const QuotationDocumentsManager = () => {
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Tìm kiếm theo tên khách hàng, người nhận Attn..."
+            placeholder="Tìm theo Mã RFQ, Mã Báo Giá, tên khách hàng, người nhận Attn..."
             className="w-full pl-8 pr-3 py-1.5 border border-[#EAEAEA] rounded-[6px] text-xs font-medium text-[#111111] focus:outline-none focus:border-[#111111]"
           />
         </div>
@@ -226,7 +244,7 @@ export const QuotationDocumentsManager = () => {
           maxWidthClass="max-w-[98vw] max-h-[96vh]"
           icon={<Download className="w-4 h-4" />}
           title="Xem Trước & Tải Thư Báo Giá PDF DISOCO"
-          subtitle={`Văn bản #${pdfPreviewDoc.id.substring(0, 10)} - ${pdfPreviewDoc.customer_name}`}
+          subtitle={`${pdfPreviewDoc.document_code || `Văn bản #${pdfPreviewDoc.id.substring(0, 10)}`} - ${pdfPreviewDoc.customer_name}`}
         >
           <QuotationPreviewPanel
             document={pdfPreviewDoc}

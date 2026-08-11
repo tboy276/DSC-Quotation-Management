@@ -91,6 +91,9 @@ export const exportDocumentToExcel = (document: QuotationDocument) => {
 
     const rowData: Record<string, any> = {
       'STT / No.': idx + 1,
+      'Mã Báo Giá': document.document_code || 'N/A',
+      'Mã RFQ': document.rfq_code || 'N/A',
+      'Mã Dòng Sản Phẩm': rfqItem?.item_code || 'N/A',
       'Tên Sản Phẩm / Part Name': rfqItem?.product_name || 'N/A',
       'Part Number': rfqItem?.part_number || 'N/A',
       'Phân Hệ Công Nghệ': isForging ? 'Rèn Dập' : 'Đúc Gang',
@@ -189,6 +192,9 @@ export const exportDocumentToExcel = (document: QuotationDocument) => {
 
     // Header info block
     sheetData.push(['BÓC TÁCH CHI TIẾT NỘI BỘ NĂNG LỰC TÍNH GIÁ DISOCO', '']);
+    sheetData.push(['Mã Báo Giá:', document.document_code || 'N/A']);
+    sheetData.push(['Mã RFQ Cha:', document.rfq_code || 'N/A']);
+    sheetData.push(['Mã Dòng Sản Phẩm:', rfqItem?.item_code || 'N/A']);
     sheetData.push(['Sản phẩm / Part Name:', `${rfqItem?.product_name || 'N/A'} (${rfqItem?.part_number || 'No PN'})`]);
     sheetData.push(['Khách hàng:', document.customer_name]);
     sheetData.push(['Phân hệ công nghệ:', isForging ? 'Rèn Dập (Forging)' : 'Đúc Gang (Iron Casting)']);
@@ -288,7 +294,8 @@ export const exportDocumentToExcel = (document: QuotationDocument) => {
   });
 
   // Download filename
-  const fileName = `DISOCO_Breakdown_${document.customer_name.replace(/\s+/g, '_')}_${new Date().toISOString().slice(0, 10)}.xlsx`;
+  const codePart = (document.document_code || document.id.substring(0, 8)).replace(/[^a-zA-Z0-9-]/g, '_');
+  const fileName = `DISOCO_Breakdown_${document.customer_name.replace(/\s+/g, '_')}_${codePart}_${new Date().toISOString().slice(0, 10)}.xlsx`;
   XLSX.writeFile(workbook, fileName);
 };
 

@@ -118,6 +118,11 @@ export const QuotationPdfContent: React.FC<QuotationPdfContentProps> = ({
         <h2 className="text-xl font-black uppercase tracking-widest text-[#111111]">
           {lang === 'vi' ? 'BẢNG BÁO GIÁ' : lang === 'en' ? 'QUOTATION' : 'THƯ BÁO GIÁ / QUOTATION'}
         </h2>
+        {document.document_code && (
+          <p className="text-[10px] font-mono font-bold text-gray-700 mt-0.5">
+            {getText('Số', 'No.')}: {document.document_code}
+          </p>
+        )}
       </div>
 
       {/* Customer Info Block */}
