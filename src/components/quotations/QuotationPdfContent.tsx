@@ -290,7 +290,7 @@ export const QuotationPdfContent: React.FC<QuotationPdfContentProps> = ({
                     {q.rfqItem?.part_number || 'No PN'}
                   </td>
                   <td className="border border-black p-1.5 font-mono">
-                    {inp.selected_material_id || 'S45C'}
+                    {inp.material_name || inp.selected_material_name || (inp.selected_material_id && !inp.selected_material_id.startsWith('mat-') ? inp.selected_material_id : null) || (q.segment === 'casting' ? 'FCD450-10' : 'S45C')}
                   </td>
 
                   {config.showWeightChi && (

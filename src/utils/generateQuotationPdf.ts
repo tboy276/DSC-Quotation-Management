@@ -260,11 +260,13 @@ export async function generateQuotationPdf(document: QuotationDocument) {
     
     const quotedMoq = inp.quoted_moq || inp.N_order || (q.rfqItem?.annual_volume ? Math.round(q.rfqItem.annual_volume / 12) : 1000);
 
+    const materialName = inp.material_name || inp.selected_material_name || (inp.selected_material_id && !inp.selected_material_id.startsWith('mat-') ? inp.selected_material_id : null) || (q.segment === 'casting' ? 'FCD450-10' : 'S45C');
+
     const row: any[] = [
       idx + 1,
       q.rfqItem?.product_name || 'Chi tiết sản phẩm',
       q.rfqItem?.part_number || 'No PN',
-      inp.selected_material_id || 'S45C'
+      materialName
     ];
 
     if (config.showWeightChi) row.push(weightChiKg ? Number(weightChiKg).toFixed(2) : '-');
