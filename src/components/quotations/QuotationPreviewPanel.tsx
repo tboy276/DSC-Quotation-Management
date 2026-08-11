@@ -118,7 +118,7 @@ export const QuotationPreviewPanel: React.FC<QuotationPreviewPanelProps> = ({
   const handleDownloadPDF = async () => {
     setIsExportingPdf(true);
     try {
-      await generateQuotationPdf(document);
+      await generateQuotationPdf(liveDocument);
     } catch (err: any) {
       console.error('Lỗi xuất PDF:', err);
       alert(`❌ Không thể tạo file PDF: ${err?.message || err}`);
