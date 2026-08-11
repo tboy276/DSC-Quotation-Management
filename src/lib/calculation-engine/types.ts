@@ -110,6 +110,7 @@ export interface ForgingResult {
   separate_die_cost?: number; // Khoản chi phí khuôn trả riêng nếu die_cost_treatment = 'separate'
   actual_C_die_total?: number;
   actual_L_die_life?: number;
+  C_die_amortized_per_unit?: number;
 }
 
 // ----------------------------------------------------------------------
@@ -211,6 +212,7 @@ export interface CastingResult {
   separate_pattern_cost?: number; // Khoản chi phí mẫu trả riêng nếu pattern_cost_treatment = 'separate'
   actual_C_pattern_total?: number;
   actual_L_pattern_life?: number;
+  C_pattern_amortization_per_unit?: number;
 }
 
 // ----------------------------------------------------------------------

@@ -161,16 +161,22 @@ export async function generateQuotationPdf(document: QuotationDocument) {
   // Table Setup
   const items = [...(document.items || [])].sort((a, b) => a.display_order - b.display_order);
   
+  const showDieAmortizedCol = (document.items || []).some(item => {
+    const seg = item.quote?.segment;
+    return seg === 'forging' || seg === 'casting';
+  });
+
   const activeCostCols = [
     { key: 'showMaterialCost', labelVi: 'Vật Tư', labelEn: 'Material' },
     { key: 'showFormingCost', labelVi: 'Phí Chế Tạo', labelEn: 'Forming' },
     { key: 'showMachiningCost', labelVi: 'Gia Công CNC', labelEn: 'Machining' },
     { key: 'showHeatTreatCost', labelVi: 'Nhiệt Luyện', labelEn: 'Heat Treat' },
     { key: 'showPaintCost', labelVi: 'Sơn/Bề Mặt', labelEn: 'Paint' },
+    ...(showDieAmortizedCol ? [{ key: 'showDieAmortizedCost', labelVi: 'Khuôn', labelEn: 'Die', alwaysShow: true }] : []),
     { key: 'showPackageCost', labelVi: 'Bao Gói', labelEn: 'Package' },
     { key: 'showDeliveryCost', labelVi: 'Vận Chuyển', labelEn: 'Delivery' },
     { key: 'showSgaP', labelVi: 'Quản Lý & LN', labelEn: 'S.G.A & P' }
-  ].filter(col => (config as any)[col.key]);
+  ].filter(col => col.alwaysShow || (config as any)[col.key]);
 
   const hasSubHeader = activeCostCols.length > 0;
 
@@ -223,6 +229,7 @@ export async function generateQuotationPdf(document: QuotationDocument) {
     let paintCostVnd = 0;
     let packageCostVnd = 0;
     let deliveryCostVnd = 0;
+    let dieAmortizedVnd = 0;
     let fallbackPrice = 0;
 
     if (seg === 'forging') {
@@ -231,6 +238,7 @@ export async function generateQuotationPdf(document: QuotationDocument) {
       machiningCostVnd = res.C_machining ?? 0;
       heatTreatCostVnd = res.C_heat_treat ?? 0;
       paintCostVnd = res.C_paint ?? 0;
+      dieAmortizedVnd = res.C_die_amortized_per_unit ?? 0;
       fallbackPrice = res.P_FORGING ?? 0;
     } else if (seg === 'casting') {
       materialCostVnd = 0;
@@ -238,6 +246,7 @@ export async function generateQuotationPdf(document: QuotationDocument) {
       machiningCostVnd = res.C_machining_casting ?? 0;
       heatTreatCostVnd = res.C_heat_treat ?? 0;
       paintCostVnd = res.C_paint ?? 0;
+      dieAmortizedVnd = res.C_pattern_amortization_per_unit ?? 0;
       fallbackPrice = res.P_CASTING ?? 0;
     } else if (seg === 'sawing') {
       materialCostVnd = res.C_mat_sawing ?? 0;
@@ -266,7 +275,7 @@ export async function generateQuotationPdf(document: QuotationDocument) {
     const toolingPriceVnd = seg === 'forging' ? inp.C_die_total : seg === 'casting' ? inp.C_pattern_total : 0;
     const toolingLife = seg === 'forging' ? inp.L_die_life : seg === 'casting' ? inp.L_pattern_life : 0;
     
-    const quotedMoq = inp.quoted_moq || inp.N_order || (q.rfqItem?.annual_volume ? Math.round(q.rfqItem.annual_volume / 12) : 1000);
+    const quotedMoq = inp.quoted_moq;
 
     const materialName = inp.material_name || inp.selected_material_name || (inp.selected_material_id && !inp.selected_material_id.startsWith('mat-') ? inp.selected_material_id : null) || (q.segment === 'casting' ? 'FCD450-10' : 'S45C');
 
@@ -280,13 +289,14 @@ export async function generateQuotationPdf(document: QuotationDocument) {
     if (config.showWeightChi) row.push(weightChiKg ? Number(weightChiKg).toFixed(2) : '-');
     if (config.showWeightPhoi) row.push(weightPhoiKg ? Number(weightPhoiKg).toFixed(2) : '-');
     if (config.showWeightTinh) row.push(weightTinhKg ? Number(weightTinhKg).toFixed(2) : '-');
-    if (config.showMOQ) row.push(quotedMoq.toLocaleString('vi-VN'));
+    if (config.showMOQ) row.push(quotedMoq ? quotedMoq.toLocaleString('vi-VN') : '-');
 
     if (config.showMaterialCost) row.push(formatNum(materialCostVnd));
     if (config.showFormingCost) row.push(formatNum(formingCostVnd));
     if (config.showMachiningCost) row.push(formatNum(machiningCostVnd));
     if (config.showHeatTreatCost) row.push(formatNum(heatTreatCostVnd));
     if (config.showPaintCost) row.push(formatNum(paintCostVnd));
+    if (showDieAmortizedCol) row.push((seg === 'forging' || seg === 'casting') ? (q.die_cost_treatment === 'amortized' ? formatNum(dieAmortizedVnd) : '-') : '');
     if (config.showPackageCost) row.push(formatNum(packageCostVnd));
     if (config.showDeliveryCost) row.push(formatNum(deliveryCostVnd));
     if (config.showSgaP) row.push(formatNum(sgaAndPVnd));
@@ -294,7 +304,7 @@ export async function generateQuotationPdf(document: QuotationDocument) {
     row.push(formatNum(unitPriceVnd));
 
     if (config.showToolingPrice) {
-      row.push(isSeparateTooling ? formatNum(toolingPriceVnd || 0) : (lang === 'vi' ? 'Đã phân bổ' : 'Amortized'));
+      row.push(isSeparateTooling ? formatNum(toolingPriceVnd || 0) : "-");
     }
     if (config.showToolingUsage) {
       row.push((toolingLife || 0).toLocaleString('vi-VN'));

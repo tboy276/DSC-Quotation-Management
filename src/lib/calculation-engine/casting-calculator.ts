@@ -206,5 +206,6 @@ export function calculateCastingPrice(input: CastingInput): CastingResult {
     separate_pattern_cost,
     actual_C_pattern_total,
     actual_L_pattern_life,
+    C_pattern_amortization_per_unit: patternInCogs,
   };
 }

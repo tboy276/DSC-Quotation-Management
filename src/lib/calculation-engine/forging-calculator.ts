@@ -155,5 +155,6 @@ export function calculateForgingPrice(input: ForgingInput): ForgingResult {
     separate_die_cost,
     actual_C_die_total,
     actual_L_die_life,
+    C_die_amortized_per_unit: dieInCogs,
   };
 }

@@ -21,6 +21,11 @@ export const exportDocumentToExcel = (document: QuotationDocument) => {
   // ----------------------------------------------------
   // SHEET 1: TỔNG HỢP VĂN BẢN BÁO GIÁ (Summary Sheet)
   // ----------------------------------------------------
+  const showDieAmortizedCol = document.items.some(item => {
+    const seg = item.quote?.segment;
+    return seg === 'forging' || seg === 'casting';
+  });
+
   const summaryRows = document.items.map((item, idx) => {
     const q = item.quote;
     const rfqItem = q?.rfqItem;
@@ -37,6 +42,7 @@ export const exportDocumentToExcel = (document: QuotationDocument) => {
     let paintCostVnd = 0;
     let packageCostVnd = 0;
     let deliveryCostVnd = 0;
+    let dieAmortizedVnd = 0;
     let fallbackPrice = 0;
 
     if (seg === 'forging') {
@@ -45,6 +51,7 @@ export const exportDocumentToExcel = (document: QuotationDocument) => {
       machiningCostVnd = res.C_machining ?? 0;
       heatTreatCostVnd = res.C_heat_treat ?? 0;
       paintCostVnd = res.C_paint ?? 0;
+      dieAmortizedVnd = res.C_die_amortized_per_unit ?? 0;
       fallbackPrice = res.P_FORGING ?? 0;
     } else if (seg === 'casting') {
       materialCostVnd = 0; // As requested, set Material Cost to 0 for Casting
@@ -52,6 +59,7 @@ export const exportDocumentToExcel = (document: QuotationDocument) => {
       machiningCostVnd = res.C_machining_casting ?? 0;
       heatTreatCostVnd = res.C_heat_treat ?? 0;
       paintCostVnd = res.C_paint ?? 0;
+      dieAmortizedVnd = res.C_pattern_amortization_per_unit ?? 0;
       fallbackPrice = res.P_CASTING ?? 0;
     } else if (seg === 'sawing') {
       materialCostVnd = res.C_mat_sawing ?? 0;
@@ -100,7 +108,7 @@ export const exportDocumentToExcel = (document: QuotationDocument) => {
     }
 
     if (config.showMOQ) {
-      rowData['MOQ (pcs/lô)'] = inp.quoted_moq || inp.N_order || (rfqItem?.annual_volume ? Math.round(rfqItem.annual_volume / 12) : 1000);
+      rowData['MOQ (pcs/lô)'] = inp.quoted_moq || '-';
     }
 
     if (config.showMaterialCost) {
@@ -118,6 +126,9 @@ export const exportDocumentToExcel = (document: QuotationDocument) => {
     if (config.showPaintCost) {
       rowData[`Sơn/Bề Mặt (${currency})`] = formatCurrencyValue(paintCostVnd, currency, exchangeRate);
     }
+    if (showDieAmortizedCol) {
+      rowData[`Khuôn (${currency}/cái)`] = (isForging || isCasting) ? (q?.die_cost_treatment === 'amortized' ? formatCurrencyValue(dieAmortizedVnd, currency, exchangeRate) : '-') : '';
+    }
     if (config.showPackageCost) {
       rowData[`Bao Gói (${currency})`] = formatCurrencyValue(packageCostVnd, currency, exchangeRate);
     }
@@ -131,7 +142,7 @@ export const exportDocumentToExcel = (document: QuotationDocument) => {
     rowData[`Đơn Giá Báo (${currency})`] = formatCurrencyValue(unitPriceVnd, currency, exchangeRate);
 
     if (config.showToolingPrice) {
-      rowData[`Tiền Khuôn (${currency})`] = isSeparateTooling ? formatCurrencyValue(toolingPriceVnd || 0, currency, exchangeRate) : 'Đã phân bổ';
+      rowData[`Tiền Khuôn (${currency})`] = isSeparateTooling ? formatCurrencyValue(toolingPriceVnd || 0, currency, exchangeRate) : '-';
     }
     if (config.showToolingUsage) {
       rowData['Tuổi Thọ Khuôn (Lần)'] = toolingLife || '-';

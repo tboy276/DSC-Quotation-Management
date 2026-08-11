@@ -18,6 +18,11 @@ export const QuotationPdfContent: React.FC<QuotationPdfContentProps> = ({
   const currency: CurrencyType = document.currency || 'VND';
   const lang = config.language || 'both';
 
+  const showDieAmortizedCol = items.some(item => {
+    const seg = item.quote?.segment;
+    return seg === 'forging' || seg === 'casting';
+  });
+
   // Count active cost columns
   const activeCostCols = [
     config.showMaterialCost,
@@ -25,6 +30,7 @@ export const QuotationPdfContent: React.FC<QuotationPdfContentProps> = ({
     config.showMachiningCost,
     config.showHeatTreatCost,
     config.showPaintCost,
+    showDieAmortizedCol,
     config.showPackageCost,
     config.showDeliveryCost,
     config.showSgaP,
@@ -212,6 +218,7 @@ export const QuotationPdfContent: React.FC<QuotationPdfContentProps> = ({
                 {config.showMachiningCost && <th className="border border-black p-1">{getText('Gia Công CNC', 'Machining')}</th>}
                 {config.showHeatTreatCost && <th className="border border-black p-1">{getText('Nhiệt Luyện', 'Heat Treat')}</th>}
                 {config.showPaintCost && <th className="border border-black p-1">{getText('Sơn/Bề Mặt', 'Paint')}</th>}
+                {showDieAmortizedCol && <th className="border border-black p-1">{getText('Khuôn', 'Die')}</th>}
                 {config.showPackageCost && <th className="border border-black p-1">{getText('Bao Gói', 'Package')}</th>}
                 {config.showDeliveryCost && <th className="border border-black p-1">{getText('Vận Chuyển', 'Delivery')}</th>}
                 {config.showSgaP && <th className="border border-black p-1">{getText('Quản Lý & LN', 'S.G.A & P')}</th>}
@@ -237,6 +244,7 @@ export const QuotationPdfContent: React.FC<QuotationPdfContentProps> = ({
               let paintCostVnd = 0;
               let packageCostVnd = 0;
               let deliveryCostVnd = 0;
+              let dieAmortizedVnd = 0;
               let fallbackPrice = 0;
 
               if (seg === 'forging') {
@@ -245,6 +253,7 @@ export const QuotationPdfContent: React.FC<QuotationPdfContentProps> = ({
                 machiningCostVnd = res.C_machining ?? 0;
                 heatTreatCostVnd = res.C_heat_treat ?? 0;
                 paintCostVnd = res.C_paint ?? 0;
+                dieAmortizedVnd = res.C_die_amortized_per_unit ?? 0;
                 fallbackPrice = res.P_FORGING ?? 0;
               } else if (seg === 'casting') {
                 materialCostVnd = 0; // As requested, set Material Cost to 0 for Casting
@@ -252,6 +261,7 @@ export const QuotationPdfContent: React.FC<QuotationPdfContentProps> = ({
                 machiningCostVnd = res.C_machining_casting ?? 0;
                 heatTreatCostVnd = res.C_heat_treat ?? 0;
                 paintCostVnd = res.C_paint ?? 0;
+                dieAmortizedVnd = res.C_pattern_amortization_per_unit ?? 0;
                 fallbackPrice = res.P_CASTING ?? 0;
               } else if (seg === 'sawing') {
                 materialCostVnd = res.C_mat_sawing ?? 0;
@@ -280,7 +290,7 @@ export const QuotationPdfContent: React.FC<QuotationPdfContentProps> = ({
               const toolingPriceVnd = seg === 'forging' ? inp.C_die_total : seg === 'casting' ? inp.C_pattern_total : 0;
               const toolingLife = seg === 'forging' ? inp.L_die_life : seg === 'casting' ? inp.L_pattern_life : 0;
               
-              const quotedMoq = inp.quoted_moq || inp.N_order || (q.rfqItem?.annual_volume ? Math.round(q.rfqItem.annual_volume / 12) : 1000);
+              const quotedMoq = inp.quoted_moq;
 
               return (
                 <tr key={item.id} className="border-b border-black text-center">
@@ -313,7 +323,7 @@ export const QuotationPdfContent: React.FC<QuotationPdfContentProps> = ({
 
                   {config.showMOQ && (
                     <td className="border border-black p-1.5 font-mono">
-                      {quotedMoq.toLocaleString('vi-VN')}
+                      {quotedMoq ? quotedMoq.toLocaleString('vi-VN') : '-'}
                     </td>
                   )}
 
@@ -343,6 +353,11 @@ export const QuotationPdfContent: React.FC<QuotationPdfContentProps> = ({
                       {formatNum(paintCostVnd)}
                     </td>
                   )}
+                  {showDieAmortizedCol && (
+                    <td className="border border-black p-1.5 font-mono text-right">
+                      {(seg === 'forging' || seg === 'casting') ? (q.die_cost_treatment === 'amortized' ? formatNum(dieAmortizedVnd) : '-') : ''}
+                    </td>
+                  )}
                   {config.showPackageCost && (
                     <td className="border border-black p-1.5 font-mono text-right">
                       {formatNum(packageCostVnd)}
@@ -370,9 +385,7 @@ export const QuotationPdfContent: React.FC<QuotationPdfContentProps> = ({
                       {isSeparateTooling ? (
                         formatNum(toolingPriceVnd || 0)
                       ) : (
-                        <span className="text-[9px] italic text-gray-600 font-sans">
-                          {lang === 'vi' ? 'Đã phân bổ vào giá' : 'Amortized into price'}
-                        </span>
+                        "-"
                       )}
                     </td>
                   )}

@@ -75,8 +75,8 @@ export function calculateSawingPrice(input: SawingInput): SawingResult {
   }
   const C_trans = final_weight * DG_trans_kg;
 
-  const C_heat_treat = final_weight * DG_heat_treat_per_kg;
-  const C_paint = final_weight * DG_paint_per_kg;
+  const C_heat_treat = (m_phoi || 0) * DG_heat_treat_per_kg;
+  const C_paint = (m_phoi || 0) * DG_paint_per_kg;
 
   // Tổng Giá vốn hàng bán (COGS thuần - không gồm C_mgmt)
   const COGS = C_mat_sawing + C_ops_sawing + C_machining + C_heat_treat + C_paint;
