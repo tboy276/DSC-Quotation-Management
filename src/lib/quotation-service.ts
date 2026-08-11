@@ -241,6 +241,36 @@ export const fetchPaginatedQuotes = async (
 };
 
 /**
+ * Lấy mã RFQ tiếp theo cho một ngày (định dạng YYYYMMDD).
+ * Truy vấn trực tiếp từ bảng rfqs trên Supabase.
+ */
+export const generateNextRfqCode = async (dateStr: string): Promise<string> => {
+  const { data, error } = await supabase
+    .from('rfqs')
+    .select('rfq_code')
+    .like('rfq_code', `${dateStr}-%`);
+
+  if (error) {
+    throw new Error(`Lỗi khi truy vấn mã RFQ từ Supabase: ${error.message}`);
+  }
+
+  let maxNum = 0;
+  if (data && data.length > 0) {
+    data.forEach(row => {
+      const parts = (row.rfq_code || '').split('-');
+      if (parts.length > 1) {
+        const num = parseInt(parts[1], 10);
+        if (!isNaN(num) && num > maxNum) {
+          maxNum = num;
+        }
+      }
+    });
+  }
+
+  return `${dateStr}-${String(maxNum + 1).padStart(3, '0')}`;
+};
+
+/**
  * Create a new RFQ Dossier Header with child Items — Strictly Inserts into Supabase DB
  * Throws explicit error if Supabase write fails! NO silent fallback.
  */
@@ -270,30 +300,57 @@ export const createRfqDossierWithItems = async (
   userEmail: string = 'sales@disoco.vn'
 ): Promise<RfqDossier> => {
   const dateStr = new Date().toISOString().slice(0, 10).replace(/-/g, '');
-  const rawCode = dossier.rfq_code || `${dateStr}-${String(localDossiersCache.length + 1).padStart(3, '0')}`;
-  const rfqCode = rawCode.startsWith('RFQ-') ? rawCode.replace('RFQ-', '') : rawCode;
+  
+  let rfqCode = '';
+  if (dossier.rfq_code) {
+    rfqCode = dossier.rfq_code.startsWith('RFQ-') ? dossier.rfq_code.replace('RFQ-', '') : dossier.rfq_code;
+  }
+  
+  let dbDossier: any = null;
+  const maxRetries = dossier.rfq_code ? 1 : 5; // Chỉ retry nếu không truyền mã rfq_code cố định
+  let attempts = 0;
+  let lastError: any = null;
+  
+  while (attempts < maxRetries) {
+    if (!dossier.rfq_code) {
+      rfqCode = await generateNextRfqCode(dateStr);
+    }
+    
+    // 1. Insert Header into Supabase 'rfqs' table
+    const { data, error } = await supabase
+      .from('rfqs')
+      .insert({
+        customer_name: dossier.customer_name,
+        customer_address: dossier.customer_address,
+        rfq_code: rfqCode,
+        customer_contact_person: dossier.customer_contact_person,
+        rfq_received_date: dossier.rfq_received_date,
+        customer_deadline: dossier.customer_deadline,
+        trade_terms: dossier.trade_terms,
+        delivery_address: dossier.delivery_address,
+        special_requirements: dossier.special_requirements,
+        notes: dossier.notes,
+        created_by_email: userEmail,
+      })
+      .select()
+      .single();
+      
+    if (error) {
+      lastError = error;
+      // 23505 = unique_violation trong PostgreSQL
+      if (error.code === '23505' && !dossier.rfq_code) {
+        attempts++;
+        continue; // Thử lại với mã tiếp theo
+      }
+      throw new Error(`Lỗi tạo Hồ sơ RFQ trên Supabase: ${error.message || 'Không rõ'}`);
+    }
+    
+    dbDossier = data;
+    break; // Thành công thì thoát loop
+  }
 
-  // 1. Insert Header into Supabase 'rfqs' table
-  const { data: dbDossier, error: dosErr } = await supabase
-    .from('rfqs')
-    .insert({
-      customer_name: dossier.customer_name,
-      customer_address: dossier.customer_address,
-      rfq_code: rfqCode,
-      customer_contact_person: dossier.customer_contact_person,
-      rfq_received_date: dossier.rfq_received_date,
-      customer_deadline: dossier.customer_deadline,
-      trade_terms: dossier.trade_terms,
-      delivery_address: dossier.delivery_address,
-      special_requirements: dossier.special_requirements,
-      notes: dossier.notes,
-      created_by_email: userEmail,
-    })
-    .select()
-    .single();
-
-  if (dosErr || !dbDossier) {
-    throw new Error(`Lỗi tạo Hồ sơ RFQ trên Supabase: ${dosErr?.message || 'Không có dữ liệu trả về'}`);
+  if (!dbDossier) {
+    throw new Error(`Lỗi tạo Hồ sơ RFQ (vượt quá ${maxRetries} lần thử): ${lastError?.message || 'Không có dữ liệu'}`);
   }
 
   // 2. Insert child items into Supabase 'rfq_items' table

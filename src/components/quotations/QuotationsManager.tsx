@@ -15,6 +15,7 @@ import {
   createRfqDossierWithItems,
   deleteRfqItems,
   updateRfqItemDetails,
+  generateNextRfqCode,
 } from '../../lib/quotation-service';
 import { Modal } from '../ui/Modal';
 import { QuoteStatusBadge } from '../rfq/QuoteStatusBadge';
@@ -263,13 +264,27 @@ export const QuotationsManager = () => {
   }]);
 
   // Generate RFQ Code automatically on opening modal
+  const [isGeneratingCode, setIsGeneratingCode] = useState<boolean>(false);
+
   useEffect(() => {
     if (showNewRfqModal) {
-      const dateStr = new Date().toISOString().slice(0, 10).replace(/-/g, '');
-      const generatedCode = `${dateStr}-${String(totalCount + 1).padStart(3, '0')}`;
-      setNewRfqCode(generatedCode);
+      const fetchNewCode = async () => {
+        setIsGeneratingCode(true);
+        try {
+          const dateStr = new Date().toISOString().slice(0, 10).replace(/-/g, '');
+          const nextCode = await generateNextRfqCode(dateStr);
+          setNewRfqCode(nextCode);
+        } catch (err) {
+          console.error('Lỗi khi lấy mã RFQ mới', err);
+          const dateStr = new Date().toISOString().slice(0, 10).replace(/-/g, '');
+          setNewRfqCode(`${dateStr}-XXX`);
+        } finally {
+          setIsGeneratingCode(false);
+        }
+      };
+      fetchNewCode();
     }
-  }, [showNewRfqModal, totalCount]);
+  }, [showNewRfqModal]);
 
   // Handle Stage Tab Switch (URL synced)
   const handleStageChange = (newStage: 'new' | 'internal' | 'sent') => {
@@ -1625,8 +1640,12 @@ export const QuotationsManager = () => {
           <form onSubmit={handleCreateNewDossierSubmit} className="space-y-4 text-xs max-h-[82vh] overflow-y-auto pr-1">
             <div className="flex items-center justify-between bg-[#FBFBFA] p-3 rounded-[8px] border border-[#EAEAEA]">
               <div className="flex items-center space-x-2">
-                <span className="text-[11px] font-bold text-[#787774] uppercase tracking-wider">Mã Hồ Sơ RFQ:</span>
-                <span className="font-mono font-bold text-[#111111] bg-white px-2 py-0.5 rounded border border-[#EAEAEA] text-xs">{newRfqCode}</span>
+                <span className="text-[11px] font-bold text-[#787774] uppercase tracking-wider">Mã Hồ Sơ RFQ (Dự Kiến):</span>
+                {isGeneratingCode ? (
+                  <span className="font-mono font-bold text-[#787774] bg-white px-2 py-0.5 rounded border border-[#EAEAEA] text-xs">Đang lấy mã...</span>
+                ) : (
+                  <span className="font-mono font-bold text-[#111111] bg-white px-2 py-0.5 rounded border border-[#EAEAEA] text-xs">{newRfqCode}</span>
+                )}
               </div>
             </div>
 
