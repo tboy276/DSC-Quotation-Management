@@ -99,6 +99,55 @@ describe('DSC-Quotation-Management Calculation Engine', () => {
       expect(result.COGS).toBeCloseTo(66086.96, 0);
       expect(result.separate_die_cost).toBe(10000);
     });
+
+    it('Chi phí khuôn phải = 0 khi die_components rỗng, bất kể C_design hay k_mgmt_die', () => {
+      const input: ForgingInput = {
+        m_phoi: 1.2,
+        m_chi: 1.5,
+        k_loss: 2.0,
+        DG_steel: 22000,
+        DG_scrap: 8000,
+        C_design: 15000000,
+        k_mgmt_die: 10,
+        die_components: [], // Empty components list
+        C_die_total: 85000000, // Legacy fallback (should be ignored)
+        L_die_life: 20000,
+        die_cost_treatment: 'separate',
+        k_mgmt: 8,
+        DG_trans_kg: 1500,
+        k_profit_forging: 15,
+      };
+
+      const result = calculateForgingPrice(input);
+      expect(result.actual_C_die_total).toBe(0);
+      expect(result.C_die_amortized_per_unit).toBe(0);
+      expect(result.separate_die_cost).toBe(0);
+    });
+
+    it('Phí vận chuyển và bao gói tính dựa trên shipping_weight_kg (m_tinh || m_phoi || m_chi)', () => {
+      const input: ForgingInput = {
+        m_tinh: undefined,
+        m_phoi: 1.2, // Will fallback to this
+        m_chi: 1.5,
+        k_loss: 2.0,
+        DG_steel: 22000,
+        DG_scrap: 8000,
+        die_cost_treatment: 'separate',
+        k_mgmt: 0,
+        DG_trans_kg: 1500,
+        DG_pack_kg: 500,
+        k_profit_forging: 0,
+      };
+
+      const result = calculateForgingPrice(input);
+      
+      expect(result.shipping_weight_kg).toBe(1.2);
+      
+      // pre_profit_price should include C_pack + C_trans
+      // Since k_mgmt = 0, pre_profit_price = COGS + (DG_pack_kg * 1.2) + (DG_trans_kg * 1.2)
+      const expectedAdditions = 1.2 * 1500 + 1.2 * 500;
+      expect(result.pre_profit_price - result.COGS).toBeCloseTo(expectedAdditions, 4);
+    });
   });
 
   // ------------------------------------------------------------------

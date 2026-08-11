@@ -114,11 +114,21 @@ export const ToolingAmortizationSection: React.FC<ToolingAmortizationSectionProp
         </div>
       ) : (
         /* Default / Unchecked: Subtle informational line */
-        <div className="mt-2 text-[11px] text-[#787774] flex items-center gap-1.5">
-          <Info className="w-3.5 h-3.5 text-[#999999] flex-shrink-0" />
-          <span>
-            Toàn bộ chi phí {toolName} ({Math.round(totalToolingCost).toLocaleString('vi-VN')} đ) được tách riêng 1 lần, không cộng dồn vào giá thành từng sản phẩm.
-          </span>
+        <div className="mt-2 text-[11px] flex flex-col gap-1.5">
+          <div className="text-[#787774] flex items-center gap-1.5">
+            <Info className="w-3.5 h-3.5 text-[#999999] flex-shrink-0" />
+            <span>
+              Toàn bộ chi phí {toolName} ({Math.round(totalToolingCost).toLocaleString('vi-VN')} đ) được tách riêng 1 lần, không cộng dồn vào giá thành từng sản phẩm.
+            </span>
+          </div>
+          {N_order > autoToolLife && autoToolLife > 0 && (
+            <div className="text-amber-600 font-medium bg-amber-50 p-1.5 rounded flex items-start gap-1.5 border border-amber-200/50 mt-1">
+              <span className="text-[12px] leading-none">⚠️</span>
+              <span className="leading-tight">
+                Số lượng đặt hàng ({N_order.toLocaleString('vi-VN')}) vượt tuổi thọ {toolName} ({autoToolLife.toLocaleString('vi-VN')}) — cần thu thêm tiền {toolName} lần 2 ngoài phạm vi báo giá này khi đến ngưỡng.
+              </span>
+            </div>
+          )}
         </div>
       )}
     </div>

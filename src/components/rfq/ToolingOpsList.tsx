@@ -60,9 +60,11 @@ export const ToolingOpsList = ({
     return sum + materialCost + machiningCost + heatTreatmentCost + reworkCost;
   }, 0);
 
-  const mgmtCost = (totalComponentsCost + C_design) * (k_mgmt_die / 100);
-  const totalDieCost = totalComponentsCost + C_design + mgmtCost;
   const autoLife = life_coefficient * cavity;
+  
+  // Chi phí khuôn phải = 0 khi danh sách chi tiết rỗng
+  const mgmtCost = components.length > 0 ? (totalComponentsCost + C_design) * (k_mgmt_die / 100) : 0;
+  const totalDieCost = components.length > 0 ? (totalComponentsCost + C_design + mgmtCost) : 0;
 
   return (
     <div className="space-y-4 animate-fade-in-up mt-6">
@@ -331,6 +333,11 @@ export const ToolingOpsList = ({
                 VNĐ
               </span>
             </div>
+            {components.length === 0 && (
+              <p className="text-[10px] text-red-500/80 italic mt-1.5 leading-tight">
+                * Chưa có chi tiết {isForging ? 'khuôn' : 'mẫu'} — chi phí {isForging ? 'khuôn' : 'mẫu'} = 0đ, Phí thiết kế/Phí quản lý sẽ không được tính cho tới khi thêm ít nhất 1 chi tiết.
+              </p>
+            )}
           </div>
         </div>
       </div>

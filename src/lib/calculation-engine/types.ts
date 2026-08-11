@@ -111,6 +111,7 @@ export interface ForgingResult {
   actual_C_die_total?: number;
   actual_L_die_life?: number;
   C_die_amortized_per_unit?: number;
+  shipping_weight_kg: number;
 }
 
 // ----------------------------------------------------------------------

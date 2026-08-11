@@ -91,8 +91,8 @@ export function calculateForgingPrice(input: ForgingInput): ForgingResult {
   }
 
   // Section 4 — Khấu hao khuôn
-  let actual_C_die_total = C_die_total;
-  let actual_L_die_life = L_die_life;
+  let actual_C_die_total = 0;
+  let actual_L_die_life = 0;
 
   if (die_components.length > 0) {
     const totalComponentsCost = die_components.reduce((sum, comp) => {
@@ -131,10 +131,10 @@ export function calculateForgingPrice(input: ForgingInput): ForgingResult {
 
   const COGS = C_mat_forging + C_ops_forging + C_machining + C_heat_treat + C_paint + dieInCogs;
 
-  const final_weight = m_tinh || m_phoi || m_chi || 0;
-  const actual_C_pack = DG_pack_kg !== undefined && DG_pack_kg > 0 ? DG_pack_kg * final_weight : (C_pack || 0);
+  const shipping_weight_kg = m_tinh || m_phoi || m_chi || 0;
+  const actual_C_pack = DG_pack_kg !== undefined && DG_pack_kg > 0 ? DG_pack_kg * shipping_weight_kg : (C_pack || 0);
   const pre_profit_price =
-    COGS * (1 + k_mgmt / 100) + actual_C_pack + (final_weight * DG_trans_kg);
+    COGS * (1 + k_mgmt / 100) + actual_C_pack + (shipping_weight_kg * DG_trans_kg);
 
   const P_FORGING = Math.round(pre_profit_price * (1 + k_profit_forging / 100));
 
@@ -156,5 +156,6 @@ export function calculateForgingPrice(input: ForgingInput): ForgingResult {
     actual_C_die_total,
     actual_L_die_life,
     C_die_amortized_per_unit: dieInCogs,
+    shipping_weight_kg,
   };
 }
