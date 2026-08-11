@@ -176,7 +176,7 @@ export const QuotationPreviewPanel: React.FC<QuotationPreviewPanelProps> = ({
                     onChange={(e) => setDocFields(prev => ({ ...prev, trade_terms: e.target.value as TradeTermType }))}
                     className="w-full p-1.5 border border-[#EAEAEA] bg-white rounded-[4px] text-[11px] font-bold text-[#111111]"
                   >
-                    {['EXW', 'FCA', 'FAS', 'FOB', 'CFR', 'CIF', 'CPT', 'CIP', 'DAP', 'DPU', 'DDP'].map((term) => (
+                    {['EXW', 'FOB', 'CIF', 'DAP'].map((term) => (
                       <option key={term} value={term}>{term}</option>
                     ))}
                   </select>
