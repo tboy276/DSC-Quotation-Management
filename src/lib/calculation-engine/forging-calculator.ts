@@ -31,8 +31,6 @@ export function calculateForgingPrice(input: ForgingInput): ForgingResult {
     k_mgmt_die = 10,
     cavity = 1,
     life_coefficient = 20000,
-    C_die_total = 0,
-    L_die_life = 0,
     die_cost_treatment,
     C_die_amortization_override,
     N_order = 1,
