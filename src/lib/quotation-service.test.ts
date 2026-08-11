@@ -49,7 +49,6 @@ describe('quotation-service', () => {
   describe('createRfqDossierWithItems', () => {
     it('should retry insertion on unique_violation (23505)', async () => {
       const mockInsert = vi.fn().mockReturnThis();
-      const mockSelect = vi.fn().mockReturnThis();
 
       let insertAttempt = 0;
       (supabase.from as any).mockImplementation((table: string) => {
