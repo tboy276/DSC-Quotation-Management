@@ -45,15 +45,23 @@ export function generatePdfFilename(customerName: string, id: string, documentCo
   return `DISOCO_BaoGia_${slugName}_${dateStr}_${codePart}.pdf`;
 }
 
-async function getBase64ImageFromUrl(imageUrl: string): Promise<string> {
+async function getBase64ImageFromUrl(imageUrl: string, maxWidthPx = 320): Promise<string> {
   const response = await fetch(imageUrl);
   const blob = await response.blob();
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onloadend = () => resolve(reader.result as string);
-    reader.onerror = reject;
-    reader.readAsDataURL(blob);
-  });
+  const bitmap = await createImageBitmap(blob);
+
+  const scale = Math.min(1, maxWidthPx / bitmap.width);
+  const targetW = Math.round(bitmap.width * scale);
+  const targetH = Math.round(bitmap.height * scale);
+
+  const canvas = document.createElement('canvas');
+  canvas.width = targetW;
+  canvas.height = targetH;
+  const ctx = canvas.getContext('2d');
+  if (!ctx) throw new Error('Canvas context not available');
+  ctx.drawImage(bitmap, 0, 0, targetW, targetH);
+
+  return canvas.toDataURL('image/png');
 }
 
 export async function generateQuotationPdf(document: QuotationDocument) {
@@ -77,6 +85,7 @@ export async function generateQuotationPdf(document: QuotationDocument) {
     orientation: isLandscape ? 'landscape' : 'portrait',
     unit: 'mm',
     format: 'a4',
+    compress: true,
   });
 
   // Add Fonts
