@@ -1,6 +1,5 @@
 import { describe, it, expect } from 'vitest';
 import { getTechFamily } from './tech-family';
-import type { TechnologyRequirementType } from '../types/quote';
 
 describe('getTechFamily', () => {
   it('should group forging tech correctly', () => {
