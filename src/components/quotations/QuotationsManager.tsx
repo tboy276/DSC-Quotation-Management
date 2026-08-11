@@ -471,12 +471,10 @@ export const QuotationsManager = () => {
       return 'Chỉ có thể gộp các sản phẩm đã hoàn tất tính giá (READY_FOR_QUOTE).';
     }
 
-    const firstCustomer = selectedQuotes[0]?.rfq?.customer_name || '';
-    const sameCustomer = selectedQuotes.every(
-      (q) => (q.rfq?.customer_name || '') === firstCustomer
-    );
-    if (!sameCustomer) {
-      return 'Chỉ có thể gộp các sản phẩm của CÙNG MỘT khách hàng.';
+    const firstRfqCode = selectedQuotes[0]?.rfq?.rfq_code || '';
+    const sameRfqCode = selectedQuotes.every((q) => (q.rfq?.rfq_code || '') === firstRfqCode);
+    if (!firstRfqCode || !sameRfqCode) {
+      return 'Chỉ có thể gộp các sản phẩm thuộc CÙNG MỘT Mã RFQ Cha (bao gồm cùng khách hàng và cùng người tạo RFQ).';
     }
 
     // Technology Segment Family Check

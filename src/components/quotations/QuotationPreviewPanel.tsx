@@ -1,16 +1,29 @@
 import React, { useState } from 'react';
 import type { QuotationDocument, DocumentDisplayConfig, DocumentRemarkLine } from '../../types/quotation-document';
 import { DEFAULT_DISPLAY_CONFIG } from '../../types/quotation-document';
+import type { CurrencyType } from '../../types/quote';
+import type { TradeTermType } from '../../store/useQuotationStore';
 import { QuotationPdfContent } from './QuotationPdfContent';
 import { ArrowLeft, Check, Plus, Trash2, ArrowUp, ArrowDown, Eye, Sliders, Download, X } from 'lucide-react';
 import { generateQuotationPdf } from '../../utils/generateQuotationPdf';
+
+export interface DocFields {
+  contact_person: string;
+  contact_email: string;
+  quotation_date: string;
+  trade_terms: TradeTermType;
+  currency: CurrencyType;
+  exchange_rate: number;
+  payment_terms: string;
+  delivery_notes: string;
+}
 
 interface QuotationPreviewPanelProps {
   document: QuotationDocument;
   initialConfig?: DocumentDisplayConfig;
   readOnly?: boolean;
   onBack?: () => void;
-  onSaveAndSend: (config: DocumentDisplayConfig) => void;
+  onSaveAndSend: (config: DocumentDisplayConfig, docFields?: DocFields) => void;
   isSubmitting?: boolean;
 }
 
@@ -25,6 +38,20 @@ export const QuotationPreviewPanel: React.FC<QuotationPreviewPanelProps> = ({
   const [config, setConfig] = useState<DocumentDisplayConfig>(
     initialConfig || document.display_config || DEFAULT_DISPLAY_CONFIG
   );
+
+  const [docFields, setDocFields] = useState<DocFields>({
+    contact_person: document.contact_person || '',
+    contact_email: document.contact_email || '',
+    quotation_date: document.quotation_date || '',
+    trade_terms: (document.trade_terms as TradeTermType) || 'EXW',
+    currency: (document.currency as CurrencyType) || 'VND',
+    exchange_rate: document.exchange_rate || 1,
+    payment_terms: document.payment_terms || '',
+    delivery_notes: document.delivery_notes || '',
+  });
+
+  const liveDocument = { ...document, ...docFields };
+
   const [isExportingPdf, setIsExportingPdf] = useState(false);
 
   const toggleColumn = (key: keyof Omit<DocumentDisplayConfig, 'language' | 'remarks'>) => {
@@ -117,6 +144,112 @@ export const QuotationPreviewPanel: React.FC<QuotationPreviewPanelProps> = ({
         </div>
 
         <div className="space-y-4 overflow-y-auto pr-1 flex-1 max-h-[calc(100vh-230px)]">
+          {/* Section 0: Thông Tin Văn Bản & Điều Khoản Thương Mại */}
+          <div className="space-y-1.5 bg-white p-3 border border-[#EAEAEA] rounded-[8px]">
+            <label className="block text-[10px] font-bold text-[#787774] uppercase tracking-wider mb-2">
+              0. Thông Tin Văn Bản & Điều Khoản
+            </label>
+            <div className="space-y-3">
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <label className="block text-[9px] font-bold text-[#787774] uppercase mb-1">Attn *</label>
+                  <input
+                    type="text"
+                    disabled={readOnly}
+                    value={docFields.contact_person}
+                    onChange={(e) => setDocFields(prev => ({ ...prev, contact_person: e.target.value }))}
+                    className="w-full p-1.5 border border-[#EAEAEA] bg-white rounded-[4px] text-[11px] text-[#111111]"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[9px] font-bold text-[#787774] uppercase mb-1">Email liên hệ</label>
+                  <input
+                    type="email"
+                    disabled={readOnly}
+                    value={docFields.contact_email}
+                    onChange={(e) => setDocFields(prev => ({ ...prev, contact_email: e.target.value }))}
+                    className="w-full p-1.5 border border-[#EAEAEA] bg-white rounded-[4px] text-[11px] text-[#111111]"
+                  />
+                </div>
+              </div>
+              
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <label className="block text-[9px] font-bold text-[#787774] uppercase mb-1">Ngày lập văn bản *</label>
+                  <input
+                    type="date"
+                    disabled={readOnly}
+                    value={docFields.quotation_date}
+                    onChange={(e) => setDocFields(prev => ({ ...prev, quotation_date: e.target.value }))}
+                    className="w-full p-1.5 border border-[#EAEAEA] bg-white rounded-[4px] text-[11px] font-mono text-[#111111]"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[9px] font-bold text-[#787774] uppercase mb-1">Trade Terms</label>
+                  <select
+                    disabled={readOnly}
+                    value={docFields.trade_terms}
+                    onChange={(e) => setDocFields(prev => ({ ...prev, trade_terms: e.target.value as TradeTermType }))}
+                    className="w-full p-1.5 border border-[#EAEAEA] bg-white rounded-[4px] text-[11px] font-bold text-[#111111]"
+                  >
+                    {['EXW', 'FCA', 'FAS', 'FOB', 'CFR', 'CIF', 'CPT', 'CIP', 'DAP', 'DPU', 'DDP'].map((term) => (
+                      <option key={term} value={term}>{term}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-[9px] font-bold text-[#787774] uppercase mb-1">Tiền tệ & Tỷ giá</label>
+                <div className="flex space-x-2">
+                  <select
+                    disabled={readOnly}
+                    value={docFields.currency}
+                    onChange={(e) => setDocFields(prev => ({ ...prev, currency: e.target.value as CurrencyType }))}
+                    className="w-1/3 p-1.5 border border-[#EAEAEA] bg-white rounded-[4px] text-[11px] font-bold text-[#111111]"
+                  >
+                    {['VND', 'USD', 'EUR', 'JPY'].map((c) => (
+                      <option key={c} value={c}>{c}</option>
+                    ))}
+                  </select>
+                  {docFields.currency !== 'VND' && (
+                    <input
+                      type="number"
+                      min="1"
+                      disabled={readOnly}
+                      value={docFields.exchange_rate}
+                      onChange={(e) => setDocFields(prev => ({ ...prev, exchange_rate: Number(e.target.value) }))}
+                      className="w-2/3 p-1.5 border border-[#EAEAEA] bg-white rounded-[4px] font-mono text-[11px] text-[#111111]"
+                      placeholder="Tỷ giá"
+                    />
+                  )}
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-[9px] font-bold text-[#787774] uppercase mb-1">Điều Khoản Thanh Toán</label>
+                <textarea
+                  rows={2}
+                  disabled={readOnly}
+                  value={docFields.payment_terms}
+                  onChange={(e) => setDocFields(prev => ({ ...prev, payment_terms: e.target.value }))}
+                  className="w-full p-1.5 border border-[#EAEAEA] bg-white rounded-[4px] text-[11px] text-[#111111]"
+                />
+              </div>
+
+              <div>
+                <label className="block text-[9px] font-bold text-[#787774] uppercase mb-1">Ghi Chú Giao Hàng</label>
+                <textarea
+                  rows={2}
+                  disabled={readOnly}
+                  value={docFields.delivery_notes}
+                  onChange={(e) => setDocFields(prev => ({ ...prev, delivery_notes: e.target.value }))}
+                  className="w-full p-1.5 border border-[#EAEAEA] bg-white rounded-[4px] text-[11px] text-[#111111]"
+                />
+              </div>
+            </div>
+          </div>
+
           {/* Section 1: Language */}
           <div className="space-y-1.5">
             <label className="block text-[10px] font-bold text-[#787774] uppercase tracking-wider">
@@ -319,12 +452,12 @@ export const QuotationPreviewPanel: React.FC<QuotationPreviewPanelProps> = ({
           {!readOnly ? (
             <button
               type="button"
-              disabled={isSubmitting}
-              onClick={() => onSaveAndSend(config)}
-              className="px-4 py-2 bg-[#111111] hover:bg-[#333333] active:scale-[0.98] text-white font-bold rounded-[6px] transition-all cursor-pointer disabled:opacity-40 inline-flex items-center space-x-1.5 shadow-sm text-xs"
+              disabled={isSubmitting || !docFields.contact_person.trim() || !docFields.quotation_date}
+              onClick={() => onSaveAndSend(config, docFields)}
+              className="px-4 py-2 bg-[#111111] hover:bg-[#333333] active:scale-[0.98] text-white font-bold rounded-[8px] transition-all flex items-center space-x-1.5 cursor-pointer disabled:opacity-50 text-xs"
             >
-              <Check className="w-4 h-4 text-emerald-400 stroke-[2.5]" />
-              <span>{isSubmitting ? 'Đang Xử Lý...' : 'Xác Nhận & Gửi Báo Giá'}</span>
+              <Check className="w-4 h-4 text-emerald-400" />
+              <span>{isSubmitting ? 'Đang Phát Hành...' : 'Xác Nhận & Gửi Báo Giá'}</span>
             </button>
           ) : (
             <div className="flex items-center space-x-2">
@@ -367,7 +500,7 @@ export const QuotationPreviewPanel: React.FC<QuotationPreviewPanelProps> = ({
         </div>
 
         <div className="flex-1 overflow-y-auto max-h-[calc(100vh-200px)] p-4">
-          <QuotationPdfContent document={document} config={config} />
+          <QuotationPdfContent document={liveDocument} config={config} />
         </div>
       </div>
     </div>
