@@ -92,21 +92,26 @@ export async function generateQuotationPdf(document: QuotationDocument) {
 
   // Logo
   try {
-    const logoBase64 = await getBase64ImageFromUrl('https://res.cloudinary.com/ppzbydbc/image/upload/v1783387548/logo.png');
-    doc.addImage(logoBase64, 'PNG', margin, currentY, 35, 12);
+    // Original logo ratio is approx 2.14:1 (e.g., 3000x1400). Let's use 26x12.
+    doc.addImage(logoBase64, 'PNG', margin, currentY, 26, 12);
   } catch (e) {
     console.error("Failed to load logo", e);
   }
 
   // Company Info
+  const companyName = lang === 'vi' ? 'CÔNG TY TNHH MTV DIESEL SÔNG CÔNG' : DISOCO_COMPANY_CONFIG.name;
+  const companyAddress = lang === 'vi' ? 'Số 362 đường Cách Mạng Tháng Mười, phường Bá Xuyên, tỉnh Thái Nguyên, Việt Nam.' : DISOCO_COMPANY_CONFIG.address;
+  const taxCodeText = lang === 'vi' ? `Mã số thuế: ${DISOCO_COMPANY_CONFIG.taxCode}` : `Tax code: ${DISOCO_COMPANY_CONFIG.taxCode}`;
+  const telFaxText = lang === 'vi' ? `Điện thoại: ${DISOCO_COMPANY_CONFIG.tel} | Fax: ${DISOCO_COMPANY_CONFIG.fax}` : `Tel: ${DISOCO_COMPANY_CONFIG.tel} | Fax: ${DISOCO_COMPANY_CONFIG.fax}`;
+
   doc.setFont('Roboto', 'bold');
   doc.setFontSize(10);
-  doc.text(DISOCO_COMPANY_CONFIG.name, pageWidth / 2, currentY + 4, { align: 'center' });
+  doc.text(companyName, pageWidth / 2, currentY + 4, { align: 'center' });
   doc.setFont('Roboto', 'normal');
   doc.setFontSize(8);
-  doc.text(DISOCO_COMPANY_CONFIG.address, pageWidth / 2, currentY + 8, { align: 'center' });
-  doc.text(`Tax code: ${DISOCO_COMPANY_CONFIG.taxCode}`, pageWidth / 2, currentY + 12, { align: 'center' });
-  doc.text(`Tel: ${DISOCO_COMPANY_CONFIG.tel} | Fax: ${DISOCO_COMPANY_CONFIG.fax}`, pageWidth / 2, currentY + 16, { align: 'center' });
+  doc.text(companyAddress, pageWidth / 2, currentY + 8, { align: 'center' });
+  doc.text(taxCodeText, pageWidth / 2, currentY + 12, { align: 'center' });
+  doc.text(telFaxText, pageWidth / 2, currentY + 16, { align: 'center' });
 
   // Date
   const formattedDate = new Date(document.quotation_date).toLocaleDateString(
@@ -166,26 +171,28 @@ export async function generateQuotationPdf(document: QuotationDocument) {
     { key: 'showSgaP', labelVi: 'Quản Lý & LN', labelEn: 'S.G.A & P' }
   ].filter(col => (config as any)[col.key]);
 
+  const hasSubHeader = activeCostCols.length > 0;
+
   const headRow1: any[] = [
-    { content: lang === 'vi' ? 'STT' : lang === 'en' ? 'No.' : 'TT / No.', rowSpan: 2 },
-    { content: getText('Tên sản phẩm', 'Part Name'), rowSpan: 2 },
-    { content: getText('Mã bản vẽ', 'Part Number'), rowSpan: 2 },
-    { content: getText('Mác VL', 'Material'), rowSpan: 2 }
+    { content: lang === 'vi' ? 'STT' : lang === 'en' ? 'No.' : 'TT / No.', rowSpan: hasSubHeader ? 2 : 1 },
+    { content: getText('Tên sản phẩm', 'Part Name'), rowSpan: hasSubHeader ? 2 : 1 },
+    { content: getText('Kí hiệu', 'Part Number'), rowSpan: hasSubHeader ? 2 : 1 },
+    { content: getText('Vật liệu', 'Material'), rowSpan: hasSubHeader ? 2 : 1 }
   ];
 
-  if (config.showWeightChi) headRow1.push({ content: getText('TL Chi', 'Gross Wt') + '\n(Kg)', rowSpan: 2 });
-  if (config.showWeightPhoi) headRow1.push({ content: getText('TL Phôi', 'Net Wt') + '\n(Kg)', rowSpan: 2 });
-  if (config.showWeightTinh) headRow1.push({ content: getText('TL Tinh', 'Final Wt') + '\n(Kg)', rowSpan: 2 });
-  if (config.showMOQ) headRow1.push({ content: 'MOQ\n(pcs/lot)', rowSpan: 2 });
+  if (config.showWeightChi) headRow1.push({ content: getText('TL Chi', 'Gross Wt') + '\n(Kg)', rowSpan: hasSubHeader ? 2 : 1 });
+  if (config.showWeightPhoi) headRow1.push({ content: getText('TL Phôi', 'Net Wt') + '\n(Kg)', rowSpan: hasSubHeader ? 2 : 1 });
+  if (config.showWeightTinh) headRow1.push({ content: getText('TL Tinh', 'Final Wt') + '\n(Kg)', rowSpan: hasSubHeader ? 2 : 1 });
+  if (config.showMOQ) headRow1.push({ content: 'MOQ\n(pcs/lot)', rowSpan: hasSubHeader ? 2 : 1 });
 
   if (activeCostCols.length > 0) {
     headRow1.push({ content: `${getText('Tập hợp chi phí', 'Cost Breakdown')} (${currency}/cái)`, colSpan: activeCostCols.length });
   }
 
-  headRow1.push({ content: getText('Đơn giá', 'Unit Price') + `\n(${currency})`, rowSpan: 2 });
+  headRow1.push({ content: getText('Đơn giá', 'Unit Price') + `\n(${currency})`, rowSpan: hasSubHeader ? 2 : 1 });
 
-  if (config.showToolingPrice) headRow1.push({ content: getText('Tiền khuôn', 'Tooling price') + `\n(${currency}/Bộ)`, rowSpan: 2 });
-  if (config.showToolingUsage) headRow1.push({ content: getText('Tuổi thọ khuôn', 'Tooling usage') + '\n(Cái/bộ)', rowSpan: 2 });
+  if (config.showToolingPrice) headRow1.push({ content: getText('Tiền khuôn', 'Tooling price') + `\n(${currency}/Bộ)`, rowSpan: hasSubHeader ? 2 : 1 });
+  if (config.showToolingUsage) headRow1.push({ content: getText('Tuổi thọ khuôn', 'Tooling usage') + '\n(Cái/bộ)', rowSpan: hasSubHeader ? 2 : 1 });
 
   const headRow2: any[] = [];
   if (activeCostCols.length > 0) {
@@ -365,14 +372,9 @@ export async function generateQuotationPdf(document: QuotationDocument) {
   doc.setFont('Roboto', 'bold');
   doc.setFontSize(9);
   doc.text(lang === 'vi' ? 'XÁC NHẬN CỦA KHÁCH HÀNG' : 'CUSTOMER CONFIRMATION', pageWidth * 0.25, currentY, { align: 'center' });
-  doc.text('SONGCONG DIESEL LTD,. CO', pageWidth * 0.75, currentY, { align: 'center' });
+  const footerCompanyName = lang === 'vi' ? 'CÔNG TY TNHH MTV DIESEL SÔNG CÔNG' : 'SONGCONG DIESEL LTD,. CO';
+  doc.text(footerCompanyName, pageWidth * 0.75, currentY, { align: 'center' });
   
-  currentY += 25;
-  doc.setFont('Roboto', 'normal');
-  doc.setFontSize(8);
-  doc.text(lang === 'vi' ? 'Chữ ký & Dấu xác nhận khách hàng' : 'Signature & Stamp', pageWidth * 0.25, currentY, { align: 'center' });
-  doc.text(lang === 'vi' ? 'Đại diện DISOCO ký tên' : 'Authorized Representative', pageWidth * 0.75, currentY, { align: 'center' });
-
   // Footer ISO on ALL pages
   const totalPages = (doc as any).internal.getNumberOfPages();
   for (let i = 1; i <= totalPages; i++) {

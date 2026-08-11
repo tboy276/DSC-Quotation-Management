@@ -84,16 +84,16 @@ export const QuotationPdfContent: React.FC<QuotationPdfContentProps> = ({
         {/* Center: Company Info */}
         <div className="col-span-6 text-center space-y-0.5">
           <h1 className="font-extrabold text-sm uppercase tracking-wide text-[#111111]">
-            {DISOCO_COMPANY_CONFIG.name}
+            {lang === 'vi' ? 'CÔNG TY TNHH MTV DIESEL SÔNG CÔNG' : DISOCO_COMPANY_CONFIG.name}
           </h1>
           <p className="text-[10px] text-gray-700 leading-tight">
-            {DISOCO_COMPANY_CONFIG.address}
+            {lang === 'vi' ? 'Số 362 đường Cách Mạng Tháng Mười, phường Bá Xuyên, tỉnh Thái Nguyên, Việt Nam.' : DISOCO_COMPANY_CONFIG.address}
           </p>
           <p className="text-[10px] text-gray-700 font-mono">
-            Tax code: {DISOCO_COMPANY_CONFIG.taxCode}
+            {lang === 'vi' ? 'Mã số thuế: ' : 'Tax code: '} {DISOCO_COMPANY_CONFIG.taxCode}
           </p>
           <p className="text-[10px] text-gray-700">
-            Tel: {DISOCO_COMPANY_CONFIG.tel} &nbsp;|&nbsp; Fax: {DISOCO_COMPANY_CONFIG.fax}
+            {lang === 'vi' ? 'Điện thoại: ' : 'Tel: '} {DISOCO_COMPANY_CONFIG.tel} &nbsp;|&nbsp; Fax: {DISOCO_COMPANY_CONFIG.fax}
           </p>
         </div>
 
@@ -145,11 +145,11 @@ export const QuotationPdfContent: React.FC<QuotationPdfContentProps> = ({
               <th rowSpan={2} className="border border-black p-1.5 min-w-[100px]">
                 {getText('Tên sản phẩm', 'Part Name')}
               </th>
-              <th rowSpan={2} className="border border-black p-1.5 min-w-[80px]">
-                {getText('Mã bản vẽ', 'Part Number')}
+              <th rowSpan={hasSubHeader ? 2 : 1} className="border border-black p-1.5 min-w-[80px]">
+                {getText('Kí hiệu', 'Part Number')}
               </th>
-              <th rowSpan={2} className="border border-black p-1.5 w-14">
-                {getText('Mác VL', 'Material')}
+              <th rowSpan={hasSubHeader ? 2 : 1} className="border border-black p-1.5 w-14">
+                {getText('Vật liệu', 'Material')}
               </th>
 
               {config.showWeightChi && (
@@ -406,16 +406,10 @@ export const QuotationPdfContent: React.FC<QuotationPdfContentProps> = ({
         <div>
           <p>{lang === 'vi' ? 'XÁC NHẬN CỦA KHÁCH HÀNG' : 'CUSTOMER CONFIRMATION'}</p>
           <div className="h-20" />
-          <p className="text-[10px] text-gray-500 font-normal capitalize">
-            {lang === 'vi' ? 'Chữ ký & Dấu xác nhận khách hàng' : 'Signature & Stamp'}
-          </p>
         </div>
         <div>
-          <p>SONGCONG DIESEL LTD,. CO</p>
+          <p>{lang === 'vi' ? 'CÔNG TY TNHH MTV DIESEL SÔNG CÔNG' : 'SONGCONG DIESEL LTD,. CO'}</p>
           <div className="h-20" />
-          <p className="text-[10px] text-gray-500 font-normal capitalize">
-            {lang === 'vi' ? 'Đại diện DISOCO ký tên' : 'Authorized Representative'}
-          </p>
         </div>
       </div>
 
