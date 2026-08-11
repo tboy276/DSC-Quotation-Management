@@ -9,13 +9,10 @@ import { generateQuotationPdf } from '../../utils/generateQuotationPdf';
 
 export interface DocFields {
   contact_person: string;
-  contact_email: string;
   quotation_date: string;
   trade_terms: TradeTermType;
   currency: CurrencyType;
   exchange_rate: number;
-  payment_terms: string;
-  delivery_notes: string;
 }
 
 interface QuotationPreviewPanelProps {
@@ -41,13 +38,10 @@ export const QuotationPreviewPanel: React.FC<QuotationPreviewPanelProps> = ({
 
   const [docFields, setDocFields] = useState<DocFields>({
     contact_person: document.contact_person || '',
-    contact_email: document.contact_email || '',
     quotation_date: document.quotation_date || '',
     trade_terms: (document.trade_terms as TradeTermType) || 'EXW',
     currency: (document.currency as CurrencyType) || 'VND',
     exchange_rate: document.exchange_rate || 1,
-    payment_terms: document.payment_terms || '',
-    delivery_notes: document.delivery_notes || '',
   });
 
   const liveDocument = { ...document, ...docFields };
@@ -162,19 +156,6 @@ export const QuotationPreviewPanel: React.FC<QuotationPreviewPanelProps> = ({
                   />
                 </div>
                 <div>
-                  <label className="block text-[9px] font-bold text-[#787774] uppercase mb-1">Email liên hệ</label>
-                  <input
-                    type="email"
-                    disabled={readOnly}
-                    value={docFields.contact_email}
-                    onChange={(e) => setDocFields(prev => ({ ...prev, contact_email: e.target.value }))}
-                    className="w-full p-1.5 border border-[#EAEAEA] bg-white rounded-[4px] text-[11px] text-[#111111]"
-                  />
-                </div>
-              </div>
-              
-              <div className="grid grid-cols-2 gap-2">
-                <div>
                   <label className="block text-[9px] font-bold text-[#787774] uppercase mb-1">Ngày lập văn bản *</label>
                   <input
                     type="date"
@@ -184,6 +165,9 @@ export const QuotationPreviewPanel: React.FC<QuotationPreviewPanelProps> = ({
                     className="w-full p-1.5 border border-[#EAEAEA] bg-white rounded-[4px] text-[11px] font-mono text-[#111111]"
                   />
                 </div>
+              </div>
+              
+              <div className="grid grid-cols-2 gap-2">
                 <div>
                   <label className="block text-[9px] font-bold text-[#787774] uppercase mb-1">Trade Terms</label>
                   <select
@@ -197,55 +181,32 @@ export const QuotationPreviewPanel: React.FC<QuotationPreviewPanelProps> = ({
                     ))}
                   </select>
                 </div>
-              </div>
-
-              <div>
-                <label className="block text-[9px] font-bold text-[#787774] uppercase mb-1">Tiền tệ & Tỷ giá</label>
-                <div className="flex space-x-2">
-                  <select
-                    disabled={readOnly}
-                    value={docFields.currency}
-                    onChange={(e) => setDocFields(prev => ({ ...prev, currency: e.target.value as CurrencyType }))}
-                    className="w-1/3 p-1.5 border border-[#EAEAEA] bg-white rounded-[4px] text-[11px] font-bold text-[#111111]"
-                  >
-                    {['VND', 'USD', 'EUR', 'JPY'].map((c) => (
-                      <option key={c} value={c}>{c}</option>
-                    ))}
-                  </select>
-                  {docFields.currency !== 'VND' && (
-                    <input
-                      type="number"
-                      min="1"
+                <div>
+                  <label className="block text-[9px] font-bold text-[#787774] uppercase mb-1">Tiền tệ & Tỷ giá</label>
+                  <div className="flex space-x-2">
+                    <select
                       disabled={readOnly}
-                      value={docFields.exchange_rate}
-                      onChange={(e) => setDocFields(prev => ({ ...prev, exchange_rate: Number(e.target.value) }))}
-                      className="w-2/3 p-1.5 border border-[#EAEAEA] bg-white rounded-[4px] font-mono text-[11px] text-[#111111]"
-                      placeholder="Tỷ giá"
-                    />
-                  )}
+                      value={docFields.currency}
+                      onChange={(e) => setDocFields(prev => ({ ...prev, currency: e.target.value as CurrencyType }))}
+                      className="w-1/3 p-1.5 border border-[#EAEAEA] bg-white rounded-[4px] text-[11px] font-bold text-[#111111]"
+                    >
+                      {['VND', 'USD', 'EUR', 'JPY'].map((c) => (
+                        <option key={c} value={c}>{c}</option>
+                      ))}
+                    </select>
+                    {docFields.currency !== 'VND' && (
+                      <input
+                        type="number"
+                        min="1"
+                        disabled={readOnly}
+                        value={docFields.exchange_rate}
+                        onChange={(e) => setDocFields(prev => ({ ...prev, exchange_rate: Number(e.target.value) }))}
+                        className="w-2/3 p-1.5 border border-[#EAEAEA] bg-white rounded-[4px] font-mono text-[11px] text-[#111111]"
+                        placeholder="Tỷ giá"
+                      />
+                    )}
+                  </div>
                 </div>
-              </div>
-
-              <div>
-                <label className="block text-[9px] font-bold text-[#787774] uppercase mb-1">Điều Khoản Thanh Toán</label>
-                <textarea
-                  rows={2}
-                  disabled={readOnly}
-                  value={docFields.payment_terms}
-                  onChange={(e) => setDocFields(prev => ({ ...prev, payment_terms: e.target.value }))}
-                  className="w-full p-1.5 border border-[#EAEAEA] bg-white rounded-[4px] text-[11px] text-[#111111]"
-                />
-              </div>
-
-              <div>
-                <label className="block text-[9px] font-bold text-[#787774] uppercase mb-1">Ghi Chú Giao Hàng</label>
-                <textarea
-                  rows={2}
-                  disabled={readOnly}
-                  value={docFields.delivery_notes}
-                  onChange={(e) => setDocFields(prev => ({ ...prev, delivery_notes: e.target.value }))}
-                  className="w-full p-1.5 border border-[#EAEAEA] bg-white rounded-[4px] text-[11px] text-[#111111]"
-                />
               </div>
             </div>
           </div>

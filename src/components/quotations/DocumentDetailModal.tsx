@@ -141,10 +141,7 @@ export const DocumentDetailModal = ({
                 <span className="text-[#787774] block text-[10px]">Người nhận (Attn):</span>
                 <strong className="text-[#111111]">{document.contact_person || 'N/A'}</strong>
               </div>
-              <div>
-                <span className="text-[#787774] block text-[10px]">Email người nhận:</span>
-                <strong className="text-[#111111]">{document.contact_email || 'N/A'}</strong>
-              </div>
+
               <div>
                 <span className="text-[#787774] block text-[10px]">Incoterms / Trade Terms:</span>
                 <strong className="font-mono text-[#111111]">{document.trade_terms || 'FOB'}</strong>
@@ -154,12 +151,6 @@ export const DocumentDetailModal = ({
                 <strong className="font-mono text-[#111111]">
                   {currency} {currency !== 'VND' && `(1 ${currency} = ${exchangeRate.toLocaleString('vi-VN')} VNĐ)`}
                 </strong>
-              </div>
-              <div className="sm:col-span-2">
-                <span className="text-[#787774] block text-[10px]">Điều khoản thanh toán:</span>
-                <span className="text-[#2F3437] text-[11px] leading-tight block truncate">
-                  {document.payment_terms}
-                </span>
               </div>
             </div>
           </div>

@@ -155,7 +155,7 @@ export async function generateQuotationPdf(document: QuotationDocument) {
   currentY += 5;
   doc.setFont('Roboto', 'italic');
   doc.setFontSize(9);
-  doc.text(`Attn: ${document.contact_person || 'Purchasing Department'} <${document.contact_email || 'N/A'}>`, pageWidth / 2, currentY, { align: 'center' });
+  doc.text(`Attn: ${document.contact_person || 'Purchasing Department'}`, pageWidth / 2, currentY, { align: 'center' });
   
   currentY += 8;
   doc.setFont('Roboto', 'normal');

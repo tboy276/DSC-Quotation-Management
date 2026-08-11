@@ -133,7 +133,7 @@ export const QuotationPdfContent: React.FC<QuotationPdfContentProps> = ({
           </strong>
         </p>
         <p className="italic text-gray-800">
-          Attn: {document.contact_person || 'Purchasing Department'} &lt;{document.contact_email || 'N/A'}&gt;
+          Attn: {document.contact_person || 'Purchasing Department'}
         </p>
       </div>
 

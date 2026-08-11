@@ -62,13 +62,13 @@ export const DEFAULT_DISPLAY_CONFIG: DocumentDisplayConfig = {
     },
     {
       id: 'remark-4',
-      vi: 'Thanh toán: Theo điều khoản thanh toán ghi trên văn bản.',
-      en: 'Payment: According to payment terms specified in this document.',
+      vi: 'Thanh toán: Theo hợp đồng nguyên tắc giữa 2 bên.',
+      en: 'Payment: As per the principal/framework agreement between the two parties.',
     },
     {
       id: 'remark-5',
-      vi: 'Thời gian giao hàng: Theo tiến độ thoả thuận trong hợp đồng.',
-      en: 'Delivery time: According to schedule agreed in contract.',
+      vi: 'Thời gian giao hàng: 45-60 ngày đối với sample lot. 30 ngày với hàng sản xuất loạt.',
+      en: 'Delivery time: 45-60 days for sample lot. 30 days for mass production lot.',
     },
   ],
 };
@@ -101,7 +101,7 @@ export interface QuotationDocument {
   revision?: number;
   customer_name: string;
   contact_person: string; // Attn
-  contact_email: string;
+  contact_email?: string;
   quotation_date: string;
   trade_terms: TradeTermType;
   currency: CurrencyType;
@@ -123,7 +123,7 @@ export interface CreateQuotationDocumentPayload {
   rfq_code: string;
   customer_name: string;
   contact_person: string;
-  contact_email: string;
+  contact_email?: string;
   quotation_date: string;
   trade_terms: TradeTermType;
   currency: CurrencyType;
