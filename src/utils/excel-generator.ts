@@ -75,8 +75,8 @@ export const exportDocumentToExcel = (document: QuotationDocument) => {
       fallbackPrice = res.P_MACHINING ?? 0;
     }
 
-    const weightKg = isCasting ? inp.m_cast : (inp.m_phoi || inp.m_chi || 0);
-    const finalWeight = inp.m_tinh || weightKg || 0;
+    const weightKg = isCasting ? inp.m_cast : (isForging ? res.shipping_weight_kg : (inp.m_phoi || inp.m_chi || 0));
+    const finalWeight = isForging ? (res.shipping_weight_kg || 0) : (inp.m_tinh || weightKg || 0);
     packageCostVnd = inp.DG_pack_kg !== undefined && inp.DG_pack_kg > 0 ? (inp.DG_pack_kg * finalWeight) : (inp.C_pack || 0);
     deliveryCostVnd = finalWeight * (inp.DG_trans_kg || 0);
 
@@ -84,8 +84,8 @@ export const exportDocumentToExcel = (document: QuotationDocument) => {
     const sgaAndPVnd = unitPriceVnd - (materialCostVnd + formingCostVnd + machiningCostVnd + heatTreatCostVnd + paintCostVnd + packageCostVnd + deliveryCostVnd);
 
     const isSeparateTooling = (seg === 'forging' || seg === 'casting') && q?.die_cost_treatment === 'separate';
-    const toolingPriceVnd = seg === 'forging' ? inp.C_die_total : seg === 'casting' ? inp.C_pattern_total : 0;
-    const toolingLife = seg === 'forging' ? inp.L_die_life : seg === 'casting' ? inp.L_pattern_life : 0;
+    const toolingPriceVnd = seg === 'forging' ? res.actual_C_die_total : seg === 'casting' ? inp.C_pattern_total : 0;
+    const toolingLife = seg === 'forging' ? res.actual_L_die_life : seg === 'casting' ? inp.L_pattern_life : 0;
 
     const rowData: Record<string, any> = {
       'STT / No.': idx + 1,
@@ -262,8 +262,8 @@ export const exportDocumentToExcel = (document: QuotationDocument) => {
     sheetData.push(['', '']); // Empty row
     sheetData.push(['=== SECTION 4 — KHẤU HAO KHUÔN / MẪU (TOOLING AMORTIZATION) ===', '']);
     sheetData.push(['Cơ chế tiền khuôn:', q.die_cost_treatment]);
-    sheetData.push(['Tổng chi phí bộ khuôn/mẫu (VNĐ)', inp.C_die_total || inp.C_pattern_total || 0]);
-    sheetData.push(['Tuổi thọ bộ khuôn/mẫu (chi tiết/bộ)', inp.L_die_life || inp.L_pattern_life || 0]);
+    sheetData.push(['Tổng chi phí bộ khuôn/mẫu (VNĐ)', isForging ? (res.actual_C_die_total || 0) : (inp.C_pattern_total || 0)]);
+    sheetData.push(['Tuổi thọ bộ khuôn/mẫu (chi tiết/bộ)', isForging ? (res.actual_L_die_life || 0) : (inp.L_pattern_life || 0)]);
     const C_amortization = isForging ? res.C_die_amortization : res.C_pattern_amortization;
     sheetData.push(['Chi phí khấu hao khuôn phân bổ C_amortization (VNĐ/cái)', Math.round(C_amortization || 0)]);
 

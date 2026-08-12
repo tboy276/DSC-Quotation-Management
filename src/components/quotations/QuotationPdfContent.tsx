@@ -237,7 +237,7 @@ export const QuotationPdfContent: React.FC<QuotationPdfContentProps> = ({
               const res = q.results_json as any;
               const seg = q.segment;
               const weightChiKg = seg === 'casting' ? res.m_liquid : inp.m_chi;
-              const weightPhoiKg = seg === 'casting' ? inp.m_cast : (res.m_phoi || inp.m_phoi);
+              const weightPhoiKg = seg === 'casting' ? inp.m_cast : (seg === 'forging' ? res.shipping_weight_kg : (res.m_phoi || inp.m_phoi));
               const weightTinhKg = inp.m_tinh;
 
               let materialCostVnd = 0;
@@ -282,7 +282,7 @@ export const QuotationPdfContent: React.FC<QuotationPdfContentProps> = ({
                 fallbackPrice = res.P_MACHINING ?? 0;
               }
 
-              const finalWeight = inp.m_tinh || weightPhoiKg || weightChiKg || 0;
+              const finalWeight = seg === 'forging' ? (res.shipping_weight_kg || 0) : (inp.m_tinh || weightPhoiKg || weightChiKg || 0);
               packageCostVnd = inp.DG_pack_kg !== undefined && inp.DG_pack_kg > 0 ? (inp.DG_pack_kg * finalWeight) : (inp.C_pack || 0);
               deliveryCostVnd = finalWeight * (inp.DG_trans_kg || 0);
 
@@ -290,8 +290,8 @@ export const QuotationPdfContent: React.FC<QuotationPdfContentProps> = ({
               const sgaAndPVnd = unitPriceVnd - (materialCostVnd + formingCostVnd + machiningCostVnd + heatTreatCostVnd + paintCostVnd + packageCostVnd + deliveryCostVnd);
 
               const isSeparateTooling = (seg === 'forging' || seg === 'casting') && q.die_cost_treatment === 'separate';
-              const toolingPriceVnd = seg === 'forging' ? inp.C_die_total : seg === 'casting' ? inp.C_pattern_total : 0;
-              const toolingLife = seg === 'forging' ? inp.L_die_life : seg === 'casting' ? inp.L_pattern_life : 0;
+              const toolingPriceVnd = seg === 'forging' ? res.actual_C_die_total : seg === 'casting' ? inp.C_pattern_total : 0;
+              const toolingLife = seg === 'forging' ? res.actual_L_die_life : seg === 'casting' ? inp.L_pattern_life : 0;
               
               const quotedMoq = inp.quoted_moq;
 
