@@ -70,7 +70,7 @@ export const MachiningOpsList = ({
     }
   };
 
-  const currentSawingMachineType = sawingOpProps?.sawing_machine_type || (sawingOpProps?.DG_sawing_machine_hour === trimmingRate ? 'trimming_machine' : 'band_saw');
+  const currentSawingMachineType = sawingOpProps?.sawing_machine_type || (sawingOpProps?.DG_sawing_machine_hour === trimmingRate ? 'punch_cut' : 'band_saw');
 
   const rightContent = (operations.length === 0 && !sawingOpProps) ? (
     <p className="text-xs text-[#787774] italic py-2 text-center">
@@ -104,7 +104,7 @@ export const MachiningOpsList = ({
                 value={currentSawingMachineType}
                 onChange={(e) => {
                   const newType = e.target.value;
-                  const rate = newType === 'trimming_machine' ? trimmingRate : bandSawRate;
+                  const rate = newType === 'punch_cut' ? trimmingRate : bandSawRate;
                   sawingOpProps.onUpdateSawingOp(sawingOpProps.t_cut_sec, rate, newType);
                 }}
                 className="w-full px-2.5 py-1.5 border border-[#EAEAEA] rounded-[4px] bg-[#F0F0EE] text-[#111111] font-bold text-xs focus:outline-none"
@@ -112,7 +112,7 @@ export const MachiningOpsList = ({
                 <option value="band_saw">
                   Máy cưa vòng ({Math.round(bandSawRate / 1000)}k/h • {Math.round(bandSawRate / 60).toLocaleString('vi-VN')} đ/p)
                 </option>
-                <option value="trimming_machine">
+                <option value="punch_cut">
                   Máy cắt đột ({Math.round(trimmingRate / 1000)}k/h • {Math.round(trimmingRate / 60).toLocaleString('vi-VN')} đ/p)
                 </option>
               </select>

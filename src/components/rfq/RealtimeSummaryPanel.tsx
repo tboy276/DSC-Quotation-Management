@@ -234,7 +234,7 @@ export const RealtimeSummaryPanel = () => {
           {/* Section 2 */}
           <div className="flex justify-between items-center py-1 border-b border-[#F0F0EE]">
             <span className="text-[#2F3437] font-sans">
-              2. Công nghệ {isForging ? '& Nhiệt luyện' : 'Tạo khuôn & Lò/Gầu (Phần A)'}:
+              2. Công nghệ {segment === 'forging' ? '& Nhiệt luyện' : segment === 'casting' ? 'Tạo khuôn & Lò/Gầu (Phần A)' : 'cắt/gia công'}:
             </span>
             <span className="font-bold text-[#111111]">
               {formatCurrencyValue(C_ops, currency, exchangeRate)}
@@ -282,14 +282,16 @@ export const RealtimeSummaryPanel = () => {
           </div>
 
           {/* Section 4 */}
-          <div className="flex justify-between items-center py-1 border-b border-[#F0F0EE]">
-            <span className="text-[#2F3437] font-sans">
-              4. Khấu hao {isForging ? 'Khuôn' : 'Mẫu'} (C_amortization):
-            </span>
-            <span className="font-bold text-[#111111]">
-              {formatCurrencyValue(C_amortization, currency, exchangeRate)}
-            </span>
-          </div>
+          {(segment === 'forging' || segment === 'casting') && (
+            <div className="flex justify-between items-center py-1 border-b border-[#F0F0EE]">
+              <span className="text-[#2F3437] font-sans">
+                4. Khấu hao {isForging ? 'Khuôn' : 'Mẫu'} (C_amortization):
+              </span>
+              <span className="font-bold text-[#111111]">
+                {formatCurrencyValue(C_amortization, currency, exchangeRate)}
+              </span>
+            </div>
+          )}
 
           {/* COGS */}
           <div className="flex justify-between items-center py-1.5 bg-[#FBFBFA] px-2 rounded-[4px] font-bold">
