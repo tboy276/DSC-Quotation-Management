@@ -59,32 +59,35 @@ export function calculateCastingPrice(input: CastingInput): CastingResult {
   const yield_ratio = validYield / 100;
   const burn_ratio = k_burn_loss / 100;
 
+  // Tính các thành phần theo chuẩn 1.000kg kim loại lỏng CHỈ MỘT LẦN
   const cost_metal_1000 = 1000 * DG_liquid;
   const scrap_kg_1000 = Math.max(0, 1000 - (1000 * yield_ratio) - (1000 * burn_ratio));
   const cost_scrap_1000 = scrap_kg_1000 * DG_cast_scrap;
   
-  const total_batch_cost = cost_metal_1000 - cost_scrap_1000 + C_furnace_ladle_per_1000kg + C_molding_recipe_total_1000kg;
-  const dg_liquid_final = total_batch_cost / 1000;
-
-  const C_resin_core = m_resin_core * DG_resin_core_per_kg; // Tính riêng theo 1 sản phẩm
-  const C_core = m_core * DG_core_sand_kg;
-  
-  const validMCast = Math.max(0.0001, m_cast);
-  const totalCoreCostPerProduct = C_resin_core + C_core;
-  const coreCostPerKg = totalCoreCostPerProduct / validMCast;
-  
-  const partA_per_kg = (dg_liquid_final / yield_ratio) + coreCostPerKg;
-
-  // Quy đổi ngược ra cho khối lượng thực tế (m_cast) để lấy các thành phần chi tiết (dùng cho breakdown UI)
+  // Khối lượng lỏng và scrap thực tế cho đơn hàng (để phục vụ trả về UI)
   const m_liquid = m_cast / yield_ratio;
   const m_burn_loss = m_liquid * burn_ratio;
   const m_scrap_cast = Math.max(0, m_liquid - m_cast - m_burn_loss);
 
-  const C_metal_casting = (m_liquid * DG_liquid) - (m_scrap_cast * DG_cast_scrap);
+  // Quy đổi các thành phần chuẩn 1.000kg sang khối lượng thực tế (batchRatio)
   const batchRatio = m_liquid / 1000;
+  
+  const C_metal_batch = cost_metal_1000 * batchRatio;
+  const C_scrap_credit_batch = cost_scrap_1000 * batchRatio;
   const C_furnace_ladle = C_furnace_ladle_per_1000kg * batchRatio;
   const C_molding_materials = C_molding_recipe_total_1000kg * batchRatio;
+
+  // Chi phí nguyên vật liệu và công nghệ đúc thực tế cho đơn hàng
+  const C_metal_casting = C_metal_batch - C_scrap_credit_batch;
+
+  const C_resin_core = m_resin_core * DG_resin_core_per_kg; // Tính riêng theo 1 sản phẩm
+  const C_core = m_core * DG_core_sand_kg;
   const C_ops_casting = C_furnace_ladle + C_molding_materials + C_resin_core + C_core;
+
+  // Hợp nhất kết quả: tổng Part A cho đơn hàng rồi chia ngược ra cho 1 kg m_cast (dùng hiển thị UI)
+  const validMCast = Math.max(0.0001, m_cast);
+  const partA_total = C_metal_casting + C_ops_casting;
+  const partA_per_kg = partA_total / validMCast;
 
   // ----------------------------------------------------------------------
   // Part B — Post-Casting Workshop Costs per kg Cast Product (Phần B)

@@ -134,25 +134,26 @@ export const Section5SummaryCard: React.FC<Section5SummaryCardProps> = ({
         <div className="lg:col-span-5 space-y-2.5">
           {/* MOQ Báo Giá */}
           {onMoqChange && (
-            <div className="bg-white border border-[#EAEAEA] rounded-[6px] p-3 shadow-2xs hover:border-[#111111] transition-all flex items-center justify-between">
-              <label className="text-[10px] font-bold text-[#787774] uppercase tracking-wider">
-                MOQ BÁO GIÁ (CÁI/LÔ)
-              </label>
-              <div className="flex items-center gap-1">
-                <input
-                  type="number"
-                  min={0}
-                  value={quoted_moq || ''}
-                  placeholder="-"
-                  onChange={(e) => onMoqChange(Math.max(0, Number(e.target.value)))}
-                  className="w-24 px-2 py-1 border border-[#EAEAEA] rounded-[4px] text-right font-mono font-bold text-xs text-[#111111] bg-white outline-none focus:border-[#111111]"
-                />
+            <div className="space-y-1">
+              <div className="bg-white border border-[#EAEAEA] rounded-[6px] p-3 shadow-2xs hover:border-[#111111] transition-all flex items-center justify-between">
+                <label className="text-[10px] font-bold text-[#787774] uppercase tracking-wider">
+                  MOQ BÁO GIÁ (CÁI/LÔ)
+                </label>
+                <div className="flex items-center gap-1">
+                  <input
+                    type="number"
+                    min={0}
+                    value={quoted_moq || ''}
+                    placeholder="-"
+                    onChange={(e) => onMoqChange(Math.max(0, Number(e.target.value)))}
+                    className="w-24 px-2 py-1 border border-[#EAEAEA] rounded-[4px] text-right font-mono font-bold text-xs text-[#111111] bg-white outline-none focus:border-[#111111]"
+                  />
+                </div>
               </div>
+              <p className="text-[11px] text-[#787774] italic pl-1">
+                * MOQ báo giá cho khách — không dùng để tính khấu hao mẫu, xem N_order ở mục Khấu hao mẫu
+              </p>
             </div>
-            <p className="text-[11px] text-[#787774] italic -mt-1 pl-1">
-              * MOQ báo giá cho khách — không dùng để tính khấu hao mẫu, xem N_order ở mục Khấu hao mẫu
-            </p>
-          </div>
           )}
           
           {/* Xử Lý Nhiệt & Sơn */}
