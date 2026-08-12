@@ -211,8 +211,6 @@ export const useQuotationStore = create<QuotationStoreState>((set, get) => ({
       { name: 'Khoan lỗ gá CNC', t_prep_min: 1.0, t_man_min: 1.5, DG_machine_hour: 182000 },
     ],
     machining_notes: '',
-    C_coating: 1200,
-    C_QA: 1500,
 
     C_pattern_total: 45000000,
     L_pattern_life: 20000,
@@ -349,8 +347,6 @@ export const useQuotationStore = create<QuotationStoreState>((set, get) => ({
             { name: 'Khoan lỗ gá CNC', t_prep_min: 1.0, t_man_min: 1.5, DG_machine_hour: 182000 },
           ],
           machining_notes: '',
-          C_coating: 1200,
-          C_QA: 1500,
           C_pattern_total: 45000000,
           L_pattern_life: 20000,
           N_order: 20000,

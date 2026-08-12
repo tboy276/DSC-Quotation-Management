@@ -23,9 +23,7 @@ export function calculateForgingPrice(input: ForgingInput): ForgingResult {
     DG_heat_treat_per_kg = 0,
     DG_paint_per_kg = 0,
     DG_clean_kg = 1000,
-    C_ops_override,
     machining_operations = [],
-    C_machining_override,
     die_components = [],
     C_design = 15000000,
     k_mgmt_die = 10,
@@ -62,31 +60,21 @@ export function calculateForgingPrice(input: ForgingInput): ForgingResult {
   const C_mat_forging = (m_chi * effective_DG_steel) - (m_bavia_forging * DG_scrap) - (m_bavia_cnc * DG_scrap_cnc_eff);
 
   // Section 2 — Công nghệ & Nhiệt luyện
-  let C_ops_forging = 0;
-  if (C_ops_override !== undefined) {
-    C_ops_forging = C_ops_override;
-  } else {
-    const C_cut = (t_cut_sec / 3600) * DG_sawing_machine_hour;
-    const C_heat_induction = m_chi * w_elec_kwh_per_kg * DG_elec_kwh;
-    // (8 giờ x 60 phút / năng suất dự kiến) x (DG_forging_machine_hour / 60)
-    // Simplify: (8 * DG_forging_machine_hour) / expected_productivity
-    const safeProductivity = expected_productivity > 0 ? expected_productivity : 1;
-    const C_forging_op = (8 * DG_forging_machine_hour) / safeProductivity;
-    const C_clean = m_chi * DG_clean_kg;
+  const C_cut = (t_cut_sec / 3600) * DG_sawing_machine_hour;
+  const C_heat_induction = m_chi * w_elec_kwh_per_kg * DG_elec_kwh;
+  // (8 giờ x 60 phút / năng suất dự kiến) x (DG_forging_machine_hour / 60)
+  // Simplify: (8 * DG_forging_machine_hour) / expected_productivity
+  const safeProductivity = expected_productivity > 0 ? expected_productivity : 1;
+  const C_forging_op = (8 * DG_forging_machine_hour) / safeProductivity;
+  const C_clean = m_chi * DG_clean_kg;
 
-    C_ops_forging = C_cut + C_heat_induction + C_forging_op + C_clean;
-  }
+  const C_ops_forging = C_cut + C_heat_induction + C_forging_op + C_clean;
 
   // Section 3 — Gia công cơ khí
-  let C_machining = 0;
-  if (C_machining_override !== undefined) {
-    C_machining = C_machining_override;
-  } else if (machining_operations.length > 0) {
-    C_machining = machining_operations.reduce((total, op) => {
-      const C_machining_i = (op.t_prep_min + op.t_man_min) * (op.DG_machine_hour / 60);
-      return total + C_machining_i;
-    }, 0);
-  }
+  const C_machining = machining_operations.reduce((total, op) => {
+    const C_machining_i = (op.t_prep_min + op.t_man_min) * (op.DG_machine_hour / 60);
+    return total + C_machining_i;
+  }, 0);
 
   // Section 4 — Khấu hao khuôn
   let actual_C_die_total = 0;

@@ -20,7 +20,6 @@ export function calculateCastingPrice(input: CastingInput): CastingResult {
     DG_resin_core_per_kg = 12500,
     m_core = 0,
     DG_core_sand_kg = 0,
-    C_ops_override,
 
     // Part B — Post-Casting Workshop Costs per kg Cast Product
     DG_finishing_per_kg = 0,
@@ -33,9 +32,6 @@ export function calculateCastingPrice(input: CastingInput): CastingResult {
     DG_heat_treat_per_kg = 0,
     DG_paint_per_kg = 0,
     machining_operations = [],
-    C_coating = 0,
-    C_QA = 0,
-    C_machining_override,
 
     // Section 4 — Pattern Amortization
     pattern_components = [],
@@ -46,7 +42,6 @@ export function calculateCastingPrice(input: CastingInput): CastingResult {
     C_pattern_total = 0,
     L_pattern_life = 0,
     pattern_cost_treatment,
-    C_pattern_amortization_override,
 
     // Section 5 — Summary Parameters
     N_order = 1,
@@ -58,34 +53,38 @@ export function calculateCastingPrice(input: CastingInput): CastingResult {
   } = input;
 
   // ----------------------------------------------------------------------
-  // Section 1 — Cast Metal & Burn Loss (Kim loại lỏng & Hao hụt)
+  // Section 1 & 2 — Part A (Kim loại lỏng + Khuôn cát) theo chuẩn 1000kg
   // ----------------------------------------------------------------------
-  // m_liquid = m_cast / (Y_yield / 100)
   const validYield = Math.max(0.01, Y_yield);
-  const m_liquid = m_cast / (validYield / 100);
+  const yield_ratio = validYield / 100;
+  const burn_ratio = k_burn_loss / 100;
 
-  // m_scrap_cast = m_liquid - m_cast - (m_liquid * k_burn_loss / 100)
-  const m_burn_loss = m_liquid * (k_burn_loss / 100);
+  const cost_metal_1000 = 1000 * DG_liquid;
+  const scrap_kg_1000 = Math.max(0, 1000 - (1000 * yield_ratio) - (1000 * burn_ratio));
+  const cost_scrap_1000 = scrap_kg_1000 * DG_cast_scrap;
+  
+  const total_batch_cost = cost_metal_1000 - cost_scrap_1000 + C_furnace_ladle_per_1000kg + C_molding_recipe_total_1000kg;
+  const dg_liquid_final = total_batch_cost / 1000;
+
+  const C_resin_core = m_resin_core * DG_resin_core_per_kg; // Tính riêng theo 1 sản phẩm
+  const C_core = m_core * DG_core_sand_kg;
+  
+  const validMCast = Math.max(0.0001, m_cast);
+  const totalCoreCostPerProduct = C_resin_core + C_core;
+  const coreCostPerKg = totalCoreCostPerProduct / validMCast;
+  
+  const partA_per_kg = (dg_liquid_final / yield_ratio) + coreCostPerKg;
+
+  // Quy đổi ngược ra cho khối lượng thực tế (m_cast) để lấy các thành phần chi tiết (dùng cho breakdown UI)
+  const m_liquid = m_cast / yield_ratio;
+  const m_burn_loss = m_liquid * burn_ratio;
   const m_scrap_cast = Math.max(0, m_liquid - m_cast - m_burn_loss);
 
-  // C_metal_casting = (m_liquid * DG_liquid) - (m_scrap_cast * DG_cast_scrap)
   const C_metal_casting = (m_liquid * DG_liquid) - (m_scrap_cast * DG_cast_scrap);
-
-  // ----------------------------------------------------------------------
-  // Section 2 — Technology & Operations for Liquid Metal Batch (Phần A)
-  // ----------------------------------------------------------------------
   const batchRatio = m_liquid / 1000;
-  let C_furnace_ladle = C_furnace_ladle_per_1000kg * batchRatio;
-  let C_molding_materials = C_molding_recipe_total_1000kg * batchRatio; // 3 vật tư cố định
-  let C_resin_core = m_resin_core * DG_resin_core_per_kg; // Tính riêng theo 1 sản phẩm
-  let C_core = m_core * DG_core_sand_kg;
-  
-  let C_ops_casting = 0;
-  if (C_ops_override !== undefined) {
-    C_ops_casting = C_ops_override;
-  } else {
-    C_ops_casting = C_furnace_ladle + C_molding_materials + C_resin_core + C_core;
-  }
+  const C_furnace_ladle = C_furnace_ladle_per_1000kg * batchRatio;
+  const C_molding_materials = C_molding_recipe_total_1000kg * batchRatio;
+  const C_ops_casting = C_furnace_ladle + C_molding_materials + C_resin_core + C_core;
 
   // ----------------------------------------------------------------------
   // Part B — Post-Casting Workshop Costs per kg Cast Product (Phần B)
@@ -97,41 +96,18 @@ export function calculateCastingPrice(input: CastingInput): CastingResult {
   const C_equipment_depreciation = DG_equipment_depr_per_kg * m_cast;
   const C_part_b_total = C_finishing + C_utility + C_labor + C_workshop_mgmt + C_equipment_depreciation;
 
-  // Total Workshop Cost per kg cast product (Part A per kg + Part B per kg)
-  const validMCast = Math.max(0.0001, m_cast);
-  
-  // TÍNH TOÁN PART A THEO ĐÚNG BƯỚC 1000KG (Tránh sai số làm tròn so với UI)
-  const cost_metal_1000 = 1000 * DG_liquid;
-  const yield_ratio = validYield / 100;
-  const burn_ratio = k_burn_loss / 100;
-  const scrap_kg_1000 = Math.max(0, 1000 - (1000 * yield_ratio) - (1000 * burn_ratio));
-  const cost_scrap_1000 = scrap_kg_1000 * DG_cast_scrap;
-  
-  const total_batch_cost = cost_metal_1000 - cost_scrap_1000 + C_furnace_ladle_per_1000kg + C_molding_recipe_total_1000kg;
-  const dg_liquid_final = total_batch_cost / 1000;
-  
-  const totalCoreCostPerProduct = C_resin_core + C_core;
-  const coreCostPerKg = totalCoreCostPerProduct / validMCast;
-  
-  const partA_per_kg = (dg_liquid_final / yield_ratio) + coreCostPerKg;
-  
   const partB_per_kg = C_part_b_total / validMCast;
   const workshop_cost_per_kg = partA_per_kg + partB_per_kg;
 
   // ----------------------------------------------------------------------
   // Section 3 — Machining & QA (Gia công & QC)
   // ----------------------------------------------------------------------
-  let C_machining_casting = 0;
-  if (C_machining_override !== undefined) {
-    C_machining_casting = C_machining_override;
-  } else {
-    const C_machining = machining_operations.reduce((total, op) => {
-      const C_machining_i = (op.t_prep_min + op.t_man_min) * (op.DG_machine_hour / 60);
-      return total + C_machining_i;
-    }, 0);
+  const C_machining = machining_operations.reduce((total, op) => {
+    const C_machining_i = (op.t_prep_min + op.t_man_min) * (op.DG_machine_hour / 60);
+    return total + C_machining_i;
+  }, 0);
 
-    C_machining_casting = C_machining + C_coating + C_QA;
-  }
+  const C_machining_casting = C_machining;
   
   const C_heat_treat = m_cast * DG_heat_treat_per_kg;
   const C_paint = m_cast * DG_paint_per_kg;
@@ -155,9 +131,7 @@ export function calculateCastingPrice(input: CastingInput): CastingResult {
   }
 
   let C_pattern_amortization = 0;
-  if (C_pattern_amortization_override !== undefined) {
-    C_pattern_amortization = C_pattern_amortization_override;
-  } else if (actual_C_pattern_total > 0 && actual_L_pattern_life > 0) {
+  if (actual_C_pattern_total > 0 && actual_L_pattern_life > 0) {
     const denominator = Math.min(actual_L_pattern_life, Math.max(1, N_order));
     C_pattern_amortization = actual_C_pattern_total / denominator;
   }
@@ -201,6 +175,7 @@ export function calculateCastingPrice(input: CastingInput): CastingResult {
     C_machining_casting,
     C_pattern_amortization,
     COGS,
+    C_admin,
     pre_profit_price,
     P_CASTING,
     separate_pattern_cost,

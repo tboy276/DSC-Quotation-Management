@@ -64,12 +64,10 @@ export interface ForgingInput {
   DG_paint_per_kg?: number;        // Đơn giá sơn (VNĐ/kg)
   DG_clean_kg?: number;            // Đơn giá làm sạch/phun bi (VNĐ/kg)
 
-  // Optional override for Section 2 ops (cho trường hợp nhập tổng sẵn)
-  C_ops_override?: number;
+
 
   // Section 3 — Machining (Gia công cơ khí)
   machining_operations?: MachiningOperation[];
-  C_machining_override?: number;
   machining_notes?: string;        // Ghi chú chung cho khối CNC
 
   // Section 4 — Die Amortization (Khấu hao khuôn)
@@ -134,7 +132,6 @@ export interface CastingInput {
   DG_resin_core_per_kg?: number;          // Đơn giá thao cát nhựa (VNĐ/kg)
   m_core?: number;                        // Khối lượng cát ruột (kg)
   DG_core_sand_kg?: number;               // Đơn giá cát ruột (VNĐ/kg)
-  C_ops_override?: number;                // Chi phí công nghệ đúc override
 
   // Section 2 (Deprecated legacy fields kept optional for backward compatibility)
   DG_sinto_op?: number;
@@ -152,9 +149,6 @@ export interface CastingInput {
   DG_heat_treat_per_kg?: number; // Đơn giá nhiệt luyện (VNĐ/kg)
   DG_paint_per_kg?: number;      // Đơn giá sơn (VNĐ/kg)
   machining_operations?: MachiningOperation[];
-  C_coating?: number;         // Chi phí mạ (VNĐ/cái)
-  C_QA?: number;              // Chi phí kiểm định QA/QC (VNĐ/cái)
-  C_machining_override?: number;
   machining_notes?: string;
 
   // Section 4 — Pattern Amortization (Khấu hao mẫu đúc)
@@ -166,7 +160,6 @@ export interface CastingInput {
   C_pattern_total?: number;       // Tổng chi phí bộ mẫu đúc (VNĐ) - Legacy
   L_pattern_life?: number;        // Tuổi thọ bộ mẫu đúc (số sản phẩm) - Legacy
   pattern_cost_treatment: CostTreatment; // 'amortized' | 'separate'
-  C_pattern_amortization_override?: number;
 
   // Section 5 — Summary Parameters (Tổng hợp)
   quoted_moq?: number;        // MOQ Báo Giá (cái/lô)
@@ -208,6 +201,7 @@ export interface CastingResult {
 
   // Section 5 & Final Price
   COGS: number;                  // Giá vốn hàng bán (VNĐ)
+  C_admin: number;               // Chi phí quản lý (VNĐ)
   pre_profit_price: number;      // Giá trước lợi nhuận (VNĐ)
   P_CASTING: number;              // Giá bán đúc cuối cùng (VNĐ/cái)
   separate_pattern_cost?: number; // Khoản chi phí mẫu trả riêng nếu pattern_cost_treatment = 'separate'
@@ -236,10 +230,8 @@ export interface SawingInput {
   sawing_machine_type?: 'band_saw' | 'punch_cut'; 
   t_cut_sec?: number;              // Thời gian cắt phôi (giây)
   DG_sawing_machine_hour?: number; // Đơn giá máy cưa (VNĐ/giờ)
-  C_ops_override?: number;
 
   machining_operations?: MachiningOperation[];
-  C_machining_override?: number;
   machining_notes?: string;
   DG_heat_treat_per_kg?: number;
   DG_paint_per_kg?: number;
@@ -277,7 +269,6 @@ export interface MachiningInput {
   m_tinh?: number;     // Trọng lượng tinh sau gia công (kg)
 
   machining_operations?: MachiningOperation[];
-  C_machining_override?: number;
   machining_notes?: string;
   DG_heat_treat_per_kg?: number;
   DG_paint_per_kg?: number;

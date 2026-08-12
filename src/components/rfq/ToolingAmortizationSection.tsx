@@ -66,8 +66,9 @@ export const ToolingAmortizationSection: React.FC<ToolingAmortizationSectionProp
       {isAmortized ? (
         <div className="mt-3 pt-3 border-t border-[#F0F0EE] flex flex-wrap items-center justify-between gap-4 animate-fade-in">
           {/* Left: Input for amortization quantity */}
-          <div className="flex flex-wrap items-center gap-2">
-            <span className="text-xs text-[#555555] font-medium">Số lượng SP phân bổ:</span>
+          <div className="flex flex-col gap-1 w-full lg:w-auto">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="text-xs text-[#555555] font-medium">Số lượng SP phân bổ:</span>
             <div className="flex items-center">
               <input
                 type="number"
@@ -91,6 +92,10 @@ export const ToolingAmortizationSection: React.FC<ToolingAmortizationSectionProp
                 (Lấy theo tuổi thọ: {defaultLife.toLocaleString('vi-VN')} SP)
               </button>
             )}
+            </div>
+            <span className="text-[10px] text-[#787774] italic">
+              * Số lượng dùng để chia khấu hao {toolName} (có thể khác MOQ báo giá ở Section 5)
+            </span>
           </div>
 
           {/* Right: Inline calculation breakdown */}

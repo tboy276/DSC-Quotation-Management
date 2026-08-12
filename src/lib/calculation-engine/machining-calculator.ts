@@ -7,7 +7,6 @@ export function calculateMachiningPrice(input: MachiningInput): MachiningResult 
   const {
     m_tinh,
     machining_operations = [],
-    C_machining_override,
     k_mgmt,
     C_pack = 0,
     DG_pack_kg,
@@ -18,15 +17,10 @@ export function calculateMachiningPrice(input: MachiningInput): MachiningResult 
   } = input;
 
   // Section 1 — Gia công cơ khí (Machining)
-  let C_machining = 0;
-  if (C_machining_override !== undefined) {
-    C_machining = C_machining_override;
-  } else {
-    C_machining = machining_operations.reduce((total, op) => {
-      const opTimeHours = (op.t_prep_min + op.t_man_min) / 60;
-      return total + (opTimeHours * op.DG_machine_hour);
-    }, 0);
-  }
+  const C_machining = machining_operations.reduce((total, op) => {
+    const C_machining_i = (op.t_prep_min + op.t_man_min) * (op.DG_machine_hour / 60);
+    return total + C_machining_i;
+  }, 0);
 
   // Tiền vận chuyển và bao gói tính theo m_tinh
   const final_weight = m_tinh || 0;

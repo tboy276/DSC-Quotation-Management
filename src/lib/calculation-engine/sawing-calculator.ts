@@ -15,10 +15,8 @@ export function calculateSawingPrice(input: SawingInput): SawingResult {
     k_mgmt_mat = 0,
     use_m_tinh = false,
     t_cut_sec = 0,
-    DG_sawing_machine_hour = 0,
-    C_ops_override,
+    DG_sawing_machine_hour = 120000,
     machining_operations = [],
-    C_machining_override,
     k_mgmt,
     C_pack = 0,
     DG_pack_kg,
@@ -49,23 +47,13 @@ export function calculateSawingPrice(input: SawingInput): SawingResult {
   const C_mat_sawing = (m_chi * effective_DG_steel) - (m_bavia_forging * DG_scrap) - (m_bavia_cnc * DG_scrap_cnc_eff);
 
   // Section 2 — Công nghệ (Chỉ có cưa cắt)
-  let C_ops_sawing = 0;
-  if (C_ops_override !== undefined) {
-    C_ops_sawing = C_ops_override;
-  } else {
-    C_ops_sawing = (t_cut_sec / 3600) * DG_sawing_machine_hour;
-  }
+  const C_ops_sawing = (t_cut_sec / 3600) * DG_sawing_machine_hour;
 
   // Section 3 — Gia công cơ khí (Machining)
-  let C_machining = 0;
-  if (C_machining_override !== undefined) {
-    C_machining = C_machining_override;
-  } else {
-    C_machining = machining_operations.reduce((total, op) => {
-      const opTimeHours = (op.t_prep_min + op.t_man_min) / 60;
-      return total + (opTimeHours * op.DG_machine_hour);
-    }, 0);
-  }
+  const C_machining = machining_operations.reduce((total, op) => {
+    const C_machining_i = (op.t_prep_min + op.t_man_min) * (op.DG_machine_hour / 60);
+    return total + C_machining_i;
+  }, 0);
 
   // Tiền vận chuyển và bao gói tính theo m_tinh
   const final_weight = m_tinh || m_phoi || 0;
