@@ -10,6 +10,7 @@ import { formatDate } from '../../lib/format-date';
 import { QuotationPreviewPanel } from './QuotationPreviewPanel';
 import { Modal } from '../ui/Modal';
 import { ActionButton } from '../ui/ActionButton';
+import { useAuth } from '../../context/AuthContext';
 import {
   FileText,
   FileSpreadsheet,
@@ -35,6 +36,15 @@ export const DocumentDetailModal = ({
 
   const [items, setItems] = useState<QuotationDocumentItem[]>([]);
   const [showCustomizeModal, setShowCustomizeModal] = useState<boolean>(false);
+
+  const { profile, user } = useAuth();
+  const currentUserEmail = profile?.email || user?.email || '';
+
+  const canManageDocument = Boolean(
+    profile?.role === 'admin' ||
+    (profile?.id && document.created_by === profile.id) ||
+    (currentUserEmail && document.items?.[0]?.quote?.rfq?.created_by_email === currentUserEmail)
+  );
 
   useEffect(() => {
     if (document.items) {
@@ -180,26 +190,28 @@ export const DocumentDetailModal = ({
                   >
                     <div className="flex items-center space-x-3 flex-1">
                       {/* Reorder Buttons Up/Down */}
-                      <div className="flex flex-col space-y-0.5">
-                        <button
-                          type="button"
-                          disabled={index === 0}
-                          onClick={() => handleMoveItem(index, 'up')}
-                          className="p-0.5 rounded bg-[#F0F0EE] hover:bg-[#E0E0DE] disabled:opacity-30 cursor-pointer"
-                          title="Di chuyển dòng lên"
-                        >
-                          <ArrowUp className="w-3 h-3 text-[#111111]" />
-                        </button>
-                        <button
-                          type="button"
-                          disabled={index === items.length - 1}
-                          onClick={() => handleMoveItem(index, 'down')}
-                          className="p-0.5 rounded bg-[#F0F0EE] hover:bg-[#E0E0DE] disabled:opacity-30 cursor-pointer"
-                          title="Di chuyển dòng xuống"
-                        >
-                          <ArrowDown className="w-3 h-3 text-[#111111]" />
-                        </button>
-                      </div>
+                      {canManageDocument && (
+                        <div className="flex flex-col space-y-0.5">
+                          <button
+                            type="button"
+                            disabled={index === 0}
+                            onClick={() => handleMoveItem(index, 'up')}
+                            className="p-0.5 rounded bg-[#F0F0EE] hover:bg-[#E0E0DE] disabled:opacity-30 cursor-pointer"
+                            title="Di chuyển dòng lên"
+                          >
+                            <ArrowUp className="w-3 h-3 text-[#111111]" />
+                          </button>
+                          <button
+                            type="button"
+                            disabled={index === items.length - 1}
+                            onClick={() => handleMoveItem(index, 'down')}
+                            className="p-0.5 rounded bg-[#F0F0EE] hover:bg-[#E0E0DE] disabled:opacity-30 cursor-pointer"
+                            title="Di chuyển dòng xuống"
+                          >
+                            <ArrowDown className="w-3 h-3 text-[#111111]" />
+                          </button>
+                        </div>
+                      )}
 
                       <span className="w-5 h-5 rounded-full bg-[#111111] text-white flex items-center justify-center font-bold text-[10px] flex-shrink-0">
                         {index + 1}
@@ -226,7 +238,7 @@ export const DocumentDetailModal = ({
                       <QuoteStatusBadge status={itemStatus} size="sm" />
 
                       {/* Inline Status Toggle */}
-                      {(String(itemStatus) === 'QUOTED_SENT' || String(itemStatus) === 'SENT') && (
+                      {canManageDocument && (String(itemStatus) === 'QUOTED_SENT' || String(itemStatus) === 'SENT') && (
                         <div className="flex items-center space-x-1">
                           <button
                             onClick={() => handleItemStatusChange(q.id, 'SUCCESSFUL')}

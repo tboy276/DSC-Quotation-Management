@@ -363,8 +363,12 @@ export const QuotationsManager = () => {
   const canManageQuote = (quote?: QuoteRecord | null): boolean => {
     if (!quote) return false;
     if (profile?.role === 'admin') return true;
+    const creatorId = quote.rfq?.created_by;
     const creatorEmail = quote.rfq?.created_by_email || quote.created_by_email;
-    return Boolean(currentUserEmail && creatorEmail === currentUserEmail);
+    return Boolean(
+      (profile?.id && creatorId === profile.id) || 
+      (currentUserEmail && creatorEmail === currentUserEmail)
+    );
   };
 
   // Flat Table Column Header Sort Handler
