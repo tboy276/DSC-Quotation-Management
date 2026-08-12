@@ -83,8 +83,8 @@ export const RealtimeSummaryPanel = () => {
   } else if (segment === 'sawing') {
     const res = getSawingResult();
     C_mat = res.C_mat_sawing;
-    C_ops = res.C_ops_sawing;
-    C_machining = res.C_machining;
+    C_ops = 0;
+    C_machining = (res.C_ops_sawing || 0) + (res.C_machining || 0);
     C_amortization = 0;
     COGS = res.COGS;
     pre_profit_price = res.pre_profit_price;
@@ -232,14 +232,16 @@ export const RealtimeSummaryPanel = () => {
           </div>
 
           {/* Section 2 */}
-          <div className="flex justify-between items-center py-1 border-b border-[#F0F0EE]">
-            <span className="text-[#2F3437] font-sans">
-              2. Công nghệ {segment === 'forging' ? '& Nhiệt luyện' : segment === 'casting' ? 'Tạo khuôn & Lò/Gầu (Phần A)' : 'cắt/gia công'}:
-            </span>
-            <span className="font-bold text-[#111111]">
-              {formatCurrencyValue(C_ops, currency, exchangeRate)}
-            </span>
-          </div>
+          {segment !== 'sawing' && (
+            <div className="flex justify-between items-center py-1 border-b border-[#F0F0EE]">
+              <span className="text-[#2F3437] font-sans">
+                2. Công nghệ {segment === 'forging' ? '& Nhiệt luyện' : segment === 'casting' ? 'Tạo khuôn & Lò/Gầu (Phần A)' : 'cắt/gia công'}:
+              </span>
+              <span className="font-bold text-[#111111]">
+                {formatCurrencyValue(C_ops, currency, exchangeRate)}
+              </span>
+            </div>
+          )}
 
           {/* Part A unit rate reference for Casting */}
           {!isForging && castingRes && (
@@ -275,7 +277,7 @@ export const RealtimeSummaryPanel = () => {
 
           {/* Section 3 */}
           <div className="flex justify-between items-center py-1 border-b border-[#F0F0EE]">
-            <span className="text-[#2F3437] font-sans">3. Gia công cơ khí CNC (C_machining):</span>
+            <span className="text-[#2F3437] font-sans">3. Gia công cơ khí CNC (C_machining){segment === 'sawing' ? ' - gồm cưa phôi' : ''}:</span>
             <span className="font-bold text-[#111111]">
               {formatCurrencyValue(C_machining, currency, exchangeRate)}
             </span>

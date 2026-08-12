@@ -61,8 +61,8 @@ export const exportDocumentToExcel = (document: QuotationDocument) => {
       fallbackPrice = res.P_CASTING ?? 0;
     } else if (seg === 'sawing') {
       materialCostVnd = res.C_mat_sawing ?? 0;
-      formingCostVnd = res.C_ops_sawing ?? 0;
-      machiningCostVnd = res.C_machining ?? 0;
+      formingCostVnd = 0;
+      machiningCostVnd = (res.C_ops_sawing ?? 0) + (res.C_machining ?? 0);
       heatTreatCostVnd = res.C_heat_treat ?? 0;
       paintCostVnd = res.C_paint ?? 0;
       fallbackPrice = res.P_SAWING ?? 0;
