@@ -369,10 +369,10 @@ export const CastingCalculatorForm = () => {
         onDGPaintChange={(val) => setCastingField('DG_paint_per_kg', val)}
         COGS={res.COGS}
         C_mgmt={res.C_admin}
-        C_trans={(casting.DG_trans_kg || 0) * m_cast}
-        C_pack={casting.DG_pack_kg !== undefined ? (casting.DG_pack_kg * m_cast) : (casting.C_pack || 0)}
+        C_trans={res.C_trans}
+        C_pack={res.C_pack}
         pre_profit_price={res.pre_profit_price}
-        profit_amount={res.P_CASTING - res.pre_profit_price}
+        profit_amount={res.C_profit}
         final_price={res.P_CASTING}
       />
       

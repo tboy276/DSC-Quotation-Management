@@ -471,11 +471,11 @@ export const ForgingCalculatorForm = () => {
         DG_paint_per_kg={forging.DG_paint_per_kg}
         onDGPaintChange={(val) => setForgingField('DG_paint_per_kg', val)}
         COGS={res.COGS}
-        C_mgmt={res.COGS * ((forging.k_mgmt || 0) / 100)}
-        C_trans={(forging.DG_trans_kg || 0) * res.shipping_weight_kg}
-        C_pack={forging.DG_pack_kg !== undefined ? (forging.DG_pack_kg * res.shipping_weight_kg) : (forging.C_pack || 0)}
+        C_mgmt={res.C_mgmt}
+        C_trans={res.C_trans}
+        C_pack={res.C_pack}
         pre_profit_price={res.pre_profit_price}
-        profit_amount={res.P_FORGING - res.pre_profit_price}
+        profit_amount={res.C_profit}
         final_price={res.P_FORGING}
       />
     </div>

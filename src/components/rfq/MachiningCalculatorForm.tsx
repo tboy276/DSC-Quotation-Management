@@ -43,13 +43,13 @@ export default function MachiningCalculatorForm() {
               <div className="flex justify-between items-center">
                 <span className="text-[#2F3437] font-sans">Chi phí bao gói:</span>
                 <span className="font-bold text-[#111111]">
-                  {Math.round(machining.DG_pack_kg ? (machining.m_tinh || 0) * machining.DG_pack_kg : (machining.C_pack || 0)).toLocaleString('vi-VN')} đ
+                  {Math.round(res.C_pack || 0).toLocaleString('vi-VN')} đ
                 </span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-[#2F3437] font-sans">Chi phí vận chuyển:</span>
                 <span className="font-bold text-[#111111]">
-                  {Math.round((machining.m_tinh || 0) * machining.DG_trans_kg).toLocaleString('vi-VN')} đ
+                  {Math.round(res.C_trans || 0).toLocaleString('vi-VN')} đ
                 </span>
               </div>
             </div>
@@ -87,11 +87,11 @@ export default function MachiningCalculatorForm() {
         DG_paint_per_kg={machining.DG_paint_per_kg}
         onDGPaintChange={(val) => setMachiningField('DG_paint_per_kg', val)}
         COGS={res.COGS}
-        C_mgmt={res.COGS * (machining.k_mgmt / 100)}
-        C_trans={(machining.m_tinh || 0) * machining.DG_trans_kg}
-        C_pack={machining.DG_pack_kg ? (machining.m_tinh || 0) * machining.DG_pack_kg : (machining.C_pack || 0)}
+        C_mgmt={res.C_mgmt}
+        C_trans={res.C_trans}
+        C_pack={res.C_pack}
         pre_profit_price={res.pre_profit_price}
-        profit_amount={res.P_MACHINING - res.pre_profit_price}
+        profit_amount={res.C_profit}
         final_price={res.P_MACHINING}
       />
     </div>

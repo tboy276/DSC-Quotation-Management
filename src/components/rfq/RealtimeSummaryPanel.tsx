@@ -47,12 +47,22 @@ export const RealtimeSummaryPanel = () => {
   let C_machining = 0;
   let C_amortization = 0;
   let COGS = 0;
+  let C_mgmt = 0;
+  let C_pack = 0;
+  let C_trans = 0;
   let pre_profit_price = 0;
+  let C_profit = 0;
   let finalPriceVnd = 0;
   let profitMarginPercent = 0;
   let isSeparateTooling = false;
   let separateToolingAmountVnd = 0;
   let segmentLabel = '';
+  
+  let k_mgmt_percent = 0;
+  let shipping_weight = 0;
+  let pack_rate = 0;
+  let pack_total = 0;
+  let trans_rate = 0;
 
   if (segment === 'forging') {
     const res = getForgingResult();
@@ -61,12 +71,22 @@ export const RealtimeSummaryPanel = () => {
     C_machining = res.C_machining;
     C_amortization = res.C_die_amortization;
     COGS = res.COGS;
+    C_mgmt = res.C_mgmt;
+    C_pack = res.C_pack;
+    C_trans = res.C_trans;
     pre_profit_price = res.pre_profit_price;
+    C_profit = res.C_profit;
     finalPriceVnd = res.P_FORGING;
     profitMarginPercent = forgingInput.k_profit_forging;
     isSeparateTooling = forgingInput.die_cost_treatment === 'separate';
     separateToolingAmountVnd = isSeparateTooling ? (res.actual_C_die_total ?? (forgingInput.C_die_total || 0)) : 0;
     segmentLabel = 'Công Nghệ Rèn Dập (Forging)';
+    
+    k_mgmt_percent = forgingInput.k_mgmt;
+    shipping_weight = forgingInput.m_tinh || forgingInput.m_phoi || forgingInput.m_chi || 0;
+    pack_rate = forgingInput.DG_pack_kg || 0;
+    pack_total = forgingInput.C_pack || 0;
+    trans_rate = forgingInput.DG_trans_kg;
   } else if (segment === 'casting') {
     const res = getCastingResult();
     C_mat = res.C_metal_casting;
@@ -74,12 +94,22 @@ export const RealtimeSummaryPanel = () => {
     C_machining = res.C_machining_casting;
     C_amortization = res.C_pattern_amortization;
     COGS = res.COGS;
+    C_mgmt = res.C_admin;
+    C_pack = res.C_pack;
+    C_trans = res.C_trans;
     pre_profit_price = res.pre_profit_price;
+    C_profit = res.C_profit;
     finalPriceVnd = res.P_CASTING;
     profitMarginPercent = castingInput.k_profit_casting;
     isSeparateTooling = castingInput.pattern_cost_treatment === 'separate';
     separateToolingAmountVnd = isSeparateTooling ? (res.actual_C_pattern_total ?? (castingInput.C_pattern_total || 0)) : 0;
     segmentLabel = 'Công Nghệ Đúc Gang (Iron Casting)';
+    
+    k_mgmt_percent = castingInput.k_mgmt_cast;
+    shipping_weight = castingInput.m_tinh || castingInput.m_cast || 0;
+    pack_rate = castingInput.DG_pack_kg || 0;
+    pack_total = castingInput.C_pack || 0;
+    trans_rate = castingInput.DG_trans_kg;
   } else if (segment === 'sawing') {
     const res = getSawingResult();
     C_mat = res.C_mat_sawing;
@@ -87,10 +117,20 @@ export const RealtimeSummaryPanel = () => {
     C_machining = (res.C_ops_sawing || 0) + (res.C_machining || 0);
     C_amortization = 0;
     COGS = res.COGS;
+    C_mgmt = res.C_mgmt;
+    C_pack = res.C_pack;
+    C_trans = res.C_trans;
     pre_profit_price = res.pre_profit_price;
+    C_profit = res.C_profit;
     finalPriceVnd = res.P_SAWING;
     profitMarginPercent = sawingInput.k_profit_sawing;
     segmentLabel = 'Phôi Cưa & Gia Công (Sawing)';
+    
+    k_mgmt_percent = sawingInput.k_mgmt;
+    shipping_weight = sawingInput.m_tinh || sawingInput.m_phoi || 0;
+    pack_rate = sawingInput.DG_pack_kg || 0;
+    pack_total = sawingInput.C_pack || 0;
+    trans_rate = sawingInput.DG_trans_kg;
   } else if (segment === 'machining') {
     const res = getMachiningResult();
     C_mat = 0;
@@ -98,10 +138,20 @@ export const RealtimeSummaryPanel = () => {
     C_machining = res.C_machining;
     C_amortization = 0;
     COGS = res.COGS;
+    C_mgmt = res.C_mgmt;
+    C_pack = res.C_pack;
+    C_trans = res.C_trans;
     pre_profit_price = res.pre_profit_price;
+    C_profit = res.C_profit;
     finalPriceVnd = res.P_MACHINING;
     profitMarginPercent = machiningInput.k_profit_machining;
     segmentLabel = 'Chỉ Gia Công CNC (Machining Only)';
+    
+    k_mgmt_percent = machiningInput.k_mgmt;
+    shipping_weight = machiningInput.m_tinh || 0;
+    pack_rate = machiningInput.DG_pack_kg || 0;
+    pack_total = machiningInput.C_pack || 0;
+    trans_rate = machiningInput.DG_trans_kg;
   }
 
   const isForging = segment === 'forging';
@@ -111,6 +161,12 @@ export const RealtimeSummaryPanel = () => {
   const deltaPriceVnd = finalPriceVnd - targetPriceVnd;
 
   const currencies: CurrencyType[] = ['VND', 'USD', 'JPY', 'EUR'];
+
+  const baseMgmtIdx = segment === 'machining' ? 1 : segment === 'sawing' ? 2 : 4;
+  const idxMgmt = baseMgmtIdx + 1;
+  const idxPack = baseMgmtIdx + 2;
+  const idxTrans = baseMgmtIdx + 3;
+  const idxPreProfit = baseMgmtIdx + 4;
 
   return (
     <div className="bg-white rounded-[12px] border border-[#EAEAEA] shadow-[0_4px_16px_rgba(0,0,0,0.04)] p-5 space-y-5 sticky top-20">
@@ -203,6 +259,7 @@ export const RealtimeSummaryPanel = () => {
             <p className="text-base font-extrabold font-mono text-[#111111]">
               {formatCurrencyValue(finalPriceVnd, currency, exchangeRate)}
             </p>
+            <p className="text-[9px] font-mono text-[#787774]">= C_pre_profit + Profit</p>
           </div>
         </div>
 
@@ -298,26 +355,80 @@ export const RealtimeSummaryPanel = () => {
           )}
 
           {/* COGS */}
-          <div className="flex justify-between items-center py-1.5 bg-[#FBFBFA] px-2 rounded-[4px] font-bold">
-            <span className="text-[#111111] font-sans">➜ Tổng Giá Vốn COGS:</span>
-            <span className="text-[#111111]">
-              {formatCurrencyValue(COGS, currency, exchangeRate)}
-            </span>
+          <div className="py-1.5 bg-[#FBFBFA] px-2 rounded-[4px]">
+            <div className="flex justify-between items-center font-bold">
+              <span className="text-[#111111] font-sans">➜ Tổng Giá Vốn COGS:</span>
+              <span className="text-[#111111]">
+                {formatCurrencyValue(COGS, currency, exchangeRate)}
+              </span>
+            </div>
+            <p className="text-[10px] text-[#787774] mt-0.5">
+              = C_mat + C_ops + C_machining + C_amortization
+            </p>
+          </div>
+
+          {/* C_mgmt */}
+          <div className="py-1 border-b border-[#F0F0EE]">
+            <div className="flex justify-between items-center">
+              <span className="text-[#2F3437] font-sans">{idxMgmt}. Chi phí quản lý ({segment === 'casting' ? 'C_admin' : 'C_mgmt'}):</span>
+              <span className="font-bold text-[#111111]">
+                {formatCurrencyValue(C_mgmt, currency, exchangeRate)}
+              </span>
+            </div>
+            <p className="text-[10px] text-[#787774] mt-0.5">
+              = COGS × {k_mgmt_percent}%
+            </p>
+          </div>
+
+          {/* C_pack */}
+          <div className="py-1 border-b border-[#F0F0EE]">
+            <div className="flex justify-between items-center">
+              <span className="text-[#2F3437] font-sans">{idxPack}. Chi phí bao gói (C_pack):</span>
+              <span className="font-bold text-[#111111]">
+                {formatCurrencyValue(C_pack, currency, exchangeRate)}
+              </span>
+            </div>
+            <p className="text-[10px] text-[#787774] mt-0.5">
+              {pack_rate > 0 ? `= m_tinh (${shipping_weight}kg) × ${pack_rate.toLocaleString('vi-VN')} đ/kg` : `= ${pack_total.toLocaleString('vi-VN')} đ/chi tiết`}
+            </p>
+          </div>
+
+          {/* C_trans */}
+          <div className="py-1 border-b border-[#F0F0EE]">
+            <div className="flex justify-between items-center">
+              <span className="text-[#2F3437] font-sans">{idxTrans}. Chi phí vận chuyển (C_trans):</span>
+              <span className="font-bold text-[#111111]">
+                {formatCurrencyValue(C_trans, currency, exchangeRate)}
+              </span>
+            </div>
+            <p className="text-[10px] text-[#787774] mt-0.5">
+              = Trọng lượng ({shipping_weight}kg) × {trans_rate.toLocaleString('vi-VN')} đ/kg
+            </p>
           </div>
 
           {/* Section 5 Costs & Profit */}
-          <div className="flex justify-between items-center py-1 border-b border-[#F0F0EE]">
-            <span className="text-[#2F3437] font-sans">{segment === 'machining' ? '2' : segment === 'sawing' ? '3' : '5'}. Chi phí trước lợi nhuận (C_pre_profit):</span>
-            <span className="font-bold text-[#111111]">
-              {formatCurrencyValue(pre_profit_price, currency, exchangeRate)}
-            </span>
+          <div className="py-1 border-b border-[#F0F0EE]">
+            <div className="flex justify-between items-center">
+              <span className="text-[#2F3437] font-sans">{idxPreProfit}. Chi phí trước lợi nhuận (C_pre_profit):</span>
+              <span className="font-bold text-[#111111]">
+                {formatCurrencyValue(pre_profit_price, currency, exchangeRate)}
+              </span>
+            </div>
+            <p className="text-[10px] text-[#787774] mt-0.5">
+              = COGS + C_mgmt + C_pack + C_trans
+            </p>
           </div>
 
-          <div className="flex justify-between items-center py-1 border-b border-[#F0F0EE]">
-            <span className="text-[#2F3437] font-sans">Lợi nhuận mục tiêu (Profit {profitMarginPercent}%):</span>
-            <span className="font-bold text-[#346538]">
-              +{formatCurrencyValue(profitAmountVnd, currency, exchangeRate)}
-            </span>
+          <div className="py-1 border-b border-[#F0F0EE]">
+            <div className="flex justify-between items-center">
+              <span className="text-[#2F3437] font-sans">Lợi nhuận mục tiêu (Profit {profitMarginPercent}%):</span>
+              <span className="font-bold text-[#346538]">
+                +{formatCurrencyValue(C_profit, currency, exchangeRate)}
+              </span>
+            </div>
+            <p className="text-[10px] text-[#787774] mt-0.5">
+              = C_pre_profit × {profitMarginPercent}%
+            </p>
           </div>
         </div>
       </div>

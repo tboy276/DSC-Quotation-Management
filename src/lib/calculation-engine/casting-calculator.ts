@@ -154,7 +154,8 @@ export function calculateCastingPrice(input: CastingInput): CastingResult {
   const actual_C_pack = DG_pack_kg !== undefined && DG_pack_kg > 0 ? DG_pack_kg * final_weight : (C_pack || 0);
   const pre_profit_price = COGS + C_admin + actual_C_pack + C_transport;
 
-  const P_CASTING = Math.round(pre_profit_price * (1 + k_profit_casting / 100));
+  const C_profit = pre_profit_price * (k_profit_casting / 100);
+  const P_CASTING = Math.round(pre_profit_price + C_profit);
 
   return {
     m_liquid,
@@ -179,7 +180,10 @@ export function calculateCastingPrice(input: CastingInput): CastingResult {
     C_pattern_amortization,
     COGS,
     C_admin,
+    C_pack: actual_C_pack,
+    C_trans: C_transport,
     pre_profit_price,
+    C_profit,
     P_CASTING,
     separate_pattern_cost,
     actual_C_pattern_total,

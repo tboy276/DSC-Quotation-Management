@@ -103,7 +103,11 @@ export interface ForgingResult {
   C_paint: number;            // Chi phí sơn (VNĐ)
   C_die_amortization: number; // Chi phí khấu hao khuôn (/chi tiết) (VNĐ)
   COGS: number;               // Giá vốn hàng bán (VNĐ)
+  C_mgmt: number;             // Chi phí quản lý (VNĐ)
+  C_pack: number;             // Chi phí bao gói (VNĐ)
+  C_trans: number;            // Chi phí vận chuyển (VNĐ)
   pre_profit_price: number;   // Giá trước lợi nhuận (VNĐ)
+  C_profit: number;           // Lợi nhuận (VNĐ)
   P_FORGING: number;          // Giá bán rèn dập cuối cùng (VNĐ/cái)
   separate_die_cost?: number; // Khoản chi phí khuôn trả riêng nếu die_cost_treatment = 'separate'
   actual_C_die_total?: number;
@@ -202,7 +206,10 @@ export interface CastingResult {
   // Section 5 & Final Price
   COGS: number;                  // Giá vốn hàng bán (VNĐ)
   C_admin: number;               // Chi phí quản lý (VNĐ)
+  C_pack: number;                // Chi phí bao gói (VNĐ)
+  C_trans: number;               // Chi phí vận chuyển (VNĐ)
   pre_profit_price: number;      // Giá trước lợi nhuận (VNĐ)
+  C_profit: number;              // Lợi nhuận (VNĐ)
   P_CASTING: number;              // Giá bán đúc cuối cùng (VNĐ/cái)
   separate_pattern_cost?: number; // Khoản chi phí mẫu trả riêng nếu pattern_cost_treatment = 'separate'
   actual_C_pattern_total?: number;
@@ -256,6 +263,8 @@ export interface SawingResult {
   C_paint: number;            // Chi phí sơn (VNĐ)
   COGS: number;               // Giá vốn hàng bán thuần (VNĐ)
   C_mgmt: number;             // Chi phí quản lý (VNĐ)
+  C_pack: number;             // Chi phí bao gói (VNĐ)
+  C_trans: number;            // Chi phí vận chuyển (VNĐ)
   pre_profit_price: number;   // Giá trước lợi nhuận (VNĐ)
   C_profit: number;           // Lợi nhuận (VNĐ)
   P_SAWING: number;           // Giá bán cuối cùng (VNĐ/cái)
@@ -287,6 +296,8 @@ export interface MachiningResult {
   C_paint: number;            // Chi phí sơn (VNĐ)
   COGS: number;               // Giá vốn hàng bán thuần (VNĐ)
   C_mgmt: number;             // Chi phí quản lý (VNĐ)
+  C_pack: number;             // Chi phí bao gói (VNĐ)
+  C_trans: number;            // Chi phí vận chuyển (VNĐ)
   pre_profit_price: number;   // Giá trước lợi nhuận (VNĐ)
   C_profit: number;           // Lợi nhuận (VNĐ)
   P_MACHINING: number;        // Giá bán cuối cùng (VNĐ/cái)

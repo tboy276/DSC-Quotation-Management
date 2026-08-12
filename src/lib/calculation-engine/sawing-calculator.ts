@@ -88,6 +88,8 @@ export function calculateSawingPrice(input: SawingInput): SawingResult {
     C_paint,
     COGS,
     C_mgmt,
+    C_pack: computed_C_pack,
+    C_trans,
     pre_profit_price,
     C_profit,
     P_SAWING,

@@ -119,10 +119,12 @@ export function calculateForgingPrice(input: ForgingInput): ForgingResult {
 
   const shipping_weight_kg = m_tinh || m_phoi || m_chi || 0;
   const actual_C_pack = DG_pack_kg !== undefined && DG_pack_kg > 0 ? DG_pack_kg * shipping_weight_kg : (C_pack || 0);
-  const pre_profit_price =
-    COGS * (1 + k_mgmt / 100) + actual_C_pack + (shipping_weight_kg * DG_trans_kg);
+  const C_mgmt_val = COGS * (k_mgmt / 100);
+  const C_trans_val = shipping_weight_kg * DG_trans_kg;
+  const pre_profit_price = COGS + C_mgmt_val + actual_C_pack + C_trans_val;
 
-  const P_FORGING = Math.round(pre_profit_price * (1 + k_profit_forging / 100));
+  const C_profit_val = pre_profit_price * (k_profit_forging / 100);
+  const P_FORGING = Math.round(pre_profit_price + C_profit_val);
 
   return {
     m_phoi: m_chi, // Legacy mapping in result (Trọng lượng chi)
@@ -136,7 +138,11 @@ export function calculateForgingPrice(input: ForgingInput): ForgingResult {
     C_paint,
     C_die_amortization,
     COGS,
+    C_mgmt: C_mgmt_val,
+    C_pack: actual_C_pack,
+    C_trans: C_trans_val,
     pre_profit_price,
+    C_profit: C_profit_val,
     P_FORGING,
     separate_die_cost,
     actual_C_die_total,

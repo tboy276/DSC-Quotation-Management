@@ -315,11 +315,11 @@ export default function SawingCalculatorForm() {
         DG_paint_per_kg={sawing.DG_paint_per_kg}
         onDGPaintChange={(val) => setSawingField('DG_paint_per_kg', val)}
         COGS={res.COGS}
-        C_mgmt={res.COGS * (sawing.k_mgmt / 100)}
-        C_trans={(sawing.m_tinh || sawing.m_phoi || 0) * sawing.DG_trans_kg}
-        C_pack={sawing.DG_pack_kg ? (sawing.m_tinh || sawing.m_phoi || 0) * sawing.DG_pack_kg : (sawing.C_pack || 0)}
+        C_mgmt={res.C_mgmt}
+        C_trans={res.C_trans}
+        C_pack={res.C_pack}
         pre_profit_price={res.pre_profit_price}
-        profit_amount={res.P_SAWING - res.pre_profit_price}
+        profit_amount={res.C_profit}
         final_price={res.P_SAWING}
       />
     </div>
