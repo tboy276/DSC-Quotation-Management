@@ -257,7 +257,6 @@ export const useQuotationStore = create<QuotationStoreState>((set, get) => ({
     ],
     machining_notes: '',
 
-    N_order: 20000,
     k_mgmt: 8,
     DG_trans_kg: defaultTransRate,
     DG_pack_kg: 0,
@@ -389,7 +388,6 @@ export const useQuotationStore = create<QuotationStoreState>((set, get) => ({
             { name: 'Tiện CNC', t_prep_min: 2.0, t_man_min: 3.5, DG_machine_hour: 234000 },
           ],
           machining_notes: '',
-          N_order: 20000,
           k_mgmt: 8,
           DG_trans_kg: defaultTransRate,
           DG_pack_kg: 0,

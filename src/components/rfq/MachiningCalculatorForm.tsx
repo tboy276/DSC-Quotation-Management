@@ -36,6 +36,26 @@ export default function MachiningCalculatorForm() {
             </div>
           </div>
         }
+        mainRightContent={
+          <div className="bg-[#FBFBFA] rounded-[6px] border border-[#EAEAEA] p-3 space-y-2">
+            <h4 className="text-[10px] font-bold text-[#787774] uppercase tracking-wider">Dự Toán Bao Gói & Vận Chuyển</h4>
+            <div className="space-y-1.5 text-xs font-mono">
+              <div className="flex justify-between items-center">
+                <span className="text-[#2F3437] font-sans">Chi phí bao gói:</span>
+                <span className="font-bold text-[#111111]">
+                  {Math.round(machining.DG_pack_kg ? (machining.m_tinh || 0) * machining.DG_pack_kg : (machining.C_pack || 0)).toLocaleString('vi-VN')} đ
+                </span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-[#2F3437] font-sans">Chi phí vận chuyển:</span>
+                <span className="font-bold text-[#111111]">
+                  {Math.round((machining.m_tinh || 0) * machining.DG_trans_kg).toLocaleString('vi-VN')} đ
+                </span>
+              </div>
+            </div>
+            <p className="text-[9px] text-[#787774] mt-2 font-sans italic">* Chi phí dự kiến, thay đổi theo đơn giá tại Section 5</p>
+          </div>
+        }
       />
 
       {/* Machining */}

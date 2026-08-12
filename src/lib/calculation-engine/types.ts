@@ -274,7 +274,6 @@ export interface MachiningInput {
   DG_paint_per_kg?: number;
 
   quoted_moq?: number;        // MOQ Báo Giá (cái/lô)
-  N_order?: number;           // Số lượng đơn hàng
   k_mgmt: number;             // Phần trăm chi phí quản lý %
   C_pack?: number;            // Chi phí đóng gói (VNĐ/chi tiết)
   DG_pack_kg?: number;        // Đơn giá đóng gói (VNĐ/kg)

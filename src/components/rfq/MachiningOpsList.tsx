@@ -164,7 +164,8 @@ export const MachiningOpsList = ({
         })?.key || 'cnc_type_3';
         
         const currentCncType = cncMachineTypes.find(c => c.key === matchedCncKey) || cncMachineTypes[2];
-        const ratePerMin = currentCncType ? (currentCncType.ratePerMinute >= 1000 ? `${currentCncType.ratePerMinute / 1000}k` : currentCncType.ratePerMinute) : (op.DG_machine_hour / 60);
+        const actualRatePerMin = op.DG_machine_hour / 60;
+        const ratePerMin = actualRatePerMin >= 1000 ? `${Math.round(actualRatePerMin / 1000)}k` : Math.round(actualRatePerMin);
 
         // Calculate cost for this specific op
         const opCost = (op.t_prep_min + op.t_man_min) * (op.DG_machine_hour / 60);

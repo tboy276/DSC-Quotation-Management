@@ -224,15 +224,17 @@ export const RealtimeSummaryPanel = () => {
 
         <div className="space-y-1.5 font-mono">
           {/* Section 1 */}
-          <div className="flex justify-between items-center py-1 border-b border-[#F0F0EE]">
-            <span className="text-[#2F3437] font-sans">1. Chi phí vật liệu (C_mat):</span>
-            <span className="font-bold text-[#111111]">
-              {formatCurrencyValue(C_mat, currency, exchangeRate)}
-            </span>
-          </div>
+          {segment !== 'machining' && (
+            <div className="flex justify-between items-center py-1 border-b border-[#F0F0EE]">
+              <span className="text-[#2F3437] font-sans">1. Chi phí vật liệu (C_mat):</span>
+              <span className="font-bold text-[#111111]">
+                {formatCurrencyValue(C_mat, currency, exchangeRate)}
+              </span>
+            </div>
+          )}
 
           {/* Section 2 */}
-          {segment !== 'sawing' && (
+          {segment !== 'sawing' && segment !== 'machining' && (
             <div className="flex justify-between items-center py-1 border-b border-[#F0F0EE]">
               <span className="text-[#2F3437] font-sans">
                 2. Công nghệ {segment === 'forging' ? '& Nhiệt luyện' : segment === 'casting' ? 'Tạo khuôn & Lò/Gầu (Phần A)' : 'cắt/gia công'}:
@@ -277,7 +279,7 @@ export const RealtimeSummaryPanel = () => {
 
           {/* Section 3 */}
           <div className="flex justify-between items-center py-1 border-b border-[#F0F0EE]">
-            <span className="text-[#2F3437] font-sans">3. Gia công cơ khí CNC (C_machining){segment === 'sawing' ? ' - gồm cưa phôi' : ''}:</span>
+            <span className="text-[#2F3437] font-sans">{segment === 'machining' ? '1' : segment === 'sawing' ? '2' : '3'}. Gia công cơ khí CNC (C_machining){segment === 'sawing' ? ' - gồm cưa phôi' : ''}:</span>
             <span className="font-bold text-[#111111]">
               {formatCurrencyValue(C_machining, currency, exchangeRate)}
             </span>
@@ -305,7 +307,7 @@ export const RealtimeSummaryPanel = () => {
 
           {/* Section 5 Costs & Profit */}
           <div className="flex justify-between items-center py-1 border-b border-[#F0F0EE]">
-            <span className="text-[#2F3437] font-sans">5. Chi phí trước lợi nhuận (C_pre_profit):</span>
+            <span className="text-[#2F3437] font-sans">{segment === 'machining' ? '2' : segment === 'sawing' ? '3' : '5'}. Chi phí trước lợi nhuận (C_pre_profit):</span>
             <span className="font-bold text-[#111111]">
               {formatCurrencyValue(pre_profit_price, currency, exchangeRate)}
             </span>
