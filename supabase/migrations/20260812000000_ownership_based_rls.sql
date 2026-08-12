@@ -126,12 +126,12 @@ CREATE POLICY "Write quotation_document_items" ON public.quotation_document_item
   FOR ALL USING (
     EXISTS (
       SELECT 1 FROM public.quotation_documents d
-      WHERE d.id = quotation_document_items.document_id AND (d.created_by = auth.uid() OR public.current_user_role() = 'admin')
+      WHERE d.id = quotation_document_items.quotation_document_id AND (d.created_by = auth.uid() OR public.current_user_role() = 'admin')
     )
   ) WITH CHECK (
     EXISTS (
       SELECT 1 FROM public.quotation_documents d
-      WHERE d.id = quotation_document_items.document_id AND (d.created_by = auth.uid() OR public.current_user_role() = 'admin')
+      WHERE d.id = quotation_document_items.quotation_document_id AND (d.created_by = auth.uid() OR public.current_user_role() = 'admin')
     )
   );
 
