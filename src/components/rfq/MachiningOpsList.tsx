@@ -162,8 +162,6 @@ export const MachiningOpsList = ({
           const sysRate = INITIAL_SYSTEM_RATES.find(r => r.rate_key === c.key)?.value || c.ratePerHour;
           return sysRate === op.DG_machine_hour;
         })?.key || 'cnc_type_3';
-        
-        const currentCncType = cncMachineTypes.find(c => c.key === matchedCncKey) || cncMachineTypes[2];
         const actualRatePerMin = op.DG_machine_hour / 60;
         const ratePerMin = actualRatePerMin >= 1000 ? `${Math.round(actualRatePerMin / 1000)}k` : Math.round(actualRatePerMin);
 
