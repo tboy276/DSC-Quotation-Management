@@ -135,21 +135,31 @@ export const ForgingCalculatorForm = () => {
 
             {/* 7. TL phôi */}
             <div className="flex items-center justify-between py-2 border-b border-[#EAEAEA]">
-              <label className="font-bold text-[#787774]">7. Trọng lượng phôi rèn (m_phoi - kg):</label>
+              <div className="flex flex-col">
+                <label className="font-bold text-[#787774]">7. Trọng lượng phôi rèn (m_phoi - kg):</label>
+                {forging.m_chi > 0 && forging.m_phoi > forging.m_chi && (
+                  <span className="text-[10px] text-red-500 font-normal">⚠️ Phôi không được lớn hơn TL Chi ({forging.m_chi}kg)</span>
+                )}
+              </div>
               <input
                 type="number"
                 min="0"
                 step="0.01"
                 value={forging.m_phoi}
                 onChange={(e) => setForgingField('m_phoi', Math.max(0, Number(e.target.value)))}
-                className="w-1/2 min-w-[200px] px-2 py-1.5 border border-[#EAEAEA] rounded-[4px] font-mono font-bold text-[#111111] text-right"
+                className={`w-1/2 min-w-[200px] px-2 py-1.5 border rounded-[4px] font-mono font-bold text-right ${forging.m_chi > 0 && forging.m_phoi > forging.m_chi ? 'border-red-500 bg-red-50 text-red-700' : 'border-[#EAEAEA] bg-white text-[#111111]'}`}
               />
             </div>
 
             {/* 8. TL tinh + Checkbox */}
             <div className="flex items-center justify-between py-2 border-b border-[#EAEAEA]">
               <div className="flex items-center space-x-2">
-                <label className="font-bold text-[#787774]">8. TL tinh sau gia công (kg):</label>
+                <div className="flex flex-col">
+                  <label className="font-bold text-[#787774]">8. TL tinh sau gia công (kg):</label>
+                  {forging.m_phoi > 0 && (forging.m_tinh || 0) > forging.m_phoi && (
+                    <span className="text-[10px] text-red-500 font-normal">⚠️ Tinh không được lớn hơn TL Phôi ({forging.m_phoi}kg)</span>
+                  )}
+                </div>
                 <div className="flex items-center space-x-1 border border-[#EAEAEA] px-1.5 py-0.5 rounded bg-[#F9F9F9] hover:bg-[#F0F0EE] transition-colors cursor-pointer" onClick={() => setForgingField('use_m_tinh', !forging.use_m_tinh)}>
                   <input
                     type="checkbox"
@@ -167,7 +177,7 @@ export const ForgingCalculatorForm = () => {
                 step="0.01"
                 value={forging.m_tinh || ''}
                 onChange={(e) => setForgingField('m_tinh', Math.max(0, Number(e.target.value)))}
-                className={`w-1/2 min-w-[200px] px-2 py-1.5 border rounded-[4px] font-mono font-bold text-right ${forging.use_m_tinh ? 'border-[#111111] bg-white text-[#111111]' : 'border-[#EAEAEA] bg-gray-50 text-gray-500'}`}
+                className={`w-1/2 min-w-[200px] px-2 py-1.5 border rounded-[4px] font-mono font-bold text-right ${forging.m_phoi > 0 && (forging.m_tinh || 0) > forging.m_phoi ? 'border-red-500 bg-red-50 text-red-700' : forging.use_m_tinh ? 'border-[#111111] bg-white text-[#111111]' : 'border-[#EAEAEA] bg-gray-50 text-gray-500'}`}
               />
             </div>
 

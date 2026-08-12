@@ -48,10 +48,10 @@ export function calculateForgingPrice(input: ForgingInput): ForgingResult {
   let m_bavia_cnc = 0;
 
   if (use_m_tinh && m_tinh !== undefined) {
-    m_bavia_forging = (m_chi - m_phoi) * (1 - k_loss / 100);
+    m_bavia_forging = Math.max(0, (m_chi - m_phoi) * (1 - k_loss / 100));
     m_bavia_cnc = Math.max(0, m_phoi - m_tinh);
   } else {
-    m_bavia_forging = (m_chi - m_phoi) * (1 - k_loss / 100);
+    m_bavia_forging = Math.max(0, (m_chi - m_phoi) * (1 - k_loss / 100));
     m_bavia_cnc = 0;
   }
 
