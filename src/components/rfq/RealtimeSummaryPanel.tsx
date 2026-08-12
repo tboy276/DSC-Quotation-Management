@@ -46,6 +46,8 @@ export const RealtimeSummaryPanel = () => {
   let C_ops = 0;
   let C_machining = 0;
   let C_amortization = 0;
+  let C_heat_treat = 0;
+  let C_paint = 0;
   let COGS = 0;
   let C_mgmt = 0;
   let C_pack = 0;
@@ -63,12 +65,18 @@ export const RealtimeSummaryPanel = () => {
   let pack_rate = 0;
   let pack_total = 0;
   let trans_rate = 0;
+  
+  let cogsFormulaText = '';
+  let showHeatTreat = false;
+  let showPaint = false;
 
   if (segment === 'forging') {
     const res = getForgingResult();
     C_mat = res.C_mat_forging;
     C_ops = res.C_ops_forging;
     C_machining = res.C_machining;
+    C_heat_treat = res.C_heat_treat;
+    C_paint = res.C_paint;
     C_amortization = res.C_die_amortization;
     COGS = res.COGS;
     C_mgmt = res.C_mgmt;
@@ -87,11 +95,21 @@ export const RealtimeSummaryPanel = () => {
     pack_rate = forgingInput.DG_pack_kg || 0;
     pack_total = forgingInput.C_pack || 0;
     trans_rate = forgingInput.DG_trans_kg;
+    showHeatTreat = C_heat_treat > 0 || (forgingInput.DG_heat_treat_per_kg || 0) > 0;
+    showPaint = C_paint > 0 || (forgingInput.DG_paint_per_kg || 0) > 0;
+    
+    const cogsParts = ['C_mat', 'C_ops', 'C_machining'];
+    if (showHeatTreat) cogsParts.push('C_heat_treat');
+    if (showPaint) cogsParts.push('C_paint');
+    if (!isSeparateTooling && C_amortization > 0) cogsParts.push('C_amortization');
+    cogsFormulaText = '= ' + cogsParts.join(' + ');
   } else if (segment === 'casting') {
     const res = getCastingResult();
     C_mat = res.C_metal_casting;
     C_ops = res.C_ops_casting;
     C_machining = res.C_machining_casting;
+    C_heat_treat = res.C_heat_treat;
+    C_paint = res.C_paint;
     C_amortization = res.C_pattern_amortization;
     COGS = res.COGS;
     C_mgmt = res.C_admin;
@@ -110,11 +128,21 @@ export const RealtimeSummaryPanel = () => {
     pack_rate = castingInput.DG_pack_kg || 0;
     pack_total = castingInput.C_pack || 0;
     trans_rate = castingInput.DG_trans_kg;
+    showHeatTreat = C_heat_treat > 0 || (castingInput.DG_heat_treat_per_kg || 0) > 0;
+    showPaint = C_paint > 0 || (castingInput.DG_paint_per_kg || 0) > 0;
+    
+    const cogsParts = ['C_metal', 'C_ops', 'C_part_b', 'C_machining'];
+    if (showHeatTreat) cogsParts.push('C_heat_treat');
+    if (showPaint) cogsParts.push('C_paint');
+    if (!isSeparateTooling && C_amortization > 0) cogsParts.push('C_pattern_amortization');
+    cogsFormulaText = '= ' + cogsParts.join(' + ');
   } else if (segment === 'sawing') {
     const res = getSawingResult();
     C_mat = res.C_mat_sawing;
     C_ops = 0;
     C_machining = (res.C_ops_sawing || 0) + (res.C_machining || 0);
+    C_heat_treat = res.C_heat_treat;
+    C_paint = res.C_paint;
     C_amortization = 0;
     COGS = res.COGS;
     C_mgmt = res.C_mgmt;
@@ -131,11 +159,20 @@ export const RealtimeSummaryPanel = () => {
     pack_rate = sawingInput.DG_pack_kg || 0;
     pack_total = sawingInput.C_pack || 0;
     trans_rate = sawingInput.DG_trans_kg;
+    showHeatTreat = C_heat_treat > 0 || (sawingInput.DG_heat_treat_per_kg || 0) > 0;
+    showPaint = C_paint > 0 || (sawingInput.DG_paint_per_kg || 0) > 0;
+    
+    const cogsParts = ['C_mat', 'C_machining'];
+    if (showHeatTreat) cogsParts.push('C_heat_treat');
+    if (showPaint) cogsParts.push('C_paint');
+    cogsFormulaText = '= ' + cogsParts.join(' + ');
   } else if (segment === 'machining') {
     const res = getMachiningResult();
     C_mat = 0;
     C_ops = 0;
     C_machining = res.C_machining;
+    C_heat_treat = res.C_heat_treat;
+    C_paint = res.C_paint;
     C_amortization = 0;
     COGS = res.COGS;
     C_mgmt = res.C_mgmt;
@@ -152,21 +189,34 @@ export const RealtimeSummaryPanel = () => {
     pack_rate = machiningInput.DG_pack_kg || 0;
     pack_total = machiningInput.C_pack || 0;
     trans_rate = machiningInput.DG_trans_kg;
+    showHeatTreat = C_heat_treat > 0 || (machiningInput.DG_heat_treat_per_kg || 0) > 0;
+    showPaint = C_paint > 0 || (machiningInput.DG_paint_per_kg || 0) > 0;
+    
+    const cogsParts = ['C_machining'];
+    if (showHeatTreat) cogsParts.push('C_heat_treat');
+    if (showPaint) cogsParts.push('C_paint');
+    cogsFormulaText = '= ' + cogsParts.join(' + ');
   }
 
   const isForging = segment === 'forging';
   const castingRes = segment === 'casting' ? getCastingResult() : null;
-  const profitAmountVnd = pre_profit_price * (profitMarginPercent / 100);
   const targetPriceVnd = rfq.target_price || 0;
   const deltaPriceVnd = finalPriceVnd - targetPriceVnd;
 
   const currencies: CurrencyType[] = ['VND', 'USD', 'JPY', 'EUR'];
 
-  const baseMgmtIdx = segment === 'machining' ? 1 : segment === 'sawing' ? 2 : 4;
-  const idxMgmt = baseMgmtIdx + 1;
-  const idxPack = baseMgmtIdx + 2;
-  const idxTrans = baseMgmtIdx + 3;
-  const idxPreProfit = baseMgmtIdx + 4;
+  let currentIdx = 1;
+  const idxMat = segment !== 'machining' ? currentIdx++ : 0;
+  const idxOps = (segment !== 'sawing' && segment !== 'machining') ? currentIdx++ : 0;
+  const idxMachining = currentIdx++;
+  const idxHeatTreat = showHeatTreat ? currentIdx++ : 0;
+  const idxPaint = showPaint ? currentIdx++ : 0;
+  const idxAmort = (segment === 'forging' || segment === 'casting') ? currentIdx++ : 0;
+  
+  const idxMgmt = currentIdx++;
+  const idxPack = currentIdx++;
+  const idxTrans = currentIdx++;
+  const idxPreProfit = currentIdx++;
 
   return (
     <div className="bg-white rounded-[12px] border border-[#EAEAEA] shadow-[0_4px_16px_rgba(0,0,0,0.04)] p-5 space-y-5 sticky top-20">
@@ -283,7 +333,7 @@ export const RealtimeSummaryPanel = () => {
           {/* Section 1 */}
           {segment !== 'machining' && (
             <div className="flex justify-between items-center py-1 border-b border-[#F0F0EE]">
-              <span className="text-[#2F3437] font-sans">1. Chi phí vật liệu (C_mat):</span>
+              <span className="text-[#2F3437] font-sans">{idxMat}. Chi phí vật liệu (C_mat):</span>
               <span className="font-bold text-[#111111]">
                 {formatCurrencyValue(C_mat, currency, exchangeRate)}
               </span>
@@ -294,7 +344,7 @@ export const RealtimeSummaryPanel = () => {
           {segment !== 'sawing' && segment !== 'machining' && (
             <div className="flex justify-between items-center py-1 border-b border-[#F0F0EE]">
               <span className="text-[#2F3437] font-sans">
-                2. Công nghệ {segment === 'forging' ? '& Nhiệt luyện' : segment === 'casting' ? 'Tạo khuôn & Lò/Gầu (Phần A)' : 'cắt/gia công'}:
+                {idxOps}. Công nghệ {segment === 'forging' ? '& Nhiệt luyện' : segment === 'casting' ? 'Tạo khuôn & Lò/Gầu (Phần A)' : 'cắt/gia công'}:
               </span>
               <span className="font-bold text-[#111111]">
                 {formatCurrencyValue(C_ops, currency, exchangeRate)}
@@ -336,17 +386,37 @@ export const RealtimeSummaryPanel = () => {
 
           {/* Section 3 */}
           <div className="flex justify-between items-center py-1 border-b border-[#F0F0EE]">
-            <span className="text-[#2F3437] font-sans">{segment === 'machining' ? '1' : segment === 'sawing' ? '2' : '3'}. Gia công cơ khí CNC (C_machining){segment === 'sawing' ? ' - gồm cưa phôi' : ''}:</span>
+            <span className="text-[#2F3437] font-sans">{idxMachining}. Gia công cơ khí CNC (C_machining){segment === 'sawing' ? ' - gồm cưa phôi' : ''}:</span>
             <span className="font-bold text-[#111111]">
               {formatCurrencyValue(C_machining, currency, exchangeRate)}
             </span>
           </div>
 
+          {/* Heat Treat */}
+          {showHeatTreat && (
+            <div className="flex justify-between items-center py-1 border-b border-[#F0F0EE]">
+              <span className="text-[#2F3437] font-sans">{idxHeatTreat}. Chi phí nhiệt luyện (C_heat_treat):</span>
+              <span className="font-bold text-[#111111]">
+                {formatCurrencyValue(C_heat_treat, currency, exchangeRate)}
+              </span>
+            </div>
+          )}
+
+          {/* Paint */}
+          {showPaint && (
+            <div className="flex justify-between items-center py-1 border-b border-[#F0F0EE]">
+              <span className="text-[#2F3437] font-sans">{idxPaint}. Chi phí sơn (C_paint):</span>
+              <span className="font-bold text-[#111111]">
+                {formatCurrencyValue(C_paint, currency, exchangeRate)}
+              </span>
+            </div>
+          )}
+
           {/* Section 4 */}
           {(segment === 'forging' || segment === 'casting') && (
             <div className="flex justify-between items-center py-1 border-b border-[#F0F0EE]">
               <span className="text-[#2F3437] font-sans">
-                4. Khấu hao {isForging ? 'Khuôn' : 'Mẫu'} (C_amortization):
+                {idxAmort}. Khấu hao {isForging ? 'Khuôn' : 'Mẫu'} (C_amortization):
               </span>
               <span className="font-bold text-[#111111]">
                 {formatCurrencyValue(C_amortization, currency, exchangeRate)}
@@ -363,7 +433,7 @@ export const RealtimeSummaryPanel = () => {
               </span>
             </div>
             <p className="text-[10px] text-[#787774] mt-0.5">
-              = C_mat + C_ops + C_machining + C_amortization
+              {cogsFormulaText}
             </p>
           </div>
 
