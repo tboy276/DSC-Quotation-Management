@@ -34,7 +34,6 @@ export const ForgingCalculatorForm = () => {
   const C_heat_induction = forging.m_chi * (forging.w_elec_kwh_per_kg || 0) * (forging.DG_elec_kwh || 0);
   const safeProductivity = (forging.expected_productivity && forging.expected_productivity > 0) ? forging.expected_productivity : 1;
   const C_forging_op = (8 * (forging.DG_forging_machine_hour || 0)) / safeProductivity;
-  const C_heat_treat = forging.m_chi * (forging.DG_heat_treat_kg || 0);
   const C_clean = forging.m_chi * (forging.DG_clean_kg || 0);
 
   const refWeight = forging.d_cut && forging.l_cut 
@@ -383,19 +382,10 @@ export const ForgingCalculatorForm = () => {
                 <span className="font-bold text-[#111111]">{Math.round(C_forging_op).toLocaleString('vi-VN')} đ</span>
               </div>
 
-              {/* 4. Chi phí nhiệt luyện */}
-              <div className="flex justify-between border-b border-dashed border-slate-300 pb-2 items-center">
-                <div className="flex flex-col">
-                  <span className="font-bold text-slate-700 font-sans text-[12px]">4. Chi phí nhiệt luyện:</span>
-                  <span className="text-[10px] text-slate-500 font-mono">m_chi × DG_nhiet_luyen</span>
-                </div>
-                <span className="font-bold text-[#111111]">{Math.round(C_heat_treat).toLocaleString('vi-VN')} đ</span>
-              </div>
-
-              {/* 5. Chi phí phun bi */}
+              {/* 4. Chi phí phun bi */}
               <div className="flex justify-between border-b border-slate-400 pb-3 items-center">
                 <div className="flex flex-col">
-                  <span className="font-bold text-slate-700 font-sans text-[12px]">5. Chi phí phun bi:</span>
+                  <span className="font-bold text-slate-700 font-sans text-[12px]">4. Chi phí phun bi:</span>
                   <span className="text-[10px] text-slate-500 font-mono">m_chi × DG_phun_bi</span>
                 </div>
                 <span className="font-bold text-[#111111]">{Math.round(C_clean).toLocaleString('vi-VN')} đ</span>
