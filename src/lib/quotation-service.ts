@@ -132,10 +132,10 @@ export const fetchQuoteCounts = async (): Promise<RfqStageCounts> => {
 /**
  * Build the Supabase query for fetching quotes with filters applied.
  */
-const buildQuotesQuery = (filter?: QuotationFilterOptions) => {
+const buildQuotesQuery = (filter?: QuotationFilterOptions, options?: { withCount?: boolean }) => {
   let query = supabase
     .from('rfq_items')
-    .select('*, rfq:rfqs(*), quote:quotes(*)', { count: 'exact' });
+    .select('*, rfq:rfqs(*), quote:quotes(*)', options?.withCount ? { count: 'exact' } : undefined);
 
   if (!filter) return query;
 
@@ -247,7 +247,7 @@ export const fetchPaginatedQuotes = async (
   const end = start + pageSize - 1;
 
   try {
-    const query = buildQuotesQuery(filter)
+    const query = buildQuotesQuery(filter, { withCount: true })
       .order('created_at', { ascending: false })
       .range(start, end);
 
@@ -714,7 +714,21 @@ export const updateQuoteStatus = async (
   const targetItem = localItemsCache.find(
     (item) => item.id === targetItemId || item.id === quoteId || (item.quote && (Array.isArray(item.quote) ? item.quote[0]?.id : item.quote?.id) === quoteId)
   );
-  if (targetItem) targetItemId = targetItem.id;
+  
+  if (targetItem) {
+    targetItemId = targetItem.id;
+  } else {
+    // If not found in limited cache, resolve directly from DB
+    const { data: resolved } = await supabase
+      .from('quotes')
+      .select('rfq_item_id')
+      .eq('id', quoteId)
+      .maybeSingle();
+    
+    if (resolved?.rfq_item_id) {
+      targetItemId = resolved.rfq_item_id;
+    }
+  }
 
   // Use RPC to update both tables in a single transaction
   const { error: rpcErr } = await supabase.rpc('update_quote_status_transaction', {
