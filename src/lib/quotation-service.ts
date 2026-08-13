@@ -425,7 +425,7 @@ export const createRfqDossierWithItems = async (
       p_contact_person: dossier.customer_contact_person || null,
       p_received_date: dossier.rfq_received_date,
       p_deadline: dossier.customer_deadline,
-      p_trade_terms: dossier.trade_terms ? JSON.stringify(dossier.trade_terms) : null,
+      p_trade_terms: dossier.trade_terms || null,
       p_delivery_address: dossier.delivery_address || null,
       p_special_requirements: dossier.special_requirements || null,
       p_notes: dossier.notes || null,

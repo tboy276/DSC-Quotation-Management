@@ -18,20 +18,22 @@ DECLARE
 BEGIN
   -- Insert the main document
   INSERT INTO public.quotation_documents (
-    customer_name, contact_person, rfq_code, document_code,
-    validity_days, payment_terms, delivery_notes, quotation_date,
-    currency, exchange_rate, display_config
+    document_code, rfq_code, revision, customer_name, contact_person, contact_email,
+    quotation_date, trade_terms, currency, exchange_rate,
+    payment_terms, delivery_notes, display_config
   ) VALUES (
+    p_doc_data->>'document_code',
+    p_doc_data->>'rfq_code',
+    (p_doc_data->>'revision')::integer,
     p_doc_data->>'customer_name',
     p_doc_data->>'contact_person',
-    p_doc_data->>'rfq_code',
-    p_doc_data->>'document_code',
-    (p_doc_data->>'validity_days')::integer,
-    p_doc_data->>'payment_terms',
-    p_doc_data->>'delivery_notes',
+    p_doc_data->>'contact_email',
     (p_doc_data->>'quotation_date')::date,
+    p_doc_data->>'trade_terms',
     p_doc_data->>'currency',
     (p_doc_data->>'exchange_rate')::numeric,
+    p_doc_data->>'payment_terms',
+    p_doc_data->>'delivery_notes',
     (p_doc_data->>'display_config')::jsonb
   ) RETURNING id, document_code INTO v_doc_id, v_doc_code;
 
@@ -90,16 +92,16 @@ CREATE OR REPLACE FUNCTION public.delete_rfq_items_transaction(
   p_item_ids uuid[]
 ) RETURNS void AS $$
 DECLARE
-  v_rfq_id uuid;
+  v_affected_rfq_ids uuid[];
 BEGIN
-  -- Delete the items directly
+  SELECT ARRAY_AGG(DISTINCT rfq_id) INTO v_affected_rfq_ids
+  FROM public.rfq_items
+  WHERE id = ANY(p_item_ids) AND rfq_id IS NOT NULL;
+
   DELETE FROM public.rfq_items WHERE id = ANY(p_item_ids);
   
-  -- Delete parent rfqs that have no items left
-  -- A parent is considered empty if no row in rfq_items references it
   DELETE FROM public.rfqs
-  WHERE id NOT IN (
-    SELECT DISTINCT rfq_id FROM public.rfq_items WHERE rfq_id IS NOT NULL
-  );
+  WHERE id = ANY(v_affected_rfq_ids)
+    AND NOT EXISTS (SELECT 1 FROM public.rfq_items WHERE rfq_id = rfqs.id);
 END;
 $$ LANGUAGE plpgsql SECURITY INVOKER;
