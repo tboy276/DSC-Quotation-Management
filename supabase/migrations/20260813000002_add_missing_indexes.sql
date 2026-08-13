@@ -4,7 +4,9 @@
 -- ======================================================================
 
 -- 1. Tối ưu query lọc/tìm kiếm trong buildQuotesQuery() và get_quote_counts()
--- Tăng tốc đáng kể khi lấy danh sách item theo rfq_id (VD: createRfqDossierWithItems, updateRfqItemDetails)
+-- Tăng tốc đáng kể khi lấy danh sách item theo rfq_id. Cụ thể:
+-- - createRfqDossierWithItems(): join ngược từ rfqs sang rfq_items.
+-- - deleteRfqDossier() / resetSystemData(): giúp Postgres tra cứu và xóa cascade các rfq_items con nhanh chóng khi xóa rfq cha.
 CREATE INDEX IF NOT EXISTS idx_rfq_items_rfq_id 
 ON public.rfq_items (rfq_id);
 
