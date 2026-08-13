@@ -4,7 +4,6 @@ import type {
   QuotationDocumentItem,
   CreateQuotationDocumentPayload,
 } from '../types/quotation-document';
-import { updateQuoteStatus } from './quotation-service';
 
 export const DEFAULT_PAYMENT_TERMS =
   'Thanh toán 100% bằng chuyển khoản T/T trong vòng 30 ngày kể từ ngày nhận hàng và hóa đơn hợp lệ.';
@@ -108,71 +107,36 @@ export const createQuotationDocument = async (
   const revision = await getNextRevisionForRfqCode(rfqCode);
   const documentCode = buildDocumentCode(rfqCode, revision);
 
-  // 1. Insert into quotation_documents table
-  const { data: docData, error: docErr } = await supabase
-    .from('quotation_documents')
-    .insert({
-      document_code: documentCode,
-      rfq_code: rfqCode,
-      revision,
-      customer_name: payload.customer_name,
-      contact_person: payload.contact_person,
-      contact_email: payload.contact_email,
-      quotation_date: payload.quotation_date,
-      trade_terms: payload.trade_terms,
-      currency: payload.currency,
-      exchange_rate: payload.exchange_rate,
-      payment_terms: payload.payment_terms,
-      delivery_notes: payload.delivery_notes,
-      display_config: payload.display_config,
-    })
-    .select()
-    .single();
+  const docPayload = {
+    document_code: documentCode,
+    rfq_code: rfqCode,
+    revision,
+    customer_name: payload.customer_name,
+    contact_person: payload.contact_person,
+    contact_email: payload.contact_email,
+    quotation_date: payload.quotation_date,
+    trade_terms: payload.trade_terms,
+    currency: payload.currency,
+    exchange_rate: payload.exchange_rate,
+    payment_terms: payload.payment_terms,
+    delivery_notes: payload.delivery_notes,
+    display_config: payload.display_config,
+  };
 
-  if (docErr || !docData) {
-    throw new Error(`Lỗi tạo Văn bản Báo giá trên Supabase: ${docErr?.message || 'Không có dữ liệu trả về'}`);
+  const { data: rpcResult, error: rpcErr } = await supabase.rpc('create_quotation_document_transaction', {
+    p_doc_data: docPayload,
+    p_quote_ids: payload.selected_quote_ids
+  });
+
+  if (rpcErr || !rpcResult) {
+    throw new Error(`Lỗi tạo Văn bản Báo giá (RPC) trên Supabase: ${rpcErr?.message || 'Không có dữ liệu trả về'}`);
   }
 
-  // 2. Insert items into quotation_document_items
-  const itemsPayload = payload.selected_quote_ids.map((quoteId, index) => ({
-    quotation_document_id: docData.id,
-    quote_id: quoteId,
-    display_order: index + 1,
-  }));
-
-  const { error: itemsErr } = await supabase
-    .from('quotation_document_items')
-    .insert(itemsPayload);
-
-  if (itemsErr) {
-    throw new Error(`Lỗi liên kết dòng sản phẩm Văn bản Báo giá Supabase: ${itemsErr.message}`);
-  }
-
-  // 3. Update status & quoted_sent_at of all selected items to QUOTED_SENT
-  const successQuoteIds: string[] = [];
-  const failedQuoteIds: string[] = [];
-  let firstError: Error | null = null;
-
-  for (const quoteId of payload.selected_quote_ids) {
-    try {
-      await updateQuoteStatus(quoteId, 'QUOTED_SENT');
-      successQuoteIds.push(quoteId);
-    } catch (err: any) {
-      console.error(`Failed to update status for quote ${quoteId}:`, err);
-      failedQuoteIds.push(quoteId);
-      if (!firstError) firstError = err;
-      break;
-    }
-  }
-
-  if (failedQuoteIds.length > 0) {
-    throw new Error(`Lỗi cập nhật trạng thái QUOTED_SENT.\nĐã xử lý thành công: ${successQuoteIds.length} items.\nLỗi tại item: ${failedQuoteIds[0]}.\nChi tiết: ${firstError?.message}`);
-  }
-
+  // Refetch the created document directly using the returned id
   const createdDoc = await supabase
     .from('quotation_documents')
     .select('*, items:quotation_document_items(*, quote:quotes(*, rfqItem:rfq_items(*, rfq:rfqs(*))))')
-    .eq('id', docData.id)
+    .eq('id', rpcResult.id)
     .single();
 
   if (createdDoc.data) {
@@ -197,8 +161,7 @@ export const createQuotationDocument = async (
     localDocumentsCache.unshift(formattedDoc);
     return formattedDoc;
   }
-
-  return docData as QuotationDocument;
+  return createdDoc.data as QuotationDocument;
 };
 
 /**
@@ -209,19 +172,18 @@ export const updateDocumentItemsOrder = async (
   reorderedItems: QuotationDocumentItem[]
 ): Promise<void> => {
   const updatedItems = reorderedItems.map((item, index) => ({
-    ...item,
+    id: item.id,
+    quotation_document_id: item.quotation_document_id,
+    quote_id: item.quote_id,
     display_order: index + 1,
   }));
 
-  for (const item of updatedItems) {
-    const { error } = await supabase
-      .from('quotation_document_items')
-      .update({ display_order: item.display_order })
-      .eq('id', item.id);
+  const { error } = await supabase
+    .from('quotation_document_items')
+    .upsert(updatedItems, { onConflict: 'id' });
 
-    if (error) {
-      throw new Error(`Lỗi cập nhật thứ tự dòng Supabase: ${error.message}`);
-    }
+  if (error) {
+    throw new Error(`Lỗi cập nhật thứ tự dòng Supabase: ${error.message}`);
   }
 
   await fetchQuotationDocuments();

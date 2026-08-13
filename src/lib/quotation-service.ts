@@ -86,36 +86,23 @@ export const fetchQuoteByItemId = async (itemId: string): Promise<QuoteRecord | 
  */
 export const fetchQuoteCounts = async (): Promise<RfqStageCounts> => {
   try {
-    const [
-      { count: totalCount },
-      { count: pendingCount },
-      { count: cancelledNotFeasibleCount },
-      { count: inCostingCount },
-      { count: readyCount },
-      { count: sentCount },
-      { count: successCount },
-      { count: cancelledAfterQuoteCount },
-    ] = await Promise.all([
-      supabase.from('rfq_items').select('*', { count: 'exact', head: true }),
-      supabase.from('rfq_items').select('*', { count: 'exact', head: true }).eq('status', 'PENDING_REVIEW'),
-      supabase.from('rfq_items').select('*', { count: 'exact', head: true }).eq('status', 'CANCELLED_NOT_FEASIBLE'),
-      supabase.from('rfq_items').select('*', { count: 'exact', head: true }).eq('status', 'IN_COSTING'),
-      supabase.from('rfq_items').select('*', { count: 'exact', head: true }).eq('status', 'READY_FOR_QUOTE'),
-      supabase.from('rfq_items').select('*', { count: 'exact', head: true }).eq('status', 'QUOTED_SENT'),
-      supabase.from('rfq_items').select('*', { count: 'exact', head: true }).eq('status', 'SUCCESSFUL'),
-      supabase.from('rfq_items').select('*', { count: 'exact', head: true }).eq('status', 'CANCELLED_AFTER_QUOTE'),
-    ]);
+    const { data, error } = await supabase.rpc('get_quote_counts');
+    if (error) {
+      throw new Error(`Lỗi tải số lượng báo giá từ Supabase: ${error.message}`);
+    }
 
-    const pendingReview = pendingCount || 0;
-    const cancelledNotFeasible = cancelledNotFeasibleCount || 0;
-    const inCosting = inCostingCount || 0;
-    const readyForQuote = readyCount || 0;
-    const quotedSent = sentCount || 0;
-    const successful = successCount || 0;
-    const cancelledAfterQuote = cancelledAfterQuoteCount || 0;
+    const counts = data as Record<string, number>;
+
+    const pendingReview = counts['PENDING_REVIEW'] || 0;
+    const cancelledNotFeasible = counts['CANCELLED_NOT_FEASIBLE'] || 0;
+    const inCosting = counts['IN_COSTING'] || 0;
+    const readyForQuote = counts['READY_FOR_QUOTE'] || 0;
+    const quotedSent = counts['QUOTED_SENT'] || 0;
+    const successful = counts['SUCCESSFUL'] || 0;
+    const cancelledAfterQuote = counts['CANCELLED_AFTER_QUOTE'] || 0;
 
     return {
-      total: totalCount || 0,
+      total: counts['TOTAL'] || 0,
       pendingReview,
       inCosting,
       successful,
@@ -418,36 +405,56 @@ export const createRfqDossierWithItems = async (
       rfqCode = await generateNextRfqCode(dateStr);
     }
     
-    // 1. Insert Header into Supabase 'rfqs' table
-    const { data, error } = await supabase
-      .from('rfqs')
-      .insert({
-        customer_name: dossier.customer_name,
-        customer_address: dossier.customer_address,
-        rfq_code: rfqCode,
-        customer_contact_person: dossier.customer_contact_person,
-        rfq_received_date: dossier.rfq_received_date,
-        customer_deadline: dossier.customer_deadline,
-        trade_terms: dossier.trade_terms,
-        delivery_address: dossier.delivery_address,
-        special_requirements: dossier.special_requirements,
-        notes: dossier.notes,
-        created_by_email: userEmail,
-      })
-      .select()
-      .single();
+    // Replace sequential inserts with RPC call
+    const payloadItems = items.map((it, idx) => ({
+      item_code: `${rfqCode}-${String(idx + 1).padStart(2, '0')}`,
+      product_name: it.product_name,
+      part_number: it.part_number || `PN-${Date.now()}-${idx + 1}`,
+      annual_volume: it.annual_volume,
+      quantity_unit: it.quantity_unit || 'pcs/năm',
+      target_price: it.target_price,
+      technology_requirement: it.technology_requirement || 'Rèn+Gia công',
+      status: it.is_feasible !== false ? 'PENDING_REVIEW' : 'CANCELLED_NOT_FEASIBLE',
+      cancel_reason: it.is_feasible !== false ? null : it.cancel_reason,
+    }));
+
+    const { data: rpcResult, error: rpcError } = await supabase.rpc('create_rfq_dossier_transaction', {
+      p_customer_name: dossier.customer_name,
+      p_customer_address: dossier.customer_address || null,
+      p_rfq_code: rfqCode,
+      p_contact_person: dossier.customer_contact_person || null,
+      p_received_date: dossier.rfq_received_date,
+      p_deadline: dossier.customer_deadline,
+      p_trade_terms: dossier.trade_terms ? JSON.stringify(dossier.trade_terms) : null,
+      p_delivery_address: dossier.delivery_address || null,
+      p_special_requirements: dossier.special_requirements || null,
+      p_notes: dossier.notes || null,
+      p_user_email: userEmail,
+      p_items: payloadItems
+    });
       
-    if (error) {
-      lastError = error;
+    if (rpcError) {
+      lastError = rpcError;
       // 23505 = unique_violation trong PostgreSQL
-      if (error.code === '23505') {
+      if (rpcError.code === '23505') {
         attempts++;
         continue; // Thử lại với mã tiếp theo
       }
-      throw new Error(`Lỗi tạo Hồ sơ RFQ trên Supabase: ${error.message || 'Không rõ'}`);
+      throw new Error(`Lỗi tạo Hồ sơ RFQ trên Supabase: ${rpcError.message || 'Không rõ'}`);
     }
     
-    dbDossier = data;
+    // Fetch back the created dossier with items
+    const { data: fetchedDossier, error: fetchErr } = await supabase
+      .from('rfqs')
+      .select('*, items:rfq_items(*)')
+      .eq('id', rpcResult.rfq_id)
+      .single();
+
+    if (fetchErr) {
+      throw new Error(`Lỗi tải lại Hồ sơ RFQ vừa tạo: ${fetchErr.message}`);
+    }
+
+    dbDossier = fetchedDossier;
     break; // Thành công thì thoát loop
   }
 
@@ -455,36 +462,12 @@ export const createRfqDossierWithItems = async (
     throw new Error(`Lỗi tạo Hồ sơ RFQ (vượt quá ${maxRetries} lần thử): ${lastError?.message || 'Không có dữ liệu'}`);
   }
 
-  // 2. Insert child items into Supabase 'rfq_items' table
-  const itemsToInsert = items.map((it, idx) => ({
-    rfq_id: dbDossier.id,
-    item_code: `${rfqCode}-${String(idx + 1).padStart(2, '0')}`,
-    product_name: it.product_name,
-    part_number: it.part_number || `PN-${Date.now()}-${idx + 1}`,
-    annual_volume: it.annual_volume,
-    quantity_unit: it.quantity_unit || 'pcs/năm',
-    target_price: it.target_price,
-    technology_requirement: it.technology_requirement || 'Rèn+Gia công',
-    status: it.is_feasible !== false ? 'PENDING_REVIEW' : 'CANCELLED_NOT_FEASIBLE',
-    cancel_reason: it.is_feasible !== false ? null : it.cancel_reason,
-  }));
-
-  const { data: dbItems, error: itemsErr } = await supabase
-    .from('rfq_items')
-    .insert(itemsToInsert)
-    .select();
-
-  if (itemsErr) {
-    throw new Error(`Lỗi tạo Mã sản phẩm RFQ trên Supabase: ${itemsErr.message}`);
-  }
-
-  const createdDossier: RfqDossier = {
-    ...dbDossier,
-    items: dbItems as RfqItemRecord[],
-  };
+  const createdDossier: RfqDossier = dbDossier as RfqDossier;
 
   localDossiersCache.unshift(createdDossier);
-  if (dbItems) localItemsCache.unshift(...(dbItems as RfqItemRecord[]));
+  if (createdDossier.items) {
+    localItemsCache.unshift(...createdDossier.items);
+  }
 
   return createdDossier;
 };
@@ -827,30 +810,12 @@ export const cancelRfqImmediately = async (
 export const deleteRfqItems = async (itemIds: string[]): Promise<void> => {
   if (!itemIds || itemIds.length === 0) return;
 
-  // 1. Fetch parent rfq_ids before deletion
-  const { data: targetItems } = await supabase
-    .from('rfq_items')
-    .select('rfq_id')
-    .in('id', itemIds);
+  const { error } = await supabase.rpc('delete_rfq_items_transaction', {
+    p_item_ids: itemIds
+  });
 
-  const parentRfqIds = Array.from(new Set((targetItems || []).map((i) => i.rfq_id).filter(Boolean)));
-
-  // 2. Delete child items from rfq_items
-  const { error } = await supabase.from('rfq_items').delete().in('id', itemIds);
   if (error) {
     throw new Error(`Lỗi xóa mã sản phẩm RFQ trên Supabase: ${error.message}`);
-  }
-
-  // 3. For each parent rfq_id, check if any remaining items exist. If none, delete parent RFQ header row from rfqs table.
-  for (const rfqId of parentRfqIds) {
-    const { count } = await supabase
-      .from('rfq_items')
-      .select('id', { count: 'exact', head: true })
-      .eq('rfq_id', rfqId);
-
-    if (count === 0 || count === null) {
-      await supabase.from('rfqs').delete().eq('id', rfqId);
-    }
   }
 
   await fetchQuotes();
