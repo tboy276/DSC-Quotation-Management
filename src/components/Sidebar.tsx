@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useAuth } from '../context/AuthContext';
 import {
   FileText,
   Users,
@@ -6,7 +7,7 @@ import {
   Layers,
   TrendingUp,
   Activity,
-  Calculator,
+  Calculator
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -21,19 +22,23 @@ export const Sidebar = ({
   setActiveTab,
 }: SidebarProps) => {
   const [isHovered, setIsHovered] = useState<boolean>(false);
+  const { profile } = useAuth();
+  const role = profile?.role || 'viewer';
+  const isAdmin = role === 'admin';
+  const canAccessTools = role === 'sales' || role === 'admin';
 
   const mainNavItems = [
     { id: 'quotations', label: 'Quản Lý RFQ / Báo Giá', icon: FileText, shortcut: '⌘1' },
     { id: 'documents', label: 'Văn Bản Báo Giá Gộp', icon: Layers, shortcut: '⌘2' },
-    { id: 'pricing-tools', label: 'Công Cụ Tính Giá', icon: Calculator, shortcut: '⌘3' },
-    { id: 'master_data', label: 'Quản Lý Master Data', icon: Database, shortcut: '⌘4' },
+    ...(canAccessTools ? [{ id: 'pricing-tools', label: 'Công Cụ Tính Giá', icon: Calculator, shortcut: '⌘3' }] : []),
+    ...(canAccessTools ? [{ id: 'master_data', label: 'Quản Lý Master Data', icon: Database, shortcut: '⌘4' }] : []),
     { id: 'analytics', label: 'Báo Cáo Thống Kê RFQ', icon: TrendingUp, shortcut: '⌘5' },
   ];
 
-  const adminNavItems = [
+  const adminNavItems = isAdmin ? [
     { id: 'users', label: 'Quản Lý Quyền & Tài Khoản', icon: Users, shortcut: '⌘U' },
     { id: 'health_check', label: 'Kiểm Tra Kết Nối DB (Health)', icon: Activity, shortcut: '⌘H' },
-  ];
+  ] : [];
 
   return (
     <aside
@@ -103,43 +108,45 @@ export const Sidebar = ({
         </div>
 
         {/* System Administration Group */}
-        <div className="pt-4 border-t border-[#1E293B] space-y-1">
-          {isHovered && (
-            <p className="px-2.5 text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">
-              HỆ THỐNG
-            </p>
-          )}
-          {adminNavItems.map((item) => {
-            const Icon = item.icon;
-            const isActive = activeTab === item.id;
-            return (
-              <button
-                key={item.id}
-                onClick={() => setActiveTab(item.id)}
-                title={!isHovered ? item.label : undefined}
-                className={`w-full flex items-center h-10 px-2.5 rounded-[6px] text-xs transition-all duration-150 cursor-pointer ${
-                  isActive
-                    ? 'bg-[#1E293B] text-white font-bold border-l-2 border-blue-500 shadow-xs'
-                    : 'text-slate-300 hover:bg-[#1E293B]/70 hover:text-white font-medium'
-                }`}
-              >
-                <Icon
-                  className={`w-4 h-4 flex-shrink-0 stroke-[2] ${
-                    isActive ? 'text-white' : 'text-slate-400'
-                  } ${!isHovered ? 'mx-auto' : 'mr-3'}`}
-                />
-                {isHovered && (
-                  <>
-                    <span className="truncate text-left flex-1 text-slate-200 font-semibold">{item.label}</span>
-                    <kbd className="text-[9px] font-mono text-slate-400 bg-[#0F172A] border border-[#334155] px-1 py-0.5 rounded-[3px]">
-                      {item.shortcut}
-                    </kbd>
-                  </>
-                )}
-              </button>
-            );
-          })}
-        </div>
+        {adminNavItems.length > 0 && (
+          <div className="pt-4 border-t border-[#1E293B] space-y-1">
+            {isHovered && (
+              <p className="px-2.5 text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">
+                HỆ THỐNG
+              </p>
+            )}
+            {adminNavItems.map((item) => {
+              const Icon = item.icon;
+              const isActive = activeTab === item.id;
+              return (
+                <button
+                  key={item.id}
+                  onClick={() => setActiveTab(item.id)}
+                  title={!isHovered ? item.label : undefined}
+                  className={`w-full flex items-center h-10 px-2.5 rounded-[6px] text-xs transition-all duration-150 cursor-pointer ${
+                    isActive
+                      ? 'bg-[#1E293B] text-white font-bold border-l-2 border-blue-500 shadow-xs'
+                      : 'text-slate-300 hover:bg-[#1E293B]/70 hover:text-white font-medium'
+                  }`}
+                >
+                  <Icon
+                    className={`w-4 h-4 flex-shrink-0 stroke-[2] ${
+                      isActive ? 'text-white' : 'text-slate-400'
+                    } ${!isHovered ? 'mx-auto' : 'mr-3'}`}
+                  />
+                  {isHovered && (
+                    <>
+                      <span className="truncate text-left flex-1 text-slate-200 font-semibold">{item.label}</span>
+                      <kbd className="text-[9px] font-mono text-slate-400 bg-[#0F172A] border border-[#334155] px-1 py-0.5 rounded-[3px]">
+                        {item.shortcut}
+                      </kbd>
+                    </>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+        )}
       </div>
     </aside>
   );

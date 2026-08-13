@@ -176,7 +176,7 @@ export const AuthPage = () => {
               </div>
               {isSignUp && (
                 <p className="mt-1 text-[11px] text-[#787774]">
-                  Tài khoản mới sẽ mặc định mang vai trò <span className="font-bold text-[#111111]">sales</span>.
+                  Tài khoản mới sẽ mặc định mang vai trò <span className="font-bold text-[#111111]">viewer</span> (chỉ xem). Liên hệ Admin để được cấp thêm quyền.
                 </p>
               )}
             </div>

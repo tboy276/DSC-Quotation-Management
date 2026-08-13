@@ -5,6 +5,7 @@ import { useAuth } from '../context/AuthContext';
 import { Layout } from '../components/Layout';
 import { StatusBadge } from '../components/StatusBadge';
 import { MasterDataContainer } from '../components/master-data/MasterDataContainer';
+import { RequireRole } from '../components/RequireRole';
 import ForgingCostingPage from './ForgingCostingPage';
 import CastingCostingPage from './CastingCostingPage';
 import SawingCostingPage from './SawingCostingPage';
@@ -21,7 +22,7 @@ import {
 
 import { SystemHealthCheck } from '../components/analytics/SystemHealthCheck';
 import { PricingToolsPage } from './PricingToolsPage';
-import { fetchAllUserProfiles } from '../lib/user-service';
+import { fetchAllUserProfiles, updateUserRole, revokeUserProfile } from '../lib/user-service';
 import type { UserProfile } from '../types';
 
 function LegacyPricingRedirect({ segment }: { segment: string }) {
@@ -95,7 +96,7 @@ export const DashboardPage = () => {
 
   const UsersManagementTab = () => {
     const [profiles, setProfiles] = useState<UserProfile[]>([]);
-    
+    const [savingId, setSavingId] = useState<string | null>(null);
     useEffect(() => {
       const loadProfiles = async () => {
         try {
@@ -110,6 +111,33 @@ export const DashboardPage = () => {
       loadProfiles();
     }, []);
 
+    const handleRoleChange = async (userId: string, newRole: string) => {
+      if (!window.confirm(`Xác nhận đổi vai trò tài khoản này thành "${newRole}"?`)) return;
+      try {
+        setSavingId(userId);
+        await updateUserRole(userId, newRole);
+        const data = await fetchAllUserProfiles();
+        setProfiles(data);
+      } catch (e: any) {
+        alert(e.message || 'Có lỗi xảy ra');
+      } finally {
+        setSavingId(null);
+      }
+    };
+
+    const handleRevoke = async (userId: string, email: string) => {
+      if (!window.confirm(`Thu hồi toàn bộ quyền của "${email}"? Tài khoản vẫn đăng nhập được nhưng sẽ chỉ còn quyền viewer cho tới khi được cấp lại.`)) return;
+      try {
+        setSavingId(userId);
+        await revokeUserProfile(userId);
+        const data = await fetchAllUserProfiles();
+        setProfiles(data);
+      } catch (e: any) {
+        alert(e.message || 'Có lỗi xảy ra');
+      } finally {
+        setSavingId(null);
+      }
+    };
     // Nếu không phải admin, chỉ hiển thị chính profile của mình
     const displayProfiles = isAdmin ? profiles : (profile ? [profile] : []);
 
@@ -197,6 +225,7 @@ export const DashboardPage = () => {
                   <th className="py-3 px-4">Vai Trò (Role)</th>
                   <th className="py-3 px-4">Trạng Thái</th>
                   <th className="py-3 px-4 text-right">Ghi Chú</th>
+                  <th className="py-3 px-4 text-right">Hành Động</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-[#EAEAEA] text-xs text-[#111111]">
@@ -212,7 +241,21 @@ export const DashboardPage = () => {
                       {p.id ? `${p.id.substring(0, 18)}...` : 'N/A'}
                     </td>
                     <td className="py-3.5 px-4">
-                      <StatusBadge role={p.role || 'viewer'} size="sm" />
+                      {isAdmin && p.id !== user?.id ? (
+                        <select
+                          value={p.role || 'viewer'}
+                          disabled={savingId === p.id}
+                          onChange={(e) => handleRoleChange(p.id, e.target.value)}
+                          className="text-[11px] font-bold border border-[#EAEAEA] rounded-[6px] px-2 py-1 bg-white cursor-pointer disabled:opacity-50 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                        >
+                          <option value="viewer">viewer</option>
+                          <option value="sales">sales</option>
+                          <option value="admin">admin</option>
+                          <option value="estimator">estimator</option>
+                        </select>
+                      ) : (
+                        <StatusBadge role={p.role || 'viewer'} size="sm" />
+                      )}
                     </td>
                     <td className="py-3.5 px-4">
                       <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-[#EDF3EC] text-[#346538] border border-[#C6E1C4]">
@@ -222,6 +265,17 @@ export const DashboardPage = () => {
                     </td>
                     <td className="py-3.5 px-4 text-right text-[11px] text-[#787774]">
                       {p.id === user?.id ? 'Tài khoản đang đăng nhập' : ''}
+                    </td>
+                    <td className="py-3.5 px-4 text-right">
+                      {isAdmin && p.id !== user?.id && (
+                        <button
+                          onClick={() => handleRevoke(p.id, p.email || '')}
+                          disabled={savingId === p.id}
+                          className="text-[11px] font-bold text-[#9F2F2D] hover:underline disabled:opacity-50"
+                        >
+                          Thu hồi quyền
+                        </button>
+                      )}
                     </td>
                   </tr>
                 ))}
@@ -241,13 +295,13 @@ export const DashboardPage = () => {
         <Route path="/documents" element={<QuotationDocumentsManager />} />
         
         {/* Legacy redirect routes */}
-        <Route path="/forging/:rfqItemId?" element={<LegacyPricingRedirect segment="forging" />} />
-        <Route path="/casting/:rfqItemId?" element={<LegacyPricingRedirect segment="casting" />} />
-        <Route path="/sawing/:rfqItemId?" element={<LegacyPricingRedirect segment="sawing" />} />
-        <Route path="/machining/:rfqItemId?" element={<LegacyPricingRedirect segment="machining" />} />
+        <Route path="/forging/:rfqItemId?" element={<RequireRole allow={['sales', 'admin']}><LegacyPricingRedirect segment="forging" /></RequireRole>} />
+        <Route path="/casting/:rfqItemId?" element={<RequireRole allow={['sales', 'admin']}><LegacyPricingRedirect segment="casting" /></RequireRole>} />
+        <Route path="/sawing/:rfqItemId?" element={<RequireRole allow={['sales', 'admin']}><LegacyPricingRedirect segment="sawing" /></RequireRole>} />
+        <Route path="/machining/:rfqItemId?" element={<RequireRole allow={['sales', 'admin']}><LegacyPricingRedirect segment="machining" /></RequireRole>} />
 
         {/* New unified Pricing Tools route group */}
-        <Route path="/pricing-tools" element={<PricingToolsPage />}>
+        <Route path="/pricing-tools" element={<RequireRole allow={['sales', 'admin']}><PricingToolsPage /></RequireRole>}>
           <Route index element={<Navigate to="forging" replace />} />
           <Route path="forging/:rfqItemId?" element={<ForgingCostingPage />} />
           <Route path="casting/:rfqItemId?" element={<CastingCostingPage />} />
@@ -255,10 +309,10 @@ export const DashboardPage = () => {
           <Route path="machining/:rfqItemId?" element={<MachiningCostingPage />} />
         </Route>
 
-        <Route path="/master_data" element={<MasterDataContainer />} />
+        <Route path="/master_data" element={<RequireRole allow={['sales', 'admin']}><MasterDataContainer /></RequireRole>} />
         <Route path="/analytics" element={<RfqAnalyticsReport />} />
-        <Route path="/health_check" element={<SystemHealthCheck />} />
-        <Route path="/users" element={<UsersManagementTab />} />
+        <Route path="/health_check" element={<RequireRole allow={['admin']}><SystemHealthCheck /></RequireRole>} />
+        <Route path="/users" element={<RequireRole allow={['admin']}><UsersManagementTab /></RequireRole>} />
       </Routes>
     </Layout>
   );

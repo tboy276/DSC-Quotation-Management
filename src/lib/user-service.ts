@@ -14,3 +14,25 @@ export const fetchAllUserProfiles = async (): Promise<UserProfile[]> => {
 
   return data as UserProfile[];
 };
+
+export const updateUserRole = async (userId: string, newRole: string): Promise<void> => {
+  const { error } = await supabase
+    .from('user_profiles')
+    .update({ role: newRole })
+    .eq('id', userId);
+
+  if (error) {
+    throw new Error(`Lỗi cập nhật vai trò: ${error.message}`);
+  }
+};
+
+export const revokeUserProfile = async (userId: string): Promise<void> => {
+  const { error } = await supabase
+    .from('user_profiles')
+    .delete()
+    .eq('id', userId);
+
+  if (error) {
+    throw new Error(`Lỗi thu hồi quyền: ${error.message}`);
+  }
+};
