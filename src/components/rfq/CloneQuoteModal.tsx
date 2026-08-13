@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import type { QuoteRecord } from '../../types/quote';
-import { fetchQuotes } from '../../lib/quotation-service';
+import { fetchPaginatedQuotes } from '../../lib/quotation-service';
 import { formatCurrencyValue } from './RealtimeSummaryPanel';
 import { formatDate } from '../../lib/format-date';
 import { Modal } from '../ui/Modal';
@@ -27,7 +27,7 @@ export const CloneQuoteModal = ({ segment, onClose, onSelectQuote }: CloneQuoteM
     setLoading(true);
     setErrorMsg(null);
     try {
-      const data = await fetchQuotes({ segment });
+      const { data } = await fetchPaginatedQuotes({ segment, page: 1, pageSize: 500 });
       setQuotes(data);
     } catch (err: any) {
       setErrorMsg(err.message || 'Lỗi tải dữ liệu báo giá.');

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import type { QuoteRecord } from '../../types/quote';
-import { fetchQuotes } from '../../lib/quotation-service';
+import { fetchAllQuotesForAnalytics } from '../../lib/quotation-service';
 import { formatDate } from '../../lib/format-date';
 import {
   PieChart,
@@ -60,7 +60,7 @@ export const RfqAnalyticsReport = () => {
         end = new Date(now.getFullYear(), 11, 31).toISOString().slice(0, 10);
       }
 
-      const data = await fetchQuotes({ fromDate: start, toDate: end });
+      const data = await fetchAllQuotesForAnalytics({ fromDate: start, toDate: end });
       setQuotes(data);
     } catch (err: any) {
       setErrorMsg(err.message || 'Lỗi tải dữ liệu báo cáo.');

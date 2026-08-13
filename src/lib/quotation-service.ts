@@ -130,14 +130,75 @@ export const fetchQuoteCounts = async (): Promise<RfqStageCounts> => {
 };
 
 /**
+ * Build the Supabase query for fetching quotes with filters applied.
+ */
+const buildQuotesQuery = (filter?: QuotationFilterOptions) => {
+  let query = supabase
+    .from('rfq_items')
+    .select('*, rfq:rfqs(*), quote:quotes(*)', { count: 'exact' });
+
+  if (!filter) return query;
+
+  // 1. Stage filter
+  if (filter.stage) {
+    if (filter.stage === 'new') {
+      if (filter.onlyCancelled) {
+        query = query.eq('status', 'CANCELLED_NOT_FEASIBLE');
+      } else {
+        query = query.in('status', ['PENDING_REVIEW', 'CANCELLED_NOT_FEASIBLE']);
+      }
+    } else if (filter.stage === 'internal') {
+      query = query.in('status', ['IN_COSTING', 'READY_FOR_QUOTE']);
+    } else if (filter.stage === 'sent') {
+      if (filter.onlyCancelled) {
+        query = query.eq('status', 'CANCELLED_AFTER_QUOTE');
+      } else {
+        query = query.in('status', ['QUOTED_SENT', 'SUCCESSFUL', 'CANCELLED_AFTER_QUOTE']);
+      }
+    }
+  }
+
+  // 2. Specific status sub-filter
+  if (filter.status && filter.status !== 'ALL') {
+    query = query.eq('status', filter.status);
+  }
+
+  // 3. Segment Filter
+  // Use the computed column quote_segment to keep PENDING_REVIEW items (where quote_segment is null)
+  if (filter.segment && filter.segment !== 'ALL') {
+    query = query.or(`quote_segment.eq.${filter.segment},quote_segment.is.null`);
+  }
+
+  // 4. Search Query (requires search_text computed column / trigger)
+  if (filter.searchQuery && filter.searchQuery.trim()) {
+    const q = filter.searchQuery.toLowerCase().trim();
+    // ilike on the search_text column we created in migration
+    query = query.ilike('search_text', `%${q}%`);
+  }
+
+  // 5. Date filters
+  if (filter.fromDate) {
+    query = query.gte('created_at', new Date(filter.fromDate).toISOString());
+  }
+
+  if (filter.toDate) {
+    query = query.lte('created_at', new Date(`${filter.toDate}T23:59:59`).toISOString());
+  }
+
+  return query;
+};
+
+/**
  * Fetch all RFQ Items joined with Quote calculations & Dossier Headers from Supabase
  */
 export const fetchQuotes = async (filter?: QuotationFilterOptions): Promise<QuoteRecord[]> => {
   try {
-    const { data: dbItems, error } = await supabase
-      .from('rfq_items')
-      .select('*, rfq:rfqs(*), quote:quotes(*)')
-      .order('created_at', { ascending: false });
+    let query = buildQuotesQuery(filter).order('created_at', { ascending: false });
+
+    // Apply a sensible limit for default fetches (not analytics)
+    query = query.limit(1000);
+
+    const { data: dbItems, error } = await query;
 
     if (error) {
       throw new Error(`Lỗi tải dữ liệu RFQ từ Supabase: ${error.message}`);
@@ -145,10 +206,18 @@ export const fetchQuotes = async (filter?: QuotationFilterOptions): Promise<Quot
 
     if (dbItems) {
       localItemsCache = dbItems as any[];
+      // Update Dossiers cache with any new rfqs fetched
+      dbItems.forEach(item => {
+        if (item.rfq) {
+          const existingIdx = localDossiersCache.findIndex((d) => d.id === item.rfq_id);
+          if (existingIdx >= 0) localDossiersCache[existingIdx] = item.rfq;
+          else localDossiersCache.push(item.rfq);
+        }
+      });
     }
   } catch (err) {
     console.warn('Fetching rfq_items from Supabase error:', err);
-    throw err; // Ném lỗi để UI hiển thị thông báo
+    throw err;
   }
 
   // Construct complete QuoteRecord list
@@ -157,62 +226,11 @@ export const fetchQuotes = async (filter?: QuotationFilterOptions): Promise<Quot
     return mapItemToQuoteRecord(item, parentDossier);
   });
 
-  if (!filter) return list;
-
-  // 1. Stage filter
-  if (filter.stage) {
-    if (filter.stage === 'new') {
-      const allowed = ['PENDING_REVIEW', 'CANCELLED_NOT_FEASIBLE'];
-      list = list.filter((q) => allowed.includes(q.status || q.rfqItem?.status || ''));
-      if (filter.onlyCancelled) {
-        list = list.filter((q) => (q.status || q.rfqItem?.status) === 'CANCELLED_NOT_FEASIBLE');
-      }
-    } else if (filter.stage === 'internal') {
-      const allowed = ['IN_COSTING', 'READY_FOR_QUOTE'];
-      list = list.filter((q) => allowed.includes(q.status || q.rfqItem?.status || ''));
-    } else if (filter.stage === 'sent') {
-      const allowed = ['QUOTED_SENT', 'SUCCESSFUL', 'CANCELLED_AFTER_QUOTE'];
-      list = list.filter((q) => allowed.includes(q.status || q.rfqItem?.status || ''));
-      if (filter.onlyCancelled) {
-        list = list.filter((q) => (q.status || q.rfqItem?.status) === 'CANCELLED_AFTER_QUOTE');
-      }
-    }
-  }
-
-  // 2. Specific status sub-filter
-  if (filter.status && filter.status !== 'ALL') {
-    list = list.filter((q) => q.status === filter.status || q.rfqItem?.status === filter.status);
-  }
-
-  if (filter.segment && filter.segment !== 'ALL') {
-    list = list.filter((q) => q.segment === filter.segment);
-  }
-
-  if (filter.searchQuery && filter.searchQuery.trim()) {
-    const q = filter.searchQuery.toLowerCase().trim();
-    list = list.filter(
-      (item) =>
-        item.rfq?.customer_name.toLowerCase().includes(q) ||
-        item.rfqItem?.product_name.toLowerCase().includes(q) ||
-        item.rfqItem?.part_number.toLowerCase().includes(q) ||
-        item.id.toLowerCase().includes(q) ||
-        (item.created_by_email && item.created_by_email.toLowerCase().includes(q))
-    );
-  }
-
-  if (filter.fromDate) {
-    list = list.filter((q) => new Date(q.created_at) >= new Date(filter.fromDate!));
-  }
-
-  if (filter.toDate) {
-    list = list.filter((q) => new Date(q.created_at) <= new Date(`${filter.toDate}T23:59:59`));
-  }
-
   return list;
 };
 
 /**
- * Fetch Paginated Quote Records for Data Table
+ * Fetch Paginated Quote Records for Data Table (Server-side)
  */
 export const fetchPaginatedQuotes = async (
   filter?: QuotationFilterOptions
@@ -223,21 +241,105 @@ export const fetchPaginatedQuotes = async (
   currentPage: number;
   pageSize: number;
 }> => {
-  const allQuotes = await fetchQuotes(filter);
   const page = filter?.page || 1;
   const pageSize = filter?.pageSize || 10;
-  const totalCount = allQuotes.length;
-  const totalPages = Math.ceil(totalCount / pageSize) || 1;
   const start = (page - 1) * pageSize;
-  const paginatedData = allQuotes.slice(start, start + pageSize);
+  const end = start + pageSize - 1;
 
-  return {
-    data: paginatedData,
-    totalCount,
-    totalPages,
-    currentPage: page,
-    pageSize,
-  };
+  try {
+    const query = buildQuotesQuery(filter)
+      .order('created_at', { ascending: false })
+      .range(start, end);
+
+    const { data: dbItems, count, error } = await query;
+
+    if (error) {
+      throw new Error(`Lỗi tải dữ liệu phân trang từ Supabase: ${error.message}`);
+    }
+
+    const totalCount = count || 0;
+    const totalPages = Math.ceil(totalCount / pageSize) || 1;
+
+    if (dbItems) {
+      dbItems.forEach((item: any) => {
+        const existingIdx = localItemsCache.findIndex(i => i.id === item.id);
+        if (existingIdx >= 0) localItemsCache[existingIdx] = item;
+        else localItemsCache.push(item);
+
+        if (item.rfq) {
+          const existingDossierIdx = localDossiersCache.findIndex((d) => d.id === item.rfq_id);
+          if (existingDossierIdx >= 0) localDossiersCache[existingDossierIdx] = item.rfq;
+          else localDossiersCache.push(item.rfq);
+        }
+      });
+    }
+
+    const paginatedData: QuoteRecord[] = (dbItems || []).map((item: any) => {
+      const parentDossier = localDossiersCache.find((d) => d.id === item.rfq_id) || item.rfq;
+      return mapItemToQuoteRecord(item, parentDossier);
+    });
+
+    return {
+      data: paginatedData,
+      totalCount,
+      totalPages,
+      currentPage: page,
+      pageSize,
+    };
+  } catch (err) {
+    console.error('fetchPaginatedQuotes error:', err);
+    throw err;
+  }
+};
+
+/**
+ * Fetch ALL quotes in batches for Analytics Report
+ */
+export const fetchAllQuotesForAnalytics = async (filter?: QuotationFilterOptions): Promise<QuoteRecord[]> => {
+  let allRecords: any[] = [];
+  let start = 0;
+  const pageSize = 1000;
+  let hasMore = true;
+
+  while (hasMore) {
+    const query = buildQuotesQuery(filter)
+      .order('created_at', { ascending: false })
+      .range(start, start + pageSize - 1);
+
+    const { data, error } = await query;
+
+    if (error) {
+      throw new Error(`Lỗi tải dữ liệu Analytics từ Supabase: ${error.message}`);
+    }
+
+    if (data && data.length > 0) {
+      allRecords = [...allRecords, ...data];
+      start += pageSize;
+      if (data.length < pageSize) {
+        hasMore = false;
+      }
+    } else {
+      hasMore = false;
+    }
+  }
+
+  // Update Cache with fetched records
+  allRecords.forEach((item: any) => {
+    const existingIdx = localItemsCache.findIndex(i => i.id === item.id);
+    if (existingIdx >= 0) localItemsCache[existingIdx] = item;
+    else localItemsCache.push(item);
+
+    if (item.rfq) {
+      const existingDossierIdx = localDossiersCache.findIndex((d) => d.id === item.rfq_id);
+      if (existingDossierIdx >= 0) localDossiersCache[existingDossierIdx] = item.rfq;
+      else localDossiersCache.push(item.rfq);
+    }
+  });
+
+  return allRecords.map((item) => {
+    const parentDossier = localDossiersCache.find((d) => d.id === item.rfq_id) || item.rfq;
+    return mapItemToQuoteRecord(item, parentDossier);
+  });
 };
 
 /**
