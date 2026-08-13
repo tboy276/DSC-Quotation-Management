@@ -327,6 +327,19 @@ export const QuotationsManager = () => {
     loadQuotes();
   }, [activeStage, statusFilter, onlyCancelled, segmentFilter, searchQuery, fromDate, toDate, currentPage, pageSize]);
 
+  // Refetch data when returning to tab
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        loadQuotes();
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [activeStage, statusFilter, onlyCancelled, segmentFilter, searchQuery, fromDate, toDate, currentPage, pageSize]);
+
   const loadQuotes = async () => {
     setLoading(true);
     setErrorMsg(null);
