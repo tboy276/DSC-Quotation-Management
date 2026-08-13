@@ -45,7 +45,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setProfile({
           id: userId,
           email: email,
-          role: 'sales',
+          role: 'viewer',
         });
       }
     } catch (err) {
@@ -53,7 +53,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setProfile({
         id: userId,
         email: email,
-        role: 'sales',
+        role: 'viewer',
       });
     }
   };

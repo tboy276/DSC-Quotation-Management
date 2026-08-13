@@ -175,34 +175,17 @@ export async function addMaterialPrice(
   price: number,
   effectiveDate: string,
   scrapPrice?: number,
-  userEmail: string = 'admin@disoco.vn'
 ): Promise<MaterialPriceHistory> {
-  const { data, error } = await supabase
-    .from('material_price_history')
-    .insert({
-      material_id: materialId,
-      price,
-      scrap_price: scrapPrice || 0,
-      effective_date: effectiveDate,
-      updated_by: userEmail,
-    })
-    .select()
-    .single();
+  const { data, error } = await supabase.rpc('update_material_price', {
+    p_material_id: materialId,
+    p_price: price,
+    p_effective_date: effectiveDate,
+    p_scrap_price: scrapPrice || 0,
+  });
 
   if (error) {
-    throw new Error(`Lỗi thêm lịch sử giá Supabase: ${error.message}`);
+    throw new Error(`Lỗi cập nhật giá vật tư: ${error.message}`);
   }
-
-  // Sync latest price in materials table
-  await supabase
-    .from('materials')
-    .update({
-      latest_price: price,
-      scrap_price: scrapPrice,
-      latest_effective_date: effectiveDate,
-      updated_at: new Date().toISOString(),
-    })
-    .eq('id', materialId);
 
   await fetchMaterials();
   await fetchPriceHistory();

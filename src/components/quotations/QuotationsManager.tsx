@@ -95,6 +95,7 @@ export const QuotationsManager = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const { profile, user } = useAuth();
   const currentUserEmail = profile?.email || user?.email || '';
+  const canEdit = ['sales', 'admin'].includes(profile?.role || '');
 
   // 1. Stage Tab State (Synced with URL: ?stage=new|internal|sent)
   const activeStage = (searchParams.get('stage') as 'new' | 'internal' | 'sent') || 'new';
@@ -1052,7 +1053,7 @@ export const QuotationsManager = () => {
         </div>
 
         {/* Middle Group: TAB 1 FEASIBILITY ACTION BUTTONS (Chuyển tính giá & Không phù hợp) */}
-        {activeStage === 'new' && (
+        {activeStage === 'new' && canEdit && (
           <div className="flex items-center space-x-2 px-2.5 py-1 bg-[#FBFBFA] border border-[#EAEAEA] rounded-[8px]">
             <ActionButton
               variant="primary"
@@ -1104,7 +1105,7 @@ export const QuotationsManager = () => {
               )}
 
               {/* Tab 1 Actions */}
-              {activeStage === 'new' && (
+              {activeStage === 'new' && canEdit && (
                 <>
                   <ActionButton
                     variant="neutral"
@@ -1137,7 +1138,7 @@ export const QuotationsManager = () => {
               )}
 
               {/* Tab 2 Actions */}
-              {activeStage === 'internal' && (
+              {activeStage === 'internal' && canEdit && (
                 <>
                   <ActionButton
                     variant="neutral"
@@ -1178,7 +1179,7 @@ export const QuotationsManager = () => {
               )}
 
               {/* Tab 3 Actions */}
-              {activeStage === 'sent' && (
+              {activeStage === 'sent' && canEdit && (
                 <>
                   <ActionButton
                     variant="positive"
@@ -1203,7 +1204,7 @@ export const QuotationsManager = () => {
           )}
 
           {/* CỤM NÚT TOÀN CỤC: LUÔN HIỂN THỊ KHÔNG PHỤ THUỘC VÀO SELECTION */}
-          {activeStage === 'new' && (
+          {activeStage === 'new' && canEdit && (
             <ActionButton
               variant="primary"
               icon={Plus}

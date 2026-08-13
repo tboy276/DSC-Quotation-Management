@@ -17,9 +17,10 @@ import { Plus, Edit2, Trash2, TrendingUp, History, Check, AlertTriangle } from '
 
 interface MaterialsManagerProps {
   isAdmin: boolean;
+  isSales?: boolean;
 }
 
-export const MaterialsManager = ({ isAdmin }: MaterialsManagerProps) => {
+export const MaterialsManager = ({ isAdmin, isSales }: MaterialsManagerProps) => {
   const [materials, setMaterials] = useState<Material[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
@@ -277,7 +278,7 @@ export const MaterialsManager = ({ isAdmin }: MaterialsManagerProps) => {
       icon: <TrendingUp className="w-3.5 h-3.5 text-emerald-400" />,
       tooltip: 'Cập nhật giá vật tư mới',
       variant: 'primary',
-      enabled: (count) => isAdmin && count === 1,
+      enabled: (count) => (isAdmin || isSales) && count === 1,
       onClick: (selectedRows) => handleOpenPriceModal(selectedRows[0]),
     },
     {

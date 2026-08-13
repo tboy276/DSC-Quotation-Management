@@ -49,7 +49,7 @@ export const DashboardPage = () => {
   }, []);
 
   const email = profile?.email || user?.email || 'N/A';
-  const role = profile?.role || 'sales';
+  const role = profile?.role || 'viewer';
   const isAdmin = role === 'admin';
 
   const handleTabChange = (tab: string) => {
@@ -159,15 +159,21 @@ export const DashboardPage = () => {
             </div>
             <div className="space-y-2 text-xs">
               <div className="flex items-start space-x-2">
+                <div className="w-1.5 h-1.5 rounded-full bg-slate-400 mt-1 flex-shrink-0"></div>
+                <p>
+                  <strong className="text-[#111111]">Viewer:</strong> Chỉ có quyền xem danh sách và chi tiết các báo giá. Không thể tạo mới hay chỉnh sửa dữ liệu.
+                </p>
+              </div>
+              <div className="flex items-start space-x-2">
                 <div className="w-1.5 h-1.5 rounded-full bg-blue-500 mt-1 flex-shrink-0"></div>
                 <p>
-                  <strong className="text-[#111111]">Sales:</strong> Tạo RFQ, điền thông tin khách hàng, yêu cầu báo giá. Không thể can thiệp vào các biến số Master Data.
+                  <strong className="text-[#111111]">Sales:</strong> Tạo RFQ, cập nhật giá vật tư, yêu cầu báo giá và xuất file báo giá gửi khách.
                 </p>
               </div>
               <div className="flex items-start space-x-2">
                 <div className="w-1.5 h-1.5 rounded-full bg-amber-500 mt-1 flex-shrink-0"></div>
                 <p>
-                  <strong className="text-[#111111]">Admin:</strong> Toàn quyền kiểm soát. Có thể cập nhật Master Data (giá vật tư, máy móc), tính toán báo giá nội bộ, và phê duyệt các thông số kỹ thuật.
+                  <strong className="text-[#111111]">Admin:</strong> Toàn quyền kiểm soát. Có thể cập nhật tất cả Master Data, tính toán báo giá nội bộ, và phê duyệt các thông số kỹ thuật.
                 </p>
               </div>
             </div>
@@ -206,7 +212,7 @@ export const DashboardPage = () => {
                       {p.id ? `${p.id.substring(0, 18)}...` : 'N/A'}
                     </td>
                     <td className="py-3.5 px-4">
-                      <StatusBadge role={p.role || 'sales'} size="sm" />
+                      <StatusBadge role={p.role || 'viewer'} size="sm" />
                     </td>
                     <td className="py-3.5 px-4">
                       <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-[#EDF3EC] text-[#346538] border border-[#C6E1C4]">
