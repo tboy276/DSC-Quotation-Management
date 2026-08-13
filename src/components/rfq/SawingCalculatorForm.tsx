@@ -14,8 +14,11 @@ export default function SawingCalculatorForm() {
   const updateOp = useQuotationStore((state) => state.updateSawingMachiningOp);
   const removeOp = useQuotationStore((state) => state.removeSawingMachiningOp);
   const getSawingResult = useQuotationStore((state) => state.getSawingResult);
+  const materials = useQuotationStore((state) => state.materials);
+  const isFetchingMasterData = useQuotationStore((state) => state.isFetchingMasterData);
 
-  const steelMaterials = INITIAL_MATERIALS.filter(
+  const activeMaterials = materials.length > 0 ? materials : INITIAL_MATERIALS;
+  const steelMaterials = activeMaterials.filter(
     (m) => m.category === 'Thép cán - Rèn'
   );
 
@@ -45,13 +48,18 @@ export default function SawingCalculatorForm() {
         <select
           value={sawing.selected_material_id || ''}
           onChange={(e) => selectSawingMaterial(e.target.value)}
-          className="w-1/2 min-w-[200px] px-2.5 py-1.5 border border-[#EAEAEA] rounded-[4px] bg-white text-[#111111] font-bold text-right cursor-pointer"
+          disabled={isFetchingMasterData}
+          className="w-1/2 min-w-[200px] px-2.5 py-1.5 border border-[#EAEAEA] rounded-[4px] bg-white text-[#111111] font-bold text-right cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          {steelMaterials.map((m) => (
-            <option key={m.id} value={m.id}>
-              {m.name}
-            </option>
-          ))}
+          {isFetchingMasterData ? (
+            <option>Đang tải dữ liệu vật tư...</option>
+          ) : (
+            steelMaterials.map((m) => (
+              <option key={m.id} value={m.id}>
+                {m.name}
+              </option>
+            ))
+          )}
         </select>
       </div>
 

@@ -13,7 +13,12 @@ import {
   INITIAL_HAMMER_RATES,
   INITIAL_SYSTEM_RATES,
   fetchLiquidMetalPriceForGrade,
+  fetchMaterials,
+  fetchSystemUnitRates,
+  fetchPressingRates,
+  fetchHammerRates,
 } from '../lib/master-data-service';
+import type { Material, SystemUnitRate, PressingMachineRate, HydraulicHammerRate } from '../types/master-data';
 
 import { calculateSawingPrice } from '../lib/calculation-engine/sawing-calculator';
 import { calculateMachiningPrice } from '../lib/calculation-engine/machining-calculator';
@@ -55,7 +60,16 @@ export interface QuotationStoreState {
   // 5. Machining State
   machiningInput: MachiningInput;
 
+  // Master Data State
+  materials: Material[];
+  systemRates: SystemUnitRate[];
+  pressingRates: PressingMachineRate[];
+  hammerRates: HydraulicHammerRate[];
+  isMasterDataLoaded: boolean;
+  isFetchingMasterData: boolean;
+
   // Actions
+  fetchAndSyncMasterData: (isNewItem: boolean) => Promise<void>;
   setRfqField: (field: keyof RfqHeaderState, value: any) => void;
   resetSegmentInput: (segment: SegmentType) => void;
   // Removed setActiveRfqItemId
@@ -137,6 +151,14 @@ export const useQuotationStore = create<QuotationStoreState>((set, get) => ({
   segment: 'forging',
   currency: 'VND',
   exchange_rate: 1,
+
+  // Master Data Initial State
+  materials: [],
+  systemRates: [],
+  pressingRates: [],
+  hammerRates: [],
+  isMasterDataLoaded: false,
+  isFetchingMasterData: false,
 
   // 2. Forging Initial Input State
   forgingInput: {
@@ -264,6 +286,66 @@ export const useQuotationStore = create<QuotationStoreState>((set, get) => ({
   },
 
   // Actions
+  fetchAndSyncMasterData: async (isNewItem: boolean) => {
+    if (get().isMasterDataLoaded || get().isFetchingMasterData) return;
+    set({ isFetchingMasterData: true });
+
+    try {
+      const [materials, systemRates, pressingRates, hammerRates] = await Promise.all([
+        fetchMaterials(),
+        fetchSystemUnitRates(),
+        fetchPressingRates(),
+        fetchHammerRates(),
+      ]);
+
+      set({
+        materials,
+        systemRates,
+        pressingRates,
+        hammerRates,
+        isMasterDataLoaded: true,
+        isFetchingMasterData: false,
+      });
+
+      if (isNewItem) {
+        // Sync default inputs with latest prices
+        const state = get();
+
+        // Forging defaults
+        const fMat = materials.find((m) => m.id === state.forgingInput.selected_material_id) || materials.find((m) => m.category === 'Thép cán - Rèn') || materials[0];
+        const fPress = pressingRates.find((r) => r.tonnage_min === 1000) || pressingRates[0];
+        const fSaw = systemRates.find((r) => r.rate_key === 'sawing_machine');
+        const fElec = materials.find((m) => m.name === 'Điện năng');
+
+        // Sawing defaults
+        const sMat = materials.find((m) => m.id === state.sawingInput.selected_material_id) || materials.find((m) => m.category === 'Thép cán - Rèn') || materials[0];
+        const sSaw = systemRates.find((r) => r.rate_key === 'sawing_machine');
+
+        set({
+          forgingInput: {
+            ...state.forgingInput,
+            selected_material_id: fMat?.id || state.forgingInput.selected_material_id,
+            DG_steel: fMat?.latest_price || state.forgingInput.DG_steel,
+            DG_scrap: fMat?.scrap_price || state.forgingInput.DG_scrap,
+            DG_sawing_machine_hour: fSaw?.value || state.forgingInput.DG_sawing_machine_hour,
+            DG_forging_machine_hour: fPress?.rate_per_hour || state.forgingInput.DG_forging_machine_hour,
+            DG_elec_kwh: fElec?.latest_price || state.forgingInput.DG_elec_kwh,
+          },
+          sawingInput: {
+            ...state.sawingInput,
+            selected_material_id: sMat?.id || state.sawingInput.selected_material_id,
+            DG_steel: sMat?.latest_price || state.sawingInput.DG_steel,
+            DG_scrap: sMat?.scrap_price || state.sawingInput.DG_scrap,
+            DG_sawing_machine_hour: sSaw?.value || state.sawingInput.DG_sawing_machine_hour,
+          },
+        });
+      }
+    } catch (e) {
+      console.error('Lỗi tải master data', e);
+      set({ isFetchingMasterData: false });
+    }
+  },
+
   setRfqField: (field, value) =>
     set((state) => ({
       rfq: { ...state.rfq, [field]: value },
@@ -532,7 +614,7 @@ export const useQuotationStore = create<QuotationStoreState>((set, get) => ({
     })),
 
   selectForgingMaterial: (materialId) => {
-    const mat = INITIAL_MATERIALS.find((m) => m.id === materialId);
+    const mat = get().materials.find((m) => m.id === materialId) || INITIAL_MATERIALS.find((m) => m.id === materialId);
     if (mat) {
       set((state) => ({
         forgingInput: {
@@ -547,10 +629,11 @@ export const useQuotationStore = create<QuotationStoreState>((set, get) => ({
 
   selectSawingMachineType: (type) => {
     let rate = 120000;
+    const systemRates = get().systemRates.length ? get().systemRates : INITIAL_SYSTEM_RATES;
     if (type === 'band_saw') {
-      rate = INITIAL_SYSTEM_RATES.find((r) => r.rate_key === 'sawing_machine')?.value || 120000;
+      rate = systemRates.find((r) => r.rate_key === 'sawing_machine')?.value || 120000;
     } else {
-      rate = INITIAL_SYSTEM_RATES.find((r) => r.rate_key === 'trimming_machine')?.value || 180000;
+      rate = systemRates.find((r) => r.rate_key === 'trimming_machine')?.value || 180000;
     }
     set((state) => ({
       forgingInput: {
@@ -564,18 +647,21 @@ export const useQuotationStore = create<QuotationStoreState>((set, get) => ({
   selectForgingLine: (line) => {
     let w_elec = 0.8;
     let rate = 1200000;
+    const pressingRates = get().pressingRates.length ? get().pressingRates : INITIAL_PRESSING_RATES;
+    const hammerRates = get().hammerRates.length ? get().hammerRates : INITIAL_HAMMER_RATES;
+    
     if (line === '1000T') {
       w_elec = 0.8;
-      rate = INITIAL_PRESSING_RATES.find((r) => r.tonnage_min === 1000)?.rate_per_hour || 1200000;
+      rate = pressingRates.find((r) => r.tonnage_min === 1000)?.rate_per_hour || 1200000;
     } else if (line === '1600T') {
       w_elec = 1.0;
-      rate = INITIAL_PRESSING_RATES.find((r) => r.tonnage_min === 1600)?.rate_per_hour || 1800000;
+      rate = pressingRates.find((r) => r.tonnage_min === 1600)?.rate_per_hour || 1800000;
     } else if (line === '63kJ') {
       w_elec = 1.2;
-      rate = INITIAL_HAMMER_RATES.find((r) => r.energy_min === 63)?.rate_per_hour || 1500000;
+      rate = hammerRates.find((r) => r.energy_min === 63)?.rate_per_hour || 1500000;
     } else if (line === '80kJ') {
       w_elec = 1.5;
-      rate = INITIAL_HAMMER_RATES.find((r) => r.energy_min === 80)?.rate_per_hour || 2200000;
+      rate = hammerRates.find((r) => r.energy_min === 80)?.rate_per_hour || 2200000;
     }
     
     set((state) => ({
@@ -707,7 +793,7 @@ export const useQuotationStore = create<QuotationStoreState>((set, get) => ({
     })),
 
   selectSawingMaterial: (materialId) => {
-    const mat = INITIAL_MATERIALS.find((m) => m.id === materialId);
+    const mat = get().materials.find((m) => m.id === materialId) || INITIAL_MATERIALS.find((m) => m.id === materialId);
     if (mat) {
       set((state) => ({
         sawingInput: {

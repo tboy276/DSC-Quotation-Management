@@ -357,7 +357,7 @@ export async function fetchSystemUnitRates(): Promise<SystemUnitRate[]> {
 export async function updatePressingRate(id: string, ratePerHour: number): Promise<void> {
   const { error } = await supabase.from('pressing_machine_rates').update({ rate_per_hour: ratePerHour }).eq('id', id);
   if (error) {
-    console.warn('Cập nhật Supabase lỗi, cập nhật local cache:', error.message);
+    throw new Error(`Lỗi cập nhật máy dập: ${error.message}`);
   }
   localPressingRates = localPressingRates.map((r) => (r.id === id ? { ...r, rate_per_hour: ratePerHour } : r));
 }
@@ -365,7 +365,7 @@ export async function updatePressingRate(id: string, ratePerHour: number): Promi
 export async function updateHammerRate(id: string, ratePerHour: number): Promise<void> {
   const { error } = await supabase.from('hydraulic_hammer_rates').update({ rate_per_hour: ratePerHour }).eq('id', id);
   if (error) {
-    console.warn('Cập nhật Supabase lỗi, cập nhật local cache:', error.message);
+    throw new Error(`Lỗi cập nhật máy búa: ${error.message}`);
   }
   localHammerRates = localHammerRates.map((r) => (r.id === id ? { ...r, rate_per_hour: ratePerHour } : r));
 }
@@ -373,7 +373,7 @@ export async function updateHammerRate(id: string, ratePerHour: number): Promise
 export async function updateSystemUnitRate(rateId: string, newValue: number): Promise<void> {
   const { error } = await supabase.from('system_unit_rates').update({ value: newValue, updated_at: new Date().toISOString() }).eq('id', rateId);
   if (error) {
-    console.warn('Cập nhật Supabase lỗi, cập nhật local cache:', error.message);
+    throw new Error(`Lỗi cập nhật đơn giá hệ thống: ${error.message}`);
   }
   localSystemRates = localSystemRates.map((r) => (r.id === rateId ? { ...r, value: newValue, updated_at: new Date().toISOString() } : r));
 }
@@ -453,12 +453,11 @@ export async function fetchCastingSettings(): Promise<CastingFactorySettings> {
 }
 
 export async function saveCastingSettings(settings: Partial<CastingFactorySettings>): Promise<CastingFactorySettings> {
-  localCastingSettings = { ...localCastingSettings, ...settings };
-  try {
-    await supabase.from('casting_factory_settings').upsert({ id: 1, ...localCastingSettings });
-  } catch (e) {
-    // Saved in local cache
+  const { error } = await supabase.from('casting_factory_settings').upsert({ id: 1, ...localCastingSettings, ...settings });
+  if (error) {
+    throw new Error(`Lỗi lưu thiết lập đúc: ${error.message}`);
   }
+  localCastingSettings = { ...localCastingSettings, ...settings };
   return localCastingSettings;
 }
 
@@ -475,13 +474,12 @@ export async function fetchMoldingRecipe(): Promise<MoldingRecipeItem[]> {
 }
 
 export async function saveMoldingRecipeItem(item: Partial<MoldingRecipeItem>): Promise<MoldingRecipeItem> {
+  let newItem: MoldingRecipeItem;
   if (item.id) {
-    const idx = localMoldingRecipe.findIndex((r) => r.id === item.id);
-    if (idx >= 0) {
-      localMoldingRecipe[idx] = { ...localMoldingRecipe[idx], ...item };
-    }
+    const existing = localMoldingRecipe.find((r) => r.id === item.id);
+    newItem = { ...existing, ...item } as MoldingRecipeItem;
   } else {
-    const newItem: MoldingRecipeItem = {
+    newItem = {
       id: `rec-${Date.now()}`,
       material_name: item.material_name || 'Vật tư khuôn mới',
       unit: item.unit || 'kg',
@@ -492,26 +490,29 @@ export async function saveMoldingRecipeItem(item: Partial<MoldingRecipeItem>): P
       outsourced_cost_per_1000kg: item.outsourced_cost_per_1000kg || 0,
       notes: item.notes || '',
     };
+  }
+
+  const { error } = await supabase.from('casting_molding_recipes').upsert(newItem);
+  if (error) {
+    throw new Error(`Lỗi lưu công thức khuôn: ${error.message}`);
+  }
+
+  if (item.id) {
+    const idx = localMoldingRecipe.findIndex((r) => r.id === item.id);
+    if (idx >= 0) localMoldingRecipe[idx] = newItem;
+  } else {
     localMoldingRecipe.push(newItem);
-    item = newItem;
   }
 
-  try {
-    await supabase.from('casting_molding_recipes').upsert(item);
-  } catch (e) {
-    // Saved in local cache
-  }
-
-  return item as MoldingRecipeItem;
+  return newItem;
 }
 
 export async function deleteMoldingRecipeItem(itemId: string): Promise<void> {
-  localMoldingRecipe = localMoldingRecipe.filter((r) => r.id !== itemId);
-  try {
-    await supabase.from('casting_molding_recipes').delete().eq('id', itemId);
-  } catch (e) {
-    // Deleted from local cache
+  const { error } = await supabase.from('casting_molding_recipes').delete().eq('id', itemId);
+  if (error) {
+    throw new Error(`Lỗi xóa vật tư khuôn: ${error.message}`);
   }
+  localMoldingRecipe = localMoldingRecipe.filter((r) => r.id !== itemId);
 }
 
 export function getMoldingRecipeTotalCost1000kg(items: MoldingRecipeItem[] = localMoldingRecipe): number {
