@@ -16,10 +16,10 @@ import { ActionButton } from '../ui/ActionButton';
 import { Plus, Edit2, Trash2, TrendingUp, History, Check, AlertTriangle } from 'lucide-react';
 
 interface MaterialsManagerProps {
-  isEstimator: boolean;
+  isAdmin: boolean;
 }
 
-export const MaterialsManager = ({ isEstimator }: MaterialsManagerProps) => {
+export const MaterialsManager = ({ isAdmin }: MaterialsManagerProps) => {
   const [materials, setMaterials] = useState<Material[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
@@ -259,7 +259,7 @@ export const MaterialsManager = ({ isEstimator }: MaterialsManagerProps) => {
       icon: <Plus className="w-3.5 h-3.5" />,
       tooltip: 'Thêm vật tư mới',
       variant: 'primary',
-      enabled: () => isEstimator,
+      enabled: () => isAdmin,
       onClick: () => handleOpenMaterialModal(),
     },
     {
@@ -268,7 +268,7 @@ export const MaterialsManager = ({ isEstimator }: MaterialsManagerProps) => {
       icon: <Edit2 className="w-3.5 h-3.5" />,
       tooltip: 'Sửa thông tin vật tư đã chọn',
       variant: 'secondary',
-      enabled: (count) => isEstimator && count === 1,
+      enabled: (count) => isAdmin && count === 1,
       onClick: (selectedRows) => handleOpenMaterialModal(selectedRows[0]),
     },
     {
@@ -277,7 +277,7 @@ export const MaterialsManager = ({ isEstimator }: MaterialsManagerProps) => {
       icon: <TrendingUp className="w-3.5 h-3.5 text-emerald-400" />,
       tooltip: 'Cập nhật giá vật tư mới',
       variant: 'primary',
-      enabled: (count) => isEstimator && count === 1,
+      enabled: (count) => isAdmin && count === 1,
       onClick: (selectedRows) => handleOpenPriceModal(selectedRows[0]),
     },
     {
@@ -295,7 +295,7 @@ export const MaterialsManager = ({ isEstimator }: MaterialsManagerProps) => {
       icon: <Trash2 className="w-3.5 h-3.5" />,
       tooltip: 'Xoá vật tư đã chọn (bắt buộc xác nhận)',
       variant: 'danger',
-      enabled: (count) => isEstimator && count >= 1,
+      enabled: (count) => isAdmin && count >= 1,
       onClick: (selectedRows) => handleDeleteSelectedMaterials(selectedRows),
     },
   ];
@@ -558,9 +558,9 @@ export const MaterialsManager = ({ isEstimator }: MaterialsManagerProps) => {
                         {h.scrap_price ? h.scrap_price.toLocaleString('vi-VN') : '-'}
                       </td>
                     )}
-                    <td className="p-2 text-[#787774]">{h.updated_by || 'Estimator'}</td>
+                    <td className="p-2 text-[#787774]">{h.updated_by || 'Admin'}</td>
                     <td className="p-2 text-right">
-                      {isEstimator && (
+                      {isAdmin && (
                         <ActionButton
                           variant="danger"
                           icon={Trash2}

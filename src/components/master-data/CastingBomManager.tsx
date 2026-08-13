@@ -16,10 +16,10 @@ import { ActionButton } from '../ui/ActionButton';
 import { Plus, Edit2, Trash2, Check, RotateCcw, AlertCircle } from 'lucide-react';
 
 interface CastingBomManagerProps {
-  isEstimator: boolean;
+  isAdmin: boolean;
 }
 
-export const CastingBomManager = ({ isEstimator }: CastingBomManagerProps) => {
+export const CastingBomManager = ({ isAdmin }: CastingBomManagerProps) => {
   const [grades, setGrades] = useState<CastingGrade[]>([]);
   const [selectedGradeId, setSelectedGradeId] = useState<string>('');
   const [bomItems, setBomItems] = useState<CastingBomItem[]>([]);
@@ -153,7 +153,7 @@ export const CastingBomManager = ({ isEstimator }: CastingBomManagerProps) => {
       className: 'text-right font-mono font-extrabold text-[#111111]',
       render: (item) => (
         <div
-          onDoubleClick={() => isEstimator && handleOpenEditWeight(item)}
+          onDoubleClick={() => isAdmin && handleOpenEditWeight(item)}
           className="cursor-pointer hover:underline text-[#111111]"
           title="Nhấp đúp chuột để sửa khối lượng"
         >
@@ -217,7 +217,7 @@ export const CastingBomManager = ({ isEstimator }: CastingBomManagerProps) => {
       label: '+ Thêm Vật Tư Vào BOM',
       icon: <Plus className="w-3.5 h-3.5" />,
       variant: 'primary',
-      enabled: () => isEstimator,
+      enabled: () => isAdmin,
       onClick: () => {
         if (materials.length > 0) setAddMaterialId(materials[0].id);
         setShowAddModal(true);
@@ -228,7 +228,7 @@ export const CastingBomManager = ({ isEstimator }: CastingBomManagerProps) => {
       label: 'Sửa Khối Lượng',
       icon: <Edit2 className="w-3.5 h-3.5" />,
       variant: 'secondary',
-      enabled: (count) => isEstimator && count === 1,
+      enabled: (count) => isAdmin && count === 1,
       onClick: (selectedRows) => handleOpenEditWeight(selectedRows[0]),
     },
     {
@@ -236,7 +236,7 @@ export const CastingBomManager = ({ isEstimator }: CastingBomManagerProps) => {
       label: 'Sửa Cờ Hồi Liệu',
       icon: <RotateCcw className="w-3.5 h-3.5 text-amber-600" />,
       variant: 'secondary',
-      enabled: (count) => isEstimator && count === 1,
+      enabled: (count) => isAdmin && count === 1,
       onClick: (selectedRows) => handleToggleReturnScrap(selectedRows[0]),
     },
     {
@@ -244,7 +244,7 @@ export const CastingBomManager = ({ isEstimator }: CastingBomManagerProps) => {
       label: 'Xoá Dòng BOM',
       icon: <Trash2 className="w-3.5 h-3.5" />,
       variant: 'danger',
-      enabled: (count) => isEstimator && count >= 1,
+      enabled: (count) => isAdmin && count >= 1,
       onClick: (selectedRows) => handleDeleteBomItems(selectedRows),
     },
   ];

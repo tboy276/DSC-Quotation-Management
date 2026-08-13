@@ -9,7 +9,7 @@ import { Cpu, Edit2, Zap, Truck, Layers, Check } from 'lucide-react';
 
 export const SystemRatesManager = () => {
   const { profile } = useAuth();
-  const isEstimator = profile?.role === 'estimator';
+  const isAdmin = profile?.role === 'admin';
 
   const [rates, setRates] = useState<SystemUnitRate[]>(INITIAL_SYSTEM_RATES);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
@@ -37,7 +37,7 @@ export const SystemRatesManager = () => {
   // Submit đơn giá chỉnh sửa
   const handleSaveRate = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!isEstimator || !editingRate || editValue < 0) return;
+    if (!isAdmin || !editingRate || editValue < 0) return;
 
     setRates(
       rates.map((r) =>
@@ -94,7 +94,7 @@ export const SystemRatesManager = () => {
       label: 'Sửa Đơn Giá Mới',
       icon: <Edit2 className="w-3.5 h-3.5" />,
       variant: 'primary',
-      enabled: (count) => isEstimator && count === 1,
+      enabled: (count) => isAdmin && count === 1,
       onClick: (selectedRows) => {
         setEditingRate(selectedRows[0]);
         setEditValue(selectedRows[0].value);

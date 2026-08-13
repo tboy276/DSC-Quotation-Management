@@ -407,7 +407,7 @@ export const saveQuoteDraft = async (
   results: ForgingResult | CastingResult | any,
   existingQuoteId?: string,
   targetStatus: RfqItemStatus = 'IN_COSTING',
-  userEmail: string = 'estimator@disoco.vn'
+  userEmail: string = 'admin@disoco.vn'
 ): Promise<QuoteRecord> => {
   let finalPrice = 0;
   let dieTreatment: string | null = null;
@@ -544,7 +544,7 @@ export const sendQuote = async (
   inputs: ForgingInput | CastingInput,
   results: ForgingResult | CastingResult,
   existingQuoteId?: string,
-  userEmail: string = 'estimator@disoco.vn'
+  userEmail: string = 'admin@disoco.vn'
 ): Promise<QuoteRecord> => {
   const record = await saveQuoteDraft(rfqItem, segment, currency, exchangeRate, inputs, results, existingQuoteId, 'READY_FOR_QUOTE', userEmail);
   const now = new Date().toISOString();

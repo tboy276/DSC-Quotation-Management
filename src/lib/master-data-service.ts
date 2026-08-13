@@ -29,10 +29,10 @@ export const INITIAL_MATERIALS: Material[] = [
 ];
 
 export const INITIAL_PRICE_HISTORY: MaterialPriceHistory[] = [
-  { id: 'ph-1', material_id: 'mat-1', price: 15000, effective_date: '2025-06-01', updated_by: 'estimator@disoco.vn' },
-  { id: 'ph-2', material_id: 'mat-1', price: 15500, effective_date: '2026-01-01', updated_by: 'estimator@disoco.vn' },
-  { id: 'ph-3', material_id: 'mat-6', price: 21000, scrap_price: 8000, effective_date: '2025-09-01', updated_by: 'estimator@disoco.vn' },
-  { id: 'ph-4', material_id: 'mat-6', price: 22000, scrap_price: 8500, effective_date: '2026-01-01', updated_by: 'estimator@disoco.vn' },
+  { id: 'ph-1', material_id: 'mat-1', price: 15000, effective_date: '2025-06-01', updated_by: 'admin@disoco.vn' },
+  { id: 'ph-2', material_id: 'mat-1', price: 15500, effective_date: '2026-01-01', updated_by: 'admin@disoco.vn' },
+  { id: 'ph-3', material_id: 'mat-6', price: 21000, scrap_price: 8000, effective_date: '2025-09-01', updated_by: 'admin@disoco.vn' },
+  { id: 'ph-4', material_id: 'mat-6', price: 22000, scrap_price: 8500, effective_date: '2026-01-01', updated_by: 'admin@disoco.vn' },
 ];
 
 export const INITIAL_CASTING_GRADES: CastingGrade[] = [
@@ -175,7 +175,7 @@ export async function addMaterialPrice(
   price: number,
   effectiveDate: string,
   scrapPrice?: number,
-  userEmail: string = 'estimator@disoco.vn'
+  userEmail: string = 'admin@disoco.vn'
 ): Promise<MaterialPriceHistory> {
   const { data, error } = await supabase
     .from('material_price_history')

@@ -407,7 +407,7 @@ export const RfqAnalyticsReport = () => {
               Bảng Hiệu Suất Tốc Độ Xử Lý Theo Nhân Sự (User Lead Time Performance)
             </h3>
           </div>
-          <span className="text-xs text-[#787774]">So sánh tốc độ xử lý nhanh / chậm của Sales & Estimator</span>
+          <span className="text-xs text-[#787774]">So sánh tốc độ xử lý nhanh / chậm của Sales & Admin</span>
         </div>
 
         <div className="overflow-x-auto">

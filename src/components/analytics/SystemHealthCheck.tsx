@@ -347,7 +347,7 @@ export const SystemHealthCheck: React.FC = () => {
                 Kiểm Tra Tình Trạng Kết Nối Supabase Database (Health Check)
               </h2>
               <span className="px-2 py-0.5 bg-slate-100 text-slate-700 text-[10px] font-bold rounded font-mono border border-slate-200">
-                Estimator Only
+                Admin Only
               </span>
             </div>
             <p className="text-[11px] text-[#787774] mt-0.5">

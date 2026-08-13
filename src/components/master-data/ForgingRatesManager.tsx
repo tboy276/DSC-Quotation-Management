@@ -14,7 +14,7 @@ import { Workflow, Plus, Trash2, Shield, Hammer } from 'lucide-react';
 
 export const ForgingRatesManager = () => {
   const { profile } = useAuth();
-  const isEstimator = profile?.role === 'estimator';
+  const isAdmin = profile?.role === 'admin';
 
   const [activeSubTab, setActiveSubTab] = useState<'press' | 'hammer'>('press');
   const [pressRates, setPressRates] = useState<PressingMachineRate[]>(INITIAL_PRESSING_RATES);
@@ -49,7 +49,7 @@ export const ForgingRatesManager = () => {
   // Thêm dải cước máy dập
   const handleAddPressRate = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!isEstimator || pressRate <= 0) return;
+    if (!isAdmin || pressRate <= 0) return;
 
     const newRate: PressingMachineRate = {
       id: `pr-${Date.now()}`,
@@ -64,7 +64,7 @@ export const ForgingRatesManager = () => {
 
   // Xóa dải máy dập
   const handleDeleteSelectedPress = (selectedRows: PressingMachineRate[]) => {
-    if (!isEstimator || selectedRows.length === 0) return;
+    if (!isAdmin || selectedRows.length === 0) return;
     if (!window.confirm(`Bạn có chắc muốn xoá ${selectedRows.length} dải cước máy dập đã chọn?`)) return;
     const ids = selectedRows.map((r) => r.id);
     setPressRates(pressRates.filter((r) => !ids.includes(r.id)));
@@ -74,7 +74,7 @@ export const ForgingRatesManager = () => {
   // Thêm dải cước máy búa
   const handleAddHammerRate = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!isEstimator || hammerRate <= 0) return;
+    if (!isAdmin || hammerRate <= 0) return;
 
     const newRate: HydraulicHammerRate = {
       id: `hr-${Date.now()}`,
@@ -89,7 +89,7 @@ export const ForgingRatesManager = () => {
 
   // Xóa dải máy búa
   const handleDeleteSelectedHammer = (selectedRows: HydraulicHammerRate[]) => {
-    if (!isEstimator || selectedRows.length === 0) return;
+    if (!isAdmin || selectedRows.length === 0) return;
     if (!window.confirm(`Bạn có chắc muốn xoá ${selectedRows.length} dải cước máy búa đã chọn?`)) return;
     const ids = selectedRows.map((r) => r.id);
     setHammerRates(hammerRates.filter((r) => !ids.includes(r.id)));
@@ -136,7 +136,7 @@ export const ForgingRatesManager = () => {
       label: '+ Thêm Dải Tải Trọng',
       icon: <Plus className="w-3.5 h-3.5" />,
       variant: 'primary',
-      enabled: () => isEstimator,
+      enabled: () => isAdmin,
       onClick: () => setShowAddPressModal(true),
     },
     {
@@ -144,7 +144,7 @@ export const ForgingRatesManager = () => {
       label: 'Xoá Dải Máy Dập',
       icon: <Trash2 className="w-3.5 h-3.5" />,
       variant: 'danger',
-      enabled: (count) => isEstimator && count >= 1,
+      enabled: (count) => isAdmin && count >= 1,
       onClick: (rows) => handleDeleteSelectedPress(rows),
     },
   ];
@@ -189,7 +189,7 @@ export const ForgingRatesManager = () => {
       label: '+ Thêm Dải Năng Lượng',
       icon: <Plus className="w-3.5 h-3.5" />,
       variant: 'primary',
-      enabled: () => isEstimator,
+      enabled: () => isAdmin,
       onClick: () => setShowAddHammerModal(true),
     },
     {
@@ -197,7 +197,7 @@ export const ForgingRatesManager = () => {
       label: 'Xoá Dải Máy Búa',
       icon: <Trash2 className="w-3.5 h-3.5" />,
       variant: 'danger',
-      enabled: (count) => isEstimator && count >= 1,
+      enabled: (count) => isAdmin && count >= 1,
       onClick: (rows) => handleDeleteSelectedHammer(rows),
     },
   ];

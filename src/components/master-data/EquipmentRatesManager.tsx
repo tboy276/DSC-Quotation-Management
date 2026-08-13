@@ -41,7 +41,7 @@ interface EquipmentItem {
 
 export const EquipmentRatesManager = () => {
   const { profile } = useAuth();
-  const isEstimator = profile?.role === 'estimator';
+  const isAdmin = profile?.role === 'admin';
 
   const [activeTab, setActiveTab] = useState<'all' | 'forging' | 'cnc' | 'casting'>('all');
   const [pressRates, setPressRates] = useState<PressingMachineRate[]>(INITIAL_PRESSING_RATES);
@@ -142,14 +142,14 @@ export const EquipmentRatesManager = () => {
     : equipmentList.filter((item) => item.group === activeTab);
 
   const handleOpenEdit = (item: EquipmentItem) => {
-    if (!isEstimator) return;
+    if (!isAdmin) return;
     setEditingItem(item);
     setEditRatePerHour(item.ratePerHour);
   };
 
   const handleSaveRate = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!isEstimator || !editingItem || editRatePerHour < 0) return;
+    if (!isAdmin || !editingItem || editRatePerHour < 0) return;
 
     if (editingItem.sourceType === 'press') {
       await updatePressingRate(editingItem.id, editRatePerHour);
@@ -295,7 +295,7 @@ export const EquipmentRatesManager = () => {
                       )}
                     </td>
                     <td className="py-3.5 px-4 text-center">
-                      {isEstimator ? (
+                      {isAdmin ? (
                         <ActionButton
                           variant="neutral"
                           onClick={() => handleOpenEdit(item)}

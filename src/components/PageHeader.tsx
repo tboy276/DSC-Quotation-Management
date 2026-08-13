@@ -20,8 +20,8 @@ export const PageHeader = ({ title }: PageHeaderProps) => {
   const role = profile?.role || 'sales';
   const initials = email.charAt(0).toUpperCase();
 
-  // Reset capability: Accessible for Estimator & Admin roles
-  const canResetData = role === 'estimator' || role === 'admin';
+  // Reset capability: Accessible for Admin role
+  const canResetData = role === 'admin';
 
   const handleConfirmReset = async () => {
     setIsResetting(true);
@@ -57,15 +57,15 @@ export const PageHeader = ({ title }: PageHeaderProps) => {
             <span className="absolute top-1 right-1 w-1.5 h-1.5 bg-[#9F2F2D] rounded-full" />
           </button>
 
-          {/* Reset System Data Button (Estimator & Admin) */}
+          {/* Reset System Data Button (Admin) */}
           {canResetData && (
             <button
               onClick={() => setShowResetModal(true)}
-              className="px-2 py-1 rounded-[6px] bg-[#FDEBEC] text-[#9F2F2D] border border-[#FADBDC] hover:bg-[#F8C9CA] transition-colors cursor-pointer text-xs font-bold inline-flex items-center space-x-1.5 shadow-2xs"
-              title="Reset toàn bộ dữ liệu ứng dụng về ban đầu (Chỉ Kỹ Thuật Estimator / Admin)"
+              className="px-2.5 py-1.5 flex items-center space-x-1.5 bg-white border border-[#EAEAEA] rounded-[6px] text-xs font-semibold text-red-600 hover:bg-red-50 hover:border-red-200 transition-colors shadow-sm"
+              title="Reset toàn bộ dữ liệu ứng dụng về ban đầu (Chỉ Admin)"
             >
-              <RotateCw className="w-3.5 h-3.5 stroke-[2.5]" />
-              <span className="hidden sm:inline">Reset Data</span>
+              <RotateCcw className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">Reset System</span>
             </button>
           )}
 
@@ -111,12 +111,10 @@ export const PageHeader = ({ title }: PageHeaderProps) => {
                   <p className="text-[10px] font-semibold uppercase text-[#787774] tracking-wider">
                     Quyền Hạn Khả Dụng
                   </p>
-                  <p className="text-xs font-medium text-[#2F3437] mt-0.5 capitalize">
-                    {role === 'admin' || email.toLowerCase() === 'tuan.vuongdinh@disoco.net'
-                      ? 'Admin (Quản Trị Viên Hệ Thống)'
-                      : role === 'estimator'
-                      ? 'Estimator (Kỹ Thuật Báo Giá)'
-                      : 'Sales (Nghiệp Vụ Bán Hàng)'}
+                  <p className="text-[#111111] font-bold mt-0.5 capitalize">
+                    {role === 'admin'
+                      ? 'Admin (Quản Trị Hệ Thống)'
+                      : 'Sales (Nhân Viên Kinh Doanh)'}
                   </p>
                 </div>
 

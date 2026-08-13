@@ -8,7 +8,7 @@ import { Package, Box, Factory, Settings2 } from 'lucide-react';
 
 export const MasterDataContainer = () => {
   const { profile } = useAuth();
-  const isEstimator = profile?.role === 'estimator';
+  const isAdmin = profile?.role === 'admin';
   const [activeSubTab, setActiveSubTab] = useState<
     'materials' | 'casting_bom' | 'casting_operations' | 'equipment_rates'
   >('materials');
@@ -45,8 +45,8 @@ export const MasterDataContainer = () => {
       </div>
 
       {/* Render Active Sub-Tab View */}
-      {activeSubTab === 'materials' && <MaterialsManager isEstimator={isEstimator} />}
-      {activeSubTab === 'casting_bom' && <CastingBomManager isEstimator={isEstimator} />}
+      {activeSubTab === 'materials' && <MaterialsManager isAdmin={isAdmin} />}
+      {activeSubTab === 'casting_bom' && <CastingBomManager isAdmin={isAdmin} />}
       {activeSubTab === 'casting_operations' && <CastingOperationsRatesManager />}
       {activeSubTab === 'equipment_rates' && <EquipmentRatesManager />}
     </div>

@@ -6,7 +6,7 @@ export const Navbar = () => {
 
   if (!user) return null;
 
-  const isEstimator = profile?.role === 'estimator';
+  const isAdmin = profile?.role === 'admin';
 
   return (
     <header className="bg-slate-900 border-b border-slate-800 sticky top-0 z-50 shadow-md">
@@ -36,8 +36,8 @@ export const Navbar = () => {
               </p>
               <div className="flex items-center space-x-1 mt-0.5">
                 <span className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold uppercase tracking-wider ${
-                  isEstimator 
-                    ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30' 
+                  isAdmin 
+                    ? 'bg-amber-100/50 text-amber-700 hover:bg-amber-100 shadow-[inset_0_1px_2px_rgba(0,0,0,0.02)]' 
                     : 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
                 }`}>
                   <ShieldCheck className="w-3 h-3 mr-1" />
