@@ -287,31 +287,39 @@ export const useQuotationStore = create<QuotationStoreState>((set, get) => ({
 
   // Actions
   fetchAndSyncMasterData: async (isNewItem: boolean) => {
-    if (get().isMasterDataLoaded || get().isFetchingMasterData) return;
-    set({ isFetchingMasterData: true });
+    if (get().isFetchingMasterData) return;
 
-    try {
-      const [materials, systemRates, pressingRates, hammerRates] = await Promise.all([
-        fetchMaterials(),
-        fetchSystemUnitRates(),
-        fetchPressingRates(),
-        fetchHammerRates(),
-      ]);
+    if (!get().isMasterDataLoaded) {
+      set({ isFetchingMasterData: true });
+      try {
+        const [materials, systemRates, pressingRates, hammerRates] = await Promise.all([
+          fetchMaterials(),
+          fetchSystemUnitRates(),
+          fetchPressingRates(),
+          fetchHammerRates(),
+        ]);
 
-      set({
-        materials,
-        systemRates,
-        pressingRates,
-        hammerRates,
-        isMasterDataLoaded: true,
-        isFetchingMasterData: false,
-      });
+        set({
+          materials,
+          systemRates,
+          pressingRates,
+          hammerRates,
+          isMasterDataLoaded: true,
+          isFetchingMasterData: false,
+        });
+      } catch (e) {
+        console.error('Lỗi tải master data', e);
+        set({ isFetchingMasterData: false });
+        return;
+      }
+    }
 
-      if (isNewItem) {
-        // Sync default inputs with latest prices
-        const state = get();
+    if (isNewItem) {
+      // Sync default inputs with latest prices
+      const state = get();
+      const { materials, pressingRates, systemRates } = state;
 
-        // Forging defaults
+      // Forging defaults
         const fMat = materials.find((m) => m.id === state.forgingInput.selected_material_id) || materials.find((m) => m.category === 'Thép cán - Rèn') || materials[0];
         const fPress = pressingRates.find((r) => r.tonnage_min === 1000) || pressingRates[0];
         const fSaw = systemRates.find((r) => r.rate_key === 'sawing_machine');
@@ -339,10 +347,6 @@ export const useQuotationStore = create<QuotationStoreState>((set, get) => ({
             DG_sawing_machine_hour: sSaw?.value || state.sawingInput.DG_sawing_machine_hour,
           },
         });
-      }
-    } catch (e) {
-      console.error('Lỗi tải master data', e);
-      set({ isFetchingMasterData: false });
     }
   },
 
