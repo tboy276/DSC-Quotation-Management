@@ -17,7 +17,6 @@ import {
   Shield,
   RefreshCw,
   CheckCircle2,
-  Lock,
 } from 'lucide-react';
 
 import { SystemHealthCheck } from '../components/analytics/SystemHealthCheck';
@@ -92,22 +91,7 @@ export const DashboardPage = () => {
     }
   };
 
-  const AuthWrapper = ({ children, requireAdmin = false, message }: any) => {
-    if (requireAdmin && !isAdmin) {
-      return (
-        <div className="bg-white border border-[#EAEAEA] rounded-[10px] p-8 text-center space-y-3 max-w-md mx-auto my-12 shadow-xs">
-          <div className="w-12 h-12 rounded-full bg-[#FDEBEC] text-[#9F2F2D] flex items-center justify-center mx-auto">
-            <Lock className="w-6 h-6" />
-          </div>
-          <h3 className="text-base font-bold text-[#111111]">Giới Hạn Quyền Truy Cập</h3>
-          <p className="text-xs text-[#787774]">
-            {message || 'Tính năng này chỉ dành riêng cho vai trò Admin.'}
-          </p>
-        </div>
-      );
-    }
-    return children;
-  };
+
 
   const UsersManagementTab = () => {
     const [profiles, setProfiles] = useState<UserProfile[]>([]);

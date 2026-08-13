@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { resetSystemData } from '../lib/quotation-service';
 import { Modal } from './ui/Modal';
-import { Search, Bell, RotateCw, LogOut, ChevronDown, AlertTriangle, Check } from 'lucide-react';
+import { Search, Bell, RotateCcw, LogOut, ChevronDown, AlertTriangle, Check } from 'lucide-react';
 import { ActionButton } from './ui/ActionButton';
 import { StatusBadge } from './StatusBadge';
 
