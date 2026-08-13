@@ -81,8 +81,9 @@ BEGIN
   -- 5. Thực thi: Update bảng materials (current price)
   UPDATE public.materials
   SET 
-    current_price = p_price,
+    latest_price = p_price,
     scrap_price = p_scrap_price,
+    latest_effective_date = p_effective_date,
     updated_at = NOW()
   WHERE id = p_material_id;
 
