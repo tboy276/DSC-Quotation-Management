@@ -56,6 +56,7 @@ import {
   Send,
   Pencil,
 } from 'lucide-react';
+import { canManageRecord } from '../../lib/permission-utils';
 
 interface ColumnDef {
   key: string;
@@ -361,14 +362,7 @@ export const QuotationsManager = () => {
 
   // Single Ownership-based Authorization Rule (Replaces role-based functions)
   const canManageQuote = (quote?: QuoteRecord | null): boolean => {
-    if (!quote) return false;
-    if (profile?.role === 'admin') return true;
-    const creatorId = quote.rfq?.created_by;
-    const creatorEmail = quote.rfq?.created_by_email || quote.created_by_email;
-    return Boolean(
-      (profile?.id && creatorId === profile.id) || 
-      (currentUserEmail && creatorEmail === currentUserEmail)
-    );
+    return canManageRecord(profile, currentUserEmail, quote);
   };
 
   // Flat Table Column Header Sort Handler

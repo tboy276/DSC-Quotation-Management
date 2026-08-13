@@ -1,5 +1,6 @@
 import type { MachiningOperation } from '../../lib/calculation-engine/types';
 import { INITIAL_SYSTEM_RATES } from '../../lib/master-data-service';
+import type { SystemUnitRate } from '../../types/master-data';
 import { Plus, Trash2, Cpu, Lock } from 'lucide-react';
 import { CostSectionCard } from '../ui/CostSectionCard';
 
@@ -20,6 +21,7 @@ interface MachiningOpsListProps {
   onRemoveOp: (index: number) => void;
   onUpdateNotes: (notes: string) => void;
   sawingOpProps?: SawingOpProps;
+  systemRates?: SystemUnitRate[];
 }
 
 export const MachiningOpsList = ({
@@ -31,6 +33,7 @@ export const MachiningOpsList = ({
   onRemoveOp,
   onUpdateNotes,
   sawingOpProps,
+  systemRates = INITIAL_SYSTEM_RATES,
 }: MachiningOpsListProps) => {
   const cncMachineTypes = [
     { key: 'cnc_type_1', name: 'Loại I: TT Gia công tổ hợp, ngang, đứng', ratePerHour: 390000, ratePerMinute: 6500 },
@@ -39,12 +42,12 @@ export const MachiningOpsList = ({
     { key: 'cnc_type_4', name: 'Loại IV: Máy khoan cần, máy cũ,..', ratePerHour: 182000, ratePerMinute: 182000 / 60 },
   ];
 
-  const bandSawRate = INITIAL_SYSTEM_RATES.find((r) => r.rate_key === 'sawing_machine')?.value || 120000;
-  const trimmingRate = INITIAL_SYSTEM_RATES.find((r) => r.rate_key === 'trimming_machine')?.value || 180000;
+  const bandSawRate = systemRates.find((r) => r.rate_key === 'sawing_machine')?.value || 120000;
+  const trimmingRate = systemRates.find((r) => r.rate_key === 'trimming_machine')?.value || 180000;
 
   const handleAddDefaultOp = () => {
     const defaultType = cncMachineTypes[2]; // Default to Loại III: Máy tiện, phay CNC
-    const systemRateObj = INITIAL_SYSTEM_RATES.find((r) => r.rate_key === defaultType.key);
+    const systemRateObj = systemRates.find((r) => r.rate_key === defaultType.key);
     const hourlyRate = systemRateObj?.value || defaultType.ratePerHour;
 
     const opNum = sawingOpProps ? operations.length + 2 : operations.length + 1;
@@ -58,7 +61,7 @@ export const MachiningOpsList = ({
 
   const handleSelectMachineType = (index: number, key: string) => {
     const cncObj = cncMachineTypes.find((c) => c.key === key);
-    const systemRateObj = INITIAL_SYSTEM_RATES.find((r) => r.rate_key === key);
+    const systemRateObj = systemRates.find((r) => r.rate_key === key);
 
     if (cncObj) {
       const hourlyRate = systemRateObj?.value || cncObj.ratePerHour;
@@ -198,13 +201,18 @@ export const MachiningOpsList = ({
                 <select
                   value={matchedCncKey}
                   onChange={(e) => handleSelectMachineType(idx, e.target.value)}
-                  className="w-full px-2.5 py-1.5 border border-[#EAEAEA] rounded-[4px] bg-[#F0F0EE] text-[#111111] font-bold text-xs focus:outline-none"
+                  className="w-full px-2.5 py-1.5 border border-[#EAEAEA] rounded-[4px] bg-white text-[#111111] font-bold text-xs focus:outline-none focus:border-[#111111]"
                 >
-                  {cncMachineTypes.map((cnc) => (
-                    <option key={cnc.key} value={cnc.key}>
-                      {cnc.name} ({Math.round(cnc.ratePerHour / 1000)}k/h • {Math.round(cnc.ratePerMinute).toLocaleString('vi-VN')} đ/p)
-                    </option>
-                  ))}
+                  {cncMachineTypes.map((type) => {
+                    const rateObj = systemRates.find((r) => r.rate_key === type.key);
+                    const ratePerHour = rateObj?.value || type.ratePerHour;
+                    const ratePerMinute = ratePerHour / 60;
+                    return (
+                      <option key={type.key} value={type.key}>
+                        {type.name} ({Math.round(ratePerHour / 1000)}k/h • {Math.round(ratePerMinute).toLocaleString('vi-VN')} đ/p)
+                      </option>
+                    );
+                  })}
                 </select>
               </div>
 

@@ -12,6 +12,7 @@ export default function MachiningCalculatorForm() {
   const updateOp = useQuotationStore((state) => state.updateMachiningOp);
   const removeOp = useQuotationStore((state) => state.removeMachiningOp);
   const getMachiningResult = useQuotationStore((state) => state.getMachiningResult);
+  const systemRates = useQuotationStore((state) => state.systemRates);
 
   const res = getMachiningResult();
 
@@ -67,6 +68,7 @@ export default function MachiningCalculatorForm() {
         onUpdateOp={updateOp}
         onRemoveOp={removeOp}
         onUpdateNotes={(notes) => setMachiningField('machining_notes', notes)}
+        systemRates={systemRates}
       />
 
       {/* Summary */}

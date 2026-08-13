@@ -8,6 +8,7 @@ import { QuoteStatusBadge } from '../rfq/QuoteStatusBadge';
 import { formatCurrencyValue } from '../rfq/RealtimeSummaryPanel';
 import { formatDate } from '../../lib/format-date';
 import { QuotationPreviewPanel } from './QuotationPreviewPanel';
+import { canManageRecord } from '../../lib/permission-utils';
 import { Modal } from '../ui/Modal';
 import { ActionButton } from '../ui/ActionButton';
 import { useAuth } from '../../context/AuthContext';
@@ -40,11 +41,7 @@ export const DocumentDetailModal = ({
   const { profile, user } = useAuth();
   const currentUserEmail = profile?.email || user?.email || '';
 
-  const canManageDocument = Boolean(
-    profile?.role === 'admin' ||
-    (profile?.id && document.created_by === profile.id) ||
-    (currentUserEmail && document.items?.[0]?.quote?.rfq?.created_by_email === currentUserEmail)
-  );
+  const canManageDocument = canManageRecord(profile, currentUserEmail, document);
 
   useEffect(() => {
     if (document.items) {

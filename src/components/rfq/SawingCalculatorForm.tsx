@@ -15,6 +15,7 @@ export default function SawingCalculatorForm() {
   const removeOp = useQuotationStore((state) => state.removeSawingMachiningOp);
   const getSawingResult = useQuotationStore((state) => state.getSawingResult);
   const materials = useQuotationStore((state) => state.materials);
+  const systemRates = useQuotationStore((state) => state.systemRates);
   const isFetchingMasterData = useQuotationStore((state) => state.isFetchingMasterData);
 
   const activeMaterials = materials.length > 0 ? materials : INITIAL_MATERIALS;
@@ -290,6 +291,7 @@ export default function SawingCalculatorForm() {
         onUpdateOp={updateOp}
         onRemoveOp={removeOp}
         onUpdateNotes={(notes) => setSawingField('machining_notes', notes)}
+        systemRates={systemRates}
         sawingOpProps={{
           t_cut_sec: sawing.t_cut_sec || 0,
           DG_sawing_machine_hour: sawing.DG_sawing_machine_hour || 0,

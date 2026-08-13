@@ -23,6 +23,7 @@ export const ForgingCalculatorForm = () => {
   const selectForgingLine = useQuotationStore((state) => state.selectForgingLine);
   const getForgingResult = useQuotationStore((state) => state.getForgingResult);
   const materials = useQuotationStore((state) => state.materials);
+  const systemRates = useQuotationStore((state) => state.systemRates);
   const isFetchingMasterData = useQuotationStore((state) => state.isFetchingMasterData);
 
   const activeMaterials = materials.length > 0 ? materials : INITIAL_MATERIALS;
@@ -416,6 +417,7 @@ export const ForgingCalculatorForm = () => {
         operations={forging.machining_operations || []}
         totalMachiningCost={res.C_machining}
         machiningNotes={forging.machining_notes}
+        systemRates={systemRates}
         onAddOp={addOp}
         onUpdateOp={updateOp}
         onRemoveOp={removeOp}

@@ -29,6 +29,7 @@ export const CastingCalculatorForm = () => {
   const removeComp = useQuotationStore((state) => state.removeCastingPatternComponent);
   const selectGrade = useQuotationStore((state) => state.selectCastingGrade);
   const getCastingResult = useQuotationStore((state) => state.getCastingResult);
+  const systemRates = useQuotationStore((state) => state.systemRates);
 
   const [showRecipeModal, setShowRecipeModal] = useState<boolean>(false);
   const [grades, setGrades] = useState<CastingGrade[]>(INITIAL_CASTING_GRADES);
@@ -322,6 +323,7 @@ export const CastingCalculatorForm = () => {
         onUpdateOp={updateOp}
         onRemoveOp={removeOp}
         onUpdateNotes={(notes) => setCastingField('machining_notes', notes)}
+        systemRates={systemRates}
       />
 
       {/* 4A. Bóc Tách Chi Phí Mẫu */}
