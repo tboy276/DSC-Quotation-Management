@@ -20,7 +20,7 @@ interface MaterialsManagerProps {
   isSales?: boolean;
 }
 
-export const MaterialsManager = ({ isAdmin, isSales }: MaterialsManagerProps) => {
+export const MaterialsManager = ({ isAdmin, isSales = false }: MaterialsManagerProps) => {
   const [materials, setMaterials] = useState<Material[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
