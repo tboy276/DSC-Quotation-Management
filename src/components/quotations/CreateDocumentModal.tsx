@@ -1,7 +1,9 @@
-import { useState } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import type { QuoteRecord } from '../../types/quote';
 import type { QuotationDocument, DocumentDisplayConfig } from '../../types/quotation-document';
+import { DEFAULT_DISPLAY_CONFIG } from '../../types/quotation-document';
 import { createQuotationDocument, DEFAULT_PAYMENT_TERMS, DEFAULT_DELIVERY_NOTES } from '../../lib/quotation-document-service';
+import { supabase } from '../../lib/supabase';
 import { Modal } from '../ui/Modal';
 import { QuotationPreviewPanel } from './QuotationPreviewPanel';
 import type { DocFields } from './QuotationPreviewPanel';
@@ -27,9 +29,43 @@ export const CreateDocumentModal = ({
   const [finalConfig, setFinalConfig] = useState<DocumentDisplayConfig | undefined>(undefined);
   const [finalDocFields, setFinalDocFields] = useState<DocFields | undefined>(undefined);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [sourceDocumentCode, setSourceDocumentCode] = useState<string | null>(null);
 
   // Fallback defaults
   const firstQuote = selectedQuotes[0];
+
+  useEffect(() => {
+    const fetchSourceDocCode = async () => {
+      const sourceDocumentId = firstQuote?.rfq?.source_document_id;
+      if (sourceDocumentId) {
+        const { data } = await supabase
+          .from('quotation_documents')
+          .select('document_code')
+          .eq('id', sourceDocumentId)
+          .maybeSingle();
+        if (data?.document_code) {
+          setSourceDocumentCode(data.document_code);
+        }
+      }
+    };
+    fetchSourceDocCode();
+  }, [firstQuote?.rfq?.source_document_id]);
+
+  const initialConfig = useMemo(() => {
+    if (!sourceDocumentCode) return undefined;
+    return {
+      ...DEFAULT_DISPLAY_CONFIG,
+      remarks: [
+        {
+          id: 'remark-repricing-auto',
+          vi: `Báo giá này cập nhật/thay thế cho báo giá số ${sourceDocumentCode}.`,
+          en: `This quotation updates/replaces quotation No. ${sourceDocumentCode}.`,
+        },
+        ...DEFAULT_DISPLAY_CONFIG.remarks,
+      ],
+    };
+  }, [sourceDocumentCode]);
+
   const rfqCode = firstQuote?.rfq?.rfq_code || '';
   const customerName = firstQuote?.rfq?.customer_name || 'Khách hàng DISOCO';
   const tradeTerms = firstQuote?.rfq?.trade_terms || 'EXW';
@@ -122,6 +158,7 @@ export const CreateDocumentModal = ({
           )}
           <QuotationPreviewPanel
             document={tempDocument}
+            initialConfig={initialConfig}
             onBack={onClose}
             onSaveAndSend={handlePreviewSubmitRequest}
             isSubmitting={submitting}
