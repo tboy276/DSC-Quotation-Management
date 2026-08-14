@@ -65,29 +65,26 @@ interface ColumnDef {
 }
 
 const ALL_ITEM_COLUMNS: ColumnDef[] = [
-  // Mặc định HIỆN (theo đúng thứ tự):
-  { key: 'item_code', header: 'Mã Dòng Sản Phẩm', defaultHidden: false },
-  { key: 'customer_name', header: 'Tên Khách Hàng', defaultHidden: false },
-  { key: 'product_name', header: 'Tên Sản Phẩm', defaultHidden: false },
-  { key: 'part_number', header: 'Part Number', defaultHidden: false },
-  { key: 'technology_requirement', header: 'Yêu Cầu Công Nghệ', defaultHidden: false },
-  { key: 'status', header: 'Trạng Thái', defaultHidden: false },
-  { key: 'final_quoted_price', header: 'Đơn Giá Báo Giá', defaultHidden: false },
-  { key: 'annual_volume', header: 'Sản Lượng', defaultHidden: false },
-
-  // Mặc định ẨN (bật lên được qua nút ẩn/hiện cột):
-  { key: 'rfq_code', header: 'Mã Hồ Sơ RFQ', defaultHidden: true },
-  { key: 'rfq_received_date', header: 'Ngày Nhận RFQ', defaultHidden: true },
-  { key: 'customer_deadline', header: 'Deadline', defaultHidden: true },
-  { key: 'trade_terms', header: 'Trade Term', defaultHidden: true },
-  { key: 'customer_address', header: 'Địa Chỉ Khách Hàng', defaultHidden: true },
-  { key: 'delivery_address', header: 'Địa Chỉ Giao Hàng', defaultHidden: true },
-  { key: 'customer_contact_person', header: 'Người Gửi RFQ (Attn)', defaultHidden: true },
-  { key: 'target_price', header: 'Target Price', defaultHidden: true },
-  { key: 'created_by_email', header: 'Người Tạo', defaultHidden: true },
-  { key: 'quoted_sent_at', header: 'Ngày Gửi Báo Giá', defaultHidden: true },
-  { key: 'resolved_at', header: 'Ngày Có Kết Luận', defaultHidden: true },
-  { key: 'notes', header: 'Ghi Chú', defaultHidden: true },
+  { key: 'item_code', header: 'Mã Dòng Sản Phẩm' },
+  { key: 'customer_name', header: 'Tên Khách Hàng' },
+  { key: 'product_name', header: 'Tên Sản Phẩm' },
+  { key: 'part_number', header: 'Part Number' },
+  { key: 'annual_volume', header: 'Sản Lượng' },
+  { key: 'technology_requirement', header: 'Yêu Cầu Công Nghệ' },
+  { key: 'final_quoted_price', header: 'Đơn Giá Báo Giá' },
+  { key: 'rfq_received_date', header: 'Ngày Nhận RFQ' },
+  { key: 'customer_deadline', header: 'Deadline' },
+  { key: 'quoted_sent_at', header: 'Ngày Gửi Báo Giá' },
+  { key: 'status', header: 'Trạng Thái' },
+  { key: 'resolved_at', header: 'Ngày Có Kết Luận' },
+  { key: 'created_by_email', header: 'Người Tạo' },
+  { key: 'rfq_code', header: 'Mã Hồ Sơ RFQ' },
+  { key: 'trade_terms', header: 'Trade Term' },
+  { key: 'customer_address', header: 'Địa Chỉ Khách Hàng' },
+  { key: 'delivery_address', header: 'Địa Chỉ Giao Hàng' },
+  { key: 'customer_contact_person', header: 'Người Gửi RFQ (Attn)' },
+  { key: 'target_price', header: 'Target Price' },
+  { key: 'notes', header: 'Ghi Chú' },
 ];
 
 export const QuotationsManager = () => {
@@ -102,11 +99,6 @@ export const QuotationsManager = () => {
 
   // 2. Sub-filter Status State (Synced with URL)
   const statusFilter = (searchParams.get('status') as RfqItemStatus | 'ALL') || 'ALL';
-
-  // 3. Only Cancelled Toggle State (Synced with URL)
-  const onlyCancelled = searchParams.get('onlyCancelled') === 'true';
-
-  // Global counts for Summary Cards & Stage Tab Badges
   const [globalCounts, setGlobalCounts] = useState<RfqStageCounts>({
     total: 0,
     pendingReview: 0,
@@ -138,26 +130,52 @@ export const QuotationsManager = () => {
   // Advanced Filters Popover State
   const [showAdvancedFilters, setShowAdvancedFilters] = useState<boolean>(false);
 
+  // Default visible columns per stage
+  const getDefaultVisibleCols = (stage: string) => {
+    if (stage === 'new') {
+      return ['item_code', 'customer_name', 'product_name', 'part_number', 'annual_volume', 'technology_requirement', 'customer_deadline', 'status', 'created_by_email'];
+    }
+    if (stage === 'internal') {
+      return ['item_code', 'customer_name', 'product_name', 'part_number', 'annual_volume', 'technology_requirement', 'customer_deadline', 'final_quoted_price', 'status', 'created_by_email'];
+    }
+    return ['item_code', 'customer_name', 'product_name', 'part_number', 'annual_volume', 'technology_requirement', 'final_quoted_price', 'rfq_received_date', 'customer_deadline', 'quoted_sent_at', 'status', 'resolved_at', 'created_by_email'];
+  };
+
   // Column Visibility State & localStorage Persistence
   const [hiddenCols, setHiddenCols] = useState<string[]>(() => {
     try {
-      const saved = localStorage.getItem('rfq_flat_table_hidden_cols');
+      const saved = localStorage.getItem(`rfq_flat_table_hidden_cols_${activeStage}`);
       if (saved) return JSON.parse(saved);
     } catch (e) {
       // Fallback
     }
-    return ALL_ITEM_COLUMNS.filter((c) => c.defaultHidden).map((c) => c.key);
+    const defaultVisible = getDefaultVisibleCols(activeStage);
+    return ALL_ITEM_COLUMNS.filter((c) => !defaultVisible.includes(c.key)).map((c) => c.key);
   });
+
+  // Re-initialize hidden cols when stage changes
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem(`rfq_flat_table_hidden_cols_${activeStage}`);
+      if (saved) {
+        setHiddenCols(JSON.parse(saved));
+        return;
+      }
+    } catch (e) {}
+    
+    const defaultVisible = getDefaultVisibleCols(activeStage);
+    setHiddenCols(ALL_ITEM_COLUMNS.filter((c) => !defaultVisible.includes(c.key)).map((c) => c.key));
+  }, [activeStage]);
 
   const [showColMenu, setShowColMenu] = useState<boolean>(false);
 
   useEffect(() => {
     try {
-      localStorage.setItem('rfq_flat_table_hidden_cols', JSON.stringify(hiddenCols));
+      localStorage.setItem(`rfq_flat_table_hidden_cols_${activeStage}`, JSON.stringify(hiddenCols));
     } catch (e) {
       // Ignore
     }
-  }, [hiddenCols]);
+  }, [hiddenCols, activeStage]);
 
   const toggleColumnHidden = (key: string) => {
     setHiddenCols((prev) =>
@@ -165,13 +183,9 @@ export const QuotationsManager = () => {
     );
   };
 
-  // Helper for dynamic column visibility by active stage
+  // Helper for dynamic column visibility
   const isColVisibleInStage = (key: string) => {
-    if (hiddenCols.includes(key)) return false;
-    if (activeStage === 'new') {
-      if (key === 'final_quoted_price' || key === 'quoted_sent_at') return false;
-    }
-    return true;
+    return !hiddenCols.includes(key);
   };
 
   const visibleCols = ALL_ITEM_COLUMNS.filter((c) => isColVisibleInStage(c.key));
@@ -296,7 +310,6 @@ export const QuotationsManager = () => {
     const newParams = new URLSearchParams(searchParams);
     newParams.set('stage', newStage);
     newParams.delete('status'); // Reset sub-status filter on stage change
-    newParams.delete('onlyCancelled');
     setSearchParams(newParams);
   };
 
@@ -312,21 +325,22 @@ export const QuotationsManager = () => {
     setSearchParams(newParams);
   };
 
-  // Handle Only Cancelled Toggle (URL synced)
-  const handleToggleOnlyCancelled = () => {
-    setCurrentPage(1);
-    const newParams = new URLSearchParams(searchParams);
-    if (onlyCancelled) {
-      newParams.delete('onlyCancelled');
-    } else {
-      newParams.set('onlyCancelled', 'true');
-    }
-    setSearchParams(newParams);
-  };
-
   useEffect(() => {
     loadQuotes();
-  }, [activeStage, statusFilter, onlyCancelled, segmentFilter, searchQuery, fromDate, toDate, currentPage, pageSize]);
+  }, [activeStage, statusFilter, segmentFilter, searchQuery, fromDate, toDate, currentPage, pageSize]);
+
+  // Load specific counts for each stage
+  useEffect(() => {
+    const loadStageCounts = async () => {
+      try {
+        const counts = await fetchQuoteCounts();
+        setGlobalCounts(counts);
+      } catch (err) {
+        console.error('Lỗi lấy số lượng thống kê', err);
+      }
+    };
+    loadStageCounts();
+  }, [activeStage, statusFilter, segmentFilter, searchQuery, fromDate, toDate, currentPage, pageSize]);
 
   // Refetch data when returning to tab
   useEffect(() => {
@@ -339,7 +353,7 @@ export const QuotationsManager = () => {
     return () => {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
-  }, [activeStage, statusFilter, onlyCancelled, segmentFilter, searchQuery, fromDate, toDate, currentPage, pageSize]);
+  }, [activeStage, statusFilter, segmentFilter, searchQuery, fromDate, toDate, currentPage, pageSize]);
 
   const loadQuotes = async () => {
     setLoading(true);
@@ -354,7 +368,6 @@ export const QuotationsManager = () => {
       const filterOptions: QuotationFilterOptions = {
         stage: activeStage,
         status: statusFilter,
-        onlyCancelled,
         segment: segmentFilter,
         searchQuery,
         fromDate: fromDate || undefined,
@@ -798,14 +811,14 @@ export const QuotationsManager = () => {
 
       {/* 4 TOP CLICKABLE METRIC CARDS WITH GLOBAL DATA (A1, A2, B3) */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {/* Card 1: TỔNG YÊU CẦU */}
+        {/* Card 1: TỔNG SỐ RFQ ĐÃ NHẬN */}
         <div
           onClick={() => handleStageChange('new')}
           className="bg-white p-4 rounded-[8px] border border-[#E2E8F0] shadow-2xs relative flex flex-col justify-between h-[105px] cursor-pointer hover:border-slate-400 hover:shadow-xs transition-all"
         >
           <div className="flex items-center justify-between">
             <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500">
-              TỔNG YÊU CẦU
+              TỔNG SỐ RFQ ĐÃ NHẬN
             </span>
             <FileText className="w-4 h-4 text-slate-400" />
           </div>
@@ -864,25 +877,25 @@ export const QuotationsManager = () => {
           </div>
         </div>
 
-        {/* Card 4: HOÀN THÀNH (CHỐT ĐƠN) */}
+        {/* Card 4: ĐÃ GỬI KHÁCH HÀNG */}
         <div
           onClick={() => {
             handleStageChange('sent');
-            handleStatusFilterChange('SUCCESSFUL');
+            handleStatusFilterChange('ALL');
           }}
           className="bg-white p-4 rounded-[8px] border border-[#E2E8F0] shadow-2xs relative flex flex-col justify-between h-[105px] cursor-pointer hover:border-emerald-400 hover:shadow-xs transition-all"
         >
           <div className="flex items-center justify-between">
             <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500">
-              HOÀN THÀNH (CHỐT ĐƠN)
+              ĐÃ GỬI KHÁCH HÀNG
             </span>
-            <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+            <Send className="w-4 h-4 text-emerald-600" />
           </div>
           <div className="flex items-baseline space-x-2">
             <span className="text-3xl font-black font-mono text-emerald-900">
-              {globalCounts.successful.toLocaleString('vi-VN')}
+              {globalCounts.sentStage.toLocaleString('vi-VN')}
             </span>
-            <span className="text-xs font-bold text-emerald-600">Thành công</span>
+            <span className="text-xs font-bold text-emerald-600">Báo giá</span>
           </div>
         </div>
       </div>
@@ -899,7 +912,7 @@ export const QuotationsManager = () => {
           }`}
         >
           <Inbox className="w-3.5 h-3.5 stroke-[2]" />
-          <span>1. RFQ Mới / Đánh Giá</span>
+          <span>Bước 1: Tiếp nhận RFQ</span>
           <span className="px-2 py-0.5 rounded-full text-[10px] font-mono bg-[#F5F5F5] text-[#2F3437] font-bold border border-[#EAEAEA]">
             {globalCounts.newStage}
           </span>
@@ -915,7 +928,7 @@ export const QuotationsManager = () => {
           }`}
         >
           <SlidersHorizontal className="w-3.5 h-3.5 stroke-[2]" />
-          <span>2. Đang Xử Lý Nội Bộ</span>
+          <span>Bước 2: Đánh giá khả thi & Tính giá</span>
           <span className="px-2 py-0.5 rounded-full text-[10px] font-mono bg-[#FBF3DB] text-[#956400] font-bold border border-[#F5E5B8]">
             {globalCounts.internalStage}
           </span>
@@ -931,7 +944,7 @@ export const QuotationsManager = () => {
           }`}
         >
           <Send className="w-3.5 h-3.5 stroke-[2]" />
-          <span>3. Đã Gửi Khách Hàng</span>
+          <span>Bước 3: Theo dõi kết quả báo giá</span>
           <span className="px-2 py-0.5 rounded-full text-[10px] font-mono bg-[#EDF3EC] text-[#346538] font-bold border border-[#C6E1C4]">
             {globalCounts.sentStage}
           </span>
@@ -953,58 +966,6 @@ export const QuotationsManager = () => {
               className="w-full pl-8 pr-3 py-1.5 border border-[#EAEAEA] rounded-[6px] text-xs font-medium text-[#111111] focus:outline-none focus:border-[#111111]"
             />
           </div>
-
-          {/* Dynamic Status Filter per Stage */}
-          <select
-            value={statusFilter}
-            onChange={(e) => handleStatusFilterChange(e.target.value)}
-            className="px-2.5 py-1.5 border border-[#EAEAEA] rounded-[6px] bg-white text-xs font-bold text-[#111111] focus:outline-none"
-          >
-            <option value="ALL">Tất cả Trạng Thái</option>
-            {activeStage === 'new' && (
-              <>
-                <option value="PENDING_REVIEW">Chờ Đánh Giá Kỹ Thuật</option>
-                <option value="CANCELLED_NOT_FEASIBLE">Không Khả Thi (Huỷ Ngay)</option>
-              </>
-            )}
-            {activeStage === 'internal' && (
-              <>
-                <option value="IN_COSTING">Đang Tính Giá</option>
-                <option value="READY_FOR_QUOTE">Sẵn Sàng Lên Báo Giá</option>
-              </>
-            )}
-            {activeStage === 'sent' && (
-              <>
-                <option value="QUOTED_SENT">Đã Gửi Báo Giá</option>
-                <option value="SUCCESSFUL">Thành Công (Chốt Đơn)</option>
-                <option value="CANCELLED_AFTER_QUOTE">Từ Chối Sau Báo Giá</option>
-              </>
-            )}
-          </select>
-
-          {/* Technology Segment Dropdown */}
-          <select
-            value={segmentFilter}
-            onChange={(e) => setSegmentFilter(e.target.value as any)}
-            className="px-2.5 py-1.5 border border-[#EAEAEA] rounded-[6px] bg-white text-xs font-bold text-[#111111] focus:outline-none"
-          >
-            <option value="ALL">Tất cả Công Nghệ</option>
-            <option value="forging">Phân Hệ Rèn Dập</option>
-            <option value="casting">Phân Hệ Đúc Gang</option>
-            <option value="sawing">Phôi Cưa & GC</option>
-            <option value="machining">Chỉ Gia Công CNC</option>
-          </select>
-
-          {/* Toggle: Chỉ Xem Đã Hủy */}
-          <label className="flex items-center space-x-1.5 cursor-pointer text-xs font-medium text-[#111111] bg-slate-50 px-2.5 py-1.5 rounded-[6px] border border-[#EAEAEA] hover:bg-slate-100 select-none">
-            <input
-              type="checkbox"
-              checked={onlyCancelled}
-              onChange={handleToggleOnlyCancelled}
-              className="rounded text-[#0F172A] focus:ring-0 cursor-pointer"
-            />
-            <span className="font-bold text-[11px] text-slate-700">Chỉ xem Đã hủy</span>
-          </label>
 
           {/* Advanced Filters Popover Button */}
           <div className="relative">
@@ -1028,6 +989,50 @@ export const QuotationsManager = () => {
                 </div>
 
                 <div>
+                  <label className="block text-[10px] font-bold text-[#787774] uppercase mb-1">
+                    Bộ lọc cơ bản
+                  </label>
+                  <div className="flex flex-col space-y-2 mb-4">
+                    <select
+                      value={statusFilter}
+                      onChange={(e) => handleStatusFilterChange(e.target.value)}
+                      className="w-full px-2 py-1.5 border border-[#EAEAEA] rounded-[6px] bg-white text-xs font-bold text-[#111111] focus:outline-none"
+                    >
+                      <option value="ALL">Tất cả Trạng Thái</option>
+                      {activeStage === 'new' && (
+                        <>
+                          <option value="PENDING_REVIEW">Chờ Đánh Giá Kỹ Thuật</option>
+                          <option value="CANCELLED_NOT_FEASIBLE">Không Khả Thi (Huỷ Ngay)</option>
+                        </>
+                      )}
+                      {activeStage === 'internal' && (
+                        <>
+                          <option value="IN_COSTING">Đang Tính Giá</option>
+                          <option value="READY_FOR_QUOTE">Sẵn Sàng Lên Báo Giá</option>
+                        </>
+                      )}
+                      {activeStage === 'sent' && (
+                        <>
+                          <option value="QUOTED_SENT">Đã Gửi Báo Giá</option>
+                          <option value="SUCCESSFUL">Thành Công (Chốt Đơn)</option>
+                          <option value="CANCELLED_AFTER_QUOTE">Từ Chối Sau Báo Giá</option>
+                        </>
+                      )}
+                    </select>
+
+                    <select
+                      value={segmentFilter}
+                      onChange={(e) => setSegmentFilter(e.target.value as any)}
+                      className="w-full px-2 py-1.5 border border-[#EAEAEA] rounded-[6px] bg-white text-xs font-bold text-[#111111] focus:outline-none"
+                    >
+                      <option value="ALL">Tất cả Công Nghệ</option>
+                      <option value="forging">Phân Hệ Rèn Dập</option>
+                      <option value="casting">Phân Hệ Đúc Gang</option>
+                      <option value="sawing">Phôi Cưa & GC</option>
+                      <option value="machining">Chỉ Gia Công CNC</option>
+                    </select>
+                  </div>
+                  
                   <label className="block text-[10px] font-bold text-[#787774] uppercase mb-1">
                     Khoảng Ngày Tạo (Từ - Đến)
                   </label>
