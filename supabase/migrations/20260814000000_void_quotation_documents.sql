@@ -35,8 +35,8 @@ BEGIN
     SELECT rfq_item_id INTO v_rfq_item_id FROM public.quotes WHERE id = v_quote_id;
 
     IF v_rfq_item_id IS NOT NULL THEN
-      UPDATE public.rfq_items SET status = 'READY_FOR_QUOTE', updated_at = NOW() WHERE id = v_rfq_item_id;
-      UPDATE public.quotes SET status = 'DRAFT', updated_at = NOW() WHERE id = v_quote_id;
+      UPDATE public.rfq_items SET status = 'READY_FOR_QUOTE' WHERE id = v_rfq_item_id;
+      UPDATE public.quotes SET status = 'DRAFT' WHERE id = v_quote_id;
     END IF;
   END LOOP;
 END;
