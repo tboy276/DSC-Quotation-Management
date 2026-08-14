@@ -6,7 +6,7 @@ import { formatCurrencyValue } from './RealtimeSummaryPanel';
 import { formatDate } from '../../lib/format-date';
 import { Modal } from '../ui/Modal';
 import { ActionButton } from '../ui/ActionButton';
-import { FileText, Layers, ListFilter } from 'lucide-react';
+import { FileText, Layers, ListFilter, RefreshCw } from 'lucide-react';
 
 interface QuoteDetailModalProps {
   quote: QuoteRecord | null;
@@ -246,7 +246,15 @@ export const QuoteDetailModal = ({ quote, onClose }: QuoteDetailModalProps) => {
             </div>
             <div>
               <span className="text-[#787774]">Mã Hồ Sơ RFQ:</span>{' '}
-              <strong className="font-mono text-[#111111]">{rfq?.rfq_code || 'N/A'}</strong>
+              <div className="inline-flex items-center space-x-2">
+                <strong className="font-mono text-[#111111]">{rfq?.rfq_code || 'N/A'}</strong>
+                {rfq?.source_document_id && (
+                  <span className="inline-flex items-center gap-1 bg-blue-50 text-blue-700 border border-blue-200 px-1.5 py-0.5 rounded text-[10px] font-bold whitespace-nowrap">
+                    <RefreshCw className="w-3 h-3" />
+                    Tái báo giá
+                  </span>
+                )}
+              </div>
             </div>
             <div>
               <span className="text-[#787774]">Khách hàng (Dossier):</span>{' '}

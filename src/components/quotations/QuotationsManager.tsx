@@ -17,6 +17,7 @@ import {
   updateRfqItemDetails,
   generateNextRfqCode,
 } from '../../lib/quotation-service';
+import { supabase } from '../../lib/supabase';
 import { Modal } from '../ui/Modal';
 import { QuoteStatusBadge } from '../rfq/QuoteStatusBadge';
 import { QuoteDetailModal } from '../rfq/QuoteDetailModal';
@@ -45,6 +46,7 @@ import {
   ArrowUpDown,
   ArrowUp,
   ArrowDown,
+  RefreshCw,
   Filter,
   Columns,
   Clipboard,
@@ -484,6 +486,25 @@ export const QuotationsManager = () => {
     return selectedQuotes.every((q) => canManageQuote(q));
   }, [selectedQuoteIds, selectedQuotes, profile, currentUserEmail]);
 
+  const [repricingTotalCount, setRepricingTotalCount] = useState<number | null>(null);
+
+  useEffect(() => {
+    const sourceDocId = selectedQuotes[0]?.rfq?.source_document_id;
+    const rfqId = selectedQuotes[0]?.rfq?.id;
+    if (sourceDocId && rfqId) {
+      const fetchCount = async () => {
+        const { count } = await supabase
+          .from('rfq_items')
+          .select('id', { count: 'exact', head: true })
+          .eq('rfq_id', rfqId);
+        setRepricingTotalCount(count);
+      };
+      fetchCount();
+    } else {
+      setRepricingTotalCount(null);
+    }
+  }, [selectedQuotes[0]?.rfq?.id, selectedQuotes[0]?.rfq?.source_document_id]);
+
   // Validation logic for "Gộp Báo Giá" in Tab 2 (Strict 4 Conditions + Option B)
   const groupDisabledReason = useMemo((): string | null => {
     if (selectedQuoteIds.length === 0) {
@@ -517,8 +538,19 @@ export const QuotationsManager = () => {
       return 'Chỉ có thể gộp các sản phẩm do chính bạn tạo.';
     }
 
+    // Condition 5: Repricing constraint
+    const sourceDocId = selectedQuotes[0]?.rfq?.source_document_id;
+    if (sourceDocId) {
+      if (repricingTotalCount === null) {
+        return 'Đang kiểm tra dữ liệu tái báo giá...';
+      }
+      if (selectedQuotes.length !== repricingTotalCount) {
+        return `RFQ này là bản tái báo giá — bắt buộc phải gộp ĐỦ toàn bộ ${repricingTotalCount} dòng sản phẩm cùng lúc, không được gộp thiếu.`;
+      }
+    }
+
     return null;
-  }, [selectedQuoteIds, selectedQuotes, profile, currentUserEmail]);
+  }, [selectedQuoteIds, selectedQuotes, profile, currentUserEmail, repricingTotalCount]);
 
   const handleGroupRequest = () => {
     if (groupDisabledReason) return;
@@ -1400,7 +1432,19 @@ export const QuotationsManager = () => {
                               </td>
                             );
                           case 'rfq_code':
-                            return <td key={col.key} className="py-3 px-3 font-mono">{quote.rfq?.rfq_code || '-'}</td>;
+                            return (
+                              <td key={col.key} className="py-3 px-3 font-mono">
+                                <div className="flex items-center space-x-2">
+                                  <span>{quote.rfq?.rfq_code || '-'}</span>
+                                  {quote.rfq?.source_document_id && (
+                                    <span className="inline-flex items-center gap-1 bg-blue-50 text-blue-700 border border-blue-200 px-1.5 py-0.5 rounded text-[10px] font-bold whitespace-nowrap">
+                                      <RefreshCw className="w-3 h-3" />
+                                      Tái báo giá
+                                    </span>
+                                  )}
+                                </div>
+                              </td>
+                            );
                           case 'rfq_received_date':
                             return <td key={col.key} className="py-3 px-3 font-mono">{quote.rfq?.rfq_received_date ? formatDate(quote.rfq.rfq_received_date) : '-'}</td>;
                           case 'customer_deadline':

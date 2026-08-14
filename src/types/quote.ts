@@ -31,6 +31,7 @@ export type CurrencyType = 'VND' | 'USD' | 'JPY' | 'EUR';
 // 1. RFQ Dossier Header (Hồ Sơ Nhận Từ Khách Hàng)
 export interface RfqDossier {
   id: string;
+  source_document_id?: string | null;
   customer_name: string;
   customer_address?: string;
   rfq_code?: string;

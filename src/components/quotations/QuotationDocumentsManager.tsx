@@ -13,11 +13,18 @@ import {
   Search,
   AlertTriangle,
   X,
+  RefreshCw,
 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
+import { createRepricingRfqFromDocument } from '../../lib/repricing-service';
 
 export const QuotationDocumentsManager = () => {
+  const navigate = useNavigate();
+  const { user } = useAuth();
   const [documents, setDocuments] = useState<QuotationDocument[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
+  const [isRepricing, setIsRepricing] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [selectedDocIds, setSelectedDocIds] = useState<string[]>([]);
@@ -168,6 +175,43 @@ export const QuotationDocumentsManager = () => {
       variant: 'primary',
       enabled: (count) => count === 1,
       onClick: (selectedRows) => setSelectedDoc(selectedRows[0]),
+    },
+    {
+      key: 'reprice',
+      label: 'Cập Nhật Báo Giá',
+      icon: <RefreshCw className={`w-3.5 h-3.5 ${isRepricing ? 'animate-spin' : ''}`} />,
+      variant: 'secondary',
+      enabled: (count, selectedRows) => {
+        if (count !== 1) return false;
+        const doc = selectedRows[0];
+        if (doc.status !== 'ACTIVE') return false;
+        if (!doc.items || doc.items.length === 0) return false;
+        return doc.items.every(
+          (it) => (it.quote?.rfqItem?.status || it.quote?.status) === 'SUCCESSFUL'
+        );
+      },
+      onClick: async (selectedRows) => {
+        const doc = selectedRows[0];
+        const numItems = doc.items?.length || 0;
+        if (
+          !window.confirm(
+            `Sẽ tạo 1 RFQ mới với đầy đủ ${numItems} dòng sản phẩm giống văn bản ${doc.document_code}, giữ nguyên toàn bộ thông số & giá cũ (bạn có thể sửa lại từng dòng ở bước Tính Giá).\n\nVăn bản ${doc.document_code} và đơn hàng cũ KHÔNG bị thay đổi gì.\n\nLƯU Ý: Khi gộp báo giá mới, bắt buộc phải gộp ĐỦ cả ${numItems} dòng, không được gộp thiếu.\n\nXác nhận tiến hành cập nhật báo giá?`
+          )
+        ) {
+          return;
+        }
+
+        try {
+          setIsRepricing(true);
+          const { newRfq } = await createRepricingRfqFromDocument(doc, user?.email || 'sales@disoco.vn');
+          navigate(`/quotations?stage=internal&search=${newRfq.rfq_code}`);
+        } catch (error: any) {
+          console.error(error);
+          alert(error.message || 'Có lỗi xảy ra khi tạo RFQ tái báo giá.');
+        } finally {
+          setIsRepricing(false);
+        }
+      },
     },
   ];
 
