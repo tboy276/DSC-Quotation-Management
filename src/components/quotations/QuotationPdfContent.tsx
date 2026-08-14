@@ -233,6 +233,8 @@ export const QuotationPdfContent: React.FC<QuotationPdfContentProps> = ({
               const q = item.quote;
               if (!q) return null;
 
+              const isUUID = (str: string) => /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(str);
+
               const inp = q.inputs_json as any;
               const res = q.results_json as any;
               const seg = q.segment;
@@ -305,7 +307,7 @@ export const QuotationPdfContent: React.FC<QuotationPdfContentProps> = ({
                     {q.rfqItem?.part_number || 'No PN'}
                   </td>
                   <td className="border border-black p-1.5 font-mono">
-                    {inp.material_name || inp.selected_material_name || (inp.selected_material_id && !inp.selected_material_id.startsWith('mat-') ? inp.selected_material_id : null) || (q.segment === 'casting' ? 'FCD450-10' : 'S45C')}
+                    {inp.material_name || inp.selected_material_name || (inp.selected_material_id && !inp.selected_material_id.startsWith('mat-') && !isUUID(inp.selected_material_id) ? inp.selected_material_id : null) || (q.segment === 'casting' ? 'FCD450-10' : 'S45C')}
                   </td>
 
                   {config.showWeightChi && (
