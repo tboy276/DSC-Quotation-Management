@@ -4,7 +4,7 @@ import { DEFAULT_DISPLAY_CONFIG } from '../../types/quotation-document';
 import type { CurrencyType } from '../../types/quote';
 import type { TradeTermType } from '../../store/useQuotationStore';
 import { QuotationPdfContent } from './QuotationPdfContent';
-import { ArrowLeft, Check, Plus, Trash2, ArrowUp, ArrowDown, Eye, Sliders, Download, X } from 'lucide-react';
+import { ArrowLeft, Check, Plus, Trash2, ArrowUp, ArrowDown, Eye, Sliders, Download } from 'lucide-react';
 import { generateQuotationPdf } from '../../utils/generateQuotationPdf';
 import { getToolingColumnFlags } from '../../utils/quotation-tooling-columns';
 
@@ -125,20 +125,16 @@ export const QuotationPreviewPanel: React.FC<QuotationPreviewPanelProps> = ({
   };
 
   return (
-    <div className="w-full min-w-0 grid grid-cols-1 lg:grid-cols-12 gap-6">
+    <div className={`w-full min-w-0 grid grid-cols-1 ${!readOnly ? 'lg:grid-cols-12 gap-6' : 'gap-0'}`}>
       {/* Left Column: Control Settings Panel */}
-      <div className="lg:col-span-4 min-w-0 flex flex-col space-y-4 bg-[#FBFBFA] border border-[#EAEAEA] rounded-[10px] p-4 text-xs">
-        <div className="flex items-center justify-between border-b border-[#EAEAEA] pb-3">
-          <div className="flex items-center space-x-2">
-            <Sliders className="w-4 h-4 text-[#111111]" />
-            <h3 className="font-bold text-sm text-[#111111]">Tùy Chỉnh Hiển Thị Thư Báo Giá</h3>
+      {!readOnly && (
+        <div className="lg:col-span-4 min-w-0 flex flex-col space-y-4 bg-[#FBFBFA] border border-[#EAEAEA] rounded-[10px] p-4 text-xs">
+          <div className="flex items-center justify-between border-b border-[#EAEAEA] pb-3">
+            <div className="flex items-center space-x-2">
+              <Sliders className="w-4 h-4 text-[#111111]" />
+              <h3 className="font-bold text-sm text-[#111111]">Tùy Chỉnh Hiển Thị Thư Báo Giá</h3>
+            </div>
           </div>
-          {readOnly && (
-            <span className="px-2 py-0.5 bg-[#EAEAEA] text-[#787774] text-[10px] font-bold rounded">
-              Chỉ xem (Đã gửi)
-            </span>
-          )}
-        </div>
 
         <div className="space-y-4 overflow-y-auto pr-1 flex-1 max-h-[calc(100vh-230px)]">
           {/* Section 0: Thông Tin Văn Bản & Điều Khoản Thương Mại */}
@@ -413,53 +409,53 @@ export const QuotationPreviewPanel: React.FC<QuotationPreviewPanelProps> = ({
             <div />
           )}
 
-          {!readOnly ? (
-            <button
-              type="button"
-              disabled={isSubmitting || !docFields.contact_person.trim() || !docFields.quotation_date}
-              onClick={() => onSaveAndSend(config, docFields)}
-              className="px-4 py-2 bg-[#111111] hover:bg-[#333333] active:scale-[0.98] text-white font-bold rounded-[8px] transition-all flex items-center space-x-1.5 cursor-pointer disabled:opacity-50 text-xs"
-            >
-              <Check className="w-4 h-4 text-emerald-400" />
-              <span>{isSubmitting ? 'Đang Phát Hành...' : 'Xác Nhận & Gửi Báo Giá'}</span>
-            </button>
-          ) : (
-            <div className="flex items-center space-x-2">
-              <button
-                type="button"
-                disabled={isExportingPdf}
-                onClick={handleDownloadPDF}
-                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 active:scale-[0.98] text-white font-bold rounded-[6px] transition-all cursor-pointer inline-flex items-center space-x-1.5 shadow-sm text-xs disabled:opacity-50"
-              >
-                <Download className="w-4 h-4 stroke-[2.5]" />
-                <span>{isExportingPdf ? 'Đang Tạo File PDF...' : 'Tải File PDF Trực Tiếp'}</span>
-              </button>
-              {onBack && (
-                <button
-                  type="button"
-                  onClick={onBack}
-                  className="px-4 py-2 bg-[#111111] hover:bg-[#333333] active:scale-[0.98] text-white font-bold rounded-[6px] transition-all cursor-pointer inline-flex items-center space-x-1.5 shadow-sm text-xs"
-                >
-                  <X className="w-4 h-4 stroke-[2.5]" />
-                  <span>Đóng</span>
-                </button>
-              )}
-            </div>
-          )}
+          <button
+            type="button"
+            disabled={isSubmitting || !docFields.contact_person.trim() || !docFields.quotation_date}
+            onClick={() => onSaveAndSend(config, docFields)}
+            className="px-4 py-2 bg-[#111111] hover:bg-[#333333] active:scale-[0.98] text-white font-bold rounded-[8px] transition-all flex items-center space-x-1.5 cursor-pointer disabled:opacity-50 text-xs"
+          >
+            <Check className="w-4 h-4 text-emerald-400" />
+            <span>{isSubmitting ? 'Đang Phát Hành...' : 'Xác Nhận & Gửi Báo Giá'}</span>
+          </button>
         </div>
       </div>
+      )}
 
       {/* Right Column: Live Document Preview */}
-      <div className="lg:col-span-8 min-w-0 border border-[#EAEAEA] rounded-[10px] overflow-hidden flex flex-col bg-slate-100 shadow-inner">
+      <div className={`${!readOnly ? 'lg:col-span-8' : ''} min-w-0 border border-[#EAEAEA] rounded-[10px] overflow-hidden flex flex-col bg-slate-100 shadow-inner`}>
         <div className="px-4 py-2.5 bg-white border-b border-[#EAEAEA] flex items-center justify-between text-[11px] font-bold text-[#787774] shrink-0">
           <div className="flex items-center space-x-2">
             <Eye className="w-4 h-4 text-[#111111]" />
             <span>XEM TRƯỚC BÁO GIÁ THỜI GIAN THỰC (LIVE PREVIEW)</span>
           </div>
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center space-x-3">
             <span className="text-[10px] font-mono text-emerald-600 font-semibold bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
               {config.layoutOrientation === 'landscape' ? 'Form Ngang (Landscape)' : 'Form Dọc (Portrait)'}
             </span>
+            {readOnly && (
+              <div className="flex items-center space-x-2 border-l border-[#EAEAEA] pl-3">
+                <button
+                  type="button"
+                  disabled={isExportingPdf}
+                  onClick={handleDownloadPDF}
+                  className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 active:scale-[0.98] text-white font-bold rounded-[6px] transition-all cursor-pointer inline-flex items-center space-x-1.5 shadow-sm text-xs disabled:opacity-50"
+                >
+                  <Download className="w-3.5 h-3.5 stroke-[2.5]" />
+                  <span>{isExportingPdf ? 'Đang Tạo File PDF...' : 'Tải File PDF Trực Tiếp'}</span>
+                </button>
+                {onBack && (
+                  <button
+                    type="button"
+                    onClick={onBack}
+                    className="px-3 py-1.5 bg-white hover:bg-[#F0F0EE] border border-[#EAEAEA] text-[#111111] font-bold rounded-[6px] transition-all cursor-pointer inline-flex items-center space-x-1.5 shadow-sm text-xs"
+                  >
+                    <ArrowLeft className="w-3.5 h-3.5" />
+                    <span>Quay Lại</span>
+                  </button>
+                )}
+              </div>
+            )}
           </div>
         </div>
 

@@ -89,11 +89,7 @@ export const DocumentDetailModal = ({
   const currency = document.currency || 'VND';
   const exchangeRate = document.exchange_rate || 1;
 
-  // Tính tổng giá trị văn bản báo giá
-  const totalAmountVnd = items.reduce(
-    (sum, item) => sum + (item.quote?.final_quoted_price ?? 0),
-    0
-  );
+
 
   const handleVoidDocument = async () => {
     if (!window.confirm(`Toàn bộ ${items.length} dòng sản phẩm trong văn bản ${document.document_code} sẽ được đưa trở lại bước Tính Giá để chỉnh sửa. Văn bản hiện tại sẽ được đánh dấu Đã Thu Hồi và không thể hoàn tác. Bạn có chắc chắn?`)) {
@@ -296,20 +292,7 @@ export const DocumentDetailModal = ({
             </div>
           </div>
 
-          {/* Khối Tổng Giá Trị Văn Bản */}
-          <div className="bg-[#111111] text-white p-4 rounded-[10px] space-y-1">
-            <div className="flex items-center justify-between text-slate-400 text-[10px] uppercase font-semibold">
-              <span>Tổng Giá Trị Đơn Hàng / Văn Bản Báo Giá</span>
-              <span>{items.length} Dòng Sản Phẩm</span>
-            </div>
 
-            <div className="flex items-baseline justify-between pt-1">
-              <p className="text-2xl font-extrabold font-mono">
-                {formatCurrencyValue(totalAmountVnd, currency, exchangeRate)}
-              </p>
-              <span className="text-xs text-slate-300 font-semibold">{currency} Total</span>
-            </div>
-          </div>
 
         </div>
       </Modal>
