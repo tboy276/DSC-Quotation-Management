@@ -4,12 +4,10 @@ import { fetchQuotationDocuments, updateDocumentDisplayConfig } from '../../lib/
 import { DocumentDetailModal } from './DocumentDetailModal';
 import { QuotationPreviewPanel } from './QuotationPreviewPanel';
 import { Modal } from '../ui/Modal';
-import { exportDocumentToExcel } from '../../utils/excel-generator';
 import { formatCurrencyValue } from '../rfq/RealtimeSummaryPanel';
 import { formatDate } from '../../lib/format-date';
 import { DataTable, type DataTableColumn, type DataTableAction } from '../ui/DataTable';
 import {
-  FileSpreadsheet,
   Download,
   Eye,
   Search,
@@ -165,29 +163,43 @@ export const QuotationDocumentsManager = () => {
   const toolbarActions: DataTableAction<QuotationDocument>[] = [
     {
       key: 'view_detail',
-      label: 'Xem Chi Tiết Văn Bản',
+      label: 'Xem chi tiết',
       icon: <Eye className="w-3.5 h-3.5" />,
       variant: 'primary',
       enabled: (count) => count === 1,
       onClick: (selectedRows) => setSelectedDoc(selectedRows[0]),
     },
-    {
-      key: 'export_pdf',
-      label: 'Xuất PDF Thư Báo Giá',
-      icon: <Download className="w-3.5 h-3.5 text-red-600" />,
-      variant: 'secondary',
-      enabled: (count) => count === 1,
-      onClick: (selectedRows) => setPdfPreviewDoc(selectedRows[0]),
-    },
-    {
-      key: 'export_excel',
-      label: 'Xuất Excel (.xlsx)',
-      icon: <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-400 stroke-[2]" />,
-      variant: 'secondary',
-      enabled: (count) => count === 1,
-      onClick: (selectedRows) => exportDocumentToExcel(selectedRows[0]),
-    },
   ];
+
+  const filterContent = (
+    <div className="flex items-center gap-3">
+      <div className="relative w-full max-w-sm flex-1">
+        <Search className="w-3.5 h-3.5 absolute left-2.5 top-2.5 text-[#787774]" />
+        <input
+          type="text"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          placeholder="Tìm theo Mã RFQ, Mã Báo Giá, khách hàng..."
+          className="w-full pl-8 pr-3 py-1.5 border border-[#EAEAEA] rounded-[6px] text-xs font-medium text-[#111111] focus:outline-none focus:border-[#111111]"
+        />
+      </div>
+
+      <div className="flex items-center space-x-3 shrink-0">
+        <label className="flex items-center space-x-1.5 cursor-pointer text-xs font-medium text-[#111111] bg-slate-50 px-2.5 py-1.5 rounded-[6px] border border-[#EAEAEA] hover:bg-slate-100 select-none">
+          <input
+            type="checkbox"
+            checked={showVoided}
+            onChange={() => setShowVoided(!showVoided)}
+            className="rounded text-[#0F172A] focus:ring-0 cursor-pointer"
+          />
+          <span className="font-bold text-[11px] text-slate-700">Hiện đã thu hồi</span>
+        </label>
+        <span className="text-[11px] text-[#787774] font-medium hidden sm:inline whitespace-nowrap">
+          Tổng số: <strong>{filteredDocs.length}</strong> văn bản
+        </span>
+      </div>
+    </div>
+  );
 
   return (
     <div className="space-y-5 animate-fade-in-up">
@@ -203,47 +215,6 @@ export const QuotationDocumentsManager = () => {
         </div>
       )}
 
-      {/* Header Toolbar */}
-      <div className="bg-white p-4 rounded-[10px] border border-[#EAEAEA] shadow-[0_2px_8px_rgba(0,0,0,0.03)] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h2 className="text-base font-bold text-[#111111] tracking-tight">
-            Danh Sách Văn Bản Báo Giá Gộp (Quotation Documents)
-          </h2>
-          <p className="text-xs text-[#787774]">
-            Tích chọn văn bản báo giá trên bảng để xem chi tiết sản phẩm, xuất thư PDF chuẩn DISOCO hoặc xuất Excel bóc tách
-          </p>
-        </div>
-      </div>
-
-      {/* Filter Bar */}
-      <div className="bg-white p-4 rounded-[10px] border border-[#EAEAEA] shadow-[0_2px_8px_rgba(0,0,0,0.03)] flex items-center justify-between">
-        <div className="relative max-w-md w-full">
-          <Search className="w-3.5 h-3.5 absolute left-2.5 top-2.5 text-[#787774]" />
-          <input
-            type="text"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Tìm theo Mã RFQ, Mã Báo Giá, tên khách hàng, người nhận Attn..."
-            className="w-full pl-8 pr-3 py-1.5 border border-[#EAEAEA] rounded-[6px] text-xs font-medium text-[#111111] focus:outline-none focus:border-[#111111]"
-          />
-        </div>
-
-        <div className="flex items-center space-x-4">
-          <label className="flex items-center space-x-1.5 cursor-pointer text-xs font-medium text-[#111111] bg-slate-50 px-2.5 py-1.5 rounded-[6px] border border-[#EAEAEA] hover:bg-slate-100 select-none">
-            <input
-              type="checkbox"
-              checked={showVoided}
-              onChange={() => setShowVoided(!showVoided)}
-              className="rounded text-[#0F172A] focus:ring-0 cursor-pointer"
-            />
-            <span className="font-bold text-[11px] text-slate-700">Hiện cả văn bản đã thu hồi</span>
-          </label>
-          <span className="text-xs text-[#787774] font-medium hidden sm:inline">
-            Tổng số: <strong>{filteredDocs.length}</strong> văn bản
-          </span>
-        </div>
-      </div>
-
       {/* Shared Reusable DataTable */}
       <DataTable
         tableName="quotation_documents_table"
@@ -251,6 +222,7 @@ export const QuotationDocumentsManager = () => {
         columns={columns}
         keyExtractor={(doc) => doc.id}
         toolbarActions={toolbarActions}
+        toolbarLeftContent={filterContent}
         selectedIds={selectedDocIds}
         onSelectionChange={(ids) => setSelectedDocIds(ids)}
         onRowClick={(doc) => setSelectedDoc(doc)}

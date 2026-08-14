@@ -28,6 +28,7 @@ interface DataTableProps<T> {
   columns: DataTableColumn<T>[];
   keyExtractor: (row: T) => string;
   toolbarActions?: DataTableAction<T>[];
+  toolbarLeftContent?: React.ReactNode;
   onRowClick?: (row: T) => void;
   loading?: boolean;
   emptyMessage?: string;
@@ -41,6 +42,7 @@ export function DataTable<T>({
   columns,
   keyExtractor,
   toolbarActions = [],
+  toolbarLeftContent,
   onRowClick,
   loading = false,
   emptyMessage = 'Không có dữ liệu hiển thị.',
@@ -168,11 +170,18 @@ export function DataTable<T>({
     <div className="space-y-3">
       {/* Top Fixed Toolbar */}
       <div className="bg-white p-3 rounded-[10px] border border-[#EAEAEA] shadow-[0_2px_8px_rgba(0,0,0,0.03)] flex flex-wrap items-center justify-between gap-3">
-        {/* Selection Count Indicator */}
-        <div className="flex items-center space-x-2 text-xs font-semibold text-[#111111]">
-          <span className="px-2.5 py-1 bg-[#F0F0EE] border border-[#EAEAEA] rounded-[5px] font-mono text-[11px]">
-            Đã chọn: <strong className="text-[#111111]">{selectedCount}</strong> / {data.length} dòng
-          </span>
+        <div className="flex items-center space-x-3 flex-1">
+          {toolbarLeftContent && (
+            <div className="flex-1 max-w-2xl">
+              {toolbarLeftContent}
+            </div>
+          )}
+          {/* Selection Count Indicator */}
+          <div className="flex items-center space-x-2 text-xs font-semibold text-[#111111] shrink-0">
+            <span className="px-2.5 py-1 bg-[#F0F0EE] border border-[#EAEAEA] rounded-[5px] font-mono text-[11px]">
+              Đã chọn: <strong className="text-[#111111]">{selectedCount}</strong> / {data.length} dòng
+            </span>
+          </div>
         </div>
 
         {/* Toolbar Dynamic Action Buttons + Column Visibility Toggle */}
