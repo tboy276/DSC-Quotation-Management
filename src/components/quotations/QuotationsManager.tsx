@@ -579,7 +579,7 @@ export const QuotationsManager = () => {
     if (!cancelReasonText.trim() || selectedQuotes.length === 0) return;
 
     try {
-      const targetStatus: RfqItemStatus = activeStage === 'new' ? 'CANCELLED_NOT_FEASIBLE' : 'CANCELLED_AFTER_QUOTE';
+      const targetStatus: RfqItemStatus = activeStage === 'new' || activeStage === 'internal' ? 'CANCELLED_NOT_FEASIBLE' : 'CANCELLED_AFTER_QUOTE';
       for (const quote of selectedQuotes) {
         const targetId = quote.rfq_item_id || quote.id;
         await updateQuoteStatus(targetId, targetStatus, cancelReasonText.trim());
@@ -1171,13 +1171,15 @@ export const QuotationsManager = () => {
 
                   <ActionButton
                     variant="danger"
-                    icon={Trash2}
+                    label="Không phù hợp"
                     disabled={!canDeleteSelected}
-                    onClick={handleDeleteSelectedItems}
+                    onClick={() => handleOpenItemCancelModal('CANCELLED_NOT_FEASIBLE')}
                     title={
-                      !canDeleteSelected
-                        ? 'Bạn chỉ có quyền xóa các RFQ do chính mình tạo'
-                        : `Xoá (${selectedQuoteIds.length}) mã sản phẩm đã chọn khỏi Supabase DB`
+                      selectedQuotes.length === 0
+                        ? 'Vui lòng chọn sản phẩm để đánh dấu không phù hợp'
+                        : !canDeleteSelected
+                        ? 'Bạn chỉ có quyền đánh dấu không phù hợp cho các RFQ do chính mình tạo'
+                        : `Đánh dấu (${selectedQuoteIds.length}) mã sản phẩm đã chọn là Không phù hợp`
                     }
                   />
                 </>
