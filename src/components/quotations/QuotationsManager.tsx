@@ -25,6 +25,7 @@ import { CreateDocumentModal } from './CreateDocumentModal';
 import { formatCurrencyValue } from '../rfq/RealtimeSummaryPanel';
 import { useAuth } from '../../context/AuthContext';
 import { ActionButton } from '../ui/ActionButton';
+import { useConfirm } from '../../context/ConfirmDialogContext';
 
 import { parseStructuredRfqText } from '../../utils/rfq-parser';
 import { getTechFamily } from '../../utils/tech-family';
@@ -94,6 +95,7 @@ export const QuotationsManager = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const location = useLocation();
   const { profile, user } = useAuth();
+  const confirm = useConfirm();
   const currentUserEmail = profile?.email || user?.email || '';
   const canEdit = ['sales', 'admin'].includes(profile?.role || '');
 
@@ -572,7 +574,13 @@ export const QuotationsManager = () => {
     const selectedList = quotes.filter((q) => selectedQuoteIds.includes(q.id));
     const count = selectedList.length;
 
-    if (!window.confirm(`XÁC NHẬN XOÁ:\nBạn có chắc chắn muốn xóa (${count}) mã sản phẩm RFQ đã chọn khỏi cơ sở dữ liệu Supabase không?`)) {
+    const confirmed = await confirm({
+      title: 'Xóa Vĩnh Viễn Khỏi Database',
+      message: `Bạn có chắc chắn muốn xóa (${count}) mã sản phẩm RFQ đã chọn khỏi cơ sở dữ liệu Supabase không?`,
+      confirmLabel: 'Xóa Vĩnh Viễn',
+      variant: 'danger',
+    });
+    if (!confirmed) {
       return;
     }
 

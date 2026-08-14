@@ -10,10 +10,12 @@ import { useAuth } from '../../context/AuthContext';
 import { DataTable, type DataTableColumn, type DataTableAction } from '../ui/DataTable';
 import { Modal } from '../ui/Modal';
 import { ActionButton } from '../ui/ActionButton';
+import { useConfirm } from '../../context/ConfirmDialogContext';
 import { Workflow, Plus, Trash2, Shield, Hammer } from 'lucide-react';
 
 export const ForgingRatesManager = () => {
   const { profile } = useAuth();
+  const confirm = useConfirm();
   const isAdmin = profile?.role === 'admin';
 
   const [activeSubTab, setActiveSubTab] = useState<'press' | 'hammer'>('press');
@@ -63,9 +65,15 @@ export const ForgingRatesManager = () => {
   };
 
   // Xóa dải máy dập
-  const handleDeleteSelectedPress = (selectedRows: PressingMachineRate[]) => {
+  const handleDeleteSelectedPress = async (selectedRows: PressingMachineRate[]) => {
     if (!isAdmin || selectedRows.length === 0) return;
-    if (!window.confirm(`Bạn có chắc muốn xoá ${selectedRows.length} dải cước máy dập đã chọn?`)) return;
+    const confirmed = await confirm({
+      title: 'Xóa Dải Cước Máy Dập',
+      message: `Bạn có chắc muốn xoá ${selectedRows.length} dải cước máy dập đã chọn?`,
+      confirmLabel: 'Xóa',
+      variant: 'danger',
+    });
+    if (!confirmed) return;
     const ids = selectedRows.map((r) => r.id);
     setPressRates(pressRates.filter((r) => !ids.includes(r.id)));
     setSelectedPressIds([]);
@@ -88,9 +96,15 @@ export const ForgingRatesManager = () => {
   };
 
   // Xóa dải máy búa
-  const handleDeleteSelectedHammer = (selectedRows: HydraulicHammerRate[]) => {
+  const handleDeleteSelectedHammer = async (selectedRows: HydraulicHammerRate[]) => {
     if (!isAdmin || selectedRows.length === 0) return;
-    if (!window.confirm(`Bạn có chắc muốn xoá ${selectedRows.length} dải cước máy búa đã chọn?`)) return;
+    const confirmed = await confirm({
+      title: 'Xóa Dải Cước Máy Búa',
+      message: `Bạn có chắc muốn xoá ${selectedRows.length} dải cước máy búa đã chọn?`,
+      confirmLabel: 'Xóa',
+      variant: 'danger',
+    });
+    if (!confirmed) return;
     const ids = selectedRows.map((r) => r.id);
     setHammerRates(hammerRates.filter((r) => !ids.includes(r.id)));
     setSelectedHammerIds([]);

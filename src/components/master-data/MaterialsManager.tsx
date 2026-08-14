@@ -13,6 +13,7 @@ import { INITIAL_QUOTES } from '../../lib/quotation-service';
 import { DataTable, type DataTableColumn, type DataTableAction } from '../ui/DataTable';
 import { Modal } from '../ui/Modal';
 import { ActionButton } from '../ui/ActionButton';
+import { useConfirm } from '../../context/ConfirmDialogContext';
 import { Plus, Edit2, Trash2, TrendingUp, History, Check, AlertTriangle } from 'lucide-react';
 
 interface MaterialsManagerProps {
@@ -21,6 +22,7 @@ interface MaterialsManagerProps {
 }
 
 export const MaterialsManager = ({ isAdmin, isSales = false }: MaterialsManagerProps) => {
+  const confirm = useConfirm();
   const [materials, setMaterials] = useState<Material[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
@@ -140,7 +142,13 @@ export const MaterialsManager = ({ isAdmin, isSales = false }: MaterialsManagerP
       return;
     }
 
-    if (!window.confirm(`Bạn có chắc chắn muốn xoá ${selectedRows.length} vật tư đã chọn?`)) {
+    const confirmed = await confirm({
+      title: 'Xóa Vật Tư',
+      message: `Bạn có chắc chắn muốn xoá ${selectedRows.length} vật tư đã chọn?`,
+      confirmLabel: 'Xóa',
+      variant: 'danger',
+    });
+    if (!confirmed) {
       return;
     }
 
@@ -186,7 +194,13 @@ export const MaterialsManager = ({ isAdmin, isSales = false }: MaterialsManagerP
 
   // Delete Price History Row
   const handleDeleteHistoryRow = async (historyId: string) => {
-    if (!window.confirm('Bạn có chắc chắn muốn xoá dòng lịch sử giá này?')) return;
+    const confirmed = await confirm({
+      title: 'Xóa Lịch Sử Giá',
+      message: 'Bạn có chắc chắn muốn xoá dòng lịch sử giá này?',
+      confirmLabel: 'Xóa',
+      variant: 'danger',
+    });
+    if (!confirmed) return;
     await deletePriceHistoryItem(historyId);
     if (historyMaterial) {
       const updated = await fetchMaterialPriceHistory(historyMaterial.id);

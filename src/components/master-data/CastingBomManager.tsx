@@ -13,6 +13,7 @@ import { calculateLiquidMetalPrice } from '../../lib/calculation-engine/liquid-m
 import { DataTable, type DataTableColumn, type DataTableAction } from '../ui/DataTable';
 import { Modal } from '../ui/Modal';
 import { ActionButton } from '../ui/ActionButton';
+import { useConfirm } from '../../context/ConfirmDialogContext';
 import { Plus, Edit2, Trash2, Check, RotateCcw, AlertCircle } from 'lucide-react';
 
 interface CastingBomManagerProps {
@@ -20,6 +21,7 @@ interface CastingBomManagerProps {
 }
 
 export const CastingBomManager = ({ isAdmin }: CastingBomManagerProps) => {
+  const confirm = useConfirm();
   const [grades, setGrades] = useState<CastingGrade[]>([]);
   const [selectedGradeId, setSelectedGradeId] = useState<string>('');
   const [bomItems, setBomItems] = useState<CastingBomItem[]>([]);
@@ -102,7 +104,13 @@ export const CastingBomManager = ({ isAdmin }: CastingBomManagerProps) => {
   // Delete BOM Items
   const handleDeleteBomItems = async (selectedRows: CastingBomItem[]) => {
     if (selectedRows.length === 0) return;
-    if (!window.confirm(`Bạn có chắc muốn xoá ${selectedRows.length} thành phần khỏi mẻ nấu BOM này?`)) {
+    const confirmed = await confirm({
+      title: 'Xóa Thành Phần BOM',
+      message: `Bạn có chắc muốn xoá ${selectedRows.length} thành phần khối mẻ nấu BOM này?`,
+      confirmLabel: 'Xóa',
+      variant: 'danger',
+    });
+    if (!confirmed) {
       return;
     }
 

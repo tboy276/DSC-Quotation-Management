@@ -128,7 +128,13 @@ export const DashboardPage = () => {
     };
 
     const handleRevoke = async (userId: string, email: string) => {
-      if (!window.confirm(`Thu hồi toàn bộ quyền của "${email}"? Tài khoản vẫn đăng nhập được nhưng sẽ chỉ còn quyền viewer cho tới khi được cấp lại.`)) return;
+      const confirmed = await confirm({
+        title: 'Thu Hồi Quyền Truy Cập',
+        message: `Thu hồi toàn bộ quyền của "${email}"? Tài khoản vẫn đăng nhập được nhưng sẽ chỉ còn quyền viewer cho tới khi được cấp lại.`,
+        confirmLabel: 'Thu Hồi',
+        variant: 'danger',
+      });
+      if (!confirmed) return;
       try {
         setSavingId(userId);
         await revokeUserProfile(userId);

@@ -8,9 +8,11 @@ import {
 } from '../../lib/master-data-service';
 import { Modal } from '../ui/Modal';
 import { ActionButton } from '../ui/ActionButton';
+import { useConfirm } from '../../context/ConfirmDialogContext';
 import { Layers, Plus, Trash2, Edit2, Check, Info } from 'lucide-react';
 
 export const MoldingRecipeManager = () => {
+  const confirm = useConfirm();
   const [items, setItems] = useState<MoldingRecipeItem[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [editingItem, setEditingItem] = useState<Partial<MoldingRecipeItem> | null>(null);
@@ -50,7 +52,13 @@ export const MoldingRecipeManager = () => {
   };
 
   const handleDelete = async (id: string, name: string) => {
-    if (!window.confirm(`Xác nhận xóa vật tư khuôn "${name}" khỏi Công Thức Dùng Chung?`)) return;
+    const confirmed = await confirm({
+      title: 'Xóa Vật Tư Khuôn',
+      message: `Xác nhận xóa vật tư khuôn "${name}" khỏi Công Thức Dùng Chung?`,
+      confirmLabel: 'Xóa',
+      variant: 'danger',
+    });
+    if (!confirmed) return;
     await deleteMoldingRecipeItem(id);
     loadData();
   };

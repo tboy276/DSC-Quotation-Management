@@ -12,6 +12,7 @@ import { canManageRecord } from '../../lib/permission-utils';
 import { Modal } from '../ui/Modal';
 import { ActionButton } from '../ui/ActionButton';
 import { useAuth } from '../../context/AuthContext';
+import { useConfirm } from '../../context/ConfirmDialogContext';
 import {
   FileText,
   FileSpreadsheet,
@@ -36,10 +37,11 @@ export const DocumentDetailModal = ({
 }: DocumentDetailModalProps) => {
   if (!document) return null;
 
+  const { profile, user } = useAuth();
+  const confirm = useConfirm();
   const [items, setItems] = useState<QuotationDocumentItem[]>([]);
   const [showCustomizeModal, setShowCustomizeModal] = useState<boolean>(false);
 
-  const { profile, user } = useAuth();
   const currentUserEmail = profile?.email || user?.email || '';
 
   const canManageDocument = canManageRecord(profile, currentUserEmail, document);
@@ -92,7 +94,13 @@ export const DocumentDetailModal = ({
 
 
   const handleVoidDocument = async () => {
-    if (!window.confirm(`Toàn bộ ${items.length} dòng sản phẩm trong văn bản ${document.document_code} sẽ được đưa trở lại bước Tính Giá để chỉnh sửa. Văn bản hiện tại sẽ được đánh dấu Đã Thu Hồi và không thể hoàn tác. Bạn có chắc chắn?`)) {
+    const confirmed = await confirm({
+      title: 'Thu Hồi Văn Bản Báo Giá',
+      message: `Toàn bộ ${items.length} dòng sản phẩm trong văn bản ${document.document_code} sẽ được đưa trở lại bước Tính Giá để chỉnh sửa. Văn bản hiện tại sẽ được đánh dấu Đã Thu Hồi và không thể hoàn tác. Bạn có chắc chắn?`,
+      confirmLabel: 'Thu Hồi & Sửa Lại',
+      variant: 'danger'
+    });
+    if (!confirmed) {
       return;
     }
     try {

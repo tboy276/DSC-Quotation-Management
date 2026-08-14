@@ -22,8 +22,10 @@ import {
   Scale,
   Sparkles,
 } from 'lucide-react';
+import { useConfirm } from '../../context/ConfirmDialogContext';
 
 export const CastingOperationsRatesManager = () => {
+  const confirm = useConfirm();
   // State 1: Casting factory settings (Furnace, Ladle, Part B 5 rates, Resin Core rate)
   const [settings, setSettings] = useState<CastingFactorySettings>({
     furnace_lining_cost: 50000000,
@@ -124,7 +126,13 @@ export const CastingOperationsRatesManager = () => {
   };
 
   const handleDeleteRecipe = async (id: string, name: string) => {
-    if (!window.confirm(`Xác nhận xóa vật tư khuôn "${name}" khỏi Công Thức Dùng Chung?`)) return;
+    const confirmed = await confirm({
+      title: 'Xóa Vật Tư Khuôn',
+      message: `Xác nhận xóa vật tư khuôn "${name}" khỏi Công Thức Dùng Chung?`,
+      confirmLabel: 'Xóa',
+      variant: 'danger',
+    });
+    if (!confirmed) return;
     await deleteMoldingRecipeItem(id);
     const updated = await fetchMoldingRecipe();
     setRecipeItems(updated);
