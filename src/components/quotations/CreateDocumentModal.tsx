@@ -33,11 +33,13 @@ export const CreateDocumentModal = ({
 
   // Fallback defaults
   const firstQuote = selectedQuotes[0];
+  const [isLoadingSource, setIsLoadingSource] = useState<boolean>(!!firstQuote?.rfq?.source_document_id);
 
   useEffect(() => {
     const fetchSourceDocCode = async () => {
       const sourceDocumentId = firstQuote?.rfq?.source_document_id;
       if (sourceDocumentId) {
+        setIsLoadingSource(true);
         const { data } = await supabase
           .from('quotation_documents')
           .select('document_code')
@@ -46,6 +48,9 @@ export const CreateDocumentModal = ({
         if (data?.document_code) {
           setSourceDocumentCode(data.document_code);
         }
+        setIsLoadingSource(false);
+      } else {
+        setIsLoadingSource(false);
       }
     };
     fetchSourceDocCode();
@@ -156,13 +161,19 @@ export const CreateDocumentModal = ({
               {errorMsg}
             </div>
           )}
-          <QuotationPreviewPanel
-            document={tempDocument}
-            initialConfig={initialConfig}
-            onBack={onClose}
-            onSaveAndSend={handlePreviewSubmitRequest}
-            isSubmitting={submitting}
-          />
+          {isLoadingSource ? (
+            <div className="flex-1 flex items-center justify-center h-full">
+              <span className="text-sm text-gray-500 font-medium">Đang tải dữ liệu liên kết...</span>
+            </div>
+          ) : (
+            <QuotationPreviewPanel
+              document={tempDocument}
+              initialConfig={initialConfig}
+              onBack={onClose}
+              onSaveAndSend={handlePreviewSubmitRequest}
+              isSubmitting={submitting}
+            />
+          )}
         </div>
       </Modal>
 
