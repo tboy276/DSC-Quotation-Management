@@ -204,7 +204,7 @@ export const QuotationDocumentsManager = () => {
         try {
           setIsRepricing(true);
           const { newRfq } = await createRepricingRfqFromDocument(doc, user?.email || 'sales@disoco.vn');
-          navigate(`/quotations?stage=internal&search=${newRfq.rfq_code}`);
+          navigate(`/quotations?stage=internal`, { state: { prefillSearch: newRfq.rfq_code } });
         } catch (error: any) {
           console.error(error);
           alert(error.message || 'Có lỗi xảy ra khi tạo RFQ tái báo giá.');

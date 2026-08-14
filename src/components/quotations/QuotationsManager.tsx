@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams, useLocation } from 'react-router-dom';
 import type {
   QuoteRecord,
   RfqItemStatus,
@@ -92,6 +92,7 @@ const ALL_ITEM_COLUMNS: ColumnDef[] = [
 export const QuotationsManager = () => {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
+  const location = useLocation();
   const { profile, user } = useAuth();
   const currentUserEmail = profile?.email || user?.email || '';
   const canEdit = ['sales', 'admin'].includes(profile?.role || '');
@@ -128,6 +129,12 @@ export const QuotationsManager = () => {
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [fromDate, setFromDate] = useState<string>('');
   const [toDate, setToDate] = useState<string>('');
+
+  useEffect(() => {
+    if (location.state?.prefillSearch) {
+      setSearchQuery(location.state.prefillSearch);
+    }
+  }, [location.state]);
 
   // Advanced Filters Popover State
   const [showAdvancedFilters, setShowAdvancedFilters] = useState<boolean>(false);
