@@ -55,12 +55,16 @@ export const DashboardPage = () => {
   const role = profile?.role || 'viewer';
   const isAdmin = role === 'admin';
 
-  const handleTabChange = (tab: string) => {
+  const handleTabChange = async (tab: string) => {
     if (tab === activeTab) return;
     if (isGlobalDirty) {
-      const confirmLeave = window.confirm(
-        "Bạn có dữ liệu tính giá chưa lưu. Rời khỏi trang sẽ làm mất các thông số đã nhập. Bạn có chắc chắn muốn tiếp tục?"
-      );
+      const confirmLeave = await confirm({
+        title: 'Dữ Liệu Chưa Được Lưu',
+        message: "Bạn có dữ liệu tính giá chưa lưu. Rời khỏi trang sẽ làm mất các thông số đã nhập. Bạn có chắc chắn muốn tiếp tục?",
+        confirmLabel: 'Tiếp Tục Rời Trang',
+        cancelLabel: 'Ở Lại Trang',
+        variant: 'default',
+      });
       if (!confirmLeave) return;
     }
     setIsGlobalDirty(false);
@@ -114,7 +118,13 @@ export const DashboardPage = () => {
     }, []);
 
     const handleRoleChange = async (userId: string, newRole: string) => {
-      if (!window.confirm(`Xác nhận đổi vai trò tài khoản này thành "${newRole}"?`)) return;
+      const confirmed = await confirm({
+        title: 'Đổi Vai Trò Tài Khoản',
+        message: `Xác nhận đổi vai trò tài khoản này thành "${newRole}"?`,
+        confirmLabel: 'Xác Nhận Đổi',
+        variant: 'default',
+      });
+      if (!confirmed) return;
       try {
         setSavingId(userId);
         await updateUserRole(userId, newRole);

@@ -2,10 +2,12 @@ import { useState, useEffect } from 'react';
 import { Outlet, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { Workflow, Box, Scissors, Wrench } from 'lucide-react';
 import { fetchQuoteByItemId } from '../lib/quotation-service';
+import { useConfirm } from '../context/ConfirmDialogContext';
 
 export const PricingToolsPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const confirm = useConfirm();
   const { rfqItemId } = useParams();
   
   // Track if the current child tab has unsaved changes
@@ -59,11 +61,15 @@ export const PricingToolsPage = () => {
     };
   }, [isChildDirty]);
 
-  const safeNavigate = (targetPath: string) => {
+  const safeNavigate = async (targetPath: string) => {
     if (isChildDirty) {
-      const confirmLeave = window.confirm(
-        "Bạn có dữ liệu tính giá chưa lưu. Rời khỏi trang sẽ làm mất các thông số đã nhập. Bạn có chắc chắn muốn tiếp tục?"
-      );
+      const confirmLeave = await confirm({
+        title: 'Dữ Liệu Chưa Được Lưu',
+        message: "Bạn có dữ liệu tính giá chưa lưu. Rời khỏi trang sẽ làm mất các thông số đã nhập. Bạn có chắc chắn muốn tiếp tục?",
+        confirmLabel: 'Tiếp Tục Rời Trang',
+        cancelLabel: 'Ở Lại Trang',
+        variant: 'default',
+      });
       if (!confirmLeave) return;
     }
     setIsChildDirty(false);

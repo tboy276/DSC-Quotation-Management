@@ -18,10 +18,12 @@ import {
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { createRepricingRfqFromDocument } from '../../lib/repricing-service';
+import { useConfirm } from '../../context/ConfirmDialogContext';
 
 export const QuotationDocumentsManager = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const confirm = useConfirm();
   const [documents, setDocuments] = useState<QuotationDocument[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [isRepricing, setIsRepricing] = useState(false);
@@ -193,11 +195,15 @@ export const QuotationDocumentsManager = () => {
       onClick: async (selectedRows) => {
         const doc = selectedRows[0];
         const numItems = doc.items?.length || 0;
-        if (
-          !window.confirm(
-            `Sẽ tạo 1 RFQ mới với đầy đủ ${numItems} dòng sản phẩm giống văn bản ${doc.document_code}, giữ nguyên toàn bộ thông số & giá cũ (bạn có thể sửa lại từng dòng ở bước Tính Giá).\n\nVăn bản ${doc.document_code} và đơn hàng cũ KHÔNG bị thay đổi gì.\n\nLƯU Ý: Khi gộp báo giá mới, bắt buộc phải gộp ĐỦ cả ${numItems} dòng, không được gộp thiếu.\n\nXác nhận tiến hành cập nhật báo giá?`
-          )
-        ) {
+        
+        const confirmed = await confirm({
+          title: 'Xác Nhận Tái Báo Giá',
+          message: `Sẽ tạo 1 RFQ mới với đầy đủ ${numItems} dòng sản phẩm giống văn bản ${doc.document_code}, giữ nguyên toàn bộ thông số & giá cũ (bạn có thể sửa lại từng dòng ở bước Tính Giá).\n\nVăn bản ${doc.document_code} và đơn hàng cũ KHÔNG bị thay đổi gì.\n\nLƯU Ý: Khi gộp báo giá mới, bắt buộc phải gộp ĐỦ cả ${numItems} dòng, không được gộp thiếu.\n\nXác nhận tiến hành cập nhật báo giá?`,
+          confirmLabel: 'Tiến Hành Cập Nhật',
+          variant: 'default',
+        });
+        
+        if (!confirmed) {
           return;
         }
 
