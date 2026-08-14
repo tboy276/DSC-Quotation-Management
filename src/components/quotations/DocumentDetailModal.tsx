@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import type { QuotationDocument, QuotationDocumentItem } from '../../types/quotation-document';
 import type { UnifiedRfqStatus } from '../../types/quote';
-import { updateDocumentItemsOrder, updateDocumentDisplayConfig } from '../../lib/quotation-document-service';
+import { updateDocumentItemsOrder, updateDocumentDisplayConfig, voidQuotationDocument } from '../../lib/quotation-document-service';
 import { updateQuoteStatus } from '../../lib/quotation-service';
 import { exportDocumentToExcel } from '../../utils/excel-generator';
 import { QuoteStatusBadge } from '../rfq/QuoteStatusBadge';
@@ -20,6 +20,7 @@ import {
   CheckCircle,
   XCircle,
   Download,
+  RotateCcw,
 } from 'lucide-react';
 
 interface DocumentDetailModalProps {
@@ -94,6 +95,21 @@ export const DocumentDetailModal = ({
     0
   );
 
+  const handleVoidDocument = async () => {
+    if (!window.confirm(`Toàn bộ ${items.length} dòng sản phẩm trong văn bản ${document.document_code} sẽ được đưa trở lại bước Tính Giá để chỉnh sửa. Văn bản hiện tại sẽ được đánh dấu Đã Thu Hồi và không thể hoàn tác. Bạn có chắc chắn?`)) {
+      return;
+    }
+    try {
+      await voidQuotationDocument(document.id);
+      onRefresh();
+      onClose();
+    } catch (e: any) {
+      alert(`Lỗi: ${e.message || e}`);
+    }
+  };
+
+  const isVoided = document.status === 'VOIDED';
+
   return (
     <>
       <Modal
@@ -101,10 +117,30 @@ export const DocumentDetailModal = ({
         onClose={onClose}
         size="2xl"
         icon={<FileText className="w-4 h-4" />}
-        title={`Chi Tiết Văn Bản Báo Giá ${document.document_code || `#${document.id.substring(0, 10)}`}`}
+        title={
+          <div className="flex items-center space-x-2">
+            <span>Chi Tiết Văn Bản Báo Giá {document.document_code || `#${document.id.substring(0, 10)}`}</span>
+            {isVoided && (
+              <span className="px-2 py-0.5 bg-slate-200 text-slate-600 text-[10px] font-black rounded-sm border border-slate-300 ml-2">
+                ĐÃ THU HỒI
+              </span>
+            )}
+          </div>
+        }
         subtitle={`Mã RFQ: ${document.rfq_code || 'N/A'} | Khách hàng: ${document.customer_name} | Ngày lập: ${formatDate(document.quotation_date)}`}
         headerExtra={
           <div className="flex items-center space-x-2 mr-2">
+            {!isVoided && canManageDocument && (
+              <button
+                onClick={handleVoidDocument}
+                className="px-3 py-1.5 bg-red-50 hover:bg-red-100 text-red-600 font-bold rounded-[6px] text-xs transition-colors cursor-pointer inline-flex items-center space-x-1 border border-red-200"
+                title="Thu hồi văn bản để chỉnh sửa lại thông số báo giá"
+              >
+                <RotateCcw className="w-3.5 h-3.5 stroke-[2]" />
+                <span>Thu hồi để sửa</span>
+              </button>
+            )}
+
             <button
               onClick={() => setShowCustomizeModal(true)}
               className="px-3 py-1.5 bg-[#111111] hover:bg-[#333333] active:scale-[0.98] text-white font-bold rounded-[6px] text-xs transition-all cursor-pointer inline-flex items-center space-x-1 shadow-xs"
@@ -187,7 +223,7 @@ export const DocumentDetailModal = ({
                   >
                     <div className="flex items-center space-x-3 flex-1">
                       {/* Reorder Buttons Up/Down */}
-                      {canManageDocument && (
+                      {!isVoided && canManageDocument && (
                         <div className="flex flex-col space-y-0.5">
                           <button
                             type="button"
@@ -235,7 +271,7 @@ export const DocumentDetailModal = ({
                       <QuoteStatusBadge status={itemStatus} size="sm" />
 
                       {/* Inline Status Toggle */}
-                      {canManageDocument && (String(itemStatus) === 'QUOTED_SENT' || String(itemStatus) === 'SENT') && (
+                      {!isVoided && canManageDocument && (String(itemStatus) === 'QUOTED_SENT' || String(itemStatus) === 'SENT') && (
                         <div className="flex items-center space-x-1">
                           <button
                             onClick={() => handleItemStatusChange(q.id, 'SUCCESSFUL')}

@@ -87,6 +87,7 @@ export interface QuotationDocumentItem {
 
 export interface QuotationDocument {
   id: string;
+  status?: 'ACTIVE' | 'VOIDED';
   /**
    * Mã báo giá gộp, dạng BG-[rfq_code]-rev-XX. Được hệ thống tự sinh khi tạo văn bản,
    * bất biến sau khi phát hành. Dùng để tra cứu ngược từ PDF về RFQ gốc.

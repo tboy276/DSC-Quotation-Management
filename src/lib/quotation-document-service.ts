@@ -207,3 +207,18 @@ export const updateDocumentDisplayConfig = async (
 
   await fetchQuotationDocuments();
 };
+
+/**
+ * Void a quotation document and revert its items to READY_FOR_QUOTE
+ */
+export const voidQuotationDocument = async (documentId: string): Promise<void> => {
+  const { error } = await supabase.rpc('void_quotation_document_transaction', {
+    p_document_id: documentId
+  });
+
+  if (error) {
+    throw new Error(`Lỗi khi thu hồi văn bản báo giá: ${error.message}`);
+  }
+
+  await fetchQuotationDocuments();
+};

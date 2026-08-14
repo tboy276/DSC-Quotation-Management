@@ -30,6 +30,8 @@ export const QuotationDocumentsManager = () => {
     loadDocuments();
   }, []);
 
+  const [showVoided, setShowVoided] = useState<boolean>(false);
+
   const loadDocuments = async () => {
     setLoading(true);
     setErrorMsg(null);
@@ -43,8 +45,10 @@ export const QuotationDocumentsManager = () => {
     }
   };
 
-  const filteredDocs = searchQuery.trim()
-    ? documents.filter((doc) => {
+  const filteredDocs = documents
+    .filter((doc) => showVoided || doc.status !== 'VOIDED')
+    .filter((doc) => {
+      if (!searchQuery.trim()) return true;
         const q = searchQuery.toLowerCase();
         return (
           doc.customer_name.toLowerCase().includes(q) ||
@@ -53,8 +57,7 @@ export const QuotationDocumentsManager = () => {
           (doc.document_code || '').toLowerCase().includes(q) ||
           (doc.rfq_code || '').toLowerCase().includes(q)
         );
-      })
-    : documents;
+      });
 
   // Tính tóm tắt trạng thái các dòng bên trong (VD: "3 SENT, 1 SUCCESSFUL")
   const getStatusSummary = (doc: QuotationDocument): string => {
@@ -105,6 +108,22 @@ export const QuotationDocumentsManager = () => {
       sortable: true,
       className: 'font-mono text-[11px] text-[#787774]',
       render: (doc) => formatDate(doc.quotation_date),
+    },
+    {
+      key: 'status',
+      header: 'Trạng Thái',
+      sortable: true,
+      render: (doc) => (
+        doc.status === 'VOIDED' ? (
+          <span className="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-bold bg-slate-100 text-slate-500 line-through">
+            Đã thu hồi
+          </span>
+        ) : (
+          <span className="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-bold bg-[#EDF3EC] text-[#346538]">
+            Đang hiệu lực
+          </span>
+        )
+      ),
     },
     {
       key: 'items_count',
@@ -209,9 +228,20 @@ export const QuotationDocumentsManager = () => {
           />
         </div>
 
-        <span className="text-xs text-[#787774] font-medium hidden sm:inline">
-          Tổng số: <strong>{filteredDocs.length}</strong> văn bản
-        </span>
+        <div className="flex items-center space-x-4">
+          <label className="flex items-center space-x-1.5 cursor-pointer text-xs font-medium text-[#111111] bg-slate-50 px-2.5 py-1.5 rounded-[6px] border border-[#EAEAEA] hover:bg-slate-100 select-none">
+            <input
+              type="checkbox"
+              checked={showVoided}
+              onChange={() => setShowVoided(!showVoided)}
+              className="rounded text-[#0F172A] focus:ring-0 cursor-pointer"
+            />
+            <span className="font-bold text-[11px] text-slate-700">Hiện cả văn bản đã thu hồi</span>
+          </label>
+          <span className="text-xs text-[#787774] font-medium hidden sm:inline">
+            Tổng số: <strong>{filteredDocs.length}</strong> văn bản
+          </span>
+        </div>
       </div>
 
       {/* Shared Reusable DataTable */}
