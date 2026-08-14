@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useCallback } from 'react';
 import type { ReactNode } from 'react';
 import { Modal } from '../components/ui/Modal';
-import { FileText } from 'lucide-react';
+import { FileText, AlertTriangle } from 'lucide-react';
 
 export interface ConfirmOptions {
   title?: string;
@@ -48,7 +48,11 @@ export const ConfirmDialogProvider: React.FC<{ children: ReactNode }> = ({ child
           isOpen={true}
           onClose={handleClose}
           size="sm"
-          icon={<FileText className="w-5 h-5 text-[#111111]" />}
+          icon={
+            options.variant === 'danger'
+              ? <AlertTriangle className="w-5 h-5 text-[#9F2F2D]" />
+              : <FileText className="w-5 h-5 text-[#111111]" />
+          }
           title={options.title || 'Xác nhận'}
           footer={
             <>
