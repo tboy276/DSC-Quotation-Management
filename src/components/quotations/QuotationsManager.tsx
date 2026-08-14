@@ -752,8 +752,8 @@ export const QuotationsManager = () => {
       'Giá Target (VNĐ)': item.rfqItem?.target_price || 0,
       'Đơn Giá Báo Giá (VNĐ)': item.final_quoted_price || 0,
       'Trạng Thái': item.rfqItem?.status || item.status,
-      'Ngày Nhận RFQ': item.rfq?.rfq_received_date || 'N/A',
-      'Deadline KH': item.rfq?.customer_deadline || 'N/A',
+      'Ngày Nhận RFQ': item.rfq?.rfq_received_date ? formatDate(item.rfq.rfq_received_date) : 'N/A',
+      'Deadline KH': item.rfq?.customer_deadline ? formatDate(item.rfq.customer_deadline) : 'N/A',
       'Trade Terms': item.rfq?.trade_terms || 'N/A',
       'Người Tạo': item.rfq?.created_by_email || item.created_by_email || 'N/A',
     }));
@@ -1400,9 +1400,9 @@ export const QuotationsManager = () => {
                           case 'rfq_code':
                             return <td key={col.key} className="py-3 px-3 font-mono">{quote.rfq?.rfq_code || '-'}</td>;
                           case 'rfq_received_date':
-                            return <td key={col.key} className="py-3 px-3 font-mono">{quote.rfq?.rfq_received_date || '-'}</td>;
+                            return <td key={col.key} className="py-3 px-3 font-mono">{quote.rfq?.rfq_received_date ? formatDate(quote.rfq.rfq_received_date) : '-'}</td>;
                           case 'customer_deadline':
-                            return <td key={col.key} className="py-3 px-3 font-mono">{quote.rfq?.customer_deadline || '-'}</td>;
+                            return <td key={col.key} className="py-3 px-3 font-mono">{quote.rfq?.customer_deadline ? formatDate(quote.rfq.customer_deadline) : '-'}</td>;
                           case 'trade_terms':
                             return <td key={col.key} className="py-3 px-3 font-bold">{quote.rfq?.trade_terms || '-'}</td>;
                           case 'customer_address':
