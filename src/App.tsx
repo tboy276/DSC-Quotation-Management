@@ -3,15 +3,18 @@ import { ProtectedRoute } from './components/ProtectedRoute';
 import { DashboardPage } from './pages/DashboardPage';
 
 import { BrowserRouter } from 'react-router-dom';
+import { ConfirmDialogProvider } from './context/ConfirmDialogContext';
 
 export function App() {
   return (
     <BrowserRouter>
-      <AuthProvider>
+      <ConfirmDialogProvider>
+        <AuthProvider>
         <ProtectedRoute>
           <DashboardPage />
         </ProtectedRoute>
       </AuthProvider>
+    </ConfirmDialogProvider>
     </BrowserRouter>
   );
 }

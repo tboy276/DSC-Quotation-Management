@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useLocation, Routes, Route, Navigate, useNavigate, useParams } from 'react-router-dom';
+import { useConfirm } from '../context/ConfirmDialogContext';
 import { useAuth } from '../context/AuthContext';
 // Removed useQuotationStore
 import { Layout } from '../components/Layout';
@@ -35,6 +36,7 @@ function LegacyPricingRedirect({ segment }: { segment: string }) {
 
 export const DashboardPage = () => {
   const { user, profile, refreshProfile } = useAuth();
+  const confirm = useConfirm();
   
   const location = useLocation();
   const navigate = useNavigate();
@@ -157,6 +159,34 @@ export const DashboardPage = () => {
           >
             <RefreshCw className="w-3.5 h-3.5" />
             <span>Đồng bộ dữ liệu</span>
+          </button>
+          
+          <button
+            onClick={async () => {
+              const res = await confirm({
+                title: "Test Modal",
+                message: "Đây là thông báo test nhiều dòng.\n\nDòng 2: Nội dung mặc định.\n\nDòng 3: Bấm OK hoặc Hủy để test.",
+                variant: 'default',
+              });
+              console.log("Confirm default result:", res);
+            }}
+            className="inline-flex items-center space-x-2 bg-blue-500 text-white px-3 py-1.5 rounded-[6px] text-xs font-bold"
+          >
+            Test Confirm Default
+          </button>
+          <button
+            onClick={async () => {
+              const res = await confirm({
+                title: "Test Danger Modal",
+                message: "Cảnh báo nguy hiểm!\n\nBạn có chắc chắn muốn xóa dữ liệu này không?",
+                variant: 'danger',
+                confirmLabel: 'Xóa ngay',
+              });
+              console.log("Confirm danger result:", res);
+            }}
+            className="inline-flex items-center space-x-2 bg-red-500 text-white px-3 py-1.5 rounded-[6px] text-xs font-bold"
+          >
+            Test Confirm Danger
           </button>
         </div>
 
