@@ -36,3 +36,26 @@ export const revokeUserProfile = async (userId: string): Promise<void> => {
     throw new Error(`Lỗi thu hồi quyền: ${error.message}`);
   }
 };
+
+export const fetchAllowedUsers = async (): Promise<{ email: string; role: string; added_by?: string; created_at: string }[]> => {
+  const { data, error } = await supabase.from('allowed_users').select('*').order('created_at', { ascending: false });
+  if (error) {
+    console.error('Error fetching allowed users:', error);
+    throw new Error(error.message);
+  }
+  return data as { email: string; role: string; added_by?: string; created_at: string }[];
+};
+
+export const addAllowedUser = async (email: string, role: 'viewer' | 'sales' | 'admin', addedByEmail: string): Promise<void> => {
+  const { error } = await supabase.from('allowed_users').insert([{ email, role, added_by: addedByEmail }]);
+  if (error) {
+    throw new Error('Lỗi thêm email vào allowlist: ' + error.message);
+  }
+};
+
+export const removeAllowedUser = async (email: string): Promise<void> => {
+  const { error } = await supabase.from('allowed_users').delete().eq('email', email);
+  if (error) {
+    throw new Error('Lỗi xóa email khỏi allowlist: ' + error.message);
+  }
+};

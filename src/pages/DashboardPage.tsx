@@ -19,11 +19,13 @@ import {
   Shield,
   RefreshCw,
   CheckCircle2,
+  Plus,
+  Trash2,
 } from 'lucide-react';
 
 import { SystemHealthCheck } from '../components/analytics/SystemHealthCheck';
 import { PricingToolsPage } from './PricingToolsPage';
-import { fetchAllUserProfiles, updateUserRole, revokeUserProfile } from '../lib/user-service';
+import { fetchAllUserProfiles, updateUserRole, revokeUserProfile, fetchAllowedUsers, addAllowedUser, removeAllowedUser } from '../lib/user-service';
 import type { UserProfile } from '../types';
 
 function LegacyPricingRedirect({ segment }: { segment: string }) {
@@ -103,18 +105,28 @@ export const DashboardPage = () => {
   const UsersManagementTab = () => {
     const [profiles, setProfiles] = useState<UserProfile[]>([]);
     const [savingId, setSavingId] = useState<string | null>(null);
-    useEffect(() => {
-      const loadProfiles = async () => {
-        try {
-          if (isAdmin) {
-            const data = await fetchAllUserProfiles();
-            setProfiles(data);
-          }
-        } catch (e) {
-          console.error("Lỗi lấy danh sách tài khoản", e);
+    const [allowedUsers, setAllowedUsers] = useState<{ email: string; role: string; added_by?: string; created_at: string }[]>([]);
+    const [newAllowedEmail, setNewAllowedEmail] = useState('');
+    const [newAllowedRole, setNewAllowedRole] = useState<'viewer' | 'sales' | 'admin'>('viewer');
+    const [isSubmittingAllowlist, setIsSubmittingAllowlist] = useState(false);
+
+    const loadData = async () => {
+      try {
+        if (isAdmin) {
+          const [profilesData, allowedUsersData] = await Promise.all([
+            fetchAllUserProfiles(),
+            fetchAllowedUsers()
+          ]);
+          setProfiles(profilesData);
+          setAllowedUsers(allowedUsersData);
         }
-      };
-      loadProfiles();
+      } catch (e) {
+        console.error("Lỗi lấy dữ liệu tài khoản", e);
+      }
+    };
+
+    useEffect(() => {
+      loadData();
     }, []);
 
     const handleRoleChange = async (userId: string, newRole: string) => {
@@ -128,8 +140,7 @@ export const DashboardPage = () => {
       try {
         setSavingId(userId);
         await updateUserRole(userId, newRole);
-        const data = await fetchAllUserProfiles();
-        setProfiles(data);
+        await loadData();
       } catch (e: any) {
         alert(e.message || 'Có lỗi xảy ra');
       } finally {
@@ -148,14 +159,48 @@ export const DashboardPage = () => {
       try {
         setSavingId(userId);
         await revokeUserProfile(userId);
-        const data = await fetchAllUserProfiles();
-        setProfiles(data);
+        await loadData();
       } catch (e: any) {
         alert(e.message || 'Có lỗi xảy ra');
       } finally {
         setSavingId(null);
       }
     };
+
+    const handleAddAllowedUser = async (e: React.FormEvent) => {
+      e.preventDefault();
+      if (!newAllowedEmail.trim()) return;
+      
+      setIsSubmittingAllowlist(true);
+      try {
+        await addAllowedUser(newAllowedEmail.trim(), newAllowedRole, user?.email || 'unknown');
+        setNewAllowedEmail('');
+        setNewAllowedRole('viewer');
+        await loadData();
+      } catch (e: any) {
+        alert(e.message || 'Có lỗi xảy ra khi thêm allowlist');
+      } finally {
+        setIsSubmittingAllowlist(false);
+      }
+    };
+
+    const handleRemoveAllowedUser = async (email: string) => {
+      const confirmed = await confirm({
+        title: 'Xóa Khỏi Allowlist',
+        message: `Xóa "${email}" khỏi danh sách được phép đăng ký? Người dùng này sẽ không thể tạo tài khoản mới.`,
+        confirmLabel: 'Xóa',
+        variant: 'danger',
+      });
+      if (!confirmed) return;
+
+      try {
+        await removeAllowedUser(email);
+        await loadData();
+      } catch (e: any) {
+        alert(e.message || 'Có lỗi xảy ra khi xóa allowlist');
+      }
+    };
+
     // Nếu không phải admin, chỉ hiển thị chính profile của mình
     const displayProfiles = isAdmin ? profiles : (profile ? [profile] : []);
 
@@ -301,6 +346,87 @@ export const DashboardPage = () => {
             </table>
           </div>
         </div>
+
+        {isAdmin && (
+          <div className="bg-white border border-[#EAEAEA] rounded-[10px] overflow-hidden shadow-[0_2px_8px_rgba(0,0,0,0.03)] mt-6">
+            <div className="p-4 border-b border-[#EAEAEA] flex items-center justify-between">
+              <div className="flex items-center space-x-2">
+                <Shield className="w-4 h-4 text-[#111111]" />
+                <h3 className="text-xs font-bold text-[#111111] uppercase tracking-wider">Danh Sách Email Được Cấp Quyền Truy Cập (Allowlist)</h3>
+              </div>
+            </div>
+            
+            <div className="p-4 border-b border-[#EAEAEA] bg-[#FBFBFA]">
+              <form onSubmit={handleAddAllowedUser} className="flex items-center gap-3">
+                <input
+                  type="email"
+                  required
+                  placeholder="Nhập email..."
+                  value={newAllowedEmail}
+                  onChange={(e) => setNewAllowedEmail(e.target.value)}
+                  className="flex-1 px-3 py-1.5 border border-[#EAEAEA] rounded-[6px] text-xs focus:outline-none focus:border-[#111111]"
+                />
+                <select
+                  value={newAllowedRole}
+                  onChange={(e) => setNewAllowedRole(e.target.value as any)}
+                  className="px-3 py-1.5 border border-[#EAEAEA] rounded-[6px] text-xs focus:outline-none focus:border-[#111111] bg-white cursor-pointer"
+                >
+                  <option value="viewer">viewer</option>
+                  <option value="sales">sales</option>
+                  <option value="admin">admin</option>
+                </select>
+                <button
+                  type="submit"
+                  disabled={isSubmittingAllowlist || !newAllowedEmail}
+                  className="inline-flex items-center space-x-1.5 bg-[#111111] text-white px-4 py-1.5 rounded-[6px] text-xs font-bold hover:bg-[#333333] transition-colors disabled:opacity-50"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  <span>Thêm vào Allowlist</span>
+                </button>
+              </form>
+            </div>
+
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="bg-[#FBFBFA] border-b border-[#EAEAEA] text-[11px] font-bold uppercase text-[#787774]">
+                    <th className="py-3 px-4">Email</th>
+                    <th className="py-3 px-4">Vai Trò</th>
+                    <th className="py-3 px-4">Ngày Thêm</th>
+                    <th className="py-3 px-4">Người Thêm</th>
+                    <th className="py-3 px-4 text-right">Hành Động</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-[#EAEAEA] text-xs text-[#111111]">
+                  {allowedUsers.map(user => (
+                    <tr key={user.email} className="hover:bg-[#FBFBFA]">
+                      <td className="py-3.5 px-4 font-bold text-[#111111]">{user.email}</td>
+                      <td className="py-3.5 px-4"><StatusBadge role={user.role} size="sm" /></td>
+                      <td className="py-3.5 px-4 text-[#787774]">{new Date(user.created_at).toLocaleDateString('vi-VN')}</td>
+                      <td className="py-3.5 px-4 text-[#787774]">{user.added_by || '-'}</td>
+                      <td className="py-3.5 px-4 text-right">
+                        <button
+                          onClick={() => handleRemoveAllowedUser(user.email)}
+                          className="p-1 text-[#9F2F2D] hover:bg-[#FDEBEC] rounded cursor-pointer transition-colors inline-flex"
+                          title="Xóa khỏi danh sách"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                  {allowedUsers.length === 0 && (
+                    <tr>
+                      <td colSpan={5} className="py-8 text-center text-[#787774] text-xs">
+                        Chưa có email nào trong allowlist
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
       </div>
     );
   };

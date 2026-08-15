@@ -1,9 +1,11 @@
 import { useState, type FormEvent } from 'react';
 import { supabase } from '../lib/supabase';
-import { Mail, Lock, LogIn, UserPlus, CheckCircle2, AlertCircle, Loader2, BarChart3 } from 'lucide-react';
+import { Mail, Lock, LogIn, UserPlus, CheckCircle2, AlertCircle, Loader2, BarChart3, KeyRound } from 'lucide-react';
+
+type AuthMode = 'login' | 'setup' | 'reset';
 
 export const AuthPage = () => {
-  const [isSignUp, setIsSignUp] = useState<boolean>(false);
+  const [mode, setMode] = useState<AuthMode>('login');
   const [email, setEmail] = useState<string>('');
   const [password, setPassword] = useState<string>('');
   const [loading, setLoading] = useState<boolean>(false);
@@ -15,12 +17,17 @@ export const AuthPage = () => {
     setErrorMsg(null);
     setSuccessMsg(null);
 
-    if (!email || !password) {
-      setErrorMsg('Vui lòng nhập đầy đủ Email và Mật khẩu.');
+    if (!email) {
+      setErrorMsg('Vui lòng nhập Email.');
       return;
     }
 
-    if (password.length < 6) {
+    if ((mode === 'login' || mode === 'setup') && !password) {
+      setErrorMsg('Vui lòng nhập Mật khẩu.');
+      return;
+    }
+
+    if ((mode === 'login' || mode === 'setup') && password.length < 6) {
       setErrorMsg('Mật khẩu phải có ít nhất 6 ký tự.');
       return;
     }
@@ -28,15 +35,14 @@ export const AuthPage = () => {
     setLoading(true);
 
     try {
-      if (isSignUp) {
-        // Đăng ký tài khoản
+      if (mode === 'setup') {
         const { data, error } = await supabase.auth.signUp({
           email,
           password,
         });
 
         if (error) {
-          setErrorMsg(error.message);
+          setErrorMsg('Email này chưa được cấp quyền truy cập hệ thống hoặc đã có tài khoản. Vui lòng liên hệ Admin (tuan.vuongdinh@disoco.net) để được thêm vào danh sách.');
         } else {
           if (data.session) {
             setSuccessMsg('Đăng ký thành công! Đang chuyển hướng...');
@@ -46,8 +52,17 @@ export const AuthPage = () => {
             );
           }
         }
+      } else if (mode === 'reset') {
+        const { error } = await supabase.auth.resetPasswordForEmail(email, {
+          redirectTo: `${window.location.origin}/reset-password`,
+        });
+
+        if (error) {
+          setErrorMsg(error.message);
+        } else {
+          setSuccessMsg('Nếu email này có trong hệ thống, bạn sẽ nhận được link đặt lại mật khẩu.');
+        }
       } else {
-        // Đăng nhập tài khoản
         const { error } = await supabase.auth.signInWithPassword({
           email,
           password,
@@ -71,7 +86,6 @@ export const AuthPage = () => {
   return (
     <div className="min-h-screen bg-[#F7F6F3] flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8 font-sans antialiased text-[#111111]">
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
-        {/* Logo: Off-black rounded box #111111 */}
         <div className="flex justify-center mb-3">
           <div className="w-10 h-10 rounded-[6px] bg-[#111111] flex items-center justify-center text-white">
             <BarChart3 className="w-5 h-5 stroke-[2]" />
@@ -81,47 +95,18 @@ export const AuthPage = () => {
           DSC-Quotation-Management
         </h2>
         <p className="mt-1 text-center text-xs text-[#787774]">
-          DISOCO — Workspace Báo Giá & Tính Giá Sản Xuất
+          DISOCO - Workspace Báo Giá & Tính Giá Sản Xuất
         </p>
       </div>
 
       <div className="mt-6 sm:mx-auto sm:w-full sm:max-w-md">
         <div className="bg-white py-7 px-6 border border-[#EAEAEA] rounded-[10px] sm:px-8 shadow-[0_2px_8px_rgba(0,0,0,0.03)]">
-          {/* Tabs header */}
-          <div className="flex border-b border-[#EAEAEA] mb-5">
-            <button
-              type="button"
-              onClick={() => {
-                setIsSignUp(false);
-                setErrorMsg(null);
-                setSuccessMsg(null);
-              }}
-              className={`flex-1 pb-2.5 text-center text-xs font-bold transition-colors border-b-2 cursor-pointer ${
-                !isSignUp
-                  ? 'border-[#111111] text-[#111111]'
-                  : 'border-transparent text-[#787774] hover:text-[#111111]'
-              }`}
-            >
-              Đăng nhập
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                setIsSignUp(true);
-                setErrorMsg(null);
-                setSuccessMsg(null);
-              }}
-              className={`flex-1 pb-2.5 text-center text-xs font-bold transition-colors border-b-2 cursor-pointer ${
-                isSignUp
-                  ? 'border-[#111111] text-[#111111]'
-                  : 'border-transparent text-[#787774] hover:text-[#111111]'
-              }`}
-            >
-              Đăng ký tài khoản
-            </button>
-          </div>
+          <h3 className="text-center text-sm font-bold mb-6">
+            {mode === 'login' && 'Đăng Nhập'}
+            {mode === 'setup' && 'Thiết Lập Mật Khẩu Lần Đầu'}
+            {mode === 'reset' && 'Khôi Phục Mật Khẩu'}
+          </h3>
 
-          {/* Alert Error - Pale Red */}
           {errorMsg && (
             <div className="mb-4 p-3 rounded-[6px] bg-[#FDEBEC] border border-[#FADBDC] flex items-start space-x-2 text-[#9F2F2D] text-xs font-medium">
               <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
@@ -129,7 +114,6 @@ export const AuthPage = () => {
             </div>
           )}
 
-          {/* Alert Success - Pale Green */}
           {successMsg && (
             <div className="mb-4 p-3 rounded-[6px] bg-[#EDF3EC] border border-[#C6E1C4] flex items-start space-x-2 text-[#346538] text-xs font-medium">
               <CheckCircle2 className="w-4 h-4 flex-shrink-0 mt-0.5" />
@@ -157,31 +141,27 @@ export const AuthPage = () => {
               </div>
             </div>
 
-            <div>
-              <label className="block text-[11px] font-bold text-[#787774] uppercase tracking-wider mb-1">
-                Mật khẩu
-              </label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-[#787774]">
-                  <Lock className="w-4 h-4" />
+            {(mode === 'login' || mode === 'setup') && (
+              <div>
+                <label className="block text-[11px] font-bold text-[#787774] uppercase tracking-wider mb-1">
+                  Mật khẩu
+                </label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-[#787774]">
+                    <Lock className="w-4 h-4" />
+                  </div>
+                  <input
+                    type="password"
+                    required
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="••••••••"
+                    className="block w-full pl-9 pr-3 py-2 bg-[#FFFFFF] border border-[#EAEAEA] rounded-[6px] text-[#111111] text-xs placeholder-[#787774] focus:outline-none focus:border-[#111111]"
+                  />
                 </div>
-                <input
-                  type="password"
-                  required
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="••••••••"
-                  className="block w-full pl-9 pr-3 py-2 bg-[#FFFFFF] border border-[#EAEAEA] rounded-[6px] text-[#111111] text-xs placeholder-[#787774] focus:outline-none focus:border-[#111111]"
-                />
               </div>
-              {isSignUp && (
-                <p className="mt-1 text-[11px] text-[#787774]">
-                  Tài khoản mới sẽ mặc định mang vai trò <span className="font-bold text-[#111111]">viewer</span> (chỉ xem). Liên hệ Admin để được cấp thêm quyền.
-                </p>
-              )}
-            </div>
+            )}
 
-            {/* Primary CTA Button: #111111, rounded-[6px], active scale scale(0.98) */}
             <button
               type="submit"
               disabled={loading}
@@ -189,19 +169,68 @@ export const AuthPage = () => {
             >
               {loading ? (
                 <Loader2 className="w-4 h-4 animate-spin" />
-              ) : isSignUp ? (
+              ) : mode === 'setup' ? (
                 <>
                   <UserPlus className="w-4 h-4 mr-2" />
-                  Đăng ký ngay
+                  Thiết Lập Mật Khẩu
+                </>
+              ) : mode === 'reset' ? (
+                <>
+                  <KeyRound className="w-4 h-4 mr-2" />
+                  Gửi Link Đặt Lại
                 </>
               ) : (
                 <>
                   <LogIn className="w-4 h-4 mr-2" />
-                  Đăng nhập
+                  Đăng Nhập
                 </>
               )}
             </button>
           </form>
+
+          <div className="mt-5 space-y-2 text-center text-xs">
+            {mode !== 'setup' && (
+              <button
+                type="button"
+                onClick={() => {
+                  setMode('setup');
+                  setErrorMsg(null);
+                  setSuccessMsg(null);
+                }}
+                className="text-[#787774] hover:text-[#111111] font-medium block w-full cursor-pointer"
+              >
+                Lần đầu sử dụng? Thiết lập mật khẩu
+              </button>
+            )}
+            
+            {mode !== 'reset' && (
+              <button
+                type="button"
+                onClick={() => {
+                  setMode('reset');
+                  setErrorMsg(null);
+                  setSuccessMsg(null);
+                }}
+                className="text-[#787774] hover:text-[#111111] font-medium block w-full cursor-pointer"
+              >
+                Quên mật khẩu?
+              </button>
+            )}
+
+            {mode !== 'login' && (
+              <button
+                type="button"
+                onClick={() => {
+                  setMode('login');
+                  setErrorMsg(null);
+                  setSuccessMsg(null);
+                }}
+                className="text-[#111111] font-bold block w-full cursor-pointer pt-2"
+              >
+                Quay lại Đăng nhập
+              </button>
+            )}
+          </div>
         </div>
       </div>
     </div>
