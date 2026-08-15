@@ -1,4 +1,3 @@
-import * as XLSX from 'xlsx';
 import type { QuotationDocument } from '../types/quotation-document';
 import { DEFAULT_DISPLAY_CONFIG } from '../types/quotation-document';
 import type { ForgingInput, CastingInput, ForgingResult, CastingResult } from '../lib/calculation-engine/types';
@@ -10,7 +9,9 @@ import { getToolingColumnFlags } from './quotation-tooling-columns';
  * - Sheet 1: Summary table of all products
  * - Sheet 2..N: Detailed breakdown per product (2-column Variable / Value format covering all 5 Sections)
  */
-export const exportDocumentToExcel = (document: QuotationDocument) => {
+export const exportDocumentToExcel = async (document: QuotationDocument) => {
+  const XLSX = await import('xlsx');
+  
   if (!document.items || document.items.length === 0) return;
 
   const workbook = XLSX.utils.book_new();

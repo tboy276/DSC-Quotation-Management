@@ -30,7 +30,6 @@ import { useConfirm } from '../../context/ConfirmDialogContext';
 import { parseStructuredRfqText } from '../../utils/rfq-parser';
 import { getTechFamily } from '../../utils/tech-family';
 import { formatDate } from '../../lib/format-date';
-import * as XLSX from 'xlsx';
 import {
   FileSpreadsheet,
   Search,
@@ -780,11 +779,13 @@ export const QuotationsManager = () => {
     );
   };
 
-  const handleExportExcel = () => {
+  const handleExportExcel = async () => {
     if (quotes.length === 0) {
       alert('Không có dữ liệu để xuất Excel.');
       return;
     }
+
+    const XLSX = await import('xlsx');
 
     const dataToExport = quotes.map((item, idx) => ({
       STT: idx + 1,

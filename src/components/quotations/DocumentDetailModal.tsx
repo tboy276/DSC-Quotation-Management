@@ -155,7 +155,14 @@ export const DocumentDetailModal = ({
             </button>
 
             <button
-              onClick={() => exportDocumentToExcel(document)}
+              onClick={async () => {
+                try {
+                  await exportDocumentToExcel(document);
+                } catch (e) {
+                  console.error(e);
+                  alert('Lỗi xuất Excel');
+                }
+              }}
               className="px-3 py-1.5 bg-[#F0F0EE] hover:bg-[#E0E0DE] text-[#111111] font-bold rounded-[6px] text-xs transition-colors cursor-pointer inline-flex items-center space-x-1 border border-[#EAEAEA]"
               title="Tải về file Excel multi-sheet bóc tách 5 section"
             >

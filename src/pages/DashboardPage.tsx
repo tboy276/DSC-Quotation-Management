@@ -1,19 +1,20 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense, lazy } from 'react';
 import { useLocation, Routes, Route, Navigate, useNavigate, useParams } from 'react-router-dom';
 import { useConfirm } from '../context/ConfirmDialogContext';
 import { useAuth } from '../context/AuthContext';
 // Removed useQuotationStore
 import { Layout } from '../components/Layout';
 import { StatusBadge } from '../components/StatusBadge';
-import { MasterDataContainer } from '../components/master-data/MasterDataContainer';
 import { RequireRole } from '../components/RequireRole';
-import ForgingCostingPage from './ForgingCostingPage';
-import CastingCostingPage from './CastingCostingPage';
-import SawingCostingPage from './SawingCostingPage';
-import MachiningCostingPage from './MachiningCostingPage';
 import { QuotationsManager } from '../components/quotations/QuotationsManager';
 import { QuotationDocumentsManager } from '../components/quotations/QuotationDocumentsManager';
-import { RfqAnalyticsReport } from '../components/analytics/RfqAnalyticsReport';
+
+const ForgingCostingPage = lazy(() => import('./ForgingCostingPage'));
+const CastingCostingPage = lazy(() => import('./CastingCostingPage'));
+const SawingCostingPage = lazy(() => import('./SawingCostingPage'));
+const MachiningCostingPage = lazy(() => import('./MachiningCostingPage'));
+const MasterDataContainer = lazy(() => import('../components/master-data/MasterDataContainer').then(m => ({ default: m.MasterDataContainer })));
+const RfqAnalyticsReport = lazy(() => import('../components/analytics/RfqAnalyticsReport').then(m => ({ default: m.RfqAnalyticsReport })));
 import {
   User,
   Shield,
@@ -21,6 +22,7 @@ import {
   CheckCircle2,
   Plus,
   Trash2,
+  Loader2,
 } from 'lucide-react';
 
 import { SystemHealthCheck } from '../components/analytics/SystemHealthCheck';
@@ -433,31 +435,33 @@ export const DashboardPage = () => {
 
   return (
     <Layout activeTab={activeTab} setActiveTab={handleTabChange} pageTitle={getPageTitle()}>
-      <Routes>
-        <Route path="/" element={<Navigate to="/quotations" replace />} />
-        <Route path="/quotations" element={<QuotationsManager />} />
-        <Route path="/documents" element={<QuotationDocumentsManager />} />
-        
-        {/* Legacy redirect routes */}
-        <Route path="/forging/:rfqItemId?" element={<RequireRole allow={['sales', 'admin']}><LegacyPricingRedirect segment="forging" /></RequireRole>} />
-        <Route path="/casting/:rfqItemId?" element={<RequireRole allow={['sales', 'admin']}><LegacyPricingRedirect segment="casting" /></RequireRole>} />
-        <Route path="/sawing/:rfqItemId?" element={<RequireRole allow={['sales', 'admin']}><LegacyPricingRedirect segment="sawing" /></RequireRole>} />
-        <Route path="/machining/:rfqItemId?" element={<RequireRole allow={['sales', 'admin']}><LegacyPricingRedirect segment="machining" /></RequireRole>} />
+      <Suspense fallback={<div className="flex justify-center p-12"><Loader2 className="w-6 h-6 animate-spin text-[#787774]" /></div>}>
+        <Routes>
+          <Route path="/" element={<Navigate to="/quotations" replace />} />
+          <Route path="/quotations" element={<QuotationsManager />} />
+          <Route path="/documents" element={<QuotationDocumentsManager />} />
+          
+          {/* Legacy redirect routes */}
+          <Route path="/forging/:rfqItemId?" element={<RequireRole allow={['sales', 'admin']}><LegacyPricingRedirect segment="forging" /></RequireRole>} />
+          <Route path="/casting/:rfqItemId?" element={<RequireRole allow={['sales', 'admin']}><LegacyPricingRedirect segment="casting" /></RequireRole>} />
+          <Route path="/sawing/:rfqItemId?" element={<RequireRole allow={['sales', 'admin']}><LegacyPricingRedirect segment="sawing" /></RequireRole>} />
+          <Route path="/machining/:rfqItemId?" element={<RequireRole allow={['sales', 'admin']}><LegacyPricingRedirect segment="machining" /></RequireRole>} />
 
-        {/* New unified Pricing Tools route group */}
-        <Route path="/pricing-tools" element={<RequireRole allow={['sales', 'admin']}><PricingToolsPage /></RequireRole>}>
-          <Route index element={<Navigate to="forging" replace />} />
-          <Route path="forging/:rfqItemId?" element={<ForgingCostingPage />} />
-          <Route path="casting/:rfqItemId?" element={<CastingCostingPage />} />
-          <Route path="sawing/:rfqItemId?" element={<SawingCostingPage />} />
-          <Route path="machining/:rfqItemId?" element={<MachiningCostingPage />} />
-        </Route>
+          {/* New unified Pricing Tools route group */}
+          <Route path="/pricing-tools" element={<RequireRole allow={['sales', 'admin']}><PricingToolsPage /></RequireRole>}>
+            <Route index element={<Navigate to="forging" replace />} />
+            <Route path="forging/:rfqItemId?" element={<ForgingCostingPage />} />
+            <Route path="casting/:rfqItemId?" element={<CastingCostingPage />} />
+            <Route path="sawing/:rfqItemId?" element={<SawingCostingPage />} />
+            <Route path="machining/:rfqItemId?" element={<MachiningCostingPage />} />
+          </Route>
 
-        <Route path="/master_data" element={<RequireRole allow={['sales', 'admin']}><MasterDataContainer /></RequireRole>} />
-        <Route path="/analytics" element={<RfqAnalyticsReport />} />
-        <Route path="/health_check" element={<RequireRole allow={['admin']}><SystemHealthCheck /></RequireRole>} />
-        <Route path="/users" element={<RequireRole allow={['admin']}><UsersManagementTab /></RequireRole>} />
-      </Routes>
+          <Route path="/master_data" element={<RequireRole allow={['sales', 'admin']}><MasterDataContainer /></RequireRole>} />
+          <Route path="/analytics" element={<RfqAnalyticsReport />} />
+          <Route path="/health_check" element={<RequireRole allow={['admin']}><SystemHealthCheck /></RequireRole>} />
+          <Route path="/users" element={<RequireRole allow={['admin']}><UsersManagementTab /></RequireRole>} />
+        </Routes>
+      </Suspense>
     </Layout>
   );
 };

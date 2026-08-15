@@ -1,5 +1,3 @@
-import jsPDF from 'jspdf';
-import autoTable from 'jspdf-autotable';
 import type { QuotationDocument } from '../types/quotation-document';
 import { DEFAULT_DISPLAY_CONFIG } from '../types/quotation-document';
 
@@ -65,6 +63,9 @@ async function getBase64ImageFromUrl(imageUrl: string, maxWidthPx = 320): Promis
 }
 
 export async function generateQuotationPdf(document: QuotationDocument) {
+  const { default: jsPDF } = await import('jspdf');
+  const { default: autoTable } = await import('jspdf-autotable');
+  
   const config = document.display_config || DEFAULT_DISPLAY_CONFIG;
   const isLandscape = config.layoutOrientation === 'landscape';
   const lang = config.language || 'both';
