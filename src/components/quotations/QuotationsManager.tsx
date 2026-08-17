@@ -242,7 +242,6 @@ export const QuotationsManager = () => {
       });
       setShowEditItemModal(false);
       loadQuotes();
-      toast.success(`Đã cập nhật thông tin sản phẩm "${editProductName.trim()}" thành công!`);
       setMsg({ text: `Đã cập nhật thông tin sản phẩm "${editProductName.trim()}" thành công!` });
     } catch (err: any) {
       toast.error(`Lỗi cập nhật sản phẩm: ${err.message || err}`);
@@ -608,11 +607,10 @@ export const QuotationsManager = () => {
         }
       }
       setMsg({
-        text: `Đã duyệt khả thi cho (${selectedQuotes.length}) sản phẩm. Đã chuyển sang Tab "Đang Xử Lý Nội Bộ".`,
+        text: `Đã duyệt khả thi cho (${selectedQuotes.length}) sản phẩm. Đã chuyển sang "Bước 2: Đánh giá khả thi & Tính giá".`,
         targetStage: 'internal',
       });
       setSelectedQuoteIds([]);
-      toast.success('Chuyển trạng thái tính giá thành công!');
       loadQuotes();
     } catch (err: any) {
       toast.error(`❌ Lỗi chuyển tính giá: ${err.message || err}`);
@@ -733,7 +731,7 @@ export const QuotationsManager = () => {
         technology_requirement: 'Rèn+Gia công',
       }]);
 
-      toast.success('Tạo hồ sơ RFQ mới thành công!');
+      setMsg({ text: 'Tạo hồ sơ RFQ mới thành công!' });
       loadQuotes();
     } catch (err: any) {
       toast.error(`❌ LỖI TẠO RFQ TRÊN SUPABASE DB:\n${err.message || err}`);
@@ -821,11 +819,11 @@ export const QuotationsManager = () => {
   return (
     <div className="space-y-4 animate-fade-in-up">
       {errorMsg && (
-        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-[8px] text-sm font-medium flex items-center justify-between">
+        <div className="bg-[#FDEBEC] border border-[#FADBDC] text-[#9F2F2D] px-4 py-3 rounded-[8px] text-sm font-medium flex items-center justify-between shadow-[0_2px_8px_rgba(0,0,0,0.03)] animate-fade-in-up">
           <div className="flex items-center space-x-2">
             <span>{errorMsg}</span>
           </div>
-          <button onClick={() => setErrorMsg(null)} className="text-red-500 hover:text-red-900">
+          <button onClick={() => setErrorMsg(null)} className="text-[#9F2F2D] hover:text-[#7A2422]">
             <X className="w-4 h-4" />
           </button>
         </div>
@@ -833,9 +831,9 @@ export const QuotationsManager = () => {
 
       {/* SUCCESS / ACTION BANNER WITH STAGE LINK (B2) */}
       {msg && (
-        <div className="bg-emerald-50 border border-emerald-200 text-emerald-900 p-3 rounded-[8px] flex items-center justify-between text-xs font-medium shadow-2xs animate-fade-in-up">
+        <div className="bg-[#EDF3EC] border border-[#C6E1C4] text-[#346538] p-3 rounded-[8px] flex items-center justify-between text-xs font-medium shadow-[0_2px_8px_rgba(0,0,0,0.03)] animate-fade-in-up">
           <div className="flex items-center space-x-2">
-            <CheckCircle2 className="w-4 h-4 text-emerald-600 flex-shrink-0" />
+            <CheckCircle2 className="w-4 h-4 text-[#346538] flex-shrink-0" />
             <span>{msg.text}</span>
           </div>
           <div className="flex items-center space-x-3">
@@ -846,16 +844,16 @@ export const QuotationsManager = () => {
                   handleStageChange(msg.targetStage!);
                   setMsg(null);
                 }}
-                className="px-2.5 py-1 bg-emerald-700 hover:bg-emerald-800 text-white font-bold rounded text-[11px] transition-colors cursor-pointer inline-flex items-center space-x-1"
+                className="px-2.5 py-1 bg-[#346538] hover:bg-[#2b5230] text-white font-bold rounded text-[11px] transition-colors cursor-pointer inline-flex items-center space-x-1"
               >
-                <span>Đi đến Tab Đang Xử Lý</span>
+                <span>Đi đến Bước 2</span>
                 <ArrowRight className="w-3 h-3" />
               </button>
             )}
             <button
               type="button"
               onClick={() => setMsg(null)}
-              className="text-emerald-700 hover:text-emerald-900 font-bold text-xs cursor-pointer"
+              className="text-[#346538] hover:text-[#2b5230] font-bold text-xs cursor-pointer"
             >
               <X className="w-4 h-4" />
             </button>
