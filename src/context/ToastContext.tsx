@@ -49,7 +49,7 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     <ToastContext.Provider value={{ success, error, info }}>
       {children}
       {toasts.length > 0 && (
-        <div className="fixed bottom-4 right-4 z-50 flex flex-col space-y-2 pointer-events-none">
+        <div className="fixed top-20 right-4 z-[60] flex flex-col space-y-2 pointer-events-none">
           {toasts.map((toast) => (
             <ToastItem key={toast.id} toast={toast} onRemove={() => removeToast(toast.id)} />
           ))}
