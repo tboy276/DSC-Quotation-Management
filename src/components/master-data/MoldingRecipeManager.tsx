@@ -7,6 +7,7 @@ import {
   deleteMoldingRecipeItem,
   getMoldingRecipeTotalCost1000kg,
 } from '../../lib/master-data-service';
+import { logAudit } from '../../lib/audit-service';
 import { Modal } from '../ui/Modal';
 import { ActionButton } from '../ui/ActionButton';
 import { useConfirm } from '../../context/ConfirmDialogContext';
@@ -62,6 +63,7 @@ export const MoldingRecipeManager = () => {
     });
     if (!confirmed) return;
     await deleteMoldingRecipeItem(id);
+    logAudit('DELETE_MOLDING_RECIPE', 'casting_molding_recipes', id, { material_name: name });
     loadData();
   };
 

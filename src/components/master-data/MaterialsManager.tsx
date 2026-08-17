@@ -9,6 +9,7 @@ import {
   deletePriceHistoryItem,
   INITIAL_BOM_ITEMS,
 } from '../../lib/master-data-service';
+import { logAudit } from '../../lib/audit-service';
 import { INITIAL_QUOTES } from '../../lib/quotation-service';
 import { DataTable, type DataTableColumn, type DataTableAction } from '../ui/DataTable';
 import { Modal } from '../ui/Modal';
@@ -153,6 +154,7 @@ export const MaterialsManager = ({ isAdmin, isSales = false }: MaterialsManagerP
     }
 
     await deleteMaterials(selectedRows.map((m) => m.id));
+    logAudit('DELETE_MATERIAL', 'materials', undefined, { count: selectedRows.length, ids: selectedRows.map(m => m.id) });
     setSelectedIds([]);
     loadData();
   };
@@ -202,6 +204,7 @@ export const MaterialsManager = ({ isAdmin, isSales = false }: MaterialsManagerP
     });
     if (!confirmed) return;
     await deletePriceHistoryItem(historyId);
+    logAudit('DELETE_MATERIAL_PRICE_HISTORY', 'material_price_history', historyId);
     if (historyMaterial) {
       const updated = await fetchMaterialPriceHistory(historyMaterial.id);
       setHistoryList(updated);

@@ -26,9 +26,12 @@ import {
   Loader2,
 } from 'lucide-react';
 
+import { AuditLogPage } from './AuditLogPage';
+
 import { SystemHealthCheck } from '../components/analytics/SystemHealthCheck';
 import { PricingToolsPage } from './PricingToolsPage';
 import { fetchAllUserProfiles, updateUserRole, revokeUserProfile, fetchAllowedUsers, addAllowedUser, removeAllowedUser } from '../lib/user-service';
+import { logAudit } from '../lib/audit-service';
 import type { UserProfile } from '../types';
 
 function LegacyPricingRedirect({ segment }: { segment: string }) {
@@ -144,6 +147,7 @@ export const DashboardPage = () => {
         try {
           setSavingId(userId);
           await updateUserRole(userId, newRole);
+          logAudit('UPDATE_USER_ROLE', 'user_profiles', userId, { new_role: newRole });
           toast.success('Cập nhật quyền thành công!');
           await loadData();
         } catch (e: any) {
@@ -164,6 +168,7 @@ export const DashboardPage = () => {
         try {
           setSavingId(userId);
           await revokeUserProfile(userId);
+          logAudit('REVOKE_USER_PROFILE', 'user_profiles', userId, { email });
           toast.success('Thu hồi quyền truy cập thành công!');
           await loadData();
         } catch (e: any) {
@@ -466,6 +471,7 @@ export const DashboardPage = () => {
           <Route path="/analytics" element={<RfqAnalyticsReport />} />
           <Route path="/health_check" element={<RequireRole allow={['admin']}><SystemHealthCheck /></RequireRole>} />
           <Route path="/users" element={<RequireRole allow={['admin']}><UsersManagementTab /></RequireRole>} />
+          <Route path="/audit_log" element={<RequireRole allow={['admin']}><AuditLogPage /></RequireRole>} />
         </Routes>
       </Suspense>
     </Layout>

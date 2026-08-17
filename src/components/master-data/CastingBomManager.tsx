@@ -9,6 +9,7 @@ import {
   updateBomItem,
   deleteBomItem,
 } from '../../lib/master-data-service';
+import { logAudit } from '../../lib/audit-service';
 import { calculateLiquidMetalPrice } from '../../lib/calculation-engine/liquid-metal-calculator';
 import { DataTable, type DataTableColumn, type DataTableAction } from '../ui/DataTable';
 import { Modal } from '../ui/Modal';
@@ -117,6 +118,7 @@ export const CastingBomManager = ({ isAdmin }: CastingBomManagerProps) => {
     for (const item of selectedRows) {
       await deleteBomItem(item.id);
     }
+    logAudit('DELETE_BOM', 'casting_bom_items', undefined, { count: selectedRows.length, ids: selectedRows.map(r => r.id) });
     loadBomItems(selectedGradeId);
   };
 

@@ -17,6 +17,7 @@ import {
   updateRfqItemDetails,
   generateNextRfqCode,
 } from '../../lib/quotation-service';
+import { logAudit } from '../../lib/audit-service';
 import { supabase } from '../../lib/supabase';
 import { Modal } from '../ui/Modal';
 import { QuoteStatusBadge } from '../rfq/QuoteStatusBadge';
@@ -588,6 +589,7 @@ export const QuotationsManager = () => {
     try {
       const itemIds = selectedList.map((q) => q.rfq_item_id);
       await deleteRfqItems(itemIds);
+      logAudit('DELETE_RFQ', 'rfq_items', undefined, { count: itemIds.length, ids: itemIds });
       setSelectedQuoteIds([]);
       toast.success('Xóa dữ liệu thành công!');
       loadQuotes();

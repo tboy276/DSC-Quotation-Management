@@ -6,6 +6,7 @@ import {
   INITIAL_PRESSING_RATES,
   INITIAL_HAMMER_RATES,
 } from '../../lib/master-data-service';
+import { logAudit } from '../../lib/audit-service';
 import { useAuth } from '../../context/AuthContext';
 import { DataTable, type DataTableColumn, type DataTableAction } from '../ui/DataTable';
 import { Modal } from '../ui/Modal';
@@ -76,6 +77,7 @@ export const ForgingRatesManager = () => {
     if (!confirmed) return;
     const ids = selectedRows.map((r) => r.id);
     setPressRates(pressRates.filter((r) => !ids.includes(r.id)));
+    logAudit('DELETE_PRESS_RATE', 'master_data_forging_press', undefined, { count: selectedRows.length, ids });
     setSelectedPressIds([]);
   };
 
@@ -107,6 +109,7 @@ export const ForgingRatesManager = () => {
     if (!confirmed) return;
     const ids = selectedRows.map((r) => r.id);
     setHammerRates(hammerRates.filter((r) => !ids.includes(r.id)));
+    logAudit('DELETE_HAMMER_RATE', 'master_data_forging_hammer', undefined, { count: selectedRows.length, ids });
     setSelectedHammerIds([]);
   };
 

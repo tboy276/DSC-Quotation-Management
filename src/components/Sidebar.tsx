@@ -7,7 +7,8 @@ import {
   Layers,
   TrendingUp,
   Activity,
-  Calculator
+  Calculator,
+  History
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -37,6 +38,7 @@ export const Sidebar = ({
 
   const adminNavItems = isAdmin ? [
     { id: 'users', label: 'Quản Lý Quyền & Tài Khoản', icon: Users, shortcut: '⌘U' },
+    { id: 'audit_log', label: 'Nhật Ký Hoạt Động (Audit)', icon: History, shortcut: '⌘A' },
     { id: 'health_check', label: 'Kiểm Tra Kết Nối DB (Health)', icon: Activity, shortcut: '⌘H' },
   ] : [];
 
