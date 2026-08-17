@@ -4,9 +4,7 @@ import { DEFAULT_DISPLAY_CONFIG } from '../types/quotation-document';
 import { DISOCO_COMPANY_CONFIG, DOCUMENT_FORM_CODE, DOCUMENT_REVISION_NO, DOCUMENT_ISSUE_DATE } from '../config/company-config';
 
 // Import Fonts Base64
-import { RobotoRegularBase64 } from '../assets/fonts/Roboto-Regular';
-import { RobotoBoldBase64 } from '../assets/fonts/Roboto-Bold';
-import { RobotoItalicBase64 } from '../assets/fonts/Roboto-Italic';
+// Fonts are dynamically imported inside the function to save bundle size
 import { getToolingColumnFlags } from './quotation-tooling-columns';
 
 function removeVietnameseTones(str: string) {
@@ -65,6 +63,11 @@ async function getBase64ImageFromUrl(imageUrl: string, maxWidthPx = 320): Promis
 export async function generateQuotationPdf(document: QuotationDocument) {
   const { default: jsPDF } = await import('jspdf');
   const { default: autoTable } = await import('jspdf-autotable');
+  
+  // Dynamic import fonts to prevent 2MB bloat in main bundle
+  const { RobotoRegularBase64 } = await import('../assets/fonts/Roboto-Regular');
+  const { RobotoBoldBase64 } = await import('../assets/fonts/Roboto-Bold');
+  const { RobotoItalicBase64 } = await import('../assets/fonts/Roboto-Italic');
   
   const config = document.display_config || DEFAULT_DISPLAY_CONFIG;
   const isLandscape = config.layoutOrientation === 'landscape';
