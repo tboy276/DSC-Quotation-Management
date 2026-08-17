@@ -6,26 +6,29 @@ import { ErrorBoundary } from './components/ErrorBoundary';
 
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { ConfirmDialogProvider } from './context/ConfirmDialogContext';
+import { ToastProvider } from './context/ToastContext';
 
 export function App() {
   return (
     <BrowserRouter>
       <ErrorBoundary>
-        <ConfirmDialogProvider>
-          <Routes>
-            <Route path="/reset-password" element={<ResetPasswordPage />} />
-            <Route
-              path="/*"
-              element={
-                <AuthProvider>
-                  <ProtectedRoute>
-                    <DashboardPage />
-                  </ProtectedRoute>
-                </AuthProvider>
-              }
-            />
-          </Routes>
-        </ConfirmDialogProvider>
+        <ToastProvider>
+          <ConfirmDialogProvider>
+            <Routes>
+              <Route path="/reset-password" element={<ResetPasswordPage />} />
+              <Route
+                path="/*"
+                element={
+                  <AuthProvider>
+                    <ProtectedRoute>
+                      <DashboardPage />
+                    </ProtectedRoute>
+                  </AuthProvider>
+                }
+              />
+            </Routes>
+          </ConfirmDialogProvider>
+        </ToastProvider>
       </ErrorBoundary>
     </BrowserRouter>
   );
