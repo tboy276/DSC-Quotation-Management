@@ -180,12 +180,11 @@ export const CastingOperationsRatesManager = () => {
         </div>
 
         <ActionButton
-          variant="primary"
+          variant={savedSuccess ? 'positive' : 'neutral'}
           disabled={savingSettings || loading}
           onClick={handleSaveSettings}
           icon={savedSuccess ? Check : Save}
           label={savedSuccess ? 'Đã Lưu Thành Công' : (savingSettings ? 'Đang Lưu...' : 'Lưu Thay Đổi Đơn Giá')}
-          className={savedSuccess ? 'bg-emerald-50 text-emerald-600 hover:bg-emerald-100 border border-emerald-200' : ''}
         />
       </div>
 

@@ -5,6 +5,7 @@ import type { CurrencyType } from '../../types/quote';
 import type { TradeTermType } from '../../store/useQuotationStore';
 import { useToast } from '../../context/ToastContext';
 import { QuotationPdfContent } from './QuotationPdfContent';
+import { ActionButton } from '../ui/ActionButton';
 import { ArrowLeft, Check, Plus, Trash2, ArrowUp, ArrowDown, Eye, Sliders, Download } from 'lucide-react';
 import { generateQuotationPdf } from '../../utils/generateQuotationPdf';
 import { getToolingColumnFlags } from '../../utils/quotation-tooling-columns';
@@ -437,15 +438,13 @@ export const QuotationPreviewPanel: React.FC<QuotationPreviewPanelProps> = ({
             </span>
             {readOnly && (
               <div className="flex items-center space-x-2 border-l border-[#EAEAEA] pl-3">
-                <button
-                  type="button"
-                  disabled={isExportingPdf}
-                  onClick={handleDownloadPDF}
-                  className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 active:scale-[0.98] text-white font-bold rounded-[6px] transition-all cursor-pointer inline-flex items-center space-x-1.5 shadow-sm text-xs disabled:opacity-50"
-                >
-                  <Download className="w-3.5 h-3.5 stroke-[2.5]" />
-                  <span>{isExportingPdf ? 'Đang Tạo File PDF...' : 'Tải File PDF Trực Tiếp'}</span>
-                </button>
+                  <ActionButton
+                    disabled={isExportingPdf}
+                    onClick={handleDownloadPDF}
+                    variant="export"
+                    icon={Download}
+                    label={isExportingPdf ? 'Đang Tạo File PDF...' : 'Tải File PDF Trực Tiếp'}
+                  />
                 {onBack && (
                   <button
                     type="button"

@@ -364,10 +364,9 @@ export const EquipmentRatesManager = () => {
               />
               <ActionButton
                 type="submit"
-                variant="primary"
+                variant={saveSuccess ? 'positive' : 'primary'}
                 icon={saveSuccess ? Check : undefined}
                 label={saveSuccess ? 'Đã Lưu' : 'Lưu Thay Đổi'}
-                className={saveSuccess ? 'bg-emerald-50 text-emerald-600 hover:bg-emerald-100 border border-emerald-200' : ''}
               />
             </div>
           </form>

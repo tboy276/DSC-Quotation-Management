@@ -138,14 +138,13 @@ export const DocumentDetailModal = ({
         headerExtra={
           <div className="flex items-center space-x-2 mr-2">
             {!isVoided && canManageDocument && (
-              <button
-                onClick={handleVoidDocument}
-                className="px-3 py-1.5 bg-red-50 hover:bg-red-100 text-red-600 font-bold rounded-[6px] text-xs transition-colors cursor-pointer inline-flex items-center space-x-1 border border-red-200"
-                title="Thu hồi văn bản để chỉnh sửa lại thông số báo giá"
-              >
-                <RotateCcw className="w-3.5 h-3.5 stroke-[2]" />
-                <span>Thu hồi để sửa</span>
-              </button>
+                <ActionButton
+                  onClick={handleVoidDocument}
+                  variant="danger"
+                  icon={RotateCcw}
+                  label="Thu hồi để sửa"
+                  title="Thu hồi văn bản để chỉnh sửa lại thông số báo giá"
+                />
             )}
 
             <button

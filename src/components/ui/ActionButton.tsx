@@ -1,7 +1,7 @@
 import React from 'react';
 
 export interface ActionButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant: 'neutral' | 'positive' | 'danger' | 'primary';
+  variant: 'neutral' | 'positive' | 'danger' | 'primary' | 'export';
   icon?: React.ElementType | React.ReactElement | React.ReactNode | any;
   iconPosition?: 'left' | 'right';
   label?: string;
@@ -33,6 +33,9 @@ export const ActionButton: React.FC<ActionButtonProps> = ({
       break;
     case 'primary':
       baseClasses += ' bg-[#111111] hover:bg-[#333333] text-white shadow-xs';
+      break;
+    case 'export':
+      baseClasses += ' bg-blue-600 hover:bg-blue-700 text-white shadow-sm';
       break;
   }
 

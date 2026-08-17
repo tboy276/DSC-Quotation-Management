@@ -86,12 +86,11 @@ export const CastingSettingsManager = () => {
         </div>
 
         <ActionButton
-          variant="primary"
+          variant={savedSuccess ? 'positive' : 'neutral'}
           disabled={saving || loading}
           onClick={handleSave}
           icon={savedSuccess ? Check : Save}
           label={savedSuccess ? 'Đã Lưu Thành Công' : (saving ? 'Đang Lưu...' : 'Lưu Cài Đặt Xưởng')}
-          className={savedSuccess ? 'bg-emerald-50 text-emerald-600 hover:bg-emerald-100 border border-emerald-200' : ''}
         />
       </div>
 
