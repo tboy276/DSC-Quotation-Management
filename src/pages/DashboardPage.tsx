@@ -1,6 +1,7 @@
 import { useState, useEffect, Suspense, lazy } from 'react';
 import { useLocation, Routes, Route, Navigate, useNavigate, useParams } from 'react-router-dom';
 import { useConfirm } from '../context/ConfirmDialogContext';
+import { useToast } from '../context/ToastContext';
 import { useAuth } from '../context/AuthContext';
 // Removed useQuotationStore
 import { Layout } from '../components/Layout';
@@ -41,6 +42,7 @@ function LegacyPricingRedirect({ segment }: { segment: string }) {
 export const DashboardPage = () => {
   const { user, profile, refreshProfile } = useAuth();
   const confirm = useConfirm();
+  const toast = useToast();
   
   const location = useLocation();
   const navigate = useNavigate();
@@ -139,13 +141,14 @@ export const DashboardPage = () => {
         variant: 'default',
       });
       if (!confirmed) return;
-      try {
-        setSavingId(userId);
-        await updateUserRole(userId, newRole);
-        await loadData();
-      } catch (e: any) {
-        alert(e.message || 'Có lỗi xảy ra');
-      } finally {
+        try {
+          setSavingId(userId);
+          await updateUserRole(userId, newRole);
+          toast.success('Cập nhật quyền thành công!');
+          await loadData();
+        } catch (e: any) {
+          toast.error(e.message || 'Có lỗi xảy ra');
+        } finally {
         setSavingId(null);
       }
     };
@@ -158,13 +161,14 @@ export const DashboardPage = () => {
         variant: 'danger',
       });
       if (!confirmed) return;
-      try {
-        setSavingId(userId);
-        await revokeUserProfile(userId);
-        await loadData();
-      } catch (e: any) {
-        alert(e.message || 'Có lỗi xảy ra');
-      } finally {
+        try {
+          setSavingId(userId);
+          await revokeUserProfile(userId);
+          toast.success('Thu hồi quyền truy cập thành công!');
+          await loadData();
+        } catch (e: any) {
+          toast.error(e.message || 'Có lỗi xảy ra');
+        } finally {
         setSavingId(null);
       }
     };
@@ -177,10 +181,11 @@ export const DashboardPage = () => {
       try {
         await addAllowedUser(newAllowedEmail.trim(), newAllowedRole, user?.email || 'unknown');
         setNewAllowedEmail('');
+        toast.success('Thêm email vào allowlist thành công!');
         setNewAllowedRole('viewer');
         await loadData();
       } catch (e: any) {
-        alert(e.message || 'Có lỗi xảy ra khi thêm allowlist');
+        toast.error(e.message || 'Có lỗi xảy ra khi thêm allowlist');
       } finally {
         setIsSubmittingAllowlist(false);
       }
@@ -197,9 +202,10 @@ export const DashboardPage = () => {
 
       try {
         await removeAllowedUser(email);
+        toast.success('Đã xóa khỏi allowlist!');
         await loadData();
       } catch (e: any) {
-        alert(e.message || 'Có lỗi xảy ra khi xóa allowlist');
+        toast.error(e.message || 'Có lỗi xảy ra khi xóa allowlist');
       }
     };
 

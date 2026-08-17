@@ -3,6 +3,7 @@ import type { QuotationDocument, DocumentDisplayConfig, DocumentRemarkLine } fro
 import { DEFAULT_DISPLAY_CONFIG } from '../../types/quotation-document';
 import type { CurrencyType } from '../../types/quote';
 import type { TradeTermType } from '../../store/useQuotationStore';
+import { useToast } from '../../context/ToastContext';
 import { QuotationPdfContent } from './QuotationPdfContent';
 import { ArrowLeft, Check, Plus, Trash2, ArrowUp, ArrowDown, Eye, Sliders, Download } from 'lucide-react';
 import { generateQuotationPdf } from '../../utils/generateQuotationPdf';
@@ -33,6 +34,7 @@ export const QuotationPreviewPanel: React.FC<QuotationPreviewPanelProps> = ({
   onSaveAndSend,
   isSubmitting = false,
 }) => {
+  const toast = useToast();
   const [config, setConfig] = useState<DocumentDisplayConfig>(
     initialConfig || document.display_config || DEFAULT_DISPLAY_CONFIG
   );
@@ -118,7 +120,7 @@ export const QuotationPreviewPanel: React.FC<QuotationPreviewPanelProps> = ({
       await generateQuotationPdf(liveDocument);
     } catch (err: any) {
       console.error('Lỗi xuất PDF:', err);
-      alert(`❌ Không thể tạo file PDF: ${err?.message || err}`);
+      toast.error(`❌ Không thể tạo file PDF: ${err?.message || err}`);
     } finally {
       setIsExportingPdf(false);
     }

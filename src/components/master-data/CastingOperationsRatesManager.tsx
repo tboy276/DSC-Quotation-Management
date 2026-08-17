@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useToast } from '../../context/ToastContext';
 import type { CastingFactorySettings, MoldingRecipeItem } from '../../types/master-data';
 import {
   fetchCastingSettings,
@@ -26,6 +27,7 @@ import { useConfirm } from '../../context/ConfirmDialogContext';
 
 export const CastingOperationsRatesManager = () => {
   const confirm = useConfirm();
+  const toast = useToast();
   // State 1: Casting factory settings (Furnace, Ladle, Part B 5 rates, Resin Core rate)
   const [settings, setSettings] = useState<CastingFactorySettings>({
     furnace_lining_cost: 50000000,
@@ -99,7 +101,7 @@ export const CastingOperationsRatesManager = () => {
       setSavedSuccess(true);
       setTimeout(() => setSavedSuccess(false), 3000);
     } catch (e: any) {
-      alert(`Lỗi lưu cài đặt đúc gang: ${e.message || e}`);
+      toast.error(`Lỗi lưu cài đặt đúc gang: ${e.message || e}`);
     } finally {
       setSavingSettings(false);
     }
@@ -140,7 +142,7 @@ export const CastingOperationsRatesManager = () => {
 
   const handleSaveRecipe = async () => {
     if (!editingRecipeItem || !editingRecipeItem.material_name?.trim()) {
-      alert('Vui lòng nhập tên vật tư khuôn!');
+      toast.error('Vui lòng nhập tên vật tư khuôn!');
       return;
     }
     setSavingRecipe(true);
@@ -151,7 +153,7 @@ export const CastingOperationsRatesManager = () => {
       const updated = await fetchMoldingRecipe();
       setRecipeItems(updated);
     } catch (e: any) {
-      alert(`Lỗi lưu vật tư khuôn: ${e.message || e}`);
+      toast.error(`Lỗi lưu vật tư khuôn: ${e.message || e}`);
     } finally {
       setSavingRecipe(false);
     }

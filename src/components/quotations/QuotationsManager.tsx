@@ -24,6 +24,7 @@ import { QuoteDetailModal } from '../rfq/QuoteDetailModal';
 import { CreateDocumentModal } from './CreateDocumentModal';
 import { formatCurrencyValue } from '../rfq/RealtimeSummaryPanel';
 import { useAuth } from '../../context/AuthContext';
+import { useToast } from '../../context/ToastContext';
 import { ActionButton } from '../ui/ActionButton';
 import { useConfirm } from '../../context/ConfirmDialogContext';
 
@@ -94,6 +95,7 @@ export const QuotationsManager = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const location = useLocation();
   const { profile, user } = useAuth();
+  const toast = useToast();
   const confirm = useConfirm();
   const currentUserEmail = profile?.email || user?.email || '';
   const canEdit = ['sales', 'admin'].includes(profile?.role || '');
@@ -240,9 +242,10 @@ export const QuotationsManager = () => {
       });
       setShowEditItemModal(false);
       loadQuotes();
+      toast.success(`Đã cập nhật thông tin sản phẩm "${editProductName.trim()}" thành công!`);
       setMsg({ text: `Đã cập nhật thông tin sản phẩm "${editProductName.trim()}" thành công!` });
     } catch (err: any) {
-      alert(`Lỗi cập nhật sản phẩm: ${err.message || err}`);
+      toast.error(`Lỗi cập nhật sản phẩm: ${err.message || err}`);
     }
   };
 
@@ -567,7 +570,7 @@ export const QuotationsManager = () => {
 
   const handleDeleteSelectedItems = async () => {
     if (!canDeleteSelected) {
-      alert('⚠️ Không thể thực hiện: Bạn chỉ có quyền xóa các RFQ do chính mình tạo.');
+      toast.error('🚫 Không thể thực hiện: Bạn chỉ có quyền xóa các RFQ do chính mình tạo.');
       return;
     }
     const selectedList = quotes.filter((q) => selectedQuoteIds.includes(q.id));
@@ -587,9 +590,10 @@ export const QuotationsManager = () => {
       const itemIds = selectedList.map((q) => q.rfq_item_id);
       await deleteRfqItems(itemIds);
       setSelectedQuoteIds([]);
+      toast.success('Xóa dữ liệu thành công!');
       loadQuotes();
     } catch (err: any) {
-      alert(`❌ LỖI XOÁ DỮ LIỆU THẤT BẠI TRÊN SUPABASE:\n${err.message || err}`);
+      toast.error(`❌ LỖI XOÁ DỮ LIỆU THẤT BẠI TRÊN SUPABASE:\n${err.message || err}`);
     }
   };
 
@@ -608,9 +612,10 @@ export const QuotationsManager = () => {
         targetStage: 'internal',
       });
       setSelectedQuoteIds([]);
+      toast.success('Chuyển trạng thái tính giá thành công!');
       loadQuotes();
     } catch (err: any) {
-      alert(`❌ Lỗi chuyển tính giá: ${err.message || err}`);
+      toast.error(`❌ Lỗi chuyển tính giá: ${err.message || err}`);
     }
   };
 
@@ -632,9 +637,10 @@ export const QuotationsManager = () => {
       }
       setShowCancelReasonModal(false);
       setSelectedQuoteIds([]);
+      toast.success('Đã cập nhật trạng thái Không phù hợp.');
       loadQuotes();
     } catch (err: any) {
-      alert(`❌ Lỗi cập nhật không phù hợp: ${err.message || err}`);
+      toast.error(`❌ Lỗi cập nhật không phù hợp: ${err.message || err}`);
     }
   };
 
@@ -674,12 +680,12 @@ export const QuotationsManager = () => {
     e.preventDefault();
     if (!newCustomerName.trim() || newMultiItems.length === 0) return;
     if (!newTradeTerms) {
-      alert('Vui lòng chọn Trade Terms trước khi lưu.');
+      toast.error('Vui lòng chọn Trade Terms trước khi lưu.');
       return;
     }
     const hasEmptyName = newMultiItems.some((it) => !it.product_name.trim());
     if (hasEmptyName) {
-      alert('Vui lòng nhập tên sản phẩm cho tất cả các dòng.');
+      toast.error('Vui lòng nhập tên sản phẩm cho tất cả các dòng.');
       return;
     }
 
@@ -727,10 +733,10 @@ export const QuotationsManager = () => {
         technology_requirement: 'Rèn+Gia công',
       }]);
 
-      setMsg({ text: 'Tạo hồ sơ RFQ mới thành công!' });
+      toast.success('Tạo hồ sơ RFQ mới thành công!');
       loadQuotes();
     } catch (err: any) {
-      alert(`❌ LỖI TẠO RFQ TRÊN SUPABASE DB:\n${err.message || err}`);
+      toast.error(`❌ LỖI TẠO RFQ TRÊN SUPABASE DB:\n${err.message || err}`);
     }
   };
 
@@ -781,7 +787,7 @@ export const QuotationsManager = () => {
 
   const handleExportExcel = async () => {
     if (quotes.length === 0) {
-      alert('Không có dữ liệu để xuất Excel.');
+      toast.error('Không có dữ liệu để xuất Excel.');
       return;
     }
 

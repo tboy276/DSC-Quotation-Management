@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useToast } from '../../context/ToastContext';
 import type { CastingFactorySettings } from '../../types/master-data';
 import {
   fetchCastingSettings,
@@ -9,6 +10,7 @@ import { Settings, Save, Check, Flame, Factory } from 'lucide-react';
 import { ActionButton } from '../ui/ActionButton';
 
 export const CastingSettingsManager = () => {
+  const toast = useToast();
   const [settings, setSettings] = useState<CastingFactorySettings>({
     furnace_lining_cost: 50000000,
     furnace_lifespan_batches: 500,
@@ -61,7 +63,7 @@ export const CastingSettingsManager = () => {
       setSavedSuccess(true);
       setTimeout(() => setSavedSuccess(false), 3000);
     } catch (e: any) {
-      alert(`Lỗi lưu cài đặt đúc gang: ${e.message || e}`);
+      toast.error(`Lỗi lưu cài đặt đúc gang: ${e.message || e}`);
     } finally {
       setSaving(false);
     }

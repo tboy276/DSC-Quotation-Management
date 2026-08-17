@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useToast } from '../../context/ToastContext';
 import type { MoldingRecipeItem } from '../../types/master-data';
 import {
   fetchMoldingRecipe,
@@ -13,6 +14,7 @@ import { Layers, Plus, Trash2, Edit2, Check, Info } from 'lucide-react';
 
 export const MoldingRecipeManager = () => {
   const confirm = useConfirm();
+  const toast = useToast();
   const [items, setItems] = useState<MoldingRecipeItem[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [editingItem, setEditingItem] = useState<Partial<MoldingRecipeItem> | null>(null);
@@ -65,7 +67,7 @@ export const MoldingRecipeManager = () => {
 
   const handleSave = async () => {
     if (!editingItem || !editingItem.material_name?.trim()) {
-      alert('Vui lòng nhập tên vật tư khuôn!');
+      toast.error('Vui lòng nhập tên vật tư khuôn!');
       return;
     }
     setSaving(true);
@@ -75,7 +77,7 @@ export const MoldingRecipeManager = () => {
       setEditingItem(null);
       await loadData();
     } catch (e: any) {
-      alert(`Lỗi lưu vật tư khuôn: ${e.message || e}`);
+      toast.error(`Lỗi lưu vật tư khuôn: ${e.message || e}`);
     } finally {
       setSaving(false);
     }

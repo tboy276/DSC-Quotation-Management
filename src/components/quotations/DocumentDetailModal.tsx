@@ -7,6 +7,7 @@ import { exportDocumentToExcel } from '../../utils/excel-generator';
 import { QuoteStatusBadge } from '../rfq/QuoteStatusBadge';
 import { formatCurrencyValue } from '../rfq/RealtimeSummaryPanel';
 import { formatDate } from '../../lib/format-date';
+import { useToast } from '../../context/ToastContext';
 import { QuotationPreviewPanel } from './QuotationPreviewPanel';
 import { canManageRecord } from '../../lib/permission-utils';
 import { Modal } from '../ui/Modal';
@@ -39,6 +40,7 @@ export const DocumentDetailModal = ({
 
   const { profile, user } = useAuth();
   const confirm = useConfirm();
+  const toast = useToast();
   const [items, setItems] = useState<QuotationDocumentItem[]>([]);
   const [showCustomizeModal, setShowCustomizeModal] = useState<boolean>(false);
 
@@ -105,10 +107,11 @@ export const DocumentDetailModal = ({
     }
     try {
       await voidQuotationDocument(document.id);
+      toast.success('Thu hồi văn bản thành công!');
       onRefresh();
       onClose();
     } catch (e: any) {
-      alert(`Lỗi: ${e.message || e}`);
+      toast.error(`Lỗi: ${e.message || e}`);
     }
   };
 
@@ -158,9 +161,10 @@ export const DocumentDetailModal = ({
               onClick={async () => {
                 try {
                   await exportDocumentToExcel(document);
+                  toast.success('Xuất Excel thành công!');
                 } catch (e) {
                   console.error(e);
-                  alert('Lỗi xuất Excel');
+                  toast.error('Lỗi xuất Excel');
                 }
               }}
               className="px-3 py-1.5 bg-[#F0F0EE] hover:bg-[#E0E0DE] text-[#111111] font-bold rounded-[6px] text-xs transition-colors cursor-pointer inline-flex items-center space-x-1 border border-[#EAEAEA]"

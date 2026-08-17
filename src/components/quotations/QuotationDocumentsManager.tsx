@@ -19,11 +19,13 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { createRepricingRfqFromDocument } from '../../lib/repricing-service';
 import { useConfirm } from '../../context/ConfirmDialogContext';
+import { useToast } from '../../context/ToastContext';
 
 export const QuotationDocumentsManager = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const confirm = useConfirm();
+  const toast = useToast();
   const [documents, setDocuments] = useState<QuotationDocument[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [isRepricing, setIsRepricing] = useState(false);
@@ -213,7 +215,7 @@ export const QuotationDocumentsManager = () => {
           navigate(`/quotations?stage=internal`, { state: { prefillSearch: newRfq.rfq_code } });
         } catch (error: any) {
           console.error(error);
-          alert(error.message || 'Có lỗi xảy ra khi tạo RFQ tái báo giá.');
+          toast.error(error.message || 'Có lỗi xảy ra khi tạo RFQ tái báo giá.');
         } finally {
           setIsRepricing(false);
         }
