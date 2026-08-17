@@ -1,6 +1,7 @@
 import { useState, useEffect, Suspense, lazy } from 'react';
 import { useLocation, Routes, Route, Navigate, useNavigate, useParams } from 'react-router-dom';
 import { useConfirm } from '../context/ConfirmDialogContext';
+import { useToast } from '../context/ToastContext';
 import { useAuth } from '../context/AuthContext';
 // Removed useQuotationStore
 import { Layout } from '../components/Layout';
@@ -41,6 +42,7 @@ function LegacyPricingRedirect({ segment }: { segment: string }) {
 export const DashboardPage = () => {
   const { user, profile, refreshProfile } = useAuth();
   const confirm = useConfirm();
+  const toast = useToast();
   
   const location = useLocation();
   const navigate = useNavigate();
@@ -435,6 +437,13 @@ export const DashboardPage = () => {
 
   return (
     <Layout activeTab={activeTab} setActiveTab={handleTabChange} pageTitle={getPageTitle()}>
+      {/* TEMP TOAST TEST BUTTONS - DO NOT REMOVE YET */}
+      <div className="flex space-x-2 p-4 bg-white border-b mb-4">
+        <button onClick={() => toast.success('Lưu dữ liệu thành công!')} className="px-4 py-2 bg-green-100 text-green-800 rounded">Test Success</button>
+        <button onClick={() => toast.error('Có lỗi xảy ra khi lưu. Vui lòng thử lại.')} className="px-4 py-2 bg-red-100 text-red-800 rounded">Test Error</button>
+        <button onClick={() => toast.info('Đang cập nhật dữ liệu mới...')} className="px-4 py-2 bg-gray-100 text-gray-800 rounded">Test Info</button>
+      </div>
+
       <Suspense fallback={<div className="flex justify-center p-12"><Loader2 className="w-6 h-6 animate-spin text-[#787774]" /></div>}>
         <Routes>
           <Route path="/" element={<Navigate to="/quotations" replace />} />
