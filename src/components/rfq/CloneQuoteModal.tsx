@@ -5,7 +5,7 @@ import { formatCurrencyValue } from './RealtimeSummaryPanel';
 import { formatDate } from '../../lib/format-date';
 import { Modal } from '../ui/Modal';
 import { ActionButton } from '../ui/ActionButton';
-import { Search, Copy } from 'lucide-react';
+import { Search, Copy, ArrowRight } from 'lucide-react';
 
 interface CloneQuoteModalProps {
   segment: 'forging' | 'casting' | 'sawing' | 'machining';

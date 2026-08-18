@@ -224,7 +224,7 @@ export const CastingCalculatorForm = () => {
             variant="primary"
             icon={Eye}
             size="sm"
-            label={`${moldMaterials.length} Vật Tư Khuôn`}
+            label="3 Vật Tư Khuôn"
           />
         }
         mainLeftContent={section1Left}

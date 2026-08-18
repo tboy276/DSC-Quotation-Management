@@ -8,6 +8,7 @@ import { RealtimeSummaryPanel } from '../components/rfq/RealtimeSummaryPanel';
 import { CloneQuoteModal } from '../components/rfq/CloneQuoteModal';
 import { QuoteStatusBadge } from '../components/rfq/QuoteStatusBadge';
 import { ActionButton } from '../components/ui/ActionButton';
+import { CostingPageToolbar } from '../components/rfq/CostingPageToolbar';
 
 const formatDate = (dStr?: string) => dStr ? new Date(dStr).toLocaleDateString('vi-VN') : 'N/A';
 const formatDateVerbose = (dStr?: string) => {
@@ -68,71 +69,16 @@ export default function SawingCostingPage() {
   return (
     <div className="w-full space-y-4 animate-fade-in-up">
       {/* Sleek Compact Header Bar (Warm Monochrome Minimalist) */}
-      <div className="bg-[#FBFBFA] p-3 rounded-[10px] border border-[#EAEAEA] shadow-[0_2px_8px_rgba(0,0,0,0.03)] flex flex-wrap items-center justify-between gap-3 text-xs">
-        {/* Left Side: Product Info & Meta */}
-        <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-          <ActionButton
-            variant="neutral"
-            icon={ArrowLeft}
-            label="Quay lại"
-            onClick={() => navigate('/quotations')}
-            title="Quay lại danh sách RFQ"
-          />
-
-          <div className="h-4 w-[1px] bg-[#EAEAEA] hidden sm:block" />
-
-          <div className="space-y-0.5">
-            <div className="flex items-center space-x-2 flex-wrap">
-              <span className="font-mono font-bold text-[#111111] text-xs">
-                [{activeItemRecord?.item_code || 'N/A'}]
-              </span>
-              <h2 className="text-sm font-bold text-[#111111] tracking-tight">
-                {activeItemRecord?.product_name || rfq.product_name}
-              </h2>
-              <span className="font-mono text-xs text-[#787774]">
-                (Part No: {activeItemRecord?.part_number || 'N/A'})
-              </span>
-              <QuoteStatusBadge status={activeItemRecord?.status || 'IN_COSTING'} size="sm" />
-            </div>
-            <div className="text-[11px] text-[#787774] flex items-center space-x-3">
-              <span>Khách hàng: <strong className="text-[#111111]">{activeDossierRecord?.customer_name || rfq.customer_name}</strong></span>
-              <span>•</span>
-              <span className="font-mono">Ngày nhận: {formatDateVerbose(activeDossierRecord?.rfq_received_date)}</span>
-              <span>•</span>
-              <span className="font-mono">Deadline: {formatDate(activeDossierRecord?.customer_deadline)}</span>
-            </div>
-          </div>
-        </div>
-
-        {/* Right Side: Action Buttons with Text Labels */}
-        <div className="flex items-center space-x-2">
-          <ActionButton
-            variant="neutral"
-            icon={Copy}
-            label="Sao chép"
-            onClick={() => setShowCloneModal(true)}
-            title="Sao chép toàn bộ thông số từ báo giá cũ tương tự"
-          />
-
-          <ActionButton
-            variant="neutral"
-            icon={Save}
-            label="Lưu nháp"
-            onClick={handleSaveDraft}
-            disabled={saving}
-            title="Lưu bản nháp tính giá (Save Draft)"
-          />
-
-          <ActionButton
-            variant="primary"
-            icon={<Check className="text-emerald-400 stroke-[2.5]" />}
-            label="Hoàn thành"
-            onClick={handleCompleteCosting}
-            disabled={saving}
-            title="Hoàn thành tính giá"
-          />
-        </div>
-      </div>
+      <CostingPageToolbar
+        onBack={() => navigate('/quotations')}
+        onClone={() => setShowCloneModal(true)}
+        onSaveDraft={handleSaveDraft}
+        onComplete={handleCompleteCosting}
+        saving={saving}
+        itemRecord={activeItemRecord}
+        dossierRecord={activeDossierRecord}
+        msg={msg}
+      />
 
       {/* Notification Banner */}
       {msg && (

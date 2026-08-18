@@ -1,5 +1,6 @@
 import type { ToolingComponent } from '../../lib/calculation-engine/types';
 import { Plus, Trash2, Layers } from 'lucide-react';
+import { ActionButton } from '../ui/ActionButton';
 
 interface ToolingOpsListProps {
   isForging: boolean;
