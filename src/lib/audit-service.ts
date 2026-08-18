@@ -67,6 +67,9 @@ export const AUDIT_ACTION_LABELS: Record<string, string> = {
   DELETE_MATERIAL: 'Xóa vật tư',
   UPDATE_MATERIAL_PRICE: 'Cập nhật giá vật tư',
   DELETE_MATERIAL_PRICE_HISTORY: 'Xóa lịch sử giá',
+  ADD_MATERIAL_PRICE: 'Thêm lịch sử giá',
+  CREATE_CASTING_GRADE: 'Thêm mác đúc',
+  UPDATE_CASTING_GRADE: 'Sửa mác đúc',
   // BOM & khuôn
   CREATE_BOM: 'Thêm BOM',
   UPDATE_BOM: 'Sửa BOM',
@@ -122,7 +125,11 @@ export const formatAuditDetails = (action: string, details: Record<string, any> 
       return `"${d.name || ''}"`;
     case 'DELETE_MATERIAL':
       return `${d.count || 0} vật tư${d.names?.length ? `: ${d.names.join(', ')}` : ''}`;
-    case 'UPDATE_MATERIAL_PRICE':
+    case 'CREATE_CASTING_GRADE':
+      case 'UPDATE_CASTING_GRADE':
+        return `"${d.name || ''}"`;
+      case 'ADD_MATERIAL_PRICE':
+      case 'UPDATE_MATERIAL_PRICE':
       return `"${d.material_name || ''}" → ${Number(d.new_price || 0).toLocaleString('vi-VN')} đ`;
     case 'DELETE_MATERIAL_PRICE_HISTORY':
       return `Vật tư "${d.material_name || ''}"`;

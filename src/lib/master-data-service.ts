@@ -122,6 +122,7 @@ export async function saveMaterial(mat: Partial<Material>): Promise<Material> {
       throw new Error(`Lỗi cập nhật vật tư Supabase: ${error.message}`);
     }
     await fetchMaterials();
+    await logAudit(mat.id ? 'UPDATE_MATERIAL' : 'CREATE_MATERIAL', 'materials', data.id, { name: data.name, category: data.category });
     return data as Material;
   } else {
     const { data, error } = await supabase
@@ -140,6 +141,7 @@ export async function saveMaterial(mat: Partial<Material>): Promise<Material> {
       throw new Error(`Lỗi thêm vật tư Supabase: ${error.message}`);
     }
     await fetchMaterials();
+    await logAudit(mat.id ? 'UPDATE_MATERIAL' : 'CREATE_MATERIAL', 'materials', data.id, { name: data.name, category: data.category });
     return data as Material;
   }
 }
@@ -191,6 +193,8 @@ export async function addMaterialPrice(
 
   await fetchMaterials();
   await fetchPriceHistory();
+  const { data: matData } = await supabase.from('materials').select('name').eq('id', materialId).single();
+  await logAudit('ADD_MATERIAL_PRICE', 'material_price_history', data.id, { name: matData?.name || materialId, new_price: price });
   return data as MaterialPriceHistory;
 }
 
@@ -234,6 +238,7 @@ export async function saveCastingGrade(grade: Partial<CastingGrade>): Promise<Ca
       .single();
     if (error) throw new Error(`Lỗi cập nhật Mác gang Supabase: ${error.message}`);
     await fetchCastingGrades();
+    await logAudit(grade.id ? 'UPDATE_CASTING_GRADE' : 'CREATE_CASTING_GRADE', 'casting_grades', data.id, { name: data.name });
     return data as CastingGrade;
   } else {
     const { data, error } = await supabase
@@ -243,6 +248,7 @@ export async function saveCastingGrade(grade: Partial<CastingGrade>): Promise<Ca
       .single();
     if (error) throw new Error(`Lỗi thêm Mác gang Supabase: ${error.message}`);
     await fetchCastingGrades();
+    await logAudit(grade.id ? 'UPDATE_CASTING_GRADE' : 'CREATE_CASTING_GRADE', 'casting_grades', data.id, { name: data.name });
     return data as CastingGrade;
   }
 }
