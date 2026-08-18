@@ -46,7 +46,7 @@ export const Sidebar = ({
     <aside
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
-      className={`relative h-screen flex-shrink-0 transition-all duration-300 ease-in-out bg-[#0F172A] border-r border-[#1E293B] flex flex-col z-20 select-none shadow-xl ${
+      className={`relative h-screen flex-shrink-0 transition-all duration-300 ease-in-out bg-gradient-to-r from-[#00A8CC] to-[#00C49F] border-r border-[#1E293B] flex flex-col z-20 select-none shadow-xl ${
         isHovered ? 'w-[280px]' : 'w-[68px]'
       }`}
     >
