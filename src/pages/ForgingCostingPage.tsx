@@ -1,4 +1,4 @@
-import { ArrowLeft, Check, Copy, Save, CheckCircle2, AlertCircle, AlertTriangle } from 'lucide-react';
+import { ArrowLeft, CheckCircle2, AlertCircle, AlertTriangle } from 'lucide-react';
 import { useEffect } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import { useQuotationStore } from '../store/useQuotationStore';
@@ -6,16 +6,11 @@ import { usePricingCalculator } from '../hooks/usePricingCalculator';
 import { ForgingCalculatorForm } from '../components/rfq/ForgingCalculatorForm';
 import { RealtimeSummaryPanel } from '../components/rfq/RealtimeSummaryPanel';
 import { CloneQuoteModal } from '../components/rfq/CloneQuoteModal';
-import { QuoteStatusBadge } from '../components/rfq/QuoteStatusBadge';
 import { ActionButton } from '../components/ui/ActionButton';
 import { CostingPageToolbar } from '../components/rfq/CostingPageToolbar';
 
-const formatDate = (dStr?: string) => dStr ? new Date(dStr).toLocaleDateString('vi-VN') : 'N/A';
-const formatDateVerbose = (dStr?: string) => {
-  if (!dStr) return 'N/A';
-  const d = new Date(dStr);
-  return `${d.getDate().toString().padStart(2, '0')}/${(d.getMonth() + 1).toString().padStart(2, '0')}/${d.getFullYear()}`;
-};
+
+
 
 export default function ForgingCostingPage() {
   const {
@@ -77,7 +72,7 @@ export default function ForgingCostingPage() {
         saving={saving}
         itemRecord={activeItemRecord}
         dossierRecord={activeDossierRecord}
-        msg={msg}
+        rfqRecord={rfq}
       />
 
       {/* Notification Banner */}

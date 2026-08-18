@@ -15,7 +15,7 @@ export interface DataTableColumn<T> {
 
 export interface DataTableAction<T> {
   key: string;
-  label: React.ReactNode;
+  label?: React.ReactNode;
   icon?: React.ReactNode;
   tooltip?: string;
   onClick: (selectedRows: T[]) => void;

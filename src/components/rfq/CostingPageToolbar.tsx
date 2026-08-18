@@ -11,7 +11,7 @@ interface CostingPageToolbarProps {
   saving: boolean;
   itemRecord: any;
   dossierRecord: any;
-  msg?: { type: 'success' | 'error'; text: string } | null;
+  rfqRecord: any;
 }
 
 export const CostingPageToolbar = ({
@@ -22,7 +22,7 @@ export const CostingPageToolbar = ({
   saving,
   itemRecord,
   dossierRecord,
-  msg
+  rfqRecord,
 }: CostingPageToolbarProps) => {
   return (
     <div className="bg-[#FBFBFA] p-3 rounded-[10px] border border-[#EAEAEA] shadow-[0_2px_8px_rgba(0,0,0,0.03)] flex flex-wrap items-center justify-between gap-3 text-xs">
@@ -44,7 +44,7 @@ export const CostingPageToolbar = ({
               [{itemRecord?.item_code || 'N/A'}]
             </span>
             <h2 className="text-sm font-bold text-[#111111] tracking-tight">
-              {itemRecord?.product_name || 'N/A'}
+              {itemRecord?.product_name || rfqRecord?.product_name || 'N/A'}
             </h2>
             <span className="font-mono text-xs text-[#787774]">
               (Part No: {itemRecord?.part_number || 'N/A'})
@@ -52,7 +52,7 @@ export const CostingPageToolbar = ({
             <QuoteStatusBadge status={itemRecord?.status || 'IN_COSTING'} size="sm" />
           </div>
           <div className="text-[11px] text-[#787774] flex items-center space-x-3">
-            <span>Khách hàng: <strong className="text-[#111111]">{dossierRecord?.customer_name || 'N/A'}</strong></span>
+            <span>Khách hàng: <strong className="text-[#111111]">{dossierRecord?.customer_name || rfqRecord?.customer_name || 'N/A'}</strong></span>
             <span>•</span>
             <span className="font-mono">Ngày nhận: {formatDateVerbose(dossierRecord?.rfq_received_date)}</span>
             <span>•</span>
