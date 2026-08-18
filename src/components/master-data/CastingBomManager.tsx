@@ -232,9 +232,9 @@ export const CastingBomManager = ({ isAdmin }: CastingBomManagerProps) => {
     },
     {
       key: 'edit',
-        tooltip: 'Sửa Khối Lượng',
-        icon: <Edit2 className="w-3.5 h-3.5" />,
-        variant: 'primary',
+      tooltip: 'Sửa Khối Lượng',
+      icon: <Edit2 className="w-3.5 h-3.5" />,
+      variant: 'neutral',
       enabled: (count) => isAdmin && count === 1,
       onClick: (selectedRows) => handleOpenEditWeight(selectedRows[0]),
     },

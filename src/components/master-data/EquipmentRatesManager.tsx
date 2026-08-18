@@ -265,7 +265,7 @@ export const EquipmentRatesManager = () => {
               </thead>
               <tbody className="divide-y divide-[#EAEAEA]">
                 {filteredEquipment.map((item) => (
-                  <tr key={`${item.sourceType}-${item.id}`} className="hover:bg-[#F9F9F8] transition-colors">
+                  <tr key={`${item.sourceType}-${item.id}`} className="group hover:bg-[#F9F9F8] transition-colors">
                     <td className="py-3.5 px-4">
                       <div className="font-bold text-[#111111] flex items-center gap-2">
                         {item.group === 'forging' && <Hammer className="w-3.5 h-3.5 text-amber-600" />}
@@ -294,13 +294,13 @@ export const EquipmentRatesManager = () => {
                         '—'
                       )}
                     </td>
-                    <td className="py-3.5 px-4 text-center">
+                    <td className="py-3.5 px-4 text-center opacity-0 group-hover:opacity-100 transition-opacity">
                       {isAdmin ? (
                         <ActionButton
                           variant="neutral"
                           onClick={() => handleOpenEdit(item)}
                           icon={Edit2}
-                          label="Sửa giá"
+                          title="Sửa giá"
                           className="px-2.5 py-1"
                         />
                       ) : (

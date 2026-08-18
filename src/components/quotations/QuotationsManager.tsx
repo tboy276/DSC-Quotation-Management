@@ -1129,9 +1129,9 @@ export const QuotationsManager = () => {
             />
 
             <ActionButton
-              variant="danger"
-              label="Không phù hợp"
-              disabled={!canRejectFeasibility}
+                variant="danger"
+                label="Không phù hợp"
+                disabled={!canRejectFeasibility}
               onClick={() => handleOpenItemCancelModal('CANCELLED_NOT_FEASIBLE')}
               title={
                 selectedQuotes.length === 0
@@ -1146,7 +1146,6 @@ export const QuotationsManager = () => {
 
         {/* Right Side: CONTEXTUAL STAGE ACTION BUTTONS */}
           <div className="flex items-center space-x-1.5">
-            <div className="h-4 w-px bg-[#EAEAEA] mx-1" />
 
           {/* CỤM NÚT ĐỘNG: CHỈ HIỆN KHI CÓ ÍT NHẤT 1 DÒNG ĐƯỢC CHỌN */}
           {selectedQuoteIds.length > 0 && (
@@ -1224,10 +1223,11 @@ export const QuotationsManager = () => {
                     title={groupDisabledReason || `Gộp (${selectedQuoteIds.length}) mã sản phẩm thành Báo Giá`}
                   />
 
-                  <ActionButton
-                    variant="danger"
-                    label="Không phù hợp"
-                    disabled={!canDeleteSelected}
+                  <div className="h-4 w-px bg-[#EAEAEA] mx-1" />
+                    <ActionButton
+                      variant="danger"
+                      label="Không phù hợp"
+                      disabled={!canDeleteSelected}
                     onClick={() => handleOpenItemCancelModal('CANCELLED_NOT_FEASIBLE')}
                     title={
                       selectedQuotes.length === 0

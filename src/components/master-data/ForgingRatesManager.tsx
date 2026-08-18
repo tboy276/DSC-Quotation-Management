@@ -158,7 +158,7 @@ export const ForgingRatesManager = () => {
     },
     {
       key: 'delete_press',
-      label: 'Xoá Dải Máy Dập',
+      tooltip: 'Xoá Dải Máy Dập',
       icon: <Trash2 className="w-3.5 h-3.5" />,
       variant: 'danger',
       enabled: (count) => isAdmin && count >= 1,
@@ -211,7 +211,7 @@ export const ForgingRatesManager = () => {
     },
     {
       key: 'delete_hammer',
-      label: 'Xoá Dải Máy Búa',
+      tooltip: 'Xoá Dải Máy Búa',
       icon: <Trash2 className="w-3.5 h-3.5" />,
       variant: 'danger',
       enabled: (count) => isAdmin && count >= 1,

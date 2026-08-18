@@ -28,6 +28,7 @@ interface DataTableProps<T> {
   columns: DataTableColumn<T>[];
   keyExtractor: (row: T) => string;
   toolbarActions?: DataTableAction<T>[];
+  rowActions?: DataTableAction<T>[];
   toolbarLeftContent?: React.ReactNode;
   onRowClick?: (row: T) => void;
   loading?: boolean;
@@ -42,6 +43,7 @@ export function DataTable<T>({
   columns,
   keyExtractor,
   toolbarActions = [],
+  rowActions = [],
   toolbarLeftContent,
   onRowClick,
   loading = false,
@@ -297,6 +299,7 @@ export function DataTable<T>({
                     </th>
                   );
                 })}
+                {rowActions.length > 0 && <th className="py-3 px-4 w-1 border-b border-[#EAEAEA]"></th>}
               </tr>
             </thead>
 
@@ -304,7 +307,7 @@ export function DataTable<T>({
               {loading ? (
                 <tr>
                   <td
-                    colSpan={visibleColumns.length + 1}
+                    colSpan={visibleColumns.length + (rowActions.length > 0 ? 2 : 1)}
                     className="py-12 text-center text-[#787774] italic"
                   >
                     Đang tải dữ liệu bảng...
@@ -313,7 +316,7 @@ export function DataTable<T>({
               ) : sortedData.length === 0 ? (
                 <tr>
                   <td
-                    colSpan={visibleColumns.length + 1}
+                    colSpan={visibleColumns.length + (rowActions.length > 0 ? 2 : 1)}
                     className="py-12 text-center text-[#787774] italic"
                   >
                     {emptyMessage}
@@ -327,6 +330,7 @@ export function DataTable<T>({
                   return (
                     <tr
                       key={rKey}
+                      className={`group ${onRowClick ? 'cursor-pointer' : ''} hover:bg-[#FBFBFA] transition-colors ${isChecked ? 'bg-slate-50 font-medium' : ''}`}
                       onClick={(e) => {
                         if (window.getSelection()?.toString().length) {
                           return;
@@ -339,7 +343,7 @@ export function DataTable<T>({
                         toggleRowSelection(rKey);
                         onRowClick?.(row);
                       }}
-                      className={`hover:bg-[#F0F0EE] transition-colors cursor-pointer ${isChecked ? 'bg-[#F0F0EE]/60' : ''}`}
+                      
                     >
                       {/* Column 1: Row Checkbox */}
                       <td
@@ -356,9 +360,7 @@ export function DataTable<T>({
 
                       {/* Row Data Cells */}
                       {visibleColumns.map((col) => (
-                        <td
-                          key={col.key}
-                          className={`py-3 px-4 ${col.className || ''}`}
+                        <td key={col.key} className={`py-3 px-4 ${col.className || ''}`}
                         >
                           {col.render(row, index)}
                         </td>

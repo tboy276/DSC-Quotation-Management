@@ -388,7 +388,7 @@ export const CastingCalculatorForm = () => {
           <ActionButton
             variant="primary"
             onClick={() => setShowRecipeModal(false)}
-            label="Đóng Màn Hình"
+            label="Đóng"
           />
         }
       >

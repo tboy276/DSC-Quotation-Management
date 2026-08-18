@@ -91,9 +91,9 @@ export const SystemRatesManager = () => {
   const toolbarActions: DataTableAction<SystemUnitRate>[] = [
     {
       key: 'edit',
-      label: 'Sửa Đơn Giá Mới',
+      tooltip: 'Sửa Đơn Giá Mới',
       icon: <Edit2 className="w-3.5 h-3.5" />,
-      variant: 'primary',
+      variant: 'neutral',
       enabled: (count) => isAdmin && count === 1,
       onClick: (selectedRows) => {
         setEditingRate(selectedRows[0]);

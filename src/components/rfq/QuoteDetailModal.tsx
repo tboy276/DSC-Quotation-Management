@@ -223,7 +223,7 @@ export const QuoteDetailModal = ({ quote, onClose }: QuoteDetailModalProps) => {
         <ActionButton
           variant="primary"
           onClick={onClose}
-          label="Đóng Cửa Sổ"
+          label="Đóng"
         />
       }
     >
