@@ -193,8 +193,6 @@ export async function addMaterialPrice(
 
   await fetchMaterials();
   await fetchPriceHistory();
-  const { data: matData } = await supabase.from('materials').select('name').eq('id', materialId).single();
-  await logAudit('ADD_MATERIAL_PRICE', 'material_price_history', data.id, { name: matData?.name || materialId, new_price: price });
   return data as MaterialPriceHistory;
 }
 

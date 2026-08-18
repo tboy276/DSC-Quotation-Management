@@ -1,3 +1,4 @@
+import { getStatusLabel } from './status-labels';
 import { supabase } from './supabase';
 
 /**
@@ -67,7 +68,6 @@ export const AUDIT_ACTION_LABELS: Record<string, string> = {
   DELETE_MATERIAL: 'Xóa vật tư',
   UPDATE_MATERIAL_PRICE: 'Cập nhật giá vật tư',
   DELETE_MATERIAL_PRICE_HISTORY: 'Xóa lịch sử giá',
-  ADD_MATERIAL_PRICE: 'Thêm lịch sử giá',
   CREATE_CASTING_GRADE: 'Thêm mác đúc',
   UPDATE_CASTING_GRADE: 'Sửa mác đúc',
   // BOM & khuôn
@@ -110,7 +110,7 @@ export const formatAuditDetails = (action: string, details: Record<string, any> 
     case 'SEND_QUOTE':
       return `Sản phẩm "${d.product_name || ''}"`;
     case 'UPDATE_QUOTE_STATUS':
-      return `"${d.product_name || ''}" → ${d.new_status || ''}${d.cancel_reason ? ` (${d.cancel_reason})` : ''}`;
+      return `"${d.product_name || ''}" → ${d.new_status ? getStatusLabel(d.new_status) : ''}${d.cancel_reason ? ` (${d.cancel_reason})` : ''}`;
     case 'CREATE_DOCUMENT':
       return `RFQ "${d.rfq_code || ''}" - khách "${d.customer_name || ''}"`;
     case 'VOID_DOCUMENT':
@@ -128,7 +128,6 @@ export const formatAuditDetails = (action: string, details: Record<string, any> 
     case 'CREATE_CASTING_GRADE':
       case 'UPDATE_CASTING_GRADE':
         return `"${d.name || ''}"`;
-      case 'ADD_MATERIAL_PRICE':
       case 'UPDATE_MATERIAL_PRICE':
       return `"${d.material_name || ''}" → ${Number(d.new_price || 0).toLocaleString('vi-VN')} đ`;
     case 'DELETE_MATERIAL_PRICE_HISTORY':

@@ -15,7 +15,6 @@ interface AuditLog {
   created_at: string;
   actor_email: string;
   action: string;
-  table_name: string;
   record_id?: string;
   details?: Record<string, any>;
 }
@@ -74,14 +73,6 @@ export const AuditLogPage = () => {
           {getActionLabel(log.action)}
         </span>
       ),
-    },
-    {
-      key: 'table_name',
-      header: 'Table',
-      sortable: true,
-      defaultHidden: true,
-      className: 'font-mono text-[11px] text-[#787774]',
-      render: (log) => log.table_name,
     },
     {
       key: 'details',
