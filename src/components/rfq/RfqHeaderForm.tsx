@@ -213,14 +213,13 @@ export const RfqHeaderForm = () => {
             2. Danh Sách {dossierItems.length} Mã Sản Phẩm Trong Hồ Sơ (Product Line Items)
           </h4>
 
-          <button
+          <ActionButton
             type="button"
             onClick={handleAddItemToDossier}
-            className="px-3 py-1 bg-[#111111] hover:bg-[#333333] text-white text-xs font-bold rounded-[6px] inline-flex items-center space-x-1 cursor-pointer shadow-xs"
-          >
-            <Plus className="w-3.5 h-3.5" />
-            <span>+ Thêm Mã Sản Phẩm</span>
-          </button>
+            variant="primary"
+            icon={Plus}
+            label="+ Thêm Mã Sản Phẩm"
+          />
         </div>
 
         <div className="space-y-3">
@@ -390,15 +389,14 @@ export const RfqHeaderForm = () => {
 
       {/* Footer Submit Action Button */}
       <div className="flex justify-end pt-2 border-t border-[#EAEAEA]">
-        <button
+        <ActionButton
           type="button"
           onClick={handleSaveDossierSubmit}
           disabled={isSubmittingDossier || !rfq.customer_name.trim()}
-          className="px-5 py-2 bg-[#111111] hover:bg-[#333333] active:scale-[0.98] text-white text-xs font-bold rounded-[6px] transition-all cursor-pointer inline-flex items-center space-x-1.5 shadow-sm disabled:opacity-40"
-        >
-          <Check className="w-4 h-4" />
-          <span>{isSubmittingDossier ? 'Đang Khởi Tạo Hồ Sơ...' : `Khởi Tạo Hồ Sơ RFQ (${dossierItems.length} Sản Phẩm)`}</span>
-        </button>
+          variant="primary"
+          icon={Check}
+          label={isSubmittingDossier ? 'Đang Khởi Tạo Hồ Sơ...' : `Khởi Tạo Hồ Sơ RFQ (${dossierItems.length} Sản Phẩm)`}
+        />
       </div>
     </div>
   );

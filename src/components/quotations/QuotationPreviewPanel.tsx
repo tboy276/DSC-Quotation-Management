@@ -412,15 +412,14 @@ export const QuotationPreviewPanel: React.FC<QuotationPreviewPanelProps> = ({
             <div />
           )}
 
-          <button
-            type="button"
-            disabled={isSubmitting || !docFields.contact_person.trim() || !docFields.quotation_date}
-            onClick={() => onSaveAndSend(config, docFields)}
-            className="px-4 py-2 bg-[#111111] hover:bg-[#333333] active:scale-[0.98] text-white font-bold rounded-[8px] transition-all flex items-center space-x-1.5 cursor-pointer disabled:opacity-50 text-xs"
-          >
-            <Check className="w-4 h-4 text-emerald-400" />
-            <span>{isSubmitting ? 'Đang Phát Hành...' : 'Xác Nhận & Gửi Báo Giá'}</span>
-          </button>
+            <ActionButton
+              type="button"
+              disabled={isSubmitting || !docFields.contact_person.trim() || !docFields.quotation_date}
+              onClick={() => onSaveAndSend(config, docFields)}
+              variant="primary"
+              icon={<Check className="text-emerald-400 stroke-[2.5]" />}
+              label={isSubmitting ? 'Đang Phát Hành...' : 'Xác Nhận & Gửi Báo Giá'}
+            />
         </div>
       </div>
       )}
@@ -441,7 +440,7 @@ export const QuotationPreviewPanel: React.FC<QuotationPreviewPanelProps> = ({
                   <ActionButton
                     disabled={isExportingPdf}
                     onClick={handleDownloadPDF}
-                    variant="export"
+                    variant="neutral"
                     icon={Download}
                     label={isExportingPdf ? 'Đang Tạo File PDF...' : 'Tải File PDF Trực Tiếp'}
                   />

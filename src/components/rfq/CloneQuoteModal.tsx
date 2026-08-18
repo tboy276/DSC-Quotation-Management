@@ -134,12 +134,13 @@ export const CloneQuoteModal = ({ segment, onClose, onSelectQuote }: CloneQuoteM
                       <span>Trọng lượng: <strong className="text-[#111111] font-mono">{inputs.finished_weight_kg || inputs.casting_weight_kg || 0} kg</strong></span>
                     </div>
 
-                    <button
-                      type="button"
-                      className="px-2.5 py-1 bg-[#111111] text-white text-[10px] font-bold rounded group-hover:bg-[#333333] cursor-pointer"
-                    >
-                      Chọn Nạp →
-                    </button>
+                    <ActionButton
+                      variant="primary"
+                      size="sm"
+                      icon={ArrowRight}
+                      iconPosition="right"
+                      label="Chọn Nạp"
+                    />
                   </div>
                 </div>
               );

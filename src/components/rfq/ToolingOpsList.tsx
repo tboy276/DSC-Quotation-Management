@@ -83,14 +83,13 @@ export const ToolingOpsList = ({
             1. Danh sách các chi tiết / thành phần bộ {isForging ? 'khuôn' : 'mẫu'}
           </h4>
           
-          <button
+          <ActionButton
             type="button"
             onClick={handleAddDefaultComp}
-            className="flex items-center space-x-1.5 px-3 py-1.5 bg-[#111111] hover:bg-[#333333] active:scale-[0.98] text-white text-xs font-bold rounded-[4px] transition-all cursor-pointer shadow-xs"
-          >
-            <Plus className="w-3.5 h-3.5" />
-            <span>Thêm chi tiết {isForging ? 'khuôn' : 'mẫu'}</span>
-          </button>
+            variant="primary"
+            icon={Plus}
+            label={`Thêm chi tiết ${isForging ? 'khuôn' : 'mẫu'}`}
+          />
         </div>
 
         {/* List items */}

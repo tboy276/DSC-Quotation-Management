@@ -299,14 +299,13 @@ export const MachiningOpsList = ({
       title={sawingOpProps ? "SECTION 3: QUY TRÌNH CẮT PHÔI & GIA CÔNG CƠ KHÍ" : "SECTION 3: GIA CÔNG CƠ KHÍ (CNC OPS)"}
       mainBlockTitle="Danh Sách Các Nguyên Công"
       mainBlockHeaderRight={
-        <button
+        <ActionButton
           type="button"
           onClick={handleAddDefaultOp}
-          className="flex items-center space-x-1.5 px-3 py-1.5 bg-[#111111] hover:bg-[#333333] active:scale-[0.98] text-white text-xs font-bold rounded-[4px] transition-all cursor-pointer shadow-sm"
-        >
-          <Plus className="w-4 h-4" />
-          <span>Thêm nguyên công</span>
-        </button>
+          variant="primary"
+          icon={Plus}
+          label="Thêm nguyên công"
+        />
       }
       mainRightContent={rightContent}
       footerTitle={sawingOpProps ? "TỔNG CHI PHÍ QUY TRÌNH CẮT & GIA CÔNG" : "TỔNG CHI PHÍ GIA CÔNG (PHẦN C)"}

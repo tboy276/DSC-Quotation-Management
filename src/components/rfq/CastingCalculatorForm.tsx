@@ -218,14 +218,14 @@ export const CastingCalculatorForm = () => {
         title="SECTION 1: VẬT LIỆU KIM LOẠI LỎNG & TẠO KHUÔN (PHẦN A)"
         mainBlockTitle="Nhập Liệu Vật Tư & Khuôn Mẻ 1,000kg"
         mainBlockHeaderRight={
-          <button
+          <ActionButton
             type="button"
             onClick={() => setShowRecipeModal(true)}
-            className="px-3 py-1.5 bg-[#111111] hover:bg-[#333333] active:scale-[0.98] text-white rounded-[4px] text-xs font-bold inline-flex items-center space-x-1.5 cursor-pointer shadow-xs transition-colors"
-          >
-            <Eye className="w-3.5 h-3.5" />
-            <span>3 Vật Tư Khuôn</span>
-          </button>
+            variant="primary"
+            icon={Eye}
+            size="sm"
+            label={`${moldMaterials.length} Vật Tư Khuôn`}
+          />
         }
         mainLeftContent={section1Left}
         mainRightContent={section1Right}

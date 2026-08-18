@@ -1,21 +1,27 @@
 import React from 'react';
+import { Tooltip } from './Tooltip';
 
-export interface ActionButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant: 'neutral' | 'positive' | 'danger' | 'primary' | 'export';
+export interface ActionButtonProps extends Omit<React.ButtonHTMLAttributes<HTMLButtonElement>, 'title'> {
+  variant: 'neutral' | 'positive' | 'danger' | 'primary';
+  size?: 'sm' | 'md';
   icon?: React.ElementType | React.ReactElement | React.ReactNode | any;
   iconPosition?: 'left' | 'right';
   label?: string;
   disabledReason?: string;
+  title?: string;
+  group?: 'crud' | 'business';
 }
 
 export const ActionButton: React.FC<ActionButtonProps> = ({
   variant,
+  size = 'md',
   icon,
   iconPosition = 'left',
   label,
   disabledReason,
   className = '',
   title,
+  group,
   ...props
 }) => {
   let baseClasses =
@@ -34,9 +40,6 @@ export const ActionButton: React.FC<ActionButtonProps> = ({
     case 'primary':
       baseClasses += ' bg-[#111111] hover:bg-[#333333] text-white shadow-xs';
       break;
-    case 'export':
-      baseClasses += ' bg-blue-600 hover:bg-blue-700 text-white shadow-sm';
-      break;
   }
 
   // If label is present, we need horizontal padding
@@ -45,20 +48,24 @@ export const ActionButton: React.FC<ActionButtonProps> = ({
   }
 
   const finalTitle = props.disabled && disabledReason ? disabledReason : title;
+  const useTooltip = !label && finalTitle;
+
+  const iconClasses = size === 'sm' ? 'w-3.5 h-3.5 stroke-[2]' : 'w-4 h-4 stroke-[2]';
 
   const renderedIcon = icon ? (
     React.isValidElement(icon) ? (
-      icon
+      React.cloneElement(icon as React.ReactElement, {
+        className: `${(icon as any).props?.className || ''} ${iconClasses}`.trim()
+      } as any)
     ) : (
       React.createElement(icon as React.ElementType, {
-        className: 'w-4 h-4 stroke-[2]',
+        className: iconClasses,
       })
     )
   ) : null;
 
-  return (
+  const buttonElement = (
     <button
-      title={finalTitle}
       className={`${baseClasses} ${className}`}
       {...props}
     >
@@ -67,4 +74,15 @@ export const ActionButton: React.FC<ActionButtonProps> = ({
       {iconPosition === 'right' && renderedIcon}
     </button>
   );
+
+  if (useTooltip) {
+    return <Tooltip content={finalTitle}>{buttonElement}</Tooltip>;
+  }
+
+  // Still use standard title if there's a label but we want to show extra info
+  if (finalTitle && label) {
+    return React.cloneElement(buttonElement, { title: finalTitle } as any);
+  }
+
+  return buttonElement;
 };
