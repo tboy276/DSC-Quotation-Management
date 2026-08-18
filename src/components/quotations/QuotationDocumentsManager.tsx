@@ -184,7 +184,7 @@ export const QuotationDocumentsManager = () => {
       key: 'reprice',
       label: 'Cập Nhật Báo Giá',
       icon: <RefreshCw className={`w-3.5 h-3.5 ${isRepricing ? 'animate-spin' : ''}`} />,
-      variant: 'secondary',
+      variant: 'neutral',
       enabled: (count, selectedRows) => {
         if (count !== 1) return false;
         const doc = selectedRows[0];

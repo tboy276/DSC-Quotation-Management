@@ -242,7 +242,7 @@ export const CastingBomManager = ({ isAdmin }: CastingBomManagerProps) => {
       key: 'toggle_scrap',
       label: 'Sửa Cờ Hồi Liệu',
       icon: <RotateCcw className="w-3.5 h-3.5 text-amber-600" />,
-      variant: 'secondary',
+      variant: 'neutral',
       enabled: (count) => isAdmin && count === 1,
       onClick: (selectedRows) => handleToggleReturnScrap(selectedRows[0]),
     },

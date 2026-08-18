@@ -20,7 +20,7 @@ export interface DataTableAction<T> {
   tooltip?: string;
   onClick: (selectedRows: T[]) => void;
   enabled: (selectedCount: number, selectedRows: T[]) => boolean;
-  variant?: 'primary' | 'secondary' | 'danger' | 'success';
+  variant?: 'primary' | 'neutral' | 'danger' | 'positive';
 }
 
 interface DataTableProps<T> {
@@ -190,11 +190,7 @@ export function DataTable<T>({
             <div className="flex flex-wrap items-center gap-1.5">
               {toolbarActions.map((action) => {
                 const isEnabled = action.enabled(selectedCount, selectedRows);
-
-                let variant: 'primary' | 'neutral' | 'danger' | 'positive' = 'primary';
-                if (action.variant === 'secondary') variant = 'neutral';
-                if (action.variant === 'danger') variant = 'danger';
-                if (action.variant === 'success') variant = 'positive';
+                const variant = action.variant || 'primary';
 
                 return (
                   <ActionButton

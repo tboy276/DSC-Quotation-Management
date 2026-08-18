@@ -33,7 +33,7 @@ import { parseStructuredRfqText } from '../../utils/rfq-parser';
 import { getTechFamily } from '../../utils/tech-family';
 import { formatDate } from '../../lib/format-date';
 import {
-  FileSpreadsheet,
+  FileSpreadsheet, MoreHorizontal,
   Search,
   Eye,
   CheckCircle,
@@ -50,7 +50,7 @@ import {
   ArrowDown,
   RefreshCw,
   Filter,
-  Columns,
+  
   Clipboard,
   Clock,
   FileText,
@@ -58,7 +58,7 @@ import {
   Inbox,
   SlidersHorizontal,
   Send,
-  Pencil,
+  Edit2,
 } from 'lucide-react';
 import { canManageRecord } from '../../lib/permission-utils';
 
@@ -1145,7 +1145,8 @@ export const QuotationsManager = () => {
         )}
 
         {/* Right Side: CONTEXTUAL STAGE ACTION BUTTONS */}
-        <div className="flex items-center space-x-1.5">
+          <div className="flex items-center space-x-1.5">
+            <div className="h-4 w-px bg-[#EAEAEA] mx-1" />
 
           {/* CỤM NÚT ĐỘNG: CHỈ HIỆN KHI CÓ ÍT NHẤT 1 DÒNG ĐƯỢC CHỌN */}
           {selectedQuoteIds.length > 0 && (
@@ -1168,7 +1169,7 @@ export const QuotationsManager = () => {
                 <>
                   <ActionButton
                     variant="neutral"
-                    icon={Pencil}
+                    icon={Edit2}
                     disabled={selectedQuoteIds.length !== 1 || !canManageQuote(selectedSingleQuote)}
                     onClick={() => {
                       if (selectedSingleQuote) handleOpenEditModal(selectedSingleQuote);
@@ -1275,33 +1276,34 @@ export const QuotationsManager = () => {
           )}
 
 
-          {/* Global Action 3: Export Excel */}
-          <ActionButton
-            variant="neutral"
-            icon={FileSpreadsheet}
-            onClick={handleExportExcel}
-            title="Xuất Excel danh sách RFQ theo bộ lọc"
-            className="text-emerald-600"
-          />
-
-          {/* Column Visibility Menu */}
-          <div className="relative">
-            <ActionButton
-              variant="neutral"
-              icon={Columns}
-              onClick={() => setShowColMenu(!showColMenu)}
-              title="Cấu hình ẩn/hiện cột bảng"
-            />
+          {/* More Actions Menu */}
+            <div className="relative">
+              <ActionButton
+                variant="neutral"
+                icon={MoreHorizontal}
+                onClick={() => setShowColMenu(!showColMenu)}
+                title="Khác (Export, Cấu hình cột)"
+              />
 
             {showColMenu && (
               <div className="absolute right-0 mt-2 w-64 bg-white rounded-[10px] border border-[#EAEAEA] shadow-xl p-3 z-50 text-xs text-[#111111] space-y-2 animate-fade-in-up">
                 <div className="flex items-center justify-between border-b border-[#EAEAEA] pb-2 font-bold">
-                  <span>Ẩn/Hiện Cột Bảng</span>
-                  <X
-                    className="w-4 h-4 cursor-pointer text-[#787774] hover:text-[#111111]"
-                    onClick={() => setShowColMenu(false)}
-                  />
-                </div>
+                    <span>Thao tác bảng</span>
+                    <X
+                      className="w-4 h-4 cursor-pointer text-[#787774] hover:text-[#111111]"
+                      onClick={() => setShowColMenu(false)}
+                    />
+                  </div>
+                  <div className="border-b border-[#EAEAEA] pb-2 mb-2">
+                    <ActionButton
+                      variant="neutral"
+                      icon={FileSpreadsheet}
+                      onClick={handleExportExcel}
+                      label="Xuất Excel danh sách RFQ"
+                      className="w-full justify-start text-emerald-600 border-none hover:bg-[#F5F5F5]"
+                    />
+                  </div>
+                  <div className="text-[10px] font-bold text-[#787774] uppercase mb-2">Ẩn/Hiện Cột</div>
                 <div className="max-h-60 overflow-y-auto space-y-1 pr-1">
                   {ALL_ITEM_COLUMNS.map((col) => (
                     <label
