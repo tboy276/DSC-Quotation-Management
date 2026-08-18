@@ -470,6 +470,7 @@ export const createRfqDossierWithItems = async (
     localItemsCache.unshift(...createdDossier.items);
   }
 
+  await logAudit('CREATE_RFQ', 'rfqs', dbDossier.id, { customer_name: dossier.customer_name, item_count: items.length });
   return createdDossier;
 };
 
@@ -609,6 +610,7 @@ export const saveQuoteDraft = async (
     dbQuote = data;
   }
 
+  await logAudit('SAVE_QUOTE_DRAFT', 'quotes', dbQuote.id, { product_name: rfqItem.product_name });
   await fetchQuotes();
   return dbQuote as QuoteRecord;
 };
@@ -650,6 +652,7 @@ export const sendQuote = async (
     .update({ status: 'QUOTED_SENT' })
     .eq('id', record.id);
 
+  await logAudit('SEND_QUOTE', 'quotes', record.id, { product_name: rfqItem.product_name });
   await fetchQuotes();
   return record;
 };
@@ -742,6 +745,8 @@ export const updateQuoteStatus = async (
     await supabase.from('rfq_items').update(timestampPayload).eq('id', targetItemId);
   }
 
+  const { data: itemData } = await supabase.from('rfq_items').select('product_name').eq('id', targetItemId).single();
+  await logAudit('UPDATE_QUOTE_STATUS', 'quotes', targetItemId, { product_name: itemData?.product_name || targetItem?.product_name || targetItemId, new_status: itemStatus, cancel_reason: cancelReason });
   await fetchQuotes();
 };
 
@@ -763,9 +768,11 @@ export const updateRfqItemDetails = async (
     .update(details)
     .eq('id', itemId);
 
+  const { data: oldItem } = await supabase.from('rfq_items').select('product_name').eq('id', itemId).single();
   if (error) {
     throw new Error(`Lỗi cập nhật thông tin sản phẩm RFQ: ${error.message}`);
   }
+  await logAudit('UPDATE_RFQ_ITEM', 'rfq_items', itemId, { product_name: details.product_name || oldItem?.product_name || 'N/A' });
 };
 
 /**
@@ -802,6 +809,7 @@ export const cancelRfqImmediately = async (
 
   const createdItem = dossier.items![0];
   const list = await fetchQuotes();
+  await logAudit('CREATE_RFQ_INFEASIBLE', 'rfqs', dossier.id, { product_name: rfqHeader.product_name, customer_name: rfqHeader.customer_name, cancel_reason: cancelReason });
   return list.find((q) => q.rfq_item_id === createdItem.id)!;
 };
 
@@ -819,6 +827,7 @@ export const deleteRfqItems = async (itemIds: string[]): Promise<void> => {
     throw new Error(`Lỗi xóa mã sản phẩm RFQ trên Supabase: ${error.message}`);
   }
 
+  await logAudit('DELETE_RFQ', 'rfq_items', undefined, { count: itemIds.length });
   await fetchQuotes();
 };
 
@@ -835,6 +844,7 @@ export const deleteRfqDossier = async (dossierId: string): Promise<void> => {
  * Strictly executes DELETE queries on Supabase DB tables in Foreign Key order
  */
 export const resetSystemData = async (): Promise<void> => {
+  await logAudit('RESET_SYSTEM_DATA', 'rfqs');
   localStorage.removeItem('rfq_flat_table_hidden_cols');
   localStorage.removeItem('rfq_items_hidden_cols');
 

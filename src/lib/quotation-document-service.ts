@@ -199,6 +199,7 @@ export const updateDocumentDisplayConfig = async (
   documentId: string,
   displayConfig: NonNullable<QuotationDocument['display_config']>
 ): Promise<void> => {
+  const { data: docData } = await supabase.from('quotation_documents').select('document_code').eq('id', documentId).single();
   const { error } = await supabase
     .from('quotation_documents')
     .update({ display_config: displayConfig })
@@ -208,7 +209,7 @@ export const updateDocumentDisplayConfig = async (
     throw new Error(`Lỗi cập nhật cấu hình hiển thị Supabase: ${error.message}`);
   }
 
-  await logAudit('UPDATE_DOCUMENT_CONFIG', 'quotation_documents', documentId, { document_id: documentId });
+  await logAudit('UPDATE_DOCUMENT_CONFIG', 'quotation_documents', documentId, { document_code: docData?.document_code || documentId });
   await fetchQuotationDocuments();
 };
 
