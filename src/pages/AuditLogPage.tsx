@@ -23,8 +23,8 @@ export const AuditLogPage = () => {
   const [logs, setLogs] = useState<AuditLog[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const defaultToDate = new Date().toISOString().split('T')[0];
-  const defaultFromDate = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+  const defaultToDate = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Ho_Chi_Minh' });
+  const defaultFromDate = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toLocaleDateString('en-CA', { timeZone: 'Asia/Ho_Chi_Minh' });
   const [fromDate, setFromDate] = useState(defaultFromDate);
   const [toDate, setToDate] = useState(defaultToDate);
   const [searchTerm, setSearchTerm] = useState('');
@@ -39,8 +39,8 @@ export const AuditLogPage = () => {
       const { data, error } = await supabase
         .from('audit_log')
         .select('*')
-        .gte('created_at', fromDate)
-        .lte('created_at', toDate + 'T23:59:59')
+        .gte('created_at', `${fromDate}T00:00:00+07:00`)
+        .lte('created_at', `${toDate}T23:59:59+07:00`)
         .order('created_at', { ascending: false })
         .limit(1000);
 
