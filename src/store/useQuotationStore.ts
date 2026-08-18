@@ -1,3 +1,4 @@
+import { isSteelCategory } from '../utils/material-categories';
 import { create } from 'zustand';
 import type { ForgingInput, CastingInput, SawingInput, MachiningInput, MachiningOperation } from '../lib/calculation-engine/types';
 import type { CurrencyType, QuoteRecord } from '../types/quote';
@@ -122,7 +123,7 @@ export interface QuotationStoreState {
 }
 
 // Initial Forging Defaults
-const defaultForgingMaterial = INITIAL_MATERIALS.find((m) => m.category === 'Thép cán - Rèn') || INITIAL_MATERIALS[5];
+const defaultForgingMaterial = INITIAL_MATERIALS.find((m) => isSteelCategory(m.category)) || INITIAL_MATERIALS[5];
 const defaultPressRate = INITIAL_PRESSING_RATES[0]; // 1000T
 const defaultSawingRate = INITIAL_SYSTEM_RATES.find((r) => r.rate_key === 'sawing_machine')?.value || 120000;
 const defaultElecRate = INITIAL_MATERIALS.find((m) => m.name === 'Điện năng')?.latest_price || 2200;
@@ -320,13 +321,13 @@ export const useQuotationStore = create<QuotationStoreState>((set, get) => ({
       const { materials, pressingRates, systemRates } = state;
 
       // Forging defaults
-        const fMat = materials.find((m) => m.id === state.forgingInput.selected_material_id) || materials.find((m) => m.category === 'Thép cán - Rèn') || materials[0];
+        const fMat = materials.find((m) => m.id === state.forgingInput.selected_material_id) || materials.find((m) => isSteelCategory(m.category)) || materials[0];
         const fPress = pressingRates.find((r) => r.tonnage_min === 1000) || pressingRates[0];
         const fSaw = systemRates.find((r) => r.rate_key === 'sawing_machine');
         const fElec = materials.find((m) => m.name === 'Điện năng');
 
         // Sawing defaults
-        const sMat = materials.find((m) => m.id === state.sawingInput.selected_material_id) || materials.find((m) => m.category === 'Thép cán - Rèn') || materials[0];
+        const sMat = materials.find((m) => m.id === state.sawingInput.selected_material_id) || materials.find((m) => isSteelCategory(m.category)) || materials[0];
         const sSaw = systemRates.find((r) => r.rate_key === 'sawing_machine');
 
         set({

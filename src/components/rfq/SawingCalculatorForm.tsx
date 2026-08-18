@@ -1,3 +1,4 @@
+import { isSteelCategory } from '../../utils/material-categories';
 import { useQuotationStore } from '../../store/useQuotationStore';
 import { MachiningOpsList } from './MachiningOpsList';
 import { Section5SummaryCard } from './Section5SummaryCard';
@@ -20,7 +21,7 @@ export default function SawingCalculatorForm() {
 
   const activeMaterials = materials.length > 0 ? materials : INITIAL_MATERIALS;
   const steelMaterials = activeMaterials.filter(
-    (m) => m.category === 'Thép cán - Rèn'
+    (m) => isSteelCategory(m.category)
   );
 
   const res = getSawingResult();

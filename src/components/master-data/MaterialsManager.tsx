@@ -1,3 +1,4 @@
+import { ALL_MATERIAL_CATEGORIES, isSteelCategory } from '../../utils/material-categories';
 import { useState, useEffect } from 'react';
 import type { Material, MaterialPriceHistory } from '../../types/master-data';
 import {
@@ -38,12 +39,58 @@ export const MaterialsManager = ({ isAdmin, isSales = false }: MaterialsManagerP
   const [selectedMaterialForPrice, setSelectedMaterialForPrice] = useState<Material | null>(null);
 
   const [showHistoryModal, setShowHistoryModal] = useState(false);
+  const [showImportModal, setShowImportModal] = useState(false);
+  const [importText, setImportText] = useState('');
+  const [importing, setImporting] = useState(false);
+
+  const handleImportSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!importText.trim()) return;
+    setImporting(true);
+    try {
+      const rows = importText.trim().split('\n');
+      for (const row of rows) {
+        // Expected format: STT, Nhóm VT, Tên VT, Ghi chú, ĐVT, Đơn giá 2025, Đơn giá 2026
+        const cols = row.split('\t');
+        if (cols.length >= 6) {
+          const cat = cols[1]?.trim();
+          const name = cols[2]?.trim();
+          const notes = cols[3]?.trim();
+          const unit = cols[4]?.trim();
+          const price25Str = cols[5]?.replace(/\./g, '').trim();
+          const price26Str = cols[6]?.replace(/\./g, '').trim();
+          
+          if (!name || name === 'Tên VT') continue; // Skip header
+
+          const price = parseInt(price26Str || price25Str || '0', 10);
+          
+          const newMat = await saveMaterial({
+            name,
+            category: cat,
+            notes,
+            unit: unit || 'kg',
+          });
+          
+          if (price > 0 && newMat.id) {
+            await addMaterialPrice(newMat.id, price, new Date().toISOString().split('T')[0]);
+          }
+        }
+      }
+      setShowImportModal(false);
+      setImportText('');
+      loadData();
+    } catch (err: any) {
+      alert('Lỗi nhập: ' + err.message);
+    }
+    setImporting(false);
+  };
+
   const [historyMaterial, setHistoryMaterial] = useState<Material | null>(null);
   const [historyList, setHistoryList] = useState<MaterialPriceHistory[]>([]);
 
   // Form Fields State
   const [matName, setMatName] = useState('');
-  const [matCategory, setMatCategory] = useState('Thép cán - Rèn');
+  const [matCategory, setMatCategory] = useState('VT đúc (chính)');
   const [matUnit, setMatUnit] = useState('kg');
   const [matNotes, setMatNotes] = useState('');
 
@@ -88,7 +135,7 @@ export const MaterialsManager = ({ isAdmin, isSales = false }: MaterialsManagerP
     } else {
       setEditingMaterial(null);
       setMatName('');
-      setMatCategory('Thép cán - Rèn');
+      setMatCategory('VT đúc (chính)');
       setMatUnit('kg');
       setMatNotes('');
     }
@@ -173,7 +220,7 @@ export const MaterialsManager = ({ isAdmin, isSales = false }: MaterialsManagerP
     e.preventDefault();
     if (!selectedMaterialForPrice) return;
 
-    const isForgingSteel = selectedMaterialForPrice.category === 'Thép cán - Rèn';
+    const isForgingSteel = isSteelCategory(selectedMaterialForPrice.category);
 
     await addMaterialPrice(
       selectedMaterialForPrice.id,
@@ -257,7 +304,7 @@ export const MaterialsManager = ({ isAdmin, isSales = false }: MaterialsManagerP
       sortValue: (m) => m.scrap_price || 0,
       className: 'text-right font-mono text-[#787774]',
       render: (m) =>
-        m.category === 'Thép cán - Rèn' ? (
+        isSteelCategory(m.category) ? (
           m.scrap_price ? (
             m.scrap_price.toLocaleString('vi-VN')
           ) : (
@@ -351,11 +398,9 @@ export const MaterialsManager = ({ isAdmin, isSales = false }: MaterialsManagerP
             className="px-3 py-1.5 border border-[#EAEAEA] rounded-[6px] bg-white text-xs font-bold text-[#111111]"
           >
             <option value="ALL">Tất cả Nhóm</option>
-            <option value="Thép cán - Rèn">Thép cán - Rèn</option>
-            <option value="Gang thỏi">Gang thỏi</option>
-            <option value="Thép phế đúc">Thép phế đúc</option>
-            <option value="Hồi liệu">Hồi liệu</option>
-            <option value="Fe-Si">Fe-Si</option>
+            {ALL_MATERIAL_CATEGORIES.map(cat => (
+              <option key={cat} value={cat}>{cat}</option>
+            ))}
           </select>
         </div>
       </div>
@@ -420,11 +465,9 @@ export const MaterialsManager = ({ isAdmin, isSales = false }: MaterialsManagerP
               onChange={(e) => setMatCategory(e.target.value)}
               className="w-full px-3 py-1.5 border border-[#EAEAEA] rounded-[6px] bg-white text-xs font-bold text-[#111111]"
             >
-              <option value="Thép cán - Rèn">Thép cán - Rèn</option>
-              <option value="Gang thỏi">Gang thỏi</option>
-              <option value="Thép phế đúc">Thép phế đúc</option>
-              <option value="Hồi liệu">Hồi liệu</option>
-              <option value="Fe-Si">Fe-Si</option>
+              {ALL_MATERIAL_CATEGORIES.map(cat => (
+                  <option key={cat} value={cat}>{cat}</option>
+                ))}
             </select>
           </div>
 
@@ -495,10 +538,10 @@ export const MaterialsManager = ({ isAdmin, isSales = false }: MaterialsManagerP
           </div>
 
           {/* Special Field for Forging Steel Category: Scrap Price */}
-          {selectedMaterialForPrice?.category === 'Thép cán - Rèn' && (
+          {isSteelCategory(selectedMaterialForPrice?.category) && (
             <div className="p-3 bg-[#FBFBFA] border border-[#EAEAEA] rounded-[6px] space-y-1">
               <label className="block text-[10px] font-bold text-[#956400] uppercase">
-                Giá Phế Liệu Kèm Theo (VNĐ / {selectedMaterialForPrice.unit}) *
+                Giá Phế Liệu Kèm Theo (VNĐ / {selectedMaterialForPrice?.unit}) *
               </label>
               <input
                 type="number"
@@ -550,7 +593,7 @@ export const MaterialsManager = ({ isAdmin, isSales = false }: MaterialsManagerP
               <tr className="bg-[#FBFBFA] border-b border-[#EAEAEA] text-[10px] font-bold uppercase text-[#787774]">
                 <th className="p-2">Ngày Hiệu Lực</th>
                 <th className="p-2 text-right">Đơn Giá (VNĐ)</th>
-                {historyMaterial?.category === 'Thép cán - Rèn' && (
+                {isSteelCategory(historyMaterial?.category) && (
                   <th className="p-2 text-right">Giá Phế Kèm Theo (VNĐ)</th>
                 )}
                 <th className="p-2">Người Cập Nhật</th>
@@ -571,7 +614,7 @@ export const MaterialsManager = ({ isAdmin, isSales = false }: MaterialsManagerP
                     <td className="p-2 text-right font-mono font-extrabold text-[#111111]">
                       {h.price.toLocaleString('vi-VN')}
                     </td>
-                    {historyMaterial?.category === 'Thép cán - Rèn' && (
+                    {isSteelCategory(historyMaterial?.category) && (
                       <td className="p-2 text-right font-mono text-[#787774]">
                         {h.scrap_price ? h.scrap_price.toLocaleString('vi-VN') : '-'}
                       </td>
@@ -594,6 +637,39 @@ export const MaterialsManager = ({ isAdmin, isSales = false }: MaterialsManagerP
           </table>
         </div>
       </Modal>
+
+      <Modal
+        isOpen={showImportModal}
+        onClose={() => setShowImportModal(false)}
+        size="lg"
+        title="Nhập Hàng Loạt Từ Excel"
+        footer={
+          <>
+            <ActionButton variant="neutral" onClick={() => setShowImportModal(false)} label="Hủy" />
+            <ActionButton variant="primary" type="submit" form="import-form" label={importing ? 'Đang Xử Lý...' : 'Nhập Dữ Liệu'} disabled={importing} />
+          </>
+        }
+      >
+        <form id="import-form" onSubmit={handleImportSubmit} className="space-y-4">
+          <div className="bg-[#FBFBFA] p-3 rounded-[8px] border border-[#EAEAEA] text-xs text-[#787774] space-y-1">
+            <p className="font-bold text-[#111111]">Hướng dẫn:</p>
+            <p>1. Copy dữ liệu trực tiếp từ Excel (Bao gồm các cột: STT, Nhóm VT, Tên VT, Ghi chú, ĐVT, Đơn giá 2025, Đơn giá 2026).</p>
+            <p>2. Dán (Paste) vào ô bên dưới.</p>
+            <p className="italic text-amber-600 mt-1">Lưu ý: Hệ thống sẽ tự tạo vật tư và gán giá lịch sử tự động.</p>
+          </div>
+          <div>
+            <textarea
+              required
+              value={importText}
+              onChange={(e) => setImportText(e.target.value)}
+              className="w-full px-3 py-2 border border-[#EAEAEA] rounded-[6px] text-xs font-mono"
+              rows={10}
+              placeholder="Dán dữ liệu Excel (TSV) vào đây..."
+            />
+          </div>
+        </form>
+      </Modal>
+
     </div>
   );
 };

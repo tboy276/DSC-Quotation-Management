@@ -1,3 +1,4 @@
+import { isSteelCategory } from '../../utils/material-categories';
 import { useQuotationStore } from '../../store/useQuotationStore';
 import { MachiningOpsList } from './MachiningOpsList';
 import { ToolingOpsList } from './ToolingOpsList';
@@ -28,7 +29,7 @@ export const ForgingCalculatorForm = () => {
 
   const activeMaterials = materials.length > 0 ? materials : INITIAL_MATERIALS;
   const steelMaterials = activeMaterials.filter(
-    (m) => m.category === 'Thép cán - Rèn'
+    (m) => isSteelCategory(m.category)
   );
 
   const res = getForgingResult();
