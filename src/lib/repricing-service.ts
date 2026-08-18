@@ -3,6 +3,7 @@ import type { QuotationDocument } from '../types/quotation-document';
 import type { RfqDossier } from '../types/quote';
 import { createRfqDossierWithItems, updateQuoteStatus } from './quotation-service';
 import { formatDate } from './format-date';
+import { logAudit } from './audit-service';
 
 export const createRepricingRfqFromDocument = async (
   document: QuotationDocument,
@@ -151,5 +152,6 @@ export const createRepricingRfqFromDocument = async (
     created_at: new Date().toISOString(),
   };
 
+  await logAudit('REPRICE_DOCUMENT', 'quotation_documents', document.id, { document_code: document.document_code || document.id, customer_name: document.customer_name });
   return { newRfq, newItemIds: itemIds };
 };

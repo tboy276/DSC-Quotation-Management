@@ -1,4 +1,5 @@
 import { supabase } from './supabase';
+import { logAudit } from './audit-service';
 import type {
   QuoteRecord,
   RfqDossier,

@@ -144,12 +144,11 @@ export async function saveMaterial(mat: Partial<Material>): Promise<Material> {
   }
 }
 
-export async function deleteMaterials(ids: string[], names?: string[]): Promise<void> {
+export async function deleteMaterials(ids: string[]): Promise<void> {
   const { error } = await supabase.from('materials').delete().in('id', ids);
   if (error) {
     throw new Error(`Lỗi xóa vật tư Supabase: ${error.message}`);
   }
-  await logAudit('DELETE_MATERIAL', 'materials', undefined, { count: ids.length, names: names || [] });
   await fetchMaterials();
 }
 
@@ -202,12 +201,11 @@ export async function updatePriceHistoryItem(historyId: string, updates: Partial
   await fetchPriceHistory();
 }
 
-export async function deletePriceHistoryItem(historyId: string, materialName?: string): Promise<void> {
+export async function deletePriceHistoryItem(historyId: string): Promise<void> {
   const { error } = await supabase.from('material_price_history').delete().eq('id', historyId);
   if (error) {
     throw new Error(`Lỗi xóa lịch sử giá Supabase: ${error.message}`);
   }
-  await logAudit('DELETE_MATERIAL_PRICE_HISTORY', 'material_price_history', historyId, { material_name: materialName || 'N/A' });
   await fetchPriceHistory();
 }
 
@@ -270,9 +268,7 @@ export async function addBomItem(
   gradeId: string,
   materialId: string,
   weightKg: number,
-  isReturnScrap: boolean,
-  gradeName?: string,
-  materialName?: string
+  isReturnScrap: boolean
 ): Promise<CastingBomItem> {
   const { data, error } = await supabase
     .from('casting_bom_items')
@@ -289,30 +285,17 @@ export async function addBomItem(
     throw new Error(`Lỗi thêm BOM item Supabase: ${error.message}`);
   }
   const materials = await fetchMaterials();
-  const matName = materialName || materials.find((m) => m.id === materialId)?.name || 'N/A';
-  
-  await logAudit('CREATE_BOM', 'casting_bom_items', data.id, { 
-    material_name: matName, 
-    grade_name: gradeName || 'N/A' 
-  });
-  
   return { ...data, material: materials.find((m) => m.id === materialId) } as CastingBomItem;
 }
 
 export async function updateBomItem(
   itemId: string,
-  updates: Partial<CastingBomItem>,
-  gradeName?: string,
-  materialName?: string
+  updates: Partial<CastingBomItem>
 ): Promise<void> {
   const { error } = await supabase.from('casting_bom_items').update(updates).eq('id', itemId);
   if (error) {
     throw new Error(`Lỗi cập nhật BOM item Supabase: ${error.message}`);
   }
-  await logAudit('UPDATE_BOM', 'casting_bom_items', itemId, { 
-    material_name: materialName || 'N/A', 
-    grade_name: gradeName || 'N/A' 
-  });
 }
 
 export async function deleteBomItems(itemIds: string[], gradeName?: string): Promise<void> {
@@ -361,30 +344,27 @@ export async function fetchSystemUnitRates(): Promise<SystemUnitRate[]> {
   return localSystemRates;
 }
 
-export async function updatePressingRate(id: string, ratePerHour: number, label?: string): Promise<void> {
+export async function updatePressingRate(id: string, ratePerHour: number): Promise<void> {
   const { error } = await supabase.from('pressing_machine_rates').update({ rate_per_hour: ratePerHour }).eq('id', id);
   if (error) {
     throw new Error(`Lỗi cập nhật máy dập: ${error.message}`);
   }
-  await logAudit('UPDATE_PRESS_RATE', 'pressing_machine_rates', id, { label: label || 'Máy dập', rate_per_hour: ratePerHour });
   localPressingRates = localPressingRates.map((r) => (r.id === id ? { ...r, rate_per_hour: ratePerHour } : r));
 }
 
-export async function updateHammerRate(id: string, ratePerHour: number, label?: string): Promise<void> {
+export async function updateHammerRate(id: string, ratePerHour: number): Promise<void> {
   const { error } = await supabase.from('hydraulic_hammer_rates').update({ rate_per_hour: ratePerHour }).eq('id', id);
   if (error) {
     throw new Error(`Lỗi cập nhật máy búa: ${error.message}`);
   }
-  await logAudit('UPDATE_HAMMER_RATE', 'hydraulic_hammer_rates', id, { label: label || 'Máy búa', rate_per_hour: ratePerHour });
   localHammerRates = localHammerRates.map((r) => (r.id === id ? { ...r, rate_per_hour: ratePerHour } : r));
 }
 
-export async function updateSystemUnitRate(rateId: string, newValue: number, rateName?: string): Promise<void> {
+export async function updateSystemUnitRate(rateId: string, newValue: number): Promise<void> {
   const { error } = await supabase.from('system_unit_rates').update({ value: newValue, updated_at: new Date().toISOString() }).eq('id', rateId);
   if (error) {
     throw new Error(`Lỗi cập nhật đơn giá hệ thống: ${error.message}`);
   }
-  await logAudit('UPDATE_SYSTEM_RATE', 'system_unit_rates', rateId, { rate_name: rateName || 'Đơn giá', new_value: newValue });
   localSystemRates = localSystemRates.map((r) => (r.id === rateId ? { ...r, value: newValue, updated_at: new Date().toISOString() } : r));
 }
 
@@ -467,7 +447,6 @@ export async function saveCastingSettings(settings: Partial<CastingFactorySettin
   if (error) {
     throw new Error(`Lỗi lưu thiết lập đúc: ${error.message}`);
   }
-  await logAudit('UPDATE_CASTING_SETTINGS', 'casting_factory_settings', '1');
   localCastingSettings = { ...localCastingSettings, ...settings };
   return localCastingSettings;
 }
@@ -515,16 +494,14 @@ export async function saveMoldingRecipeItem(item: Partial<MoldingRecipeItem>): P
     localMoldingRecipe.push(newItem);
   }
 
-  await logAudit(item.id ? 'UPDATE_MOLDING_RECIPE' : 'CREATE_MOLDING_RECIPE', 'casting_molding_recipes', newItem.id, { material_name: newItem.material_name });
   return newItem;
 }
 
-export async function deleteMoldingRecipeItem(itemId: string, materialName?: string): Promise<void> {
+export async function deleteMoldingRecipeItem(itemId: string): Promise<void> {
   const { error } = await supabase.from('casting_molding_recipes').delete().eq('id', itemId);
   if (error) {
     throw new Error(`Lỗi xóa vật tư khuôn: ${error.message}`);
   }
-  await logAudit('DELETE_MOLDING_RECIPE', 'casting_molding_recipes', itemId, { material_name: materialName || 'N/A' });
   localMoldingRecipe = localMoldingRecipe.filter((r) => r.id !== itemId);
 }
 

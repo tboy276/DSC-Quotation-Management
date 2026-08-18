@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
+import { getActionLabel, formatAuditDetails } from '../lib/audit-service';
 import { DataTable, type DataTableColumn } from '../components/ui/DataTable';
 import { Shield } from 'lucide-react';
 
@@ -70,7 +71,7 @@ export const AuditLogPage = () => {
       className: 'font-mono text-[11px] text-[#111111]',
       render: (log) => (
         <span className="bg-slate-100 text-slate-800 px-2 py-0.5 rounded-[4px] border border-slate-200">
-          {log.action}
+          {getActionLabel(log.action)}
         </span>
       ),
     },
@@ -86,12 +87,7 @@ export const AuditLogPage = () => {
       header: 'Details',
       className: 'max-w-xs truncate text-[11px] font-mono text-[#787774]',
       render: (log) => {
-        if (!log.details && !log.record_id) return '-';
-        const info = {
-          ...(log.record_id ? { id: log.record_id } : {}),
-          ...(log.details || {}),
-        };
-        return JSON.stringify(info);
+        return formatAuditDetails(log.action, log.details || null);
       },
     },
   ];

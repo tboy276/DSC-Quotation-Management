@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import type { QuotationDocument, QuotationDocumentItem } from '../../types/quotation-document';
 import type { UnifiedRfqStatus } from '../../types/quote';
 import { updateDocumentItemsOrder, updateDocumentDisplayConfig, voidQuotationDocument } from '../../lib/quotation-document-service';
-import { logAudit } from '../../lib/audit-service';
+
 import { updateQuoteStatus } from '../../lib/quotation-service';
 import { exportDocumentToExcel } from '../../utils/excel-generator';
 import { QuoteStatusBadge } from '../rfq/QuoteStatusBadge';
@@ -108,7 +108,7 @@ export const DocumentDetailModal = ({
     }
     try {
       await voidQuotationDocument(document.id);
-      logAudit('VOID_DOCUMENT', 'quotation_documents', document.id, { document_code: document.document_code });
+
       toast.success('Thu hồi văn bản thành công!');
       onRefresh();
       onClose();
