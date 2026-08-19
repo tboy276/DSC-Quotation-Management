@@ -31,6 +31,7 @@ export interface CastingGrade {
   code?: string;
   notes?: string;
   created_at?: string;
+  return_scrap_material_id?: string | null;
 }
 
 export interface CastingBomItem {
@@ -38,6 +39,7 @@ export interface CastingBomItem {
   casting_grade_id: string;
   material_id: string;
   weight_kg: number; // Khối lượng dùng cho 1 mẻ 1000kg
+  /** @deprecated - Không còn dùng để tính DG_cast_scrap, chỉ giữ lại cho dữ liệu lịch sử */
   is_return_scrap: boolean; // Đánh dấu dòng Hồi liệu
   created_at?: string;
   material?: Material;
@@ -82,6 +84,7 @@ export interface LiquidMetalPriceResult {
   total_weight_kg: number; // Tổng kg trong BOM (nên bằng 1000)
   DG_liquid: number;       // Đơn giá trung bình nước gang lỏng (VNĐ/kg)
   DG_cast_scrap: number;   // Đơn giá hồi liệu gang phế (VNĐ/kg)
+  DG_cast_scrap_warning?: string; // Cảnh báo nếu chưa gán vật tư hồi liệu
   bom_items_calculated: Array<CastingBomItem & { item_cost: number; percentage: number }>;
 }
 

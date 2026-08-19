@@ -37,20 +37,20 @@ export const INITIAL_PRICE_HISTORY: MaterialPriceHistory[] = [
 ];
 
 export const INITIAL_CASTING_GRADES: CastingGrade[] = [
-  { id: '6ca47b3e-313e-442a-8b5b-f71e0e6e3688', name: 'FCD450-10', code: 'FCD450-10', notes: 'Mác gang cầu FCD 450-10 theo tiêu chuẩn DISOCO' },
-  { id: '1e630083-0215-4d58-ae7e-2dc1dbccc65b', name: 'FCD600-3', code: 'FCD600-3', notes: 'Mác gang cầu FCD 600-3 theo tiêu chuẩn DISOCO' },
-  { id: '890b6849-f35a-4412-b9cc-5740230d7e40', name: 'FCD700-2', code: 'FCD700-2', notes: 'Mác gang cầu FCD 700-2 theo tiêu chuẩn DISOCO' },
-  { id: 'fc200000-0000-4000-a000-000000000200', name: 'FC200 (Gang Xám)', code: 'FC200', notes: 'Mác gang xám FC200 theo tiêu chuẩn DISOCO (BOM 1000kg)' },
+  { id: '6ca47b3e-313e-442a-8b5b-f71e0e6e3688', return_scrap_material_id: 'mat-3', name: 'FCD450-10', code: 'FCD450-10', notes: 'Mác gang cầu FCD 450-10 theo tiêu chuẩn DISOCO' },
+  { id: '1e630083-0215-4d58-ae7e-2dc1dbccc65b', return_scrap_material_id: 'mat-3', name: 'FCD600-3', code: 'FCD600-3', notes: 'Mác gang cầu FCD 600-3 theo tiêu chuẩn DISOCO' },
+  { id: '890b6849-f35a-4412-b9cc-5740230d7e40', return_scrap_material_id: 'mat-3', name: 'FCD700-2', code: 'FCD700-2', notes: 'Mác gang cầu FCD 700-2 theo tiêu chuẩn DISOCO' },
+  { id: 'fc200000-0000-4000-a000-000000000200', return_scrap_material_id: 'mat-4', name: 'FC200 (Gang Xám)', code: 'FC200', notes: 'Mác gang xám FC200 theo tiêu chuẩn DISOCO (BOM 1000kg)' },
 ];
 
 export const INITIAL_BOM_ITEMS: CastingBomItem[] = [
   { id: 'bom-1', casting_grade_id: 'grade-1', material_id: 'mat-1', weight_kg: 350, is_return_scrap: false },
   { id: 'bom-2', casting_grade_id: 'grade-1', material_id: 'mat-2', weight_kg: 250, is_return_scrap: false },
-  { id: 'bom-3', casting_grade_id: 'grade-1', material_id: 'mat-3', weight_kg: 380, is_return_scrap: true },
+  { id: 'bom-3', casting_grade_id: 'grade-1', material_id: 'mat-3', weight_kg: 380, is_return_scrap: false },
   { id: 'bom-4', casting_grade_id: 'grade-1', material_id: 'mat-5', weight_kg: 20, is_return_scrap: false },
   { id: 'bom-5', casting_grade_id: 'grade-2', material_id: 'mat-1', weight_kg: 300, is_return_scrap: false },
   { id: 'bom-6', casting_grade_id: 'grade-2', material_id: 'mat-2', weight_kg: 280, is_return_scrap: false },
-  { id: 'bom-7', casting_grade_id: 'grade-2', material_id: 'mat-4', weight_kg: 400, is_return_scrap: true },
+  { id: 'bom-7', casting_grade_id: 'grade-2', material_id: 'mat-4', weight_kg: 400, is_return_scrap: false },
   { id: 'bom-8', casting_grade_id: 'grade-2', material_id: 'mat-5', weight_kg: 20, is_return_scrap: false },
 ];
 
@@ -230,7 +230,7 @@ export async function saveCastingGrade(grade: Partial<CastingGrade>): Promise<Ca
   if (grade.id) {
     const { data, error } = await supabase
       .from('casting_grades')
-      .update({ name: grade.name, code: grade.code, notes: grade.notes })
+      .update({ name: grade.name, code: grade.code, notes: grade.notes, return_scrap_material_id: grade.return_scrap_material_id })
       .eq('id', grade.id)
       .select()
       .single();
@@ -241,7 +241,7 @@ export async function saveCastingGrade(grade: Partial<CastingGrade>): Promise<Ca
   } else {
     const { data, error } = await supabase
       .from('casting_grades')
-      .insert({ name: grade.name || 'Mác gang mới', code: grade.code || '', notes: grade.notes || '' })
+      .insert({ name: grade.name || 'Mác gang mới', code: grade.code || '', notes: grade.notes || '', return_scrap_material_id: grade.return_scrap_material_id })
       .select()
       .single();
     if (error) throw new Error(`Lỗi thêm Mác gang Supabase: ${error.message}`);
@@ -446,12 +446,14 @@ let localMoldingRecipe: MoldingRecipeItem[] = [
 ];
 
 export async function fetchLiquidMetalPriceForGrade(gradeId: string) {
-  const [bomItems, materials, priceHistory] = await Promise.all([
+  const [bomItems, materials, priceHistory, grades] = await Promise.all([
     fetchCastingBomItems(gradeId),
     fetchMaterials(),
     fetchPriceHistory(),
+    fetchCastingGrades(),
   ]);
-  return calculateLiquidMetalPrice(gradeId, bomItems, priceHistory, materials);
+  const grade = grades.find(g => g.id === gradeId);
+  return calculateLiquidMetalPrice(grade, bomItems, priceHistory, materials);
 }
 
 export async function fetchCastingSettings(): Promise<CastingFactorySettings> {

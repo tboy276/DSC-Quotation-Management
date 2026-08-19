@@ -747,8 +747,9 @@ export const useQuotationStore = create<QuotationStoreState>((set, get) => ({
         },
       }));
     } catch (e) {
+      const fallbackGrade = INITIAL_CASTING_GRADES.find(g => g.id === gradeId);
       const fallbackResult = calculateLiquidMetalPrice(
-        gradeId,
+        fallbackGrade,
         INITIAL_BOM_ITEMS,
         INITIAL_PRICE_HISTORY,
         INITIAL_MATERIALS

@@ -17,7 +17,7 @@ import { DataTable, type DataTableColumn, type DataTableAction } from '../ui/Dat
 import { Modal } from '../ui/Modal';
 import { ActionButton } from '../ui/ActionButton';
 import { useConfirm } from '../../context/ConfirmDialogContext';
-import { Plus, Edit2, Trash2, Check, RotateCcw, AlertCircle } from 'lucide-react';
+import { Plus, Edit2, Trash2, Check, AlertCircle } from 'lucide-react';
 
 interface CastingBomManagerProps {
   isAdmin: boolean;
@@ -49,7 +49,7 @@ export const CastingBomManager = ({ isAdmin }: CastingBomManagerProps) => {
   // Form state
   const [addMaterialId, setAddMaterialId] = useState('');
   const [addWeightKg, setAddWeightKg] = useState<number>(100);
-  const [addIsReturnScrap, setAddIsReturnScrap] = useState(false);
+  
 
   const [editWeightKg, setEditWeightKg] = useState<number>(100);
 
@@ -150,7 +150,7 @@ export const CastingBomManager = ({ isAdmin }: CastingBomManagerProps) => {
     e.preventDefault();
     if (!selectedGradeId || !addMaterialId) return;
 
-    await addBomItem(selectedGradeId, addMaterialId, addWeightKg, addIsReturnScrap);
+    await addBomItem(selectedGradeId, addMaterialId, addWeightKg, false);
     setShowAddModal(false);
     loadBomItems(selectedGradeId);
   };
@@ -166,10 +166,7 @@ export const CastingBomManager = ({ isAdmin }: CastingBomManagerProps) => {
   };
 
   // Toggle Return Scrap Flag
-  const handleToggleReturnScrap = async (item: CastingBomItem) => {
-    await updateBomItem(item.id, { is_return_scrap: !item.is_return_scrap });
-    loadBomItems(selectedGradeId);
-  };
+  
 
   // Delete BOM Items
   const handleDeleteBomItems = async (selectedRows: CastingBomItem[]) => {
@@ -204,7 +201,7 @@ export const CastingBomManager = ({ isAdmin }: CastingBomManagerProps) => {
 
   // Calculation Engine Price Result for liquid metal
   const liquidPriceResult = calculateLiquidMetalPrice(
-    selectedGradeId,
+    currentGrade,
     bomItems,
     priceHistory,
     materials
@@ -269,22 +266,7 @@ export const CastingBomManager = ({ isAdmin }: CastingBomManagerProps) => {
         return cost.toLocaleString('vi-VN');
       },
     },
-    {
-      key: 'is_return_scrap',
-      header: 'Cờ Hồi Liệu',
-      sortable: true,
-      render: (item) => (
-        <span
-          className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold ${
-            item.is_return_scrap
-              ? 'bg-[#FBF3DB] text-[#956400] border border-[#F5E5B8]'
-              : 'bg-[#F0F0EE] text-[#787774]'
-          }`}
-        >
-          {item.is_return_scrap ? 'Hồi liệu đúc' : 'Vật liệu nấu'}
-        </span>
-      ),
-    },
+    
   ];
 
   // Toolbar Actions (NO ACTION BUTTONS INSIDE ROWS!)
@@ -310,14 +292,7 @@ export const CastingBomManager = ({ isAdmin }: CastingBomManagerProps) => {
       enabled: (count) => isAdmin && count === 1,
       onClick: (selectedRows) => handleOpenEditWeight(selectedRows[0]),
     },
-    {
-      key: 'toggle_scrap',
-      label: 'Sửa Cờ Hồi Liệu',
-      icon: <RotateCcw className="w-3.5 h-3.5 text-amber-600" />,
-      variant: 'neutral',
-      enabled: (count) => isAdmin && count === 1,
-      onClick: (selectedRows) => handleToggleReturnScrap(selectedRows[0]),
-    },
+    
     {
       key: 'delete',
         tooltip: 'Xoá Dòng BOM',
@@ -379,6 +354,50 @@ export const CastingBomManager = ({ isAdmin }: CastingBomManagerProps) => {
             </div>
           </div>
       </div>
+
+      
+      {/* Return Scrap Material Selector */}
+      {currentGrade && (
+        <div className="p-4 bg-white border border-[#EAEAEA] rounded-[10px] shadow-sm mb-4">
+          <label className="block text-[11px] font-bold text-[#111111] uppercase mb-2">
+            Vật tư hồi liệu áp dụng cho mác gang này
+          </label>
+          <div className="flex items-start gap-4">
+            <div className="flex-1 max-w-sm">
+              <select
+                value={currentGrade.return_scrap_material_id || ''}
+                disabled={!isAdmin}
+                onChange={async (e) => {
+                  const newId = e.target.value;
+                  await saveCastingGrade({ id: currentGrade.id, return_scrap_material_id: newId || null });
+                  loadBomItems(currentGrade.id);
+                }}
+                className="w-full px-3 py-2 border border-[#EAEAEA] rounded-[6px] bg-white text-xs font-bold text-[#111111]"
+              >
+                <option value="">-- Chọn vật tư hồi liệu --</option>
+                {materials
+                  .filter((m) => m.category === 'Hồi liệu')
+                  .map((m) => (
+                    <option key={m.id} value={m.id}>
+                      {m.name} — {m.latest_price?.toLocaleString('vi-VN')} đ/kg
+                    </option>
+                  ))}
+              </select>
+              <p className="text-[10px] text-[#787774] mt-1.5 italic">
+                * Để điều chỉnh đơn giá này, vào Master Data → Vật Tư → sửa giá vật tư hồi liệu tương ứng.
+              </p>
+            </div>
+            
+            {/* Cảnh báo nếu chưa gán */}
+            {liquidPriceResult?.DG_cast_scrap_warning && (
+              <div className="flex-1 p-3 rounded-[8px] bg-[#FFF8E6] border border-[#FDEBC8] text-[#956400] text-xs flex items-start gap-2">
+                <AlertCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
+                <span className="font-semibold">{liquidPriceResult.DG_cast_scrap_warning}</span>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Alert Banner 1000kg Check */}
       {!isValid1000kg && (
@@ -515,18 +534,7 @@ export const CastingBomManager = ({ isAdmin }: CastingBomManagerProps) => {
             />
           </div>
 
-          <div className="flex items-center space-x-2 pt-1">
-            <input
-              type="checkbox"
-              id="addReturnScrap"
-              checked={addIsReturnScrap}
-              onChange={(e) => setAddIsReturnScrap(e.target.checked)}
-              className="rounded accent-[#111111] cursor-pointer"
-            />
-            <label htmlFor="addReturnScrap" className="text-xs font-semibold text-[#111111] cursor-pointer">
-              Đánh dấu là Hồi liệu đúc (is_return_scrap)
-            </label>
-          </div>
+          
         </form>
       </Modal>
 

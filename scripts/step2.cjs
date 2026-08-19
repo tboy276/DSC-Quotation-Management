@@ -1,4 +1,5 @@
-import type {
+const fs = require('fs');
+let content = `import type {
   CastingGrade,
   CastingBomItem,
   MaterialPriceHistory,
@@ -67,7 +68,7 @@ export function calculateLiquidMetalPrice(
       : (scrapMaterialObj?.latest_price || 0);
       
     if (returnScrapPrice === 0) {
-      warning = `Vật tư hồi liệu (${scrapMaterialObj?.name || 'Không rõ'}) chưa có giá hiệu lực.`;
+      warning = \`Vật tư hồi liệu (\${scrapMaterialObj?.name || 'Không rõ'}) chưa có giá hiệu lực.\`;
     }
   } else if (gradeId) {
     warning = 'Chưa gán vật tư hồi liệu cho mác gang này. Đơn giá hồi liệu mặc định = 0.';
@@ -86,3 +87,7 @@ export function calculateLiquidMetalPrice(
     bom_items_calculated: bomItemsCalculated,
   };
 }
+`;
+
+fs.writeFileSync('src/lib/calculation-engine/liquid-metal-calculator.ts', content);
+console.log('Fixed liquid-metal-calculator.ts');
