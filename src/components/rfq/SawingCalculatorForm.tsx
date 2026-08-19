@@ -43,15 +43,15 @@ export default function SawingCalculatorForm() {
   const costScrapRecycle = (m_bavia_forging * (sawing.DG_scrap || 0)) + (m_bavia_cnc * (sawing.DG_scrap_cnc ?? sawing.DG_scrap ?? 0));
 
   const section1Left = (
-    <div className="space-y-0 text-xs">
+    <div className="space-y-3 text-xs">
       {/* 1. Mác Thép */}
-      <div className="flex items-center justify-between py-2 border-b border-[#EAEAEA]">
+      <div className="flex items-center justify-between gap-1">
         <label className="text-[10px] font-bold text-[#787774] uppercase tracking-wider">1. Mác Thép (Từ Master Data):</label>
         <select
           value={sawing.selected_material_id || ''}
           onChange={(e) => selectSawingMaterial(e.target.value)}
           disabled={isFetchingMasterData}
-          className="w-1/2 min-w-[200px] px-2.5 py-1.5 border border-[#EAEAEA] rounded-[4px] bg-white text-[#111111] font-bold text-right cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-48 px-2 py-1 border border-[#EAEAEA] rounded-[4px] bg-white text-[#111111] font-bold text-xs text-right cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {isFetchingMasterData ? (
             <option>Đang tải dữ liệu vật tư...</option>
@@ -66,19 +66,19 @@ export default function SawingCalculatorForm() {
       </div>
 
       {/* 2. Giá Thép */}
-      <div className="flex items-center justify-between py-2 border-b border-[#EAEAEA] bg-[#FBFBFA]">
+      <div className="flex items-center justify-between gap-1">
         <label className="text-[10px] font-bold text-[#787774] uppercase tracking-wider">2. Giá Thép (VNĐ/kg):</label>
         <input
           type="number"
           value={sawing.DG_steel}
           readOnly
-          className="w-1/2 min-w-[200px] px-2.5 py-1.5 border border-[#EAEAEA] rounded-[4px] font-mono font-bold text-[#787774] bg-[#F0F0EE] text-right cursor-not-allowed"
+          className="w-20 px-2 py-1 border border-[#EAEAEA] rounded-[4px] font-mono text-xs font-bold text-gray-500 bg-gray-100 text-right cursor-not-allowed"
           title="Tự động cập nhật theo Mác Thép"
         />
       </div>
 
       {/* 3. Phí Quản Lý Vật Tư */}
-      <div className="flex items-center justify-between py-2 border-b border-[#EAEAEA]">
+      <div className="flex items-center justify-between gap-1">
         <label className="text-[10px] font-bold text-[#787774] uppercase tracking-wider">3. Phí quản lý vật tư (%):</label>
         <input
           type="number"
@@ -86,36 +86,36 @@ export default function SawingCalculatorForm() {
           step="0.1"
           value={sawing.k_mgmt_mat || 0}
           onChange={(e) => setSawingField('k_mgmt_mat', Math.max(0, Number(e.target.value)))}
-          className="w-1/2 min-w-[200px] px-2.5 py-1.5 border border-[#EAEAEA] rounded-[4px] font-mono font-bold text-[#111111] text-right"
+          className="w-20 px-2 py-1 border border-[#EAEAEA] rounded-[4px] font-mono text-xs font-bold text-[#111111] text-right"
         />
       </div>
 
       {/* 4. Đường kính */}
-      <div className="flex items-center justify-between py-2 border-b border-[#EAEAEA]">
+      <div className="flex items-center justify-between gap-1">
         <label className="text-[10px] font-bold text-[#787774] uppercase tracking-wider">4. Đường kính thép (d - mm):</label>
         <input
           type="number"
           min="0"
           value={sawing.d_cut || ''}
           onChange={(e) => setSawingField('d_cut', Math.max(0, Number(e.target.value)))}
-          className="w-1/2 min-w-[200px] px-2.5 py-1.5 border border-[#EAEAEA] rounded-[4px] font-mono font-bold text-[#111111] text-right"
+          className="w-20 px-2 py-1 border border-[#EAEAEA] rounded-[4px] font-mono text-xs font-bold text-[#111111] text-right"
         />
       </div>
 
       {/* 5. Chiều dài */}
-      <div className="flex items-center justify-between py-2 border-b border-[#EAEAEA]">
+      <div className="flex items-center justify-between gap-1">
         <label className="text-[10px] font-bold text-[#787774] uppercase tracking-wider">5. Chiều dài cắt (L - mm):</label>
         <input
           type="number"
           min="0"
           value={sawing.l_cut || ''}
           onChange={(e) => setSawingField('l_cut', Math.max(0, Number(e.target.value)))}
-          className="w-1/2 min-w-[200px] px-2.5 py-1.5 border border-[#EAEAEA] rounded-[4px] font-mono font-bold text-[#111111] text-right"
+          className="w-20 px-2 py-1 border border-[#EAEAEA] rounded-[4px] font-mono text-xs font-bold text-[#111111] text-right"
         />
       </div>
 
       {/* 6. TL chi */}
-      <div className="flex items-center justify-between py-2 border-b border-[#EAEAEA]">
+      <div className="flex items-center justify-between gap-1">
         <div className="flex flex-col">
           <label className="text-[10px] font-bold text-[#787774] uppercase tracking-wider">6. Trọng lượng chi (m_chi - kg):</label>
           {refWeight > 0 && sawing.m_chi < refWeight && (
@@ -128,12 +128,12 @@ export default function SawingCalculatorForm() {
           step="0.0001"
           value={sawing.m_chi}
           onChange={(e) => setSawingField('m_chi', Math.max(0, Number(e.target.value)))}
-          className={`w-1/2 min-w-[200px] px-2.5 py-1.5 border rounded-[4px] font-mono font-bold text-right ${refWeight > 0 && sawing.m_chi < refWeight ? 'border-red-500 bg-red-50 text-red-700' : 'border-[#EAEAEA] bg-white text-[#111111]'}`}
+          className={`w-20 px-2 py-1 border rounded-[4px] font-mono text-xs font-bold text-right ${refWeight > 0 && sawing.m_chi < refWeight ? 'border-red-500 bg-red-50 text-red-700' : 'border-[#EAEAEA] bg-white text-[#111111]'}`}
         />
       </div>
 
       {/* 7. TL phôi */}
-      <div className="flex items-center justify-between py-2 border-b border-[#EAEAEA]">
+      <div className="flex items-center justify-between gap-1">
         <div className="flex flex-col">
           <label className="text-[10px] font-bold text-[#787774] uppercase tracking-wider">7. Trọng lượng phôi cắt (m_phoi - kg):</label>
           {sawing.m_chi > 0 && sawing.m_phoi > sawing.m_chi && (
@@ -146,12 +146,12 @@ export default function SawingCalculatorForm() {
           step="0.01"
           value={sawing.m_phoi}
           onChange={(e) => setSawingField('m_phoi', Math.max(0, Number(e.target.value)))}
-          className={`w-1/2 min-w-[200px] px-2.5 py-1.5 border rounded-[4px] font-mono font-bold text-right ${sawing.m_chi > 0 && sawing.m_phoi > sawing.m_chi ? 'border-red-500 bg-red-50 text-red-700' : 'border-[#EAEAEA] bg-white text-[#111111]'}`}
+          className={`w-20 px-2 py-1 border rounded-[4px] font-mono text-xs font-bold text-right ${sawing.m_chi > 0 && sawing.m_phoi > sawing.m_chi ? 'border-red-500 bg-red-50 text-red-700' : 'border-[#EAEAEA] bg-white text-[#111111]'}`}
         />
       </div>
 
       {/* 8. TL tinh + Checkbox */}
-      <div className="flex items-center justify-between py-2 border-b border-[#EAEAEA]">
+      <div className="flex items-center justify-between gap-1">
         <div className="flex items-center space-x-2">
           <div className="flex flex-col">
             <label className="text-[10px] font-bold text-[#787774] uppercase tracking-wider">8. TL tinh sau gia công (kg):</label>
@@ -176,12 +176,12 @@ export default function SawingCalculatorForm() {
           step="0.01"
           value={sawing.m_tinh || ''}
           onChange={(e) => setSawingField('m_tinh', Math.max(0, Number(e.target.value)))}
-          className={`w-1/2 min-w-[200px] px-2.5 py-1.5 border rounded-[4px] font-mono font-bold text-right ${sawing.m_phoi > 0 && (sawing.m_tinh || 0) > sawing.m_phoi ? 'border-red-500 bg-red-50 text-red-700' : sawing.use_m_tinh ? 'border-[#111111] bg-white text-[#111111]' : 'border-[#EAEAEA] bg-[#F0F0EE] text-[#787774]'}`}
+          className={`w-20 px-2 py-1 border rounded-[4px] font-mono text-xs font-bold text-right ${sawing.m_phoi > 0 && (sawing.m_tinh || 0) > sawing.m_phoi ? 'border-red-500 bg-red-50 text-red-700' : sawing.use_m_tinh ? 'border-[#111111] bg-white text-[#111111]' : 'border-[#EAEAEA] bg-[#F0F0EE] text-[#787774]'}`}
         />
       </div>
 
       {/* 9. % Cháy hao */}
-      <div className="flex items-center justify-between py-2 border-b border-[#EAEAEA]">
+      <div className="flex items-center justify-between gap-1">
         <label className="text-[10px] font-bold text-[#787774] uppercase tracking-wider">9. % Cháy hao (k_loss):</label>
         <input
           type="number"
@@ -189,25 +189,25 @@ export default function SawingCalculatorForm() {
           step="0.1"
           value={sawing.k_loss}
           onChange={(e) => setSawingField('k_loss', Math.max(0, Number(e.target.value)))}
-          className="w-1/2 min-w-[200px] px-2.5 py-1.5 border border-[#EAEAEA] rounded-[4px] font-mono font-bold text-[#111111] text-right"
+          className="w-20 px-2 py-1 border border-[#EAEAEA] rounded-[4px] font-mono text-xs font-bold text-[#111111] text-right"
         />
       </div>
 
-      {/* 10. Đơn giá thu hồi ba-via phoi cưa */}
-      <div className="flex items-center justify-between py-2 border-b border-[#EAEAEA]">
+      {/* 10. Đơn giá thu hồi phoi cưa */}
+      <div className="flex items-center justify-between gap-1">
         <label className="text-[10px] font-bold text-[#787774] uppercase tracking-wider">10. Đơn giá thu hồi phoi cưa (VNĐ/kg):</label>
         <input
           type="number"
           min="0"
           value={sawing.DG_scrap}
           onChange={(e) => setSawingField('DG_scrap', Math.max(0, Number(e.target.value)))}
-          className="w-1/2 min-w-[200px] px-2.5 py-1.5 border border-[#EAEAEA] rounded-[4px] font-mono font-bold text-[#111111] text-right"
+          className="w-20 px-2 py-1 border border-[#EAEAEA] rounded-[4px] font-mono text-xs font-bold text-[#111111] text-right"
         />
       </div>
 
       {/* 11. Đơn giá thu hồi phoi CNC (Nếu chọn TL tinh) */}
       {sawing.use_m_tinh && (
-        <div className="flex items-center justify-between py-2 border-b border-[#EAEAEA] bg-amber-50/40">
+        <div className="flex items-center justify-between gap-1 bg-amber-50/40 p-2 rounded">
           <label className="text-[10px] font-bold text-amber-900 uppercase tracking-wider">11. Đơn giá thu hồi phoi CNC (VNĐ/kg):</label>
           <input
             type="number"
@@ -215,7 +215,7 @@ export default function SawingCalculatorForm() {
             placeholder="Mặc định = ĐG phoi cưa"
             value={sawing.DG_scrap_cnc ?? ''}
             onChange={(e) => setSawingField('DG_scrap_cnc', e.target.value ? Math.max(0, Number(e.target.value)) : undefined)}
-            className="w-1/2 min-w-[200px] px-2.5 py-1.5 border border-amber-300 rounded-[4px] font-mono font-bold text-amber-950 bg-white text-right"
+            className="w-24 px-2 py-1 border border-amber-300 rounded-[4px] font-mono text-xs font-bold text-amber-950 bg-white text-right"
           />
         </div>
       )}
@@ -223,47 +223,49 @@ export default function SawingCalculatorForm() {
   );
 
   const section1Right = (
-    <div className="space-y-3.5 text-xs font-mono">
-      <div className="border-b border-[#EAEAEA] pb-2.5">
-        <div className="flex justify-between items-center">
-          <span className="font-bold text-[#111111] font-sans">1. Trọng lượng cắt lý thuyết:</span>
-          <span className="font-bold text-[#111111]">
-            {refWeight > 0 ? `${refWeight.toFixed(3)} kg` : '--- kg'}
-          </span>
+    <div className="space-y-1.5 text-xs font-mono">
+      <div className="flex justify-between items-center py-0.5 border-b border-[#EAEAEA]">
+        <div>
+          <div className="text-[11px] font-bold text-[#111111] font-sans">1. Trọng lượng cắt lý thuyết:</div>
+          <div className="text-[9px] font-mono text-[#787774]">W = π×(d/2)²×L×7.85/10⁶</div>
         </div>
-        <div className="text-[10px] font-mono text-[#787774] mt-0.5">
-          W = π×(d/2)²×L×7.85/10⁶
+        <div className="font-bold text-[#111111]">
+          {refWeight > 0 ? `${refWeight.toFixed(3)} kg` : '--- kg'}
         </div>
       </div>
 
-      <div className="border-b border-[#EAEAEA] pb-2.5">
-        <div className="flex justify-between items-center">
-          <span className="font-bold text-[#111111] font-sans">2. Trọng lượng phoi / ba vây:</span>
-          <span className="font-bold text-[#111111]">{res.m_bavia.toFixed(3)} kg</span>
+      <div className="flex justify-between items-center py-0.5 border-b border-[#EAEAEA]">
+        <div>
+          <div className="text-[11px] font-bold text-[#111111] font-sans">2. Trọng lượng phoi / ba vây:</div>
+          <div className="text-[9px] font-mono text-[#787774]">
+            m_bavia = (m_chi - m_phoi) × (1 - k_loss%) {sawing.use_m_tinh ? '+ (m_phoi - m_tinh)' : ''}
+          </div>
         </div>
-        <div className="text-[10px] font-mono text-[#787774] mt-0.5">
-          m_bavia = (m_chi - m_phoi) × (1 - k_loss%) {sawing.use_m_tinh ? '+ (m_phoi - m_tinh)' : ''}
-        </div>
+        <div className="font-bold text-[#111111]">{res.m_bavia.toFixed(3)} kg</div>
       </div>
 
-      <div className="border-b border-[#EAEAEA] pb-2.5">
-        <div className="flex justify-between items-center">
-          <span className="font-bold text-[#111111] font-sans">3. Chi phí thép đầu vào:</span>
-          <span className="font-bold text-[#111111]">{Math.round(costSteelInput).toLocaleString('vi-VN')} VNĐ</span>
+      <div className="flex justify-between items-center py-0.5 border-b border-[#EAEAEA]">
+        <div>
+          <div className="text-[11px] font-bold text-[#111111] font-sans">3. Chi phí thép đầu vào:</div>
+          <div className="text-[9px] font-mono text-[#787774]">m_chi × DG_steel × (1 + Phí QL%)</div>
         </div>
-        <div className="text-[10px] font-mono text-[#787774] mt-0.5">
-          m_chi × DG_steel × (1 + Phí QL%)
-        </div>
+        <div className="font-bold text-[#111111]">{Math.round(costSteelInput).toLocaleString('vi-VN')} VNĐ</div>
       </div>
 
-      <div className="border-b border-[#EAEAEA] pb-2.5">
-        <div className="flex justify-between items-center">
-          <span className="font-bold text-[#111111] font-sans">4. Chi phí phoi thu hồi (-):</span>
-          <span className="font-bold text-[#346538]">- {Math.round(costScrapRecycle).toLocaleString('vi-VN')} VNĐ</span>
+      <div className="flex justify-between items-center py-0.5 border-b border-[#EAEAEA]">
+        <div>
+          <div className="text-[11px] font-bold text-[#111111] font-sans">4. Chi phí phoi thu hồi (-):</div>
+          <div className="text-[9px] font-mono text-[#787774]">m_bavia × DG_scrap</div>
         </div>
-        <div className="text-[10px] font-mono text-[#787774] mt-0.5">
-          m_bavia × DG_scrap
+        <div className="font-bold text-[#00A651]">- {Math.round(costScrapRecycle).toLocaleString('vi-VN')} VNĐ</div>
+      </div>
+
+      <div className="flex justify-between items-center py-0.5">
+        <div>
+          <div className="text-[11px] font-bold text-[#111111] font-sans">5. Chi phí vật tư báo giá:</div>
+          <div className="text-[9px] font-mono text-[#787774]">Chi phí thép - Chi phí thu hồi</div>
         </div>
+        <div className="font-bold text-[#111111]">{Math.round(res.C_mat_sawing).toLocaleString('vi-VN')} VNĐ</div>
       </div>
     </div>
   );
@@ -272,15 +274,15 @@ export default function SawingCalculatorForm() {
     <div className="space-y-4 animate-fade-in-up">
       {/* 1. Section Vật Liệu (Material Inputs) */}
       <CostSectionCard
-        icon={<Workflow className="w-5 h-5 text-[#111111]" />}
-        title="SECTION 1: VẬT LIỆU THÉP"
+        icon={<Workflow className="w-4 h-4 text-[#111111] stroke-[2]" />}
+        title="SECTION 1: VẬT LIỆU THÉP PHÔI CƯA"
         mainBlockTitle="Nhập Liệu Vật Tư"
         mainLeftContent={section1Left}
         mainRightContent={section1Right}
-        footerTitle="CHI PHÍ VẬT TƯ BÁO GIÁ"
-        footerSubtitle="Chi phí thép - Chi phí thu hồi"
+        footerTitle="TỔNG CHI PHÍ VẬT TƯ THÉP (PHẦN A)"
         footerTotal={Math.round(res.C_mat_sawing).toLocaleString('vi-VN')}
-        footerTotalUnit="VNĐ/SP"
+        footerTotalUnit="VNĐ / CHI TIẾT"
+        isFinalTotal={true}
       />
 
       {/* 2. Machining & Sawing Process */}
@@ -336,4 +338,3 @@ export default function SawingCalculatorForm() {
     </div>
   );
 }
-
