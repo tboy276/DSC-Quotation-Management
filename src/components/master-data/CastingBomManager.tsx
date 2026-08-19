@@ -1,3 +1,4 @@
+import { ALL_MATERIAL_CATEGORIES } from '../../utils/material-categories';
 import { useState, useEffect } from 'react';
 import type { CastingGrade, CastingBomItem, Material } from '../../types/master-data';
 import {
@@ -34,6 +35,7 @@ export const CastingBomManager = ({ isAdmin }: CastingBomManagerProps) => {
 
   // Modals state
   const [showAddModal, setShowAddModal] = useState(false);
+  const [addCategoryFilter, setAddCategoryFilter] = useState('ALL');
   const [showEditWeightModal, setShowEditWeightModal] = useState(false);
 
   const [showGradeModal, setShowGradeModal] = useState(false);
@@ -294,9 +296,11 @@ export const CastingBomManager = ({ isAdmin }: CastingBomManagerProps) => {
       variant: 'primary',
       enabled: () => isAdmin,
       onClick: () => {
-        if (materials.length > 0) setAddMaterialId(materials[0].id);
-        setShowAddModal(true);
-      },
+          setAddCategoryFilter('ALL');
+          if (materials.length > 0) setAddMaterialId(materials[0].id);
+          else setAddMaterialId('');
+          setShowAddModal(true);
+        },
     },
     {
       key: 'edit',
@@ -453,23 +457,48 @@ export const CastingBomManager = ({ isAdmin }: CastingBomManagerProps) => {
           </>
         }
       >
-        <form id="add-bom-item-form" onSubmit={handleAddBomItemSubmit} className="space-y-3">
-          <div>
-            <label className="block text-[10px] font-bold text-[#787774] uppercase mb-1">
-              Chọn Vật Tư Nguyên Liệu
-            </label>
-            <select
-              value={addMaterialId}
-              onChange={(e) => setAddMaterialId(e.target.value)}
-              className="w-full px-3 py-1.5 border border-[#EAEAEA] rounded-[6px] bg-white text-xs font-bold text-[#111111]"
-            >
-              {materials.map((m) => (
-                <option key={m.id} value={m.id}>
-                  {m.name} ({m.category}) — {m.latest_price?.toLocaleString('vi-VN')} đ/{m.unit}
-                </option>
-              ))}
-            </select>
-          </div>
+        
+          <form id="add-bom-item-form" onSubmit={handleAddBomItemSubmit} className="space-y-3">
+            <div>
+              <label className="block text-[10px] font-bold text-[#787774] uppercase mb-1">
+                Lọc Theo Nhóm Vật Tư
+              </label>
+              <select
+                value={addCategoryFilter}
+                onChange={(e) => {
+                  setAddCategoryFilter(e.target.value);
+                  setAddMaterialId('');
+                }}
+                className="w-full px-3 py-1.5 border border-[#EAEAEA] rounded-[6px] bg-white text-xs font-bold text-[#111111]"
+              >
+                <option value="ALL">Tất cả Nhóm</option>
+                {ALL_MATERIAL_CATEGORIES.map(cat => (
+                  <option key={cat} value={cat}>{cat}</option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-[10px] font-bold text-[#787774] uppercase mb-1">
+                Chọn Vật Tư Nguyên Liệu
+              </label>
+              <select
+                value={addMaterialId}
+                onChange={(e) => setAddMaterialId(e.target.value)}
+                className="w-full px-3 py-1.5 border border-[#EAEAEA] rounded-[6px] bg-white text-xs font-bold text-[#111111]"
+                required
+              >
+                <option value="" disabled>-- Chọn Vật Tư --</option>
+                {materials
+                  .filter(m => addCategoryFilter === 'ALL' || m.category === addCategoryFilter)
+                  .map((m) => (
+                  <option key={m.id} value={m.id}>
+                    {m.name} ({m.category}) — {m.latest_price?.toLocaleString('vi-VN')} đ/{m.unit}
+                  </option>
+                ))}
+              </select>
+            </div>
+
 
           <div>
             <label className="block text-[10px] font-bold text-[#787774] uppercase mb-1">
