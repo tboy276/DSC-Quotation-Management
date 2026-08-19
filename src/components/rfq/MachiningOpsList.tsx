@@ -310,9 +310,9 @@ export const MachiningOpsList = ({
       }
       mainRightContent={rightContent}
       footerTitle={sawingOpProps ? "TỔNG CHI PHÍ QUY TRÌNH CẮT & GIA CÔNG" : "TỔNG CHI PHÍ GIA CÔNG (PHẦN C)"}
-      footerSubtitle={sawingOpProps ? "= Chi phí cắt phôi + Tổng chi phí các nguyên công CNC" : "= Tổng chi phí các nguyên công cộng lại"}
       footerTotal={grandTotalCost.toLocaleString('vi-VN')}
-      footerTotalUnit="VNĐ/SP"
+      footerTotalUnit="VNĐ / CHI TIẾT"
+      isFinalTotal={true}
     />
   );
 };

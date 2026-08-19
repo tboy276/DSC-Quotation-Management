@@ -171,23 +171,33 @@ export const CostSectionCard: React.FC<CostSectionCardProps> = ({
 
       {/* FOOTER TOTAL */}
       {(footerTitle || footerTotal) && (
-        <div className={`p-3 border rounded-[6px] flex flex-col md:flex-row items-center justify-between ${isFinalTotal ? 'bg-[#111111] border-[#111111] text-white shadow-xs' : 'bg-[#FBFBFA] border-[#EAEAEA]'}`}>
+        <div className={`p-3.5 border rounded-[6px] flex items-center justify-between ${isFinalTotal ? 'bg-[#111111] border-[#111111] text-white shadow-xs' : 'bg-[#FBFBFA] border-[#EAEAEA]'}`}>
           <div>
             {footerTitle && (
-              <h5 className={`font-bold uppercase tracking-wider ${isFinalTotal ? 'text-sm text-white' : 'text-xs text-[#111111]'}`}>
+              <p className={`font-bold uppercase tracking-wider mb-0.5 ${isFinalTotal ? 'text-[10px] text-slate-400' : 'text-xs text-[#111111]'}`}>
                 {footerTitle}
-              </h5>
+              </p>
             )}
-            {footerSubtitle && (
-              <p className={`text-[10px] mt-0.5 font-mono ${isFinalTotal ? 'text-slate-400' : 'hidden'}`}>
+            {footerSubtitle && !isFinalTotal && (
+              <p className="text-[10px] mt-0.5 font-mono text-[#787774]">
                 {footerSubtitle}
               </p>
             )}
+            {isFinalTotal && footerTotal && (
+              <p className="font-mono font-extrabold text-2xl text-emerald-400 leading-none">
+                {footerTotal}
+              </p>
+            )}
           </div>
-          <div className="text-right mt-2 md:mt-0">
-            {footerTotal && (
-              <span className={`font-bold leading-none ${isFinalTotal ? 'text-2xl font-mono text-emerald-400' : 'text-base font-mono text-[#111111]'}`}>
-                {footerTotal} {footerTotalUnit && <span className={`font-bold uppercase ml-1 ${isFinalTotal ? 'text-xs text-white' : 'text-xs text-[#787774]'}`}>{footerTotalUnit}</span>}
+          <div className="text-right">
+            {!isFinalTotal && footerTotal && (
+              <span className="font-bold text-base font-mono text-[#111111] leading-none">
+                {footerTotal}
+              </span>
+            )}
+            {footerTotalUnit && (
+              <span className={`font-mono font-bold text-xs uppercase ${isFinalTotal ? 'text-white' : 'text-[#787774] ml-1'}`}>
+                {footerTotalUnit}
               </span>
             )}
           </div>
