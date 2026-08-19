@@ -1,4 +1,4 @@
-import { ALL_MATERIAL_CATEGORIES } from '../../utils/material-categories';
+import { NEW_MATERIAL_CATEGORIES } from '../../utils/material-categories';
 import { useState, useEffect } from 'react';
 import type { CastingGrade, CastingBomItem, Material } from '../../types/master-data';
 import {
@@ -472,7 +472,7 @@ export const CastingBomManager = ({ isAdmin }: CastingBomManagerProps) => {
                 className="w-full px-3 py-1.5 border border-[#EAEAEA] rounded-[6px] bg-white text-xs font-bold text-[#111111]"
               >
                 <option value="ALL">Tất cả Nhóm</option>
-                {ALL_MATERIAL_CATEGORIES.map(cat => (
+                {NEW_MATERIAL_CATEGORIES.map(cat => (
                   <option key={cat} value={cat}>{cat}</option>
                 ))}
               </select>

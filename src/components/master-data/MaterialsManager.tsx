@@ -1,4 +1,4 @@
-import { ALL_MATERIAL_CATEGORIES, isSteelCategory } from '../../utils/material-categories';
+import { NEW_MATERIAL_CATEGORIES, isSteelCategory } from '../../utils/material-categories';
 import { useState, useEffect } from 'react';
 import type { Material, MaterialPriceHistory } from '../../types/master-data';
 import {
@@ -441,7 +441,7 @@ export const MaterialsManager = ({ isAdmin, isSales = false }: MaterialsManagerP
             className="px-3 py-1.5 border border-[#EAEAEA] rounded-[6px] bg-white text-xs font-bold text-[#111111]"
           >
             <option value="ALL">Tất cả Nhóm</option>
-            {ALL_MATERIAL_CATEGORIES.map(cat => (
+            {NEW_MATERIAL_CATEGORIES.map(cat => (
               <option key={cat} value={cat}>{cat}</option>
             ))}
           </select>
@@ -508,7 +508,7 @@ export const MaterialsManager = ({ isAdmin, isSales = false }: MaterialsManagerP
               onChange={(e) => setMatCategory(e.target.value)}
               className="w-full px-3 py-1.5 border border-[#EAEAEA] rounded-[6px] bg-white text-xs font-bold text-[#111111]"
             >
-              {ALL_MATERIAL_CATEGORIES.map(cat => (
+              {NEW_MATERIAL_CATEGORIES.map(cat => (
                   <option key={cat} value={cat}>{cat}</option>
                 ))}
             </select>
