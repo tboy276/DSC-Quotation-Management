@@ -8,15 +8,15 @@ import {
   deleteMaterials,
   addMaterialPrice,
   deletePriceHistoryItem,
-  INITIAL_BOM_ITEMS,
+  fetchCastingBomItems,
 } from '../../lib/master-data-service';
 
-import { INITIAL_QUOTES } from '../../lib/quotation-service';
+import { fetchQuotes } from '../../lib/quotation-service';
 import { DataTable, type DataTableColumn, type DataTableAction } from '../ui/DataTable';
 import { Modal } from '../ui/Modal';
 import { ActionButton } from '../ui/ActionButton';
 import { useConfirm } from '../../context/ConfirmDialogContext';
-import { Plus, Edit2, Trash2, TrendingUp, History, Check, AlertTriangle } from 'lucide-react';
+import { Plus, Edit2, Trash2, TrendingUp, History, Check, AlertTriangle , Upload } from 'lucide-react';
 
 interface MaterialsManagerProps {
   isAdmin: boolean;
@@ -43,10 +43,17 @@ export const MaterialsManager = ({ isAdmin, isSales = false }: MaterialsManagerP
   const [importText, setImportText] = useState('');
   const [importing, setImporting] = useState(false);
 
+    const [importSummary, setImportSummary] = useState<{ success: number; skipped: number } | null>(null);
+
   const handleImportSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!importText.trim()) return;
     setImporting(true);
+    setImportSummary(null);
+    let successCount = 0;
+    let skippedCount = 0;
+    const seenNames = new Set<string>(); // To track duplicates in the current paste
+
     try {
       const rows = importText.trim().split('\n');
       for (const row of rows) {
@@ -60,9 +67,17 @@ export const MaterialsManager = ({ isAdmin, isSales = false }: MaterialsManagerP
           const price25Str = cols[5]?.replace(/\./g, '').trim();
           const price26Str = cols[6]?.replace(/\./g, '').trim();
           
-          if (!name || name === 'Tên VT') continue; // Skip header
+          if (!name || name.toLowerCase() === 'tên vt') continue; // Skip header or empty name
 
-          const price = parseInt(price26Str || price25Str || '0', 10);
+          // Check duplicate in same paste
+          if (seenNames.has(name.toLowerCase())) {
+            skippedCount++;
+            continue;
+          }
+          seenNames.add(name.toLowerCase());
+
+          const price2025 = parseInt(price25Str || '0', 10);
+          const price2026 = parseInt(price26Str || '0', 10);
           
           const newMat = await saveMaterial({
             name,
@@ -71,12 +86,24 @@ export const MaterialsManager = ({ isAdmin, isSales = false }: MaterialsManagerP
             unit: unit || 'kg',
           });
           
-          if (price > 0 && newMat.id) {
-            await addMaterialPrice(newMat.id, price, new Date().toISOString().split('T')[0]);
+          if (newMat.id) {
+            if (price2025 > 0) {
+              await addMaterialPrice(newMat.id, price2025, '2025-01-01');
+            }
+            if (price2026 > 0 && price2026 !== price2025) {
+              await addMaterialPrice(newMat.id, price2026, '2026-01-01');
+            }
+            successCount++;
+          } else {
+            skippedCount++;
           }
+        } else {
+          // invalid row format
+          skippedCount++;
         }
       }
-      setShowImportModal(false);
+      
+      setImportSummary({ success: successCount, skipped: skippedCount });
       setImportText('');
       loadData();
     } catch (err: any) {
@@ -160,6 +187,7 @@ export const MaterialsManager = ({ isAdmin, isSales = false }: MaterialsManagerP
   };
 
   // Delete Material Validation (Check if in use in BOM or Quotes)
+  
   const handleDeleteSelectedMaterials = async (selectedRows: Material[]) => {
     setErrorMessage(null);
     if (selectedRows.length === 0) return;
@@ -167,15 +195,19 @@ export const MaterialsManager = ({ isAdmin, isSales = false }: MaterialsManagerP
     // Validation: Check usage in BOM or Quotes
     const inUseDetails: string[] = [];
 
+    // Fetch live data instead of using INITIAL static mocks
+    const allBomItems = await fetchCastingBomItems();
+    const allQuotes = await fetchQuotes();
+
     for (const mat of selectedRows) {
       // 1. Check BOM items
-      const bomUsage = INITIAL_BOM_ITEMS.filter((b) => b.material_id === mat.id);
+      const bomUsage = allBomItems.filter((b) => b.material_id === mat.id);
       if (bomUsage.length > 0) {
         inUseDetails.push(`Vật tư "${mat.name}" đang thuộc BOM mẻ nấu đúc gang (${bomUsage.length} thành phần).`);
       }
 
       // 2. Check Quotes
-      const quoteUsage = INITIAL_QUOTES.filter(
+      const quoteUsage = allQuotes.filter(
         (q: any) =>
           q.inputs_json?.selected_material_id === mat.id ||
           q.inputs_json?.selected_material === mat.name
@@ -191,6 +223,7 @@ export const MaterialsManager = ({ isAdmin, isSales = false }: MaterialsManagerP
     }
 
     const confirmed = await confirm({
+
       title: 'Xóa Vật Tư',
       message: `Bạn có chắc chắn muốn xoá ${selectedRows.length} vật tư đã chọn?`,
       confirmLabel: 'Xóa',
@@ -326,6 +359,15 @@ export const MaterialsManager = ({ isAdmin, isSales = false }: MaterialsManagerP
       variant: 'primary',
       enabled: () => isAdmin,
       onClick: () => handleOpenMaterialModal(),
+    },
+        {
+      key: 'bulk_import',
+      label: 'Nhập Từ Excel',
+      icon: <Upload className="w-3.5 h-3.5" />,
+      tooltip: 'Nhập hàng loạt từ Excel',
+      variant: 'neutral',
+      enabled: () => isAdmin,
+      onClick: () => setShowImportModal(true),
     },
     {
       key: 'edit',
@@ -651,6 +693,14 @@ export const MaterialsManager = ({ isAdmin, isSales = false }: MaterialsManagerP
         }
       >
         <form id="import-form" onSubmit={handleImportSubmit} className="space-y-4">
+
+          {importSummary && (
+            <div className="p-3 bg-[#E8F5E9] text-[#2E7D32] border border-[#A5D6A7] rounded-[6px] text-xs font-bold">
+              <p>Đã nhập thành công: {importSummary.success} dòng.</p>
+              <p>Bị bỏ qua (trùng lặp/lỗi): {importSummary.skipped} dòng.</p>
+            </div>
+          )}
+
           <div className="bg-[#FBFBFA] p-3 rounded-[8px] border border-[#EAEAEA] text-xs text-[#787774] space-y-1">
             <p className="font-bold text-[#111111]">Hướng dẫn:</p>
             <p>1. Copy dữ liệu trực tiếp từ Excel (Bao gồm các cột: STT, Nhóm VT, Tên VT, Ghi chú, ĐVT, Đơn giá 2025, Đơn giá 2026).</p>
