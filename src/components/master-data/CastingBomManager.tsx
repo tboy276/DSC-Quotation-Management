@@ -493,7 +493,7 @@ export const CastingBomManager = ({ isAdmin }: CastingBomManagerProps) => {
                   .filter(m => addCategoryFilter === 'ALL' || m.category === addCategoryFilter)
                   .map((m) => (
                   <option key={m.id} value={m.id}>
-                    {m.name} ({m.category}) — {m.latest_price?.toLocaleString('vi-VN')} đ/{m.unit}
+                    {m.name}{m.notes ? ` — ${m.notes}` : ''} — {m.latest_price?.toLocaleString('vi-VN')} đ/{m.unit}
                   </option>
                 ))}
               </select>
