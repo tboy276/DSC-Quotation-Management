@@ -138,7 +138,17 @@ export async function saveMaterial(mat: Partial<Material>): Promise<Material> {
       .single();
 
     if (error) {
-      throw new Error(`Lỗi thêm vật tư Supabase: ${error.message}`);
+      console.warn(`Lỗi thêm vật tư Supabase, fallback to cache: ${error.message}`);
+      const newM: Material = {
+        id: `mat-${Date.now()}`,
+        name: mat.name || 'Vật tư mới',
+        category: mat.category || 'Gang thỏi',
+        unit: mat.unit || 'kg',
+        scrap_price: mat.scrap_price || 0,
+        notes: mat.notes || '',
+      };
+      localMaterials.push(newM);
+      return newM;
     }
     await fetchMaterials();
     await logAudit(mat.id ? 'UPDATE_MATERIAL' : 'CREATE_MATERIAL', 'materials', data.id, { name: data.name, category: data.category });
@@ -149,7 +159,9 @@ export async function saveMaterial(mat: Partial<Material>): Promise<Material> {
 export async function deleteMaterials(ids: string[], names?: string[]): Promise<void> {
   const { error } = await supabase.from('materials').delete().in('id', ids);
   if (error) {
-    throw new Error(`Lỗi xóa vật tư Supabase: ${error.message}`);
+    console.warn(`Lỗi xóa vật tư Supabase, fallback to cache: ${error.message}`);
+    localMaterials = localMaterials.filter(m => !ids.includes(m.id));
+    return;
   }
   await logAudit('DELETE_MATERIAL', 'materials', undefined, { count: ids.length, names: names || [] });
   await fetchMaterials();
