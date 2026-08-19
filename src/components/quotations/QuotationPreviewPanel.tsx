@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import type { QuotationDocument, DocumentDisplayConfig, DocumentRemarkLine } from '../../types/quotation-document';
 import { DEFAULT_DISPLAY_CONFIG } from '../../types/quotation-document';
 import type { CurrencyType } from '../../types/quote';
@@ -9,6 +9,7 @@ import { ActionButton } from '../ui/ActionButton';
 import { ArrowLeft, Check, Plus, Trash2, ArrowUp, ArrowDown, Eye, Sliders, Download } from 'lucide-react';
 import { generateQuotationPdf } from '../../utils/generateQuotationPdf';
 import { getToolingColumnFlags } from '../../utils/quotation-tooling-columns';
+import { fetchMaterials, fetchCastingGrades, INITIAL_MATERIALS, INITIAL_CASTING_GRADES } from '../../lib/master-data-service';
 
 export interface DocFields {
   contact_person: string;
@@ -51,6 +52,25 @@ export const QuotationPreviewPanel: React.FC<QuotationPreviewPanelProps> = ({
   const liveDocument = { ...document, ...docFields };
 
   const [isExportingPdf, setIsExportingPdf] = useState(false);
+
+  const [materialsMap, setMaterialsMap] = useState<Map<string, string>>(() => new Map(INITIAL_MATERIALS.map(m => [m.id, m.name])));
+  const [gradesMap, setGradesMap] = useState<Map<string, string>>(() => new Map(INITIAL_CASTING_GRADES.map(g => [g.id, g.name])));
+
+  useEffect(() => {
+    let isMounted = true;
+    Promise.all([
+      fetchMaterials().catch(() => INITIAL_MATERIALS),
+      fetchCastingGrades().catch(() => INITIAL_CASTING_GRADES),
+    ]).then(([materials, grades]) => {
+      if (isMounted) {
+        setMaterialsMap(new Map(materials.map((m) => [m.id, m.name])));
+        setGradesMap(new Map(grades.map((g) => [g.id, g.name])));
+      }
+    });
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   const { hasSeparateDieItem } = getToolingColumnFlags(document.items, config);
 
@@ -118,7 +138,7 @@ export const QuotationPreviewPanel: React.FC<QuotationPreviewPanelProps> = ({
   const handleDownloadPDF = async () => {
     setIsExportingPdf(true);
     try {
-      await generateQuotationPdf(liveDocument);
+      await generateQuotationPdf(liveDocument, materialsMap, gradesMap);
     } catch (err: any) {
       console.error('Lỗi xuất PDF:', err);
       toast.error(`❌ Không thể tạo file PDF: ${err?.message || err}`);
@@ -460,7 +480,7 @@ export const QuotationPreviewPanel: React.FC<QuotationPreviewPanelProps> = ({
         </div>
 
         <div className="flex-1 overflow-y-auto max-h-[calc(100vh-200px)] p-4">
-          <QuotationPdfContent document={liveDocument} config={config} />
+          <QuotationPdfContent document={liveDocument} config={config} materialsMap={materialsMap} gradesMap={gradesMap} />
         </div>
       </div>
     </div>

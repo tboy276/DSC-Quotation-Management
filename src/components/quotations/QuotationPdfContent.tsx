@@ -8,11 +8,15 @@ import { getToolingColumnFlags } from '../../utils/quotation-tooling-columns';
 interface QuotationPdfContentProps {
   document: QuotationDocument;
   config?: DocumentDisplayConfig;
+  materialsMap?: Map<string, string>;
+  gradesMap?: Map<string, string>;
 }
 
 export const QuotationPdfContent: React.FC<QuotationPdfContentProps> = ({
   document,
   config: propConfig,
+  materialsMap = new Map(),
+  gradesMap = new Map(),
 }) => {
   const config = propConfig || document.display_config || DEFAULT_DISPLAY_CONFIG;
   const items = [...(document.items || [])].sort((a, b) => a.display_order - b.display_order);
@@ -233,18 +237,14 @@ export const QuotationPdfContent: React.FC<QuotationPdfContentProps> = ({
               const q = item.quote;
               if (!q) return null;
 
-              const isUUID = (str: string) => /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(str);
-
               const inp = q.inputs_json as any;
               
-              let materialName = q.segment === 'casting' ? 'FCD450-10' : 'S45C';
-              if (inp.material_name && !isUUID(inp.material_name) && !inp.material_name.startsWith('mat-')) {
-                materialName = inp.material_name;
-              } else if (inp.selected_material_name && !isUUID(inp.selected_material_name) && !inp.selected_material_name.startsWith('mat-')) {
-                materialName = inp.selected_material_name;
-              } else if (inp.selected_material_id && !inp.selected_material_id.startsWith('mat-') && !isUUID(inp.selected_material_id)) {
-                materialName = inp.selected_material_id;
-              }
+              const idMap = q.segment === 'casting' ? gradesMap : materialsMap;
+              const resolvedId = q.segment === 'casting' ? inp.selected_casting_grade_id : inp.selected_material_id;
+              let materialName = (resolvedId && idMap.get(resolvedId)) 
+                || inp.material_name 
+                || inp.selected_material_name 
+                || (q.segment === 'casting' ? 'FCD450-10' : 'S45C');
 
               const res = q.results_json as any;
               const seg = q.segment;

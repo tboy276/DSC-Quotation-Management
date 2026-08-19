@@ -14,6 +14,7 @@ import {
   INITIAL_HAMMER_RATES,
   INITIAL_SYSTEM_RATES,
   fetchLiquidMetalPriceForGrade,
+  fetchCastingGrades,
   fetchMaterials,
   fetchSystemUnitRates,
   fetchPressingRates,
@@ -625,6 +626,7 @@ export const useQuotationStore = create<QuotationStoreState>((set, get) => ({
         forgingInput: {
           ...state.forgingInput,
           selected_material_id: materialId,
+          selected_material_name: mat.name,
           DG_steel: mat.latest_price || 0,
           DG_scrap: mat.scrap_price || 0,
         },
@@ -738,10 +740,13 @@ export const useQuotationStore = create<QuotationStoreState>((set, get) => ({
   selectCastingGrade: async (gradeId) => {
     try {
       const liquidMetalResult = await fetchLiquidMetalPriceForGrade(gradeId);
+      const grades = await fetchCastingGrades().catch(() => INITIAL_CASTING_GRADES);
+      const grade = grades.find((g) => g.id === gradeId) || INITIAL_CASTING_GRADES.find((g) => g.id === gradeId);
       set((state) => ({
         castingInput: {
           ...state.castingInput,
           selected_casting_grade_id: gradeId,
+          selected_material_name: grade?.name || 'FCD450-10',
           DG_liquid: Math.round(liquidMetalResult.DG_liquid),
           DG_cast_scrap: Math.round(liquidMetalResult.DG_cast_scrap),
         },
@@ -759,6 +764,7 @@ export const useQuotationStore = create<QuotationStoreState>((set, get) => ({
         castingInput: {
           ...state.castingInput,
           selected_casting_grade_id: gradeId,
+          selected_material_name: fallbackGrade?.name || 'FCD450-10',
           DG_liquid: Math.round(fallbackResult.DG_liquid),
           DG_cast_scrap: Math.round(fallbackResult.DG_cast_scrap),
         },
@@ -805,6 +811,7 @@ export const useQuotationStore = create<QuotationStoreState>((set, get) => ({
         sawingInput: {
           ...state.sawingInput,
           selected_material_id: materialId,
+          selected_material_name: mat.name,
           DG_steel: mat.latest_price || 0,
           DG_scrap: mat.scrap_price || 0,
         },

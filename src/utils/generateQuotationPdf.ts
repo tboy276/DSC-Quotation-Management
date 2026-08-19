@@ -60,7 +60,11 @@ async function getBase64ImageFromUrl(imageUrl: string, maxWidthPx = 320): Promis
   return canvas.toDataURL('image/png');
 }
 
-export async function generateQuotationPdf(document: QuotationDocument) {
+export async function generateQuotationPdf(
+  document: QuotationDocument,
+  materialsMap: Map<string, string> = new Map(),
+  gradesMap: Map<string, string> = new Map()
+) {
   const { default: jsPDF } = await import('jspdf');
   const { default: autoTable } = await import('jspdf-autotable');
   
@@ -300,16 +304,12 @@ export async function generateQuotationPdf(document: QuotationDocument) {
     
     const quotedMoq = inp.quoted_moq;
 
-    const isUUID = (str: string) => /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(str);
-    
-    let materialName = q.segment === 'casting' ? 'FCD450-10' : 'S45C';
-    if (inp.material_name && !isUUID(inp.material_name) && !inp.material_name.startsWith('mat-')) {
-      materialName = inp.material_name;
-    } else if (inp.selected_material_name && !isUUID(inp.selected_material_name) && !inp.selected_material_name.startsWith('mat-')) {
-      materialName = inp.selected_material_name;
-    } else if (inp.selected_material_id && !inp.selected_material_id.startsWith('mat-') && !isUUID(inp.selected_material_id)) {
-      materialName = inp.selected_material_id;
-    }
+    const idMap = q.segment === 'casting' ? gradesMap : materialsMap;
+    const resolvedId = q.segment === 'casting' ? inp.selected_casting_grade_id : inp.selected_material_id;
+    let materialName = (resolvedId && idMap.get(resolvedId)) 
+      || inp.material_name 
+      || inp.selected_material_name 
+      || (q.segment === 'casting' ? 'FCD450-10' : 'S45C');
 
     const row: any[] = [
       idx + 1,
