@@ -370,6 +370,7 @@ export const CastingBomManager = ({ isAdmin }: CastingBomManagerProps) => {
                 onChange={async (e) => {
                   const newId = e.target.value;
                   await saveCastingGrade({ id: currentGrade.id, return_scrap_material_id: newId || null });
+                  loadGradesAndMaterials();
                   loadBomItems(currentGrade.id);
                 }}
                 className="w-full px-3 py-2 border border-[#EAEAEA] rounded-[6px] bg-white text-xs font-bold text-[#111111]"
