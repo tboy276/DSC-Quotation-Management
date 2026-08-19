@@ -49,7 +49,7 @@ export const MasterDataContainer = () => {
       {activeSubTab === 'materials' && <MaterialsManager isAdmin={isAdmin} isSales={isSales} />}
       {activeSubTab === 'casting_bom' && <CastingBomManager isAdmin={isAdmin} />}
       {activeSubTab === 'casting_operations' && <CastingOperationsRatesManager />}
-      {activeSubTab === 'equipment_rates' && <EquipmentRatesManager />}
+      {activeSubTab === 'equipment_rates' && <EquipmentRatesManager isAdmin={isAdmin} />}
     </div>
   );
 };

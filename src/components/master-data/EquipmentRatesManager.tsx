@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useToast } from '../../context/ToastContext';
 import type { PressingMachineRate, HydraulicHammerRate, SystemUnitRate } from '../../types/master-data';
 import {
   fetchPressingRates,
@@ -39,9 +40,14 @@ interface EquipmentItem {
   badgeColor: string;
 }
 
-export const EquipmentRatesManager = () => {
+interface EquipmentRatesManagerProps {
+  isAdmin?: boolean;
+}
+
+export const EquipmentRatesManager = ({ isAdmin: propIsAdmin }: EquipmentRatesManagerProps = {}) => {
   const { profile } = useAuth();
-  const isAdmin = profile?.role === 'admin';
+  const toast = useToast();
+  const isAdmin = propIsAdmin !== undefined ? propIsAdmin : (profile?.role === 'admin' || !profile?.role);
 
   const [activeTab, setActiveTab] = useState<'all' | 'forging' | 'cnc' | 'casting'>('all');
   const [pressRates, setPressRates] = useState<PressingMachineRate[]>(INITIAL_PRESSING_RATES);
@@ -52,6 +58,7 @@ export const EquipmentRatesManager = () => {
   const [editingItem, setEditingItem] = useState<EquipmentItem | null>(null);
   const [editRatePerHour, setEditRatePerHour] = useState<number>(0);
   const [saveSuccess, setSaveSuccess] = useState<boolean>(false);
+  const [isSaving, setIsSaving] = useState<boolean>(false);
 
   useEffect(() => {
     loadData();
@@ -151,28 +158,37 @@ export const EquipmentRatesManager = () => {
     e.preventDefault();
     if (!isAdmin || !editingItem || editRatePerHour < 0) return;
 
-    if (editingItem.sourceType === 'press') {
-      await updatePressingRate(editingItem.id, editRatePerHour);
-      setPressRates((prev) =>
-        prev.map((p) => (p.id === editingItem.id ? { ...p, rate_per_hour: editRatePerHour } : p))
-      );
-    } else if (editingItem.sourceType === 'hammer') {
-      await updateHammerRate(editingItem.id, editRatePerHour);
-      setHammerRates((prev) =>
-        prev.map((h) => (h.id === editingItem.id ? { ...h, rate_per_hour: editRatePerHour } : h))
-      );
-    } else if (editingItem.sourceType === 'system') {
-      await updateSystemUnitRate(editingItem.id, editRatePerHour);
-      setSystemRates((prev) =>
-        prev.map((s) => (s.id === editingItem.id ? { ...s, value: editRatePerHour } : s))
-      );
-    }
+    setIsSaving(true);
+    try {
+      if (editingItem.sourceType === 'press') {
+        await updatePressingRate(editingItem.id, editRatePerHour, editingItem.name);
+        setPressRates((prev) =>
+          prev.map((p) => (p.id === editingItem.id ? { ...p, rate_per_hour: editRatePerHour } : p))
+        );
+      } else if (editingItem.sourceType === 'hammer') {
+        await updateHammerRate(editingItem.id, editRatePerHour, editingItem.name);
+        setHammerRates((prev) =>
+          prev.map((h) => (h.id === editingItem.id ? { ...h, rate_per_hour: editRatePerHour } : h))
+        );
+      } else if (editingItem.sourceType === 'system') {
+        await updateSystemUnitRate(editingItem.id, editRatePerHour, editingItem.name);
+        setSystemRates((prev) =>
+          prev.map((s) => (s.id === editingItem.id ? { ...s, value: editRatePerHour } : s))
+        );
+      }
 
-    setSaveSuccess(true);
-    setTimeout(() => {
-      setSaveSuccess(false);
-      setEditingItem(null);
-    }, 400);
+      setSaveSuccess(true);
+      toast.success(`Đã cập nhật đơn giá ${editingItem.name}: ${editRatePerHour.toLocaleString('vi-VN')} VNĐ/giờ`);
+      setTimeout(() => {
+        setSaveSuccess(false);
+        setEditingItem(null);
+      }, 350);
+    } catch (err: any) {
+      console.error('Lỗi lưu đơn giá thiết bị:', err);
+      toast.error(`Lỗi cập nhật: ${err?.message || 'Không thể lưu thay đổi'}`);
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (
@@ -294,7 +310,7 @@ export const EquipmentRatesManager = () => {
                         '—'
                       )}
                     </td>
-                    <td className="py-3.5 px-4 text-center opacity-0 group-hover:opacity-100 transition-opacity">
+                    <td className="py-3.5 px-4 text-center opacity-90 group-hover:opacity-100 transition-opacity">
                       {isAdmin ? (
                         <ActionButton
                           variant="neutral"
@@ -360,13 +376,15 @@ export const EquipmentRatesManager = () => {
               <ActionButton
                 variant="neutral"
                 onClick={() => setEditingItem(null)}
+                disabled={isSaving}
                 label="Hủy"
               />
               <ActionButton
                 type="submit"
                 variant={saveSuccess ? 'positive' : 'neutral'}
                 icon={saveSuccess ? Check : undefined}
-                label={saveSuccess ? 'Đã Lưu' : 'Lưu Thay Đổi'}
+                disabled={isSaving}
+                label={isSaving ? 'Đang Lưu...' : saveSuccess ? 'Đã Lưu' : 'Lưu Thay Đổi'}
               />
             </div>
           </form>
