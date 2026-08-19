@@ -69,12 +69,13 @@ export const MaterialsManager = ({ isAdmin, isSales = false }: MaterialsManagerP
           
           if (!name || name.toLowerCase() === 'tên vt') continue; // Skip header or empty name
 
-          // Check duplicate in same paste
-          if (seenNames.has(name.toLowerCase())) {
+          // Check duplicate in same paste (by name AND notes)
+          const dupKey = `${name.toLowerCase()}|||${(notes || '').toLowerCase()}`;
+          if (seenNames.has(dupKey)) {
             skippedCount++;
             continue;
           }
-          seenNames.add(name.toLowerCase());
+          seenNames.add(dupKey);
 
           const price2025 = parseInt(price25Str || '0', 10);
           const price2026 = parseInt(price26Str || '0', 10);
