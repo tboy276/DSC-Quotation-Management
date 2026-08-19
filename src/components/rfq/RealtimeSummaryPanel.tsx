@@ -309,7 +309,7 @@ export const RealtimeSummaryPanel = () => {
             <p className="text-base font-extrabold font-mono text-[#111111]">
               {formatCurrencyValue(finalPriceVnd, currency, exchangeRate)}
             </p>
-            <p className="text-[9px] font-mono text-[#787774]">= C_pre_profit + Profit</p>
+            <p className="text-[9px] font-mono text-[#787774]">= Chi phí trước LN + Lợi nhuận</p>
           </div>
         </div>
 
@@ -333,7 +333,7 @@ export const RealtimeSummaryPanel = () => {
           {/* Section 1 */}
           {segment !== 'machining' && (
             <div className="flex justify-between items-center py-1 border-b border-[#F0F0EE]">
-              <span className="text-[#2F3437] font-sans">{idxMat}. Chi phí vật liệu (C_mat):</span>
+              <span className="text-[#2F3437] font-sans">{idxMat}. Chi phí vật liệu:</span>
               <span className="font-bold text-[#111111]">
                 {formatCurrencyValue(C_mat, currency, exchangeRate)}
               </span>
@@ -386,7 +386,7 @@ export const RealtimeSummaryPanel = () => {
 
           {/* Section 3 */}
           <div className="flex justify-between items-center py-1 border-b border-[#F0F0EE]">
-            <span className="text-[#2F3437] font-sans">{idxMachining}. Gia công cơ khí CNC (C_machining){segment === 'sawing' ? ' - gồm cưa phôi' : ''}:</span>
+            <span className="text-[#2F3437] font-sans">{idxMachining}. Gia công cơ khí CNC{segment === 'sawing' ? ' (gồm cưa phôi)' : ''}:</span>
             <span className="font-bold text-[#111111]">
               {formatCurrencyValue(C_machining, currency, exchangeRate)}
             </span>
@@ -395,7 +395,7 @@ export const RealtimeSummaryPanel = () => {
           {/* Heat Treat */}
           {showHeatTreat && (
             <div className="flex justify-between items-center py-1 border-b border-[#F0F0EE]">
-              <span className="text-[#2F3437] font-sans">{idxHeatTreat}. Chi phí nhiệt luyện (C_heat_treat):</span>
+              <span className="text-[#2F3437] font-sans">{idxHeatTreat}. Chi phí nhiệt luyện:</span>
               <span className="font-bold text-[#111111]">
                 {formatCurrencyValue(C_heat_treat, currency, exchangeRate)}
               </span>
@@ -405,7 +405,7 @@ export const RealtimeSummaryPanel = () => {
           {/* Paint */}
           {showPaint && (
             <div className="flex justify-between items-center py-1 border-b border-[#F0F0EE]">
-              <span className="text-[#2F3437] font-sans">{idxPaint}. Chi phí sơn (C_paint):</span>
+              <span className="text-[#2F3437] font-sans">{idxPaint}. Chi phí sơn:</span>
               <span className="font-bold text-[#111111]">
                 {formatCurrencyValue(C_paint, currency, exchangeRate)}
               </span>
@@ -416,7 +416,7 @@ export const RealtimeSummaryPanel = () => {
           {(segment === 'forging' || segment === 'casting') && (
             <div className="flex justify-between items-center py-1 border-b border-[#F0F0EE]">
               <span className="text-[#2F3437] font-sans">
-                {idxAmort}. Khấu hao {isForging ? 'Khuôn' : 'Mẫu'} (C_amortization):
+                {idxAmort}. Khấu hao {isForging ? 'Khuôn' : 'Mẫu'}:
               </span>
               <span className="font-bold text-[#111111]">
                 {formatCurrencyValue(C_amortization, currency, exchangeRate)}
@@ -440,33 +440,33 @@ export const RealtimeSummaryPanel = () => {
           {/* C_mgmt */}
           <div className="py-1 border-b border-[#F0F0EE]">
             <div className="flex justify-between items-center">
-              <span className="text-[#2F3437] font-sans">{idxMgmt}. Chi phí quản lý ({segment === 'casting' ? 'C_admin' : 'C_mgmt'}):</span>
+              <span className="text-[#2F3437] font-sans">{idxMgmt}. Chi phí quản lý:</span>
               <span className="font-bold text-[#111111]">
                 {formatCurrencyValue(C_mgmt, currency, exchangeRate)}
               </span>
             </div>
             <p className="text-[10px] text-[#787774] mt-0.5">
-              = COGS × {k_mgmt_percent}%
+              = Giá vốn COGS × {k_mgmt_percent}%
             </p>
           </div>
 
           {/* C_pack */}
           <div className="py-1 border-b border-[#F0F0EE]">
             <div className="flex justify-between items-center">
-              <span className="text-[#2F3437] font-sans">{idxPack}. Chi phí bao gói (C_pack):</span>
+              <span className="text-[#2F3437] font-sans">{idxPack}. Chi phí bao gói:</span>
               <span className="font-bold text-[#111111]">
                 {formatCurrencyValue(C_pack, currency, exchangeRate)}
               </span>
             </div>
             <p className="text-[10px] text-[#787774] mt-0.5">
-              {pack_rate > 0 ? `= m_tinh (${shipping_weight}kg) × ${pack_rate.toLocaleString('vi-VN')} đ/kg` : `= ${pack_total.toLocaleString('vi-VN')} đ/chi tiết`}
+              {pack_rate > 0 ? `= Khối lượng (${shipping_weight}kg) × ${pack_rate.toLocaleString('vi-VN')} đ/kg` : `= ${pack_total.toLocaleString('vi-VN')} đ/chi tiết`}
             </p>
           </div>
 
           {/* C_trans */}
           <div className="py-1 border-b border-[#F0F0EE]">
             <div className="flex justify-between items-center">
-              <span className="text-[#2F3437] font-sans">{idxTrans}. Chi phí vận chuyển (C_trans):</span>
+              <span className="text-[#2F3437] font-sans">{idxTrans}. Chi phí vận chuyển:</span>
               <span className="font-bold text-[#111111]">
                 {formatCurrencyValue(C_trans, currency, exchangeRate)}
               </span>
@@ -479,25 +479,25 @@ export const RealtimeSummaryPanel = () => {
           {/* Section 5 Costs & Profit */}
           <div className="py-1 border-b border-[#F0F0EE]">
             <div className="flex justify-between items-center">
-              <span className="text-[#2F3437] font-sans">{idxPreProfit}. Chi phí trước lợi nhuận (C_pre_profit):</span>
+              <span className="text-[#2F3437] font-sans">{idxPreProfit}. Chi phí trước lợi nhuận:</span>
               <span className="font-bold text-[#111111]">
                 {formatCurrencyValue(pre_profit_price, currency, exchangeRate)}
               </span>
             </div>
             <p className="text-[10px] text-[#787774] mt-0.5">
-              = COGS + C_mgmt + C_pack + C_trans
+              = Giá vốn COGS + Quản lý + Bao gói + Vận chuyển
             </p>
           </div>
 
           <div className="py-1 border-b border-[#F0F0EE]">
             <div className="flex justify-between items-center">
-              <span className="text-[#2F3437] font-sans">Lợi nhuận mục tiêu (Profit {profitMarginPercent}%):</span>
+              <span className="text-[#2F3437] font-sans">Lợi nhuận mục tiêu ({profitMarginPercent}%):</span>
               <span className="font-bold text-[#346538]">
                 +{formatCurrencyValue(C_profit, currency, exchangeRate)}
               </span>
             </div>
             <p className="text-[10px] text-[#787774] mt-0.5">
-              = C_pre_profit × {profitMarginPercent}%
+              = Chi phí trước LN × {profitMarginPercent}%
             </p>
           </div>
         </div>
