@@ -93,9 +93,9 @@ export const CastingCalculatorForm = () => {
   return (
     <div className="space-y-4 animate-fade-in-up">
       {/* SECTIONS 1 & 2: 2-COLUMN GRID (SIDE-BY-SIDE) */}
-      <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 items-stretch">
+      <div className="grid grid-cols-1 xl:grid-cols-12 gap-4 items-stretch">
         {/* SECTION 1: VẬT LIỆU KIM LOẠI LỎNG & TẠO KHUÔN (PHẦN A) */}
-        <div className="flex flex-col space-y-2">
+        <div className="xl:col-span-8 flex flex-col space-y-2">
           <div className="flex items-center gap-2">
             <FileText className="w-4 h-4 text-[#111111] stroke-[2]" />
             <h2 className="text-xs font-bold text-[#111111] uppercase tracking-wider">
@@ -136,7 +136,7 @@ export const CastingCalculatorForm = () => {
                       min="0"
                       value={casting.m_cast ?? ''}
                       onChange={(e) => setCastingField('m_cast', Math.max(0, Number(e.target.value)))}
-                      className="w-16 px-2 py-1 border border-[#EAEAEA] rounded-[4px] font-mono text-xs font-bold text-[#111111] bg-white text-right focus:outline-none focus:border-[#111111]"
+                      className="w-20 px-2.5 py-1 border border-[#EAEAEA] rounded-[4px] font-mono text-xs font-bold text-[#111111] bg-white text-right focus:outline-none focus:border-[#111111]"
                     />
                   </div>
 
@@ -150,7 +150,7 @@ export const CastingCalculatorForm = () => {
                       min="0"
                       value={casting.Y_yield ?? ''}
                       onChange={(e) => setCastingField('Y_yield', Math.max(0, Number(e.target.value)))}
-                      className="w-16 px-2 py-1 border border-[#EAEAEA] rounded-[4px] font-mono text-xs font-bold text-[#111111] bg-white text-right focus:outline-none focus:border-[#111111]"
+                      className="w-20 px-2.5 py-1 border border-[#EAEAEA] rounded-[4px] font-mono text-xs font-bold text-[#111111] bg-white text-right focus:outline-none focus:border-[#111111]"
                     />
                   </div>
 
@@ -164,7 +164,7 @@ export const CastingCalculatorForm = () => {
                       min="0"
                       value={casting.k_burn_loss !== undefined ? casting.k_burn_loss : 2.15}
                       onChange={(e) => setCastingField('k_burn_loss', Math.max(0, Number(e.target.value)))}
-                      className="w-16 px-2 py-1 border border-[#EAEAEA] rounded-[4px] font-mono text-xs font-bold text-[#111111] bg-white text-right focus:outline-none focus:border-[#111111]"
+                      className="w-20 px-2.5 py-1 border border-[#EAEAEA] rounded-[4px] font-mono text-xs font-bold text-[#111111] bg-white text-right focus:outline-none focus:border-[#111111]"
                     />
                   </div>
 
@@ -175,7 +175,7 @@ export const CastingCalculatorForm = () => {
                     <select
                       value={casting.selected_casting_grade_id}
                       onChange={(e) => selectGrade(e.target.value)}
-                      className="w-32 px-1.5 py-1 border border-[#EAEAEA] rounded-[4px] font-bold text-xs text-[#111111] bg-white focus:outline-none focus:border-[#111111]"
+                      className="w-36 px-2 py-1 border border-[#EAEAEA] rounded-[4px] font-bold text-xs text-[#111111] bg-white focus:outline-none focus:border-[#111111]"
                     >
                       {(grades.length > 0 ? grades : INITIAL_CASTING_GRADES).map((g) => (
                         <option key={g.id} value={g.id}>
@@ -195,7 +195,7 @@ export const CastingCalculatorForm = () => {
                       min="0"
                       value={casting.m_resin_core ?? 0}
                       onChange={(e) => setCastingField('m_resin_core', Math.max(0, Number(e.target.value)))}
-                      className="w-16 px-2 py-1 border border-[#EAEAEA] rounded-[4px] font-mono text-xs font-bold text-[#111111] bg-white text-right focus:outline-none focus:border-[#111111]"
+                      className="w-20 px-2.5 py-1 border border-[#EAEAEA] rounded-[4px] font-mono text-xs font-bold text-[#111111] bg-white text-right focus:outline-none focus:border-[#111111]"
                     />
                   </div>
                 </div>
@@ -271,7 +271,7 @@ export const CastingCalculatorForm = () => {
         </div>
 
         {/* SECTION 2: CHI PHÍ PHÂN XƯỞNG ĐÚC (PHẦN B) */}
-        <div className="flex flex-col space-y-2">
+        <div className="xl:col-span-4 flex flex-col space-y-2">
           <div className="flex items-center gap-2">
             <FileText className="w-4 h-4 text-[#111111] stroke-[2]" />
             <h2 className="text-xs font-bold text-[#111111] uppercase tracking-wider">
