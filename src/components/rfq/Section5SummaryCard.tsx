@@ -308,18 +308,18 @@ export const Section5SummaryCard: React.FC<Section5SummaryCardProps> = ({
             </div>
 
             {/* Unified Signature Dark Obsidian Grand Total Hero Card */}
-            <div className="bg-[#111111] text-white rounded-[6px] p-3.5 flex items-center justify-between shadow-xs border border-[#111111]">
-              <div>
-                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">
-                  TỔNG GIÁ BÁO (DỰ KIẾN)
-                </p>
-                <p className="font-mono font-extrabold text-2xl text-emerald-400 leading-none">
+            <div className="bg-[#111111] text-white rounded-[6px] p-3.5 flex flex-col items-end justify-center text-right shadow-xs border border-[#111111]">
+              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">
+                TỔNG GIÁ BÁO (DỰ KIẾN)
+              </p>
+              <div className="flex items-baseline justify-end gap-2">
+                <span className="font-mono font-extrabold text-2xl text-emerald-400 leading-none">
                   {Math.round(final_price).toLocaleString('vi-VN')}
-                </p>
+                </span>
+                <span className="font-mono font-bold text-xs text-white uppercase">
+                  VNĐ / Chi tiết
+                </span>
               </div>
-              <span className="font-mono font-bold text-xs text-white uppercase">
-                VNĐ / Chi tiết
-              </span>
             </div>
           </div>
         </div>

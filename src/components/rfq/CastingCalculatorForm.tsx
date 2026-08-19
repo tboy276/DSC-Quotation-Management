@@ -254,18 +254,18 @@ export const CastingCalculatorForm = () => {
             </div>
 
             {/* Signature Dark Obsidian Total Box for Part A */}
-            <div className="mt-4 bg-[#111111] text-white rounded-[6px] p-3.5 flex items-center justify-between border border-[#111111] shadow-xs">
-              <div>
-                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">
-                  TỔNG CHI PHÍ VẬT TƯ ĐÚC (PHẦN A)
-                </p>
-                <p className="font-mono font-extrabold text-2xl text-emerald-400 leading-none">
+            <div className="mt-4 bg-[#111111] text-white rounded-[6px] p-3.5 flex flex-col items-end justify-center text-right border border-[#111111] shadow-xs">
+              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">
+                TỔNG CHI PHÍ VẬT TƯ ĐÚC (PHẦN A)
+              </p>
+              <div className="flex items-baseline justify-end gap-2">
+                <span className="font-mono font-extrabold text-2xl text-emerald-400 leading-none">
                   {Math.round(partA_per_kg * m_cast).toLocaleString('vi-VN')}
-                </p>
+                </span>
+                <span className="font-mono font-bold text-xs text-white uppercase">
+                  VNĐ / CHI TIẾT
+                </span>
               </div>
-              <span className="font-mono font-bold text-xs text-white uppercase">
-                VNĐ / CHI TIẾT
-              </span>
             </div>
           </div>
         </div>
@@ -343,18 +343,18 @@ export const CastingCalculatorForm = () => {
             </div>
 
             {/* Signature Dark Obsidian Total Box for Part B */}
-            <div className="mt-4 bg-[#111111] text-white rounded-[6px] p-3.5 flex items-center justify-between border border-[#111111] shadow-xs">
-              <div>
-                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">
-                  TỔNG PHẦN B PHÂN XƯỞNG ĐÚC
-                </p>
-                <p className="font-mono font-extrabold text-2xl text-emerald-400 leading-none">
+            <div className="mt-4 bg-[#111111] text-white rounded-[6px] p-3.5 flex flex-col items-end justify-center text-right border border-[#111111] shadow-xs">
+              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">
+                TỔNG PHẦN B PHÂN XƯỞNG ĐÚC
+              </p>
+              <div className="flex items-baseline justify-end gap-2">
+                <span className="font-mono font-extrabold text-2xl text-emerald-400 leading-none">
                   {Math.round(res.C_part_b_total).toLocaleString('vi-VN')}
-                </p>
+                </span>
+                <span className="font-mono font-bold text-xs text-white uppercase">
+                  VNĐ / CHI TIẾT
+                </span>
               </div>
-              <span className="font-mono font-bold text-xs text-white uppercase">
-                VNĐ / CHI TIẾT
-              </span>
             </div>
           </div>
         </div>

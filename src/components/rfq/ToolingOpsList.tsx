@@ -320,18 +320,18 @@ export const ToolingOpsList = ({
             </div>
             
             {/* Signature Dark Obsidian Hero Total Card for Section 4 */}
-            <div className="mt-3 bg-[#111111] text-white rounded-[6px] p-3.5 flex items-center justify-between border border-[#111111] shadow-xs">
-              <div>
-                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">
-                  TỔNG CHI PHÍ BỘ {isForging ? 'KHUÔN' : 'MẪU'}
-                </p>
-                <p className="font-mono font-extrabold text-2xl text-emerald-400 leading-none">
+            <div className="mt-3 bg-[#111111] text-white rounded-[6px] p-3.5 flex flex-col items-end justify-center text-right border border-[#111111] shadow-xs">
+              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">
+                TỔNG CHI PHÍ BỘ {isForging ? 'KHUÔN' : 'MẪU'}
+              </p>
+              <div className="flex items-baseline justify-end gap-2">
+                <span className="font-mono font-extrabold text-2xl text-emerald-400 leading-none">
                   {Math.round(totalDieCost).toLocaleString('vi-VN')}
-                </p>
+                </span>
+                <span className="font-mono font-bold text-xs text-white uppercase">
+                  VNĐ
+                </span>
               </div>
-              <span className="font-mono font-bold text-xs text-white uppercase">
-                VNĐ
-              </span>
             </div>
             {components.length === 0 && (
               <p className="text-[10px] text-red-500/80 italic mt-1.5 leading-tight">

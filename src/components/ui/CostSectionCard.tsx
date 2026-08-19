@@ -171,36 +171,55 @@ export const CostSectionCard: React.FC<CostSectionCardProps> = ({
 
       {/* FOOTER TOTAL */}
       {(footerTitle || footerTotal) && (
-        <div className={`p-3.5 border rounded-[6px] flex items-center justify-between ${isFinalTotal ? 'bg-[#111111] border-[#111111] text-white shadow-xs' : 'bg-[#FBFBFA] border-[#EAEAEA]'}`}>
-          <div>
-            {footerTitle && (
-              <p className={`font-bold uppercase tracking-wider mb-0.5 ${isFinalTotal ? 'text-[10px] text-slate-400' : 'text-xs text-[#111111]'}`}>
-                {footerTitle}
-              </p>
-            )}
-            {footerSubtitle && !isFinalTotal && (
-              <p className="text-[10px] mt-0.5 font-mono text-[#787774]">
-                {footerSubtitle}
-              </p>
-            )}
-            {isFinalTotal && footerTotal && (
-              <p className="font-mono font-extrabold text-2xl text-emerald-400 leading-none">
-                {footerTotal}
-              </p>
-            )}
-          </div>
-          <div className="text-right">
-            {!isFinalTotal && footerTotal && (
-              <span className="font-bold text-base font-mono text-[#111111] leading-none">
-                {footerTotal}
-              </span>
-            )}
-            {footerTotalUnit && (
-              <span className={`font-mono font-bold text-xs uppercase ${isFinalTotal ? 'text-white' : 'text-[#787774] ml-1'}`}>
-                {footerTotalUnit}
-              </span>
-            )}
-          </div>
+        <div className={`p-3.5 border rounded-[6px] ${isFinalTotal ? 'bg-[#111111] border-[#111111] text-white shadow-xs flex flex-col items-end justify-center text-right' : 'bg-[#FBFBFA] border-[#EAEAEA] flex items-center justify-between'}`}>
+          {isFinalTotal ? (
+            <div>
+              {footerTitle && (
+                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">
+                  {footerTitle}
+                </p>
+              )}
+              <div className="flex items-baseline justify-end gap-2">
+                {footerTotal && (
+                  <span className="font-mono font-extrabold text-2xl text-emerald-400 leading-none">
+                    {footerTotal}
+                  </span>
+                )}
+                {footerTotalUnit && (
+                  <span className="font-mono font-bold text-xs uppercase text-white">
+                    {footerTotalUnit}
+                  </span>
+                )}
+              </div>
+            </div>
+          ) : (
+            <>
+              <div>
+                {footerTitle && (
+                  <p className="text-xs font-bold text-[#111111] uppercase tracking-wider mb-0.5">
+                    {footerTitle}
+                  </p>
+                )}
+                {footerSubtitle && (
+                  <p className="text-[10px] mt-0.5 font-mono text-[#787774]">
+                    {footerSubtitle}
+                  </p>
+                )}
+              </div>
+              <div className="text-right">
+                {footerTotal && (
+                  <span className="font-bold text-base font-mono text-[#111111] leading-none">
+                    {footerTotal}
+                  </span>
+                )}
+                {footerTotalUnit && (
+                  <span className="font-mono font-bold text-xs uppercase text-[#787774] ml-1">
+                    {footerTotalUnit}
+                  </span>
+                )}
+              </div>
+            </>
+          )}
         </div>
       )}
     </div>
