@@ -179,7 +179,7 @@ export const CastingCalculatorForm = () => {
                     >
                       {(grades.length > 0 ? grades : INITIAL_CASTING_GRADES).map((g) => (
                         <option key={g.id} value={g.id}>
-                          {g.name}
+                          {g.name}{g.code ? ` (${g.code})` : ''}
                         </option>
                       ))}
                     </select>

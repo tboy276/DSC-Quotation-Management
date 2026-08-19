@@ -58,7 +58,7 @@ export default function SawingCalculatorForm() {
           ) : (
             steelMaterials.map((m) => (
               <option key={m.id} value={m.id}>
-                {m.name}
+                {m.name}{m.notes ? ` — ${m.notes}` : ''}
               </option>
             ))
           )}
