@@ -219,7 +219,7 @@ export const CastingBomManager = ({ isAdmin }: CastingBomManagerProps) => {
       render: (item) => (
         <div>
           <p className="font-bold text-[#111111]">{item.material?.name || 'Vật tư'}</p>
-          <p className="text-[10px] text-[#787774]">{item.material?.category}</p>
+          <p className="text-[10px] text-[#787774]">{item.material?.notes || item.material?.category}</p>
         </div>
       ),
     },
