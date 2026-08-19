@@ -6,7 +6,8 @@ export const NEW_MATERIAL_CATEGORIES = [
   'VT hoàn thiện',
   'Thép carbon',
   'Thép hợp kim',
-  'Thép không gỉ'
+  'Thép không gỉ',
+  'Hồi liệu'
 ];
 
 export const STEEL_CATEGORIES = [
