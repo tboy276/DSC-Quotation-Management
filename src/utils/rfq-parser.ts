@@ -132,7 +132,7 @@ export const parseStructuredRfqText = (rawText: string): ParsedRfqData => {
             target = cleanTargetStr !== '' ? Number(cleanTargetStr) : 0;
           } else if (pLower.startsWith('công nghệ:')) {
             const rawTech = part.substring(part.indexOf(':') + 1).trim();
-            if (['Phôi rèn', 'Phôi đúc', 'Phôi cưa', 'Rèn+Gia công', 'Đúc+Gia công', 'Phôi cưa+Gia công'].includes(rawTech)) {
+            if (['Phôi rèn', 'Phôi đúc', 'Phôi cưa', 'Rèn+Gia công', 'Đúc+Gia công', 'Phôi cưa+Gia công', 'Chỉ gia công CNC'].includes(rawTech)) {
               tech = rawTech as TechnologyRequirementType;
             }
           }
@@ -159,7 +159,7 @@ export const parseStructuredRfqText = (rawText: string): ParsedRfqData => {
             }
             if (parts[5]) {
               const t = parts[5].trim();
-              if (['Phôi rèn', 'Phôi đúc', 'Phôi cưa', 'Rèn+Gia công', 'Đúc+Gia công', 'Phôi cưa+Gia công'].includes(t)) {
+              if (['Phôi rèn', 'Phôi đúc', 'Phôi cưa', 'Rèn+Gia công', 'Đúc+Gia công', 'Phôi cưa+Gia công', 'Chỉ gia công CNC'].includes(t)) {
                 tech = t as TechnologyRequirementType;
               }
             }

@@ -3,6 +3,8 @@ import { Outlet, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { Workflow, Box, Scissors, Wrench } from 'lucide-react';
 import { fetchQuoteByItemId } from '../lib/quotation-service';
 import { useConfirm } from '../context/ConfirmDialogContext';
+import { getTechFamily } from '../utils/tech-family';
+import type { TechnologyRequirementType } from '../types/quote';
 
 export const PricingToolsPage = () => {
   const navigate = useNavigate();
@@ -19,19 +21,13 @@ export const PricingToolsPage = () => {
   useEffect(() => {
     if (rfqItemId) {
       fetchQuoteByItemId(rfqItemId).then((res) => {
-        // FIX BUG: technology_requirement nằm trong res.rfqItem chứ không nằm trực tiếp ở res!
-        const techReq = res?.rfqItem?.technology_requirement || '';
+        const techReq = res?.rfqItem?.technology_requirement as TechnologyRequirementType | undefined;
         
         if (techReq) {
           setItemTech(techReq);
-          const tech = techReq.toLowerCase();
+          const correctTab = getTechFamily(techReq);
 
-          let correctTab = 'forging';
-          if (tech.includes('cưa')) correctTab = 'sawing';
-          else if (tech.includes('đúc')) correctTab = 'casting';
-          else if (tech.includes('cnc')) correctTab = 'machining';
-
-          if (currentSegment !== correctTab) {
+          if (correctTab && correctTab !== 'unspecified' && currentSegment !== correctTab) {
             navigate(`/pricing-tools/${correctTab}/${rfqItemId}`, { replace: true });
           }
         }
