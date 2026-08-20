@@ -25,18 +25,11 @@ export const HighlightInput: React.FC<HighlightInputProps> = ({
   }
 
   return (
-    <div className="relative inline-flex flex-col items-end">
-      {isEmpty && !hasError && (
-        <span className="absolute -top-3.5 right-0 text-[8px] font-bold text-amber-600 px-1 whitespace-nowrap pointer-events-none">
-          Bắt buộc nhập
-        </span>
-      )}
-      <input
-        {...props}
-        value={value ?? ''}
-        className={`${baseClasses} ${stateClasses} ${className}`}
-      />
-    </div>
+    <input
+      {...props}
+      value={value ?? ''}
+      className={`${baseClasses} ${stateClasses} ${className}`}
+    />
   );
 };
 

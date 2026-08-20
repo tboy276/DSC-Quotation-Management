@@ -4,6 +4,7 @@ import { useQuotationStore } from '../store/useQuotationStore';
 import type { SegmentType } from '../store/useQuotationStore';
 import { saveQuoteDraft, updateQuoteStatus, fetchQuoteByItemId } from '../lib/quotation-service';
 import type { QuoteRecord, RfqItemRecord, RfqDossier } from '../types/quote';
+import { getMissingRequiredFields } from '../utils/required-fields';
 
 export function usePricingCalculator(fixedSegment: SegmentType) {
   const navigate = useNavigate();
@@ -148,10 +149,20 @@ export function usePricingCalculator(fixedSegment: SegmentType) {
   };
 
   const handleCompleteCosting = async () => {
+    const { inp, res, rfqPayload } = getPayloads();
+    
+    const missing = getMissingRequiredFields(fixedSegment, inp);
+    if (missing.length > 0) {
+      setMsg({
+        type: 'error',
+        text: `Vui lòng nhập đủ các trường bắt buộc trước khi Hoàn thành: ${missing.join(', ')}`,
+      });
+      return;
+    }
+
     setSaving(true);
     setMsg(null);
     try {
-      const { inp, res, rfqPayload } = getPayloads();
       const record = await saveQuoteDraft(rfqPayload, fixedSegment, currency, exchangeRate, inp, res, currentQuoteId, 'READY_FOR_QUOTE');
       await updateQuoteStatus(record.id, 'READY_FOR_QUOTE');
       setInitialSnapshot(JSON.stringify(inp));
