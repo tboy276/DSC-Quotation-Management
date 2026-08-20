@@ -527,7 +527,8 @@ export async function saveMoldingRecipeItem(item: Partial<MoldingRecipeItem>): P
     };
   }
 
-  const { error } = await supabase.from('casting_molding_recipes').upsert(newItem);
+  const { material, ...dbItem } = newItem;
+  const { error } = await supabase.from('casting_molding_recipes').upsert(dbItem);
   if (error) {
     throw new Error(`Lỗi lưu công thức khuôn: ${error.message}`);
   }
