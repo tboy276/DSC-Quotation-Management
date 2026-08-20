@@ -28,7 +28,7 @@ export default function MachiningCalculatorForm() {
             <div className="flex items-center justify-between gap-1">
               <div className="flex flex-col">
                 <label className="text-[10px] font-bold text-[#787774] uppercase tracking-wider">
-                  Trọng Lượng Tinh Sau GC (m_tinh - kg):
+                  Trọng Lượng Tinh Sau GC (m_tinh - kg):<span className="text-amber-600 ml-0.5">*</span>
                 </label>
                 <span className="text-[10px] text-gray-500">Dùng tính phí bao gói, vận chuyển</span>
               </div>

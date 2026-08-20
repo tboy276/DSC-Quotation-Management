@@ -105,24 +105,22 @@ export default function SawingCalculatorForm() {
 
       {/* 4. Đường kính */}
       <div className="flex items-center justify-between gap-1">
-        <label className="text-[10px] font-bold text-[#787774] uppercase tracking-wider">4. Đường kính thép (d - mm):</label>
+        <label className="text-[10px] font-bold text-[#787774] uppercase tracking-wider">4. Đường kính thép (d - mm):<span className="text-amber-600 ml-0.5">*</span></label>
         <HighlightInput
           type="number"
           min="0"
           value={sawing.d_cut}
-          isRequired={false}
           onChange={(e) => setSawingField('d_cut', Math.max(0, Number(e.target.value)))}
         />
       </div>
 
       {/* 5. Chiều dài */}
       <div className="flex items-center justify-between gap-1">
-        <label className="text-[10px] font-bold text-[#787774] uppercase tracking-wider">5. Chiều dài cắt (L - mm):</label>
+        <label className="text-[10px] font-bold text-[#787774] uppercase tracking-wider">5. Chiều dài cắt (L - mm):<span className="text-amber-600 ml-0.5">*</span></label>
         <HighlightInput
           type="number"
           min="0"
           value={sawing.l_cut}
-          isRequired={false}
           onChange={(e) => setSawingField('l_cut', Math.max(0, Number(e.target.value)))}
         />
       </div>
@@ -130,8 +128,8 @@ export default function SawingCalculatorForm() {
       {/* 6. TL chi */}
       <div className="flex items-center justify-between gap-1">
         <div className="flex flex-col">
-          <label className="text-[10px] font-bold text-[#787774] uppercase tracking-wider">6. Trọng lượng chi (m_chi - kg):</label>
-          {refWeight > 0 && ((sawing.m_chi || 0) || 0) < refWeight && (
+          <label className="text-[10px] font-bold text-[#787774] uppercase tracking-wider">6. Trọng lượng chi (m_chi - kg):<span className="text-amber-600 ml-0.5">*</span></label>
+          {refWeight > 0 && (sawing.m_chi || 0) < refWeight && (
             <span className="text-[10px] text-red-500 font-normal">⚠️ Nhỏ hơn TL tham khảo ({refWeight.toFixed(3)}kg)</span>
           )}
         </div>
@@ -140,7 +138,7 @@ export default function SawingCalculatorForm() {
           min="0"
           step="0.0001"
           value={(sawing.m_chi || 0)}
-          hasError={refWeight > 0 && ((sawing.m_chi || 0) || 0) < refWeight}
+          hasError={refWeight > 0 && (sawing.m_chi || 0) < refWeight}
           onChange={(e) => setSawingField('m_chi', Math.max(0, Number(e.target.value)))}
         />
       </div>
@@ -148,9 +146,9 @@ export default function SawingCalculatorForm() {
       {/* 7. TL phôi */}
       <div className="flex items-center justify-between gap-1">
         <div className="flex flex-col">
-          <label className="text-[10px] font-bold text-[#787774] uppercase tracking-wider">7. Trọng lượng phôi cắt (m_phoi - kg):</label>
-          {((sawing.m_chi || 0) || 0) > 0 && ((sawing.m_phoi || 0) || 0) > ((sawing.m_chi || 0) || 0) && (
-            <span className="text-[10px] text-red-500 font-normal">⚠️ Phôi không được lớn hơn TL Chi ({((sawing.m_chi || 0) || 0)}kg)</span>
+          <label className="text-[10px] font-bold text-[#787774] uppercase tracking-wider">7. Trọng lượng phôi cắt (m_phoi - kg):<span className="text-amber-600 ml-0.5">*</span></label>
+          {(sawing.m_chi || 0) > 0 && (sawing.m_phoi || 0) < (sawing.m_chi || 0) && (
+            <span className="text-[10px] text-red-500 font-normal">⚠️ Phôi cắt không được nhỏ hơn TL Chi ({(sawing.m_chi || 0)}kg)</span>
           )}
         </div>
         <HighlightInput
@@ -158,7 +156,7 @@ export default function SawingCalculatorForm() {
           min="0"
           step="0.01"
           value={(sawing.m_phoi || 0)}
-          hasError={((sawing.m_chi || 0) || 0) > 0 && ((sawing.m_phoi || 0) || 0) > ((sawing.m_chi || 0) || 0)}
+          hasError={(sawing.m_chi || 0) > 0 && (sawing.m_phoi || 0) < (sawing.m_chi || 0)}
           onChange={(e) => setSawingField('m_phoi', Math.max(0, Number(e.target.value)))}
         />
       </div>
@@ -173,10 +171,10 @@ export default function SawingCalculatorForm() {
               onChange={(e) => setSawingField('use_m_tinh', e.target.checked)}
               className="rounded text-[#111111] focus:ring-[#111111] w-3 h-3 accent-[#111111]"
             />
-            <span className="text-[10px] font-bold text-[#787774] uppercase tracking-wider">8. Tính theo TL tinh:</span>
+            <span className="text-[10px] font-bold text-[#787774] uppercase tracking-wider">8. Tính theo TL tinh:{sawing.use_m_tinh && <span className="text-amber-600 ml-0.5">*</span>}</span>
           </label>
-          {((sawing.m_phoi || 0) || 0) > 0 && (sawing.m_tinh || 0) > ((sawing.m_phoi || 0) || 0) && (
-            <span className="text-[10px] text-red-500 font-normal">⚠️ Tinh không được lớn hơn TL Phôi ({((sawing.m_phoi || 0) || 0)}kg)</span>
+          {(sawing.m_phoi || 0) > 0 && (sawing.m_tinh || 0) > (sawing.m_phoi || 0) && (
+            <span className="text-[10px] text-red-500 font-normal">⚠️ Tinh không được lớn hơn TL Phôi ({(sawing.m_phoi || 0)}kg)</span>
           )}
         </div>
         <HighlightInput
@@ -186,7 +184,7 @@ export default function SawingCalculatorForm() {
           value={sawing.m_tinh}
           disabled={!sawing.use_m_tinh}
           isRequired={sawing.use_m_tinh}
-          hasError={((sawing.m_phoi || 0) || 0) > 0 && (sawing.m_tinh || 0) > ((sawing.m_phoi || 0) || 0)}
+          hasError={(sawing.m_phoi || 0) > 0 && (sawing.m_tinh || 0) > (sawing.m_phoi || 0)}
           onChange={(e) => setSawingField('m_tinh', Math.max(0, Number(e.target.value)))}
           className={!sawing.use_m_tinh ? "bg-gray-100 text-gray-400 cursor-not-allowed border-gray-200" : ""}
         />

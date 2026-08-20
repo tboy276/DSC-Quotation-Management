@@ -165,20 +165,20 @@ export const CastingCalculatorForm = () => {
                 <div className="space-y-3 text-xs">
                   <div className="flex items-center justify-between gap-1">
                     <label className="text-[10px] font-bold text-[#787774] uppercase tracking-wider">
-                      1. KHỐI LƯỢNG VẬT ĐÚC (KG):
+                      1. KHỐI LƯỢNG VẬT ĐÚC (KG):<span className="text-amber-600 ml-0.5">*</span>
                     </label>
                     <HighlightInput
                       type="number"
                       step="0.1"
                       min="0"
-                      value={(casting.m_cast || 0)}
+                      value={casting.m_cast}
                       onChange={(e) => setCastingField('m_cast', Math.max(0, Number(e.target.value)))}
                     />
                   </div>
 
                   <div className="flex items-center justify-between gap-1">
                     <label className="text-[10px] font-bold text-[#787774] uppercase tracking-wider">
-                      2. TỶ LỆ THU HỒI KIM LOẠI (%):
+                      2. TỶ LỆ THU HỒI KIM LOẠI (%):<span className="text-amber-600 ml-0.5">*</span>
                     </label>
                     <HighlightInput
                       type="number"
@@ -221,14 +221,28 @@ export const CastingCalculatorForm = () => {
 
                   <div className="flex items-center justify-between gap-1">
                     <label className="text-[10px] font-bold text-[#787774] uppercase tracking-wider">
-                      5. TRỌNG LƯỢNG THAO NHỰA (KG):
+                      5. KHỐI LƯỢNG CÁT RUỘT (KG):<span className="text-amber-600 ml-0.5">*</span>
                     </label>
                     <HighlightInput
                       type="number"
                       step="0.1"
                       min="0"
-                      value={casting.m_resin_core}
+                      value={casting.m_core}
+                      onChange={(e) => setCastingField('m_core', Math.max(0, Number(e.target.value)))}
+                    />
+                  </div>
+
+                  <div className="flex items-center justify-between gap-1">
+                    <label className="text-[10px] font-bold text-[#787774] uppercase tracking-wider">
+                      TRỌNG LƯỢNG THAO CÁT NHỰA (KG):
+                    </label>
+                    <input
+                      type="number"
+                      step="0.1"
+                      min="0"
+                      value={casting.m_resin_core ?? ''}
                       onChange={(e) => setCastingField('m_resin_core', Math.max(0, Number(e.target.value)))}
+                      className="w-20 px-2.5 py-1 border border-[#EAEAEA] rounded-[4px] font-mono text-xs font-bold text-[#111111] bg-white text-right focus:outline-none focus:border-[#111111]"
                     />
                   </div>
                 </div>
