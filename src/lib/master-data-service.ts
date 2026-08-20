@@ -378,44 +378,29 @@ export async function fetchSystemUnitRates(): Promise<SystemUnitRate[]> {
 }
 
 export async function updatePressingRate(id: string, ratePerHour: number, label?: string): Promise<void> {
-  try {
-    const { error } = await supabase.from('pressing_machine_rates').update({ rate_per_hour: ratePerHour }).eq('id', id);
-    if (error) {
-      console.warn(`Lỗi cập nhật máy dập Supabase, fallback to cache: ${error.message}`);
-    } else {
-      await logAudit('UPDATE_PRESS_RATE', 'pressing_machine_rates', id, { label: label || 'Máy dập', rate_per_hour: ratePerHour });
-    }
-  } catch (err: any) {
-    console.warn(`Exception updating press rate, fallback to cache:`, err);
+  const { error } = await supabase.from('pressing_machine_rates').update({ rate_per_hour: ratePerHour }).eq('id', id);
+  if (error) {
+    throw new Error(`Lỗi cập nhật máy dập trên Supabase: ${error.message}`);
   }
+  await logAudit('UPDATE_PRESS_RATE', 'pressing_machine_rates', id, { label: label || 'Máy dập', rate_per_hour: ratePerHour });
   localPressingRates = localPressingRates.map((r) => (r.id === id ? { ...r, rate_per_hour: ratePerHour } : r));
 }
 
 export async function updateHammerRate(id: string, ratePerHour: number, label?: string): Promise<void> {
-  try {
-    const { error } = await supabase.from('hydraulic_hammer_rates').update({ rate_per_hour: ratePerHour }).eq('id', id);
-    if (error) {
-      console.warn(`Lỗi cập nhật máy búa Supabase, fallback to cache: ${error.message}`);
-    } else {
-      await logAudit('UPDATE_HAMMER_RATE', 'hydraulic_hammer_rates', id, { label: label || 'Máy búa', rate_per_hour: ratePerHour });
-    }
-  } catch (err: any) {
-    console.warn(`Exception updating hammer rate, fallback to cache:`, err);
+  const { error } = await supabase.from('hydraulic_hammer_rates').update({ rate_per_hour: ratePerHour }).eq('id', id);
+  if (error) {
+    throw new Error(`Lỗi cập nhật máy búa trên Supabase: ${error.message}`);
   }
+  await logAudit('UPDATE_HAMMER_RATE', 'hydraulic_hammer_rates', id, { label: label || 'Máy búa', rate_per_hour: ratePerHour });
   localHammerRates = localHammerRates.map((r) => (r.id === id ? { ...r, rate_per_hour: ratePerHour } : r));
 }
 
 export async function updateSystemUnitRate(rateId: string, newValue: number, rateName?: string): Promise<void> {
-  try {
-    const { error } = await supabase.from('system_unit_rates').update({ value: newValue, updated_at: new Date().toISOString() }).eq('id', rateId);
-    if (error) {
-      console.warn(`Lỗi cập nhật đơn giá hệ thống Supabase, fallback to cache: ${error.message}`);
-    } else {
-      await logAudit('UPDATE_SYSTEM_RATE', 'system_unit_rates', rateId, { rate_name: rateName || 'Đơn giá', new_value: newValue });
-    }
-  } catch (err: any) {
-    console.warn(`Exception updating system unit rate, fallback to cache:`, err);
+  const { error } = await supabase.from('system_unit_rates').update({ value: newValue, updated_at: new Date().toISOString() }).eq('id', rateId);
+  if (error) {
+    throw new Error(`Lỗi cập nhật đơn giá hệ thống trên Supabase: ${error.message}`);
   }
+  await logAudit('UPDATE_SYSTEM_RATE', 'system_unit_rates', rateId, { rate_name: rateName || 'Đơn giá', new_value: newValue });
   localSystemRates = localSystemRates.map((r) => (r.id === rateId ? { ...r, value: newValue, updated_at: new Date().toISOString() } : r));
 }
 
