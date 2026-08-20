@@ -216,8 +216,6 @@ export const useQuotationStore = create<QuotationStoreState>((set, get) => ({
     C_molding_recipe_total_1000kg: 1302200,
     m_resin_core: 0,
     DG_resin_core_per_kg: 12500,
-    m_core: undefined,
-    DG_core_sand_kg: 3500,
 
     // 5 Part B Unit Rates
     DG_finishing_per_kg: 771.82,
@@ -420,8 +418,6 @@ export const useQuotationStore = create<QuotationStoreState>((set, get) => ({
           C_molding_recipe_total_1000kg: 1302200,
           m_resin_core: 0,
           DG_resin_core_per_kg: 12500,
-          m_core: undefined,
-          DG_core_sand_kg: 3500,
           DG_finishing_per_kg: 771.82,
           DG_utility_per_kg: 3687.6,
           DG_labor_per_kg: 2461,

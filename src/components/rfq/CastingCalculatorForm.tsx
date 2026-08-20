@@ -122,8 +122,7 @@ export const CastingCalculatorForm = () => {
   const total_batch_cost = cost_metal_1000 - cost_scrap_1000 + cost_furnace_1000 + cost_molding_1000;
   const dg_liquid_final = total_batch_cost / 1000;
   const resinCoreCost = (casting.m_resin_core || 0) * (casting.DG_resin_core_per_kg || 12500);
-  const coreSandCost = (casting.m_core || 0) * (casting.DG_core_sand_kg || 0);
-  const totalCoreCostPerProduct = resinCoreCost + coreSandCost;
+  const totalCoreCostPerProduct = resinCoreCost;
   const coreCostPerKg = m_cast > 0 ? totalCoreCostPerProduct / m_cast : 0;
   const partA_per_kg = (dg_liquid_final / yield_ratio) + coreCostPerKg;
 
@@ -221,20 +220,7 @@ export const CastingCalculatorForm = () => {
 
                   <div className="flex items-center justify-between gap-1">
                     <label className="text-[10px] font-bold text-[#787774] uppercase tracking-wider">
-                      5. KHỐI LƯỢNG CÁT RUỘT (KG):<span className="text-amber-600 ml-0.5">*</span>
-                    </label>
-                    <HighlightInput
-                      type="number"
-                      step="0.1"
-                      min="0"
-                      value={casting.m_core}
-                      onChange={(e) => setCastingField('m_core', Math.max(0, Number(e.target.value)))}
-                    />
-                  </div>
-
-                  <div className="flex items-center justify-between gap-1">
-                    <label className="text-[10px] font-bold text-[#787774] uppercase tracking-wider">
-                      TRỌNG LƯỢNG THAO CÁT NHỰA (KG):
+                      5. TRỌNG LƯỢNG THAO CÁT NHỰA (KG):
                     </label>
                     <input
                       type="number"

@@ -93,8 +93,8 @@ export const QuoteDetailModal = ({ quote, onClose }: QuoteDetailModalProps) => {
         rows: [
           { name: 'Cước tạo khuôn Sinto DG_sinto (VNĐ/khuôn)', val: `${cInp.DG_sinto_op?.toLocaleString('vi-VN')} VNĐ` },
           { name: 'Số lòng khuôn n_cavity (chi tiết/khuôn)', val: `${cInp.n_cavity_per_mold || 1} chi tiết` },
-          { name: 'Trọng lượng ruột cát m_core (kg/cái)', val: `${cInp.m_core || 0} kg` },
-          { name: 'Đơn giá cát ruột & keo DG_core_sand (VNĐ/kg)', val: `${cInp.DG_core_sand_kg?.toLocaleString('vi-VN')} VNĐ` },
+          { name: 'Trọng lượng thao cát nhựa (kg/cái)', val: `${cInp.m_resin_core || 0} kg` },
+          { name: 'Đơn giá thao cát nhựa (VND/kg)', val: `${cInp.DG_resin_core_per_kg?.toLocaleString('vi-VN')} VND` },
           { name: 'Chi phí công nghệ đúc C_ops_casting (VNĐ/cái)', val: formatCurrencyValue(cRes?.C_ops_casting || 0, currency, exchangeRate) },
         ],
       });

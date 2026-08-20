@@ -18,8 +18,6 @@ export function calculateCastingPrice(input: CastingInput): CastingResult {
     C_molding_recipe_total_1000kg = 0,
     m_resin_core = 0,
     DG_resin_core_per_kg = 12500,
-    m_core = 0,
-    DG_core_sand_kg = 0,
 
     // Part B — Post-Casting Workshop Costs per kg Cast Product
     DG_finishing_per_kg = 0,
@@ -81,8 +79,7 @@ export function calculateCastingPrice(input: CastingInput): CastingResult {
   const C_metal_casting = C_metal_batch - C_scrap_credit_batch;
 
   const C_resin_core = m_resin_core * DG_resin_core_per_kg; // Tính riêng theo 1 sản phẩm
-  const C_core = m_core * DG_core_sand_kg;
-  const C_ops_casting = C_furnace_ladle + C_molding_materials + C_resin_core + C_core;
+  const C_ops_casting = C_furnace_ladle + C_molding_materials + C_resin_core;
 
   // Hợp nhất kết quả: tổng Part A cho đơn hàng rồi chia ngược ra cho 1 kg m_cast (dùng hiển thị UI)
   const validMCast = Math.max(0.0001, m_cast);
@@ -164,7 +161,6 @@ export function calculateCastingPrice(input: CastingInput): CastingResult {
     C_furnace_ladle,
     C_resin_core,
     C_molding_materials,
-    C_core,
     C_ops_casting,
     partA_per_kg,
     C_finishing,

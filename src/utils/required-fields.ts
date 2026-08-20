@@ -12,7 +12,6 @@ export const REQUIRED_FIELDS_FOR_SAVE: Record<string, Array<{ key: string; label
   casting: [
     { key: 'm_cast', label: 'Khối lượng vật đúc (m_cast)' },
     { key: 'Y_yield', label: 'Tỷ lệ thu hồi kim loại (Y_yield)' },
-    { key: 'm_core', label: 'Khối lượng cát ruột (m_core)' },
   ],
   machining: [
     { key: 'm_tinh', label: 'Trọng lượng tinh (m_tinh)' },

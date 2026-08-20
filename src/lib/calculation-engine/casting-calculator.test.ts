@@ -16,8 +16,6 @@ describe('Casting Calculation Engine (Đúc Gang FC200 Test Case)', () => {
       C_molding_recipe_total_1000kg: 1302200, // 3 vật tư cố định (Bột đất sét + Cát đúc + Sơn khuôn) = 1,302,200đ/1000kg
       m_resin_core: 296.78648,               // Thao cát nhựa sản phẩm tính riêng = 296.78648kg @ 12,500đ/kg = 3,709,831đ
       DG_resin_core_per_kg: 12500,
-      m_core: 0,
-      DG_core_sand_kg: 0,
 
       // Part B — 5 Đơn giá xưởng sau đúc (/kg thành phẩm)
       DG_finishing_per_kg: 771.82,       // Vật tư HTSP

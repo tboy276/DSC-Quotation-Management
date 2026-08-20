@@ -242,8 +242,8 @@ export const exportDocumentToExcel = async (document: QuotationDocument) => {
       const cRes = res as CastingResult;
       sheetData.push(['Đơn giá công đoạn tạo khuôn Sinto DG_sinto (VNĐ/khuôn)', cInp.DG_sinto_op]);
       sheetdiv(sheetData, 'Số lòng khuôn n_cavity (chi tiết/khuôn)', cInp.n_cavity_per_mold);
-      sheetData.push(['Trọng lượng ruột cát m_core (kg/cái)', cInp.m_core]);
-      sheetData.push(['Đơn giá cát ruột & keo DG_core_sand (VNĐ/kg)', cInp.DG_core_sand_kg]);
+      sheetData.push(['Trọng lượng thao cát nhựa (kg/cái)', cInp.m_resin_core]);
+      sheetData.push(['Đơn giá thao cát nhựa (VND/kg)', cInp.DG_resin_core_per_kg]);
       sheetData.push(['Chi phí công nghệ tạo khuôn & đúc C_ops_casting (VNĐ/cái)', Math.round(cRes.C_ops_casting)]);
     }
 
