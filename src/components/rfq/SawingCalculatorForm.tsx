@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { isSteelCategory } from '../../utils/material-categories';
 import { useQuotationStore } from '../../store/useQuotationStore';
 import { MachiningOpsList } from './MachiningOpsList';
@@ -5,6 +6,7 @@ import { Section5SummaryCard } from './Section5SummaryCard';
 import { INITIAL_MATERIALS } from '../../lib/master-data-service';
 import { Workflow } from 'lucide-react';
 import { CostSectionCard } from '../ui/CostSectionCard';
+import { HighlightInput } from '../ui/HighlightInput';
 
 export default function SawingCalculatorForm() {
   const sawing = useQuotationStore((state) => state.sawingInput);
@@ -24,6 +26,18 @@ export default function SawingCalculatorForm() {
     (m) => isSteelCategory(m.category)
   );
 
+  useEffect(() => {
+    if (activeMaterials.length > 0 && sawing.selected_material_id) {
+      const mat = activeMaterials.find(m => m.id === sawing.selected_material_id);
+      if (mat) {
+        if (sawing.DG_steel !== mat.latest_price || sawing.DG_scrap !== mat.scrap_price) {
+          setSawingField('DG_steel', mat.latest_price || 0);
+          setSawingField('DG_scrap', mat.scrap_price || 0);
+        }
+      }
+    }
+  }, [sawing.selected_material_id, activeMaterials, setSawingField]);
+
   const res = getSawingResult();
 
   // Theoretical weight calculation reference
@@ -33,12 +47,12 @@ export default function SawingCalculatorForm() {
 
   // Breakdown values
   const effectiveSteelPrice = (sawing.DG_steel || 0) * (1 + (sawing.k_mgmt_mat || 0) / 100);
-  const costSteelInput = (sawing.m_chi || 0) * effectiveSteelPrice;
+  const costSteelInput = ((sawing.m_chi || 0) || 0) * effectiveSteelPrice;
 
-  let m_bavia_forging = (sawing.m_chi - sawing.m_phoi) * (1 - (sawing.k_loss || 0) / 100);
+  let m_bavia_forging = ((sawing.m_chi || 0) - (sawing.m_phoi || 0)) * (1 - (sawing.k_loss || 0) / 100);
   let m_bavia_cnc = 0;
   if (sawing.use_m_tinh && sawing.m_tinh !== undefined) {
-    m_bavia_cnc = Math.max(0, sawing.m_phoi - sawing.m_tinh);
+    m_bavia_cnc = Math.max(0, (sawing.m_phoi || 0) - sawing.m_tinh);
   }
   const costScrapRecycle = (m_bavia_forging * (sawing.DG_scrap || 0)) + (m_bavia_cnc * (sawing.DG_scrap_cnc ?? sawing.DG_scrap ?? 0));
 
@@ -80,37 +94,36 @@ export default function SawingCalculatorForm() {
       {/* 3. Phí Quản Lý Vật Tư */}
       <div className="flex items-center justify-between gap-1">
         <label className="text-[10px] font-bold text-[#787774] uppercase tracking-wider">3. Phí quản lý vật tư (%):</label>
-        <input
+        <HighlightInput
           type="number"
           min="0"
           step="0.1"
-          value={sawing.k_mgmt_mat || 0}
+          value={sawing.k_mgmt_mat}
           onChange={(e) => setSawingField('k_mgmt_mat', Math.max(0, Number(e.target.value)))}
-          className="w-20 px-2 py-1 border border-[#EAEAEA] rounded-[4px] font-mono text-xs font-bold text-[#111111] text-right"
         />
       </div>
 
       {/* 4. Đường kính */}
       <div className="flex items-center justify-between gap-1">
         <label className="text-[10px] font-bold text-[#787774] uppercase tracking-wider">4. Đường kính thép (d - mm):</label>
-        <input
+        <HighlightInput
           type="number"
           min="0"
-          value={sawing.d_cut || ''}
+          value={sawing.d_cut}
+          isRequired={false}
           onChange={(e) => setSawingField('d_cut', Math.max(0, Number(e.target.value)))}
-          className="w-20 px-2 py-1 border border-[#EAEAEA] rounded-[4px] font-mono text-xs font-bold text-[#111111] text-right"
         />
       </div>
 
       {/* 5. Chiều dài */}
       <div className="flex items-center justify-between gap-1">
         <label className="text-[10px] font-bold text-[#787774] uppercase tracking-wider">5. Chiều dài cắt (L - mm):</label>
-        <input
+        <HighlightInput
           type="number"
           min="0"
-          value={sawing.l_cut || ''}
+          value={sawing.l_cut}
+          isRequired={false}
           onChange={(e) => setSawingField('l_cut', Math.max(0, Number(e.target.value)))}
-          className="w-20 px-2 py-1 border border-[#EAEAEA] rounded-[4px] font-mono text-xs font-bold text-[#111111] text-right"
         />
       </div>
 
@@ -118,17 +131,17 @@ export default function SawingCalculatorForm() {
       <div className="flex items-center justify-between gap-1">
         <div className="flex flex-col">
           <label className="text-[10px] font-bold text-[#787774] uppercase tracking-wider">6. Trọng lượng chi (m_chi - kg):</label>
-          {refWeight > 0 && sawing.m_chi < refWeight && (
+          {refWeight > 0 && ((sawing.m_chi || 0) || 0) < refWeight && (
             <span className="text-[10px] text-red-500 font-normal">⚠️ Nhỏ hơn TL tham khảo ({refWeight.toFixed(3)}kg)</span>
           )}
         </div>
-        <input
+        <HighlightInput
           type="number"
           min="0"
           step="0.0001"
-          value={sawing.m_chi}
+          value={(sawing.m_chi || 0)}
+          hasError={refWeight > 0 && ((sawing.m_chi || 0) || 0) < refWeight}
           onChange={(e) => setSawingField('m_chi', Math.max(0, Number(e.target.value)))}
-          className={`w-20 px-2 py-1 border rounded-[4px] font-mono text-xs font-bold text-right ${refWeight > 0 && sawing.m_chi < refWeight ? 'border-red-500 bg-red-50 text-red-700' : 'border-[#EAEAEA] bg-white text-[#111111]'}`}
         />
       </div>
 
@@ -136,47 +149,46 @@ export default function SawingCalculatorForm() {
       <div className="flex items-center justify-between gap-1">
         <div className="flex flex-col">
           <label className="text-[10px] font-bold text-[#787774] uppercase tracking-wider">7. Trọng lượng phôi cắt (m_phoi - kg):</label>
-          {sawing.m_chi > 0 && sawing.m_phoi > sawing.m_chi && (
-            <span className="text-[10px] text-red-500 font-normal">⚠️ Phôi không được lớn hơn TL Chi ({sawing.m_chi}kg)</span>
+          {((sawing.m_chi || 0) || 0) > 0 && ((sawing.m_phoi || 0) || 0) > ((sawing.m_chi || 0) || 0) && (
+            <span className="text-[10px] text-red-500 font-normal">⚠️ Phôi không được lớn hơn TL Chi ({((sawing.m_chi || 0) || 0)}kg)</span>
           )}
         </div>
-        <input
+        <HighlightInput
           type="number"
           min="0"
           step="0.01"
-          value={sawing.m_phoi}
+          value={(sawing.m_phoi || 0)}
+          hasError={((sawing.m_chi || 0) || 0) > 0 && ((sawing.m_phoi || 0) || 0) > ((sawing.m_chi || 0) || 0)}
           onChange={(e) => setSawingField('m_phoi', Math.max(0, Number(e.target.value)))}
-          className={`w-20 px-2 py-1 border rounded-[4px] font-mono text-xs font-bold text-right ${sawing.m_chi > 0 && sawing.m_phoi > sawing.m_chi ? 'border-red-500 bg-red-50 text-red-700' : 'border-[#EAEAEA] bg-white text-[#111111]'}`}
         />
       </div>
 
-      {/* 8. TL tinh + Checkbox */}
-      <div className="flex items-center justify-between gap-1">
-        <div className="flex items-center space-x-2">
-          <div className="flex flex-col">
-            <label className="text-[10px] font-bold text-[#787774] uppercase tracking-wider">8. TL tinh sau gia công (kg):</label>
-            {sawing.m_phoi > 0 && (sawing.m_tinh || 0) > sawing.m_phoi && (
-              <span className="text-[10px] text-red-500 font-normal">⚠️ Tinh không được lớn hơn TL Phôi ({sawing.m_phoi}kg)</span>
-            )}
-          </div>
-          <div className="flex items-center space-x-1 border border-[#EAEAEA] px-1.5 py-0.5 rounded bg-[#FBFBFA] hover:bg-[#F0F0EE] transition-colors cursor-pointer" onClick={() => setSawingField('use_m_tinh', !sawing.use_m_tinh)}>
-            <input
-              type="checkbox"
-              id="use_m_tinh_sawing"
+      {/* TL tinh toggle */}
+      <div className="flex items-center justify-between gap-1 bg-[#FBFBFA] p-1.5 rounded-[4px] border border-[#EAEAEA]">
+        <div className="flex flex-col">
+          <label className="flex items-center gap-1 cursor-pointer">
+            <input 
+              type="checkbox" 
               checked={sawing.use_m_tinh || false}
               onChange={(e) => setSawingField('use_m_tinh', e.target.checked)}
-              className="w-3 h-3 cursor-pointer accent-[#111111]"
+              className="rounded text-[#111111] focus:ring-[#111111] w-3 h-3 accent-[#111111]"
             />
-            <label htmlFor="use_m_tinh_sawing" className="text-[10px] text-[#787774] cursor-pointer select-none font-medium">Tính theo TL tinh</label>
-          </div>
+            <span className="text-[10px] font-bold text-[#787774] uppercase tracking-wider">8. Tính theo TL tinh:</span>
+          </label>
+          {((sawing.m_phoi || 0) || 0) > 0 && (sawing.m_tinh || 0) > ((sawing.m_phoi || 0) || 0) && (
+            <span className="text-[10px] text-red-500 font-normal">⚠️ Tinh không được lớn hơn TL Phôi ({((sawing.m_phoi || 0) || 0)}kg)</span>
+          )}
         </div>
-        <input
+        <HighlightInput
           type="number"
           min="0"
           step="0.01"
-          value={sawing.m_tinh || ''}
+          value={sawing.m_tinh}
+          disabled={!sawing.use_m_tinh}
+          isRequired={sawing.use_m_tinh}
+          hasError={((sawing.m_phoi || 0) || 0) > 0 && (sawing.m_tinh || 0) > ((sawing.m_phoi || 0) || 0)}
           onChange={(e) => setSawingField('m_tinh', Math.max(0, Number(e.target.value)))}
-          className={`w-20 px-2 py-1 border rounded-[4px] font-mono text-xs font-bold text-right ${sawing.m_phoi > 0 && (sawing.m_tinh || 0) > sawing.m_phoi ? 'border-red-500 bg-red-50 text-red-700' : sawing.use_m_tinh ? 'border-[#111111] bg-white text-[#111111]' : 'border-[#EAEAEA] bg-[#F0F0EE] text-[#787774]'}`}
+          className={!sawing.use_m_tinh ? "bg-gray-100 text-gray-400 cursor-not-allowed border-gray-200" : ""}
         />
       </div>
 

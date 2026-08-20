@@ -636,3 +636,17 @@ export const resetMaterialsAndBom = async () => {
 if (typeof window !== 'undefined') {
   (window as any).__resetMaterialsAndBom = resetMaterialsAndBom;
 }
+
+export function getLiquidMetalCostPerKg(gradeId: string, bomItems: CastingBomItem[], materials: Material[]): number {
+  const gradeBom = bomItems.filter(b => b.casting_grade_id === gradeId);
+  if (!gradeBom.length) return 0;
+  
+  let totalCost = 0;
+  for (const item of gradeBom) {
+    const mat = materials.find(m => m.id === item.material_id);
+    if (mat) {
+      totalCost += (mat.latest_price || 0) * item.weight_kg;
+    }
+  }
+  return totalCost / 1000;
+}

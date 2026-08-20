@@ -11,11 +11,15 @@ import {
   fetchCastingSettings,
   getMoldingRecipeTotalCost1000kg,
   getFurnaceLadleCostPer1000kg,
+  fetchCastingBomItems,
+  fetchMaterials,
+  getLiquidMetalCostPerKg,
 } from '../../lib/master-data-service';
-import type { CastingGrade, MoldingRecipeItem } from '../../types/master-data';
+import type { CastingGrade, MoldingRecipeItem, CastingBomItem, Material } from '../../types/master-data';
 import { ActionButton } from '../ui/ActionButton';
 import { Modal } from '../ui/Modal';
 import { FileText, Eye } from 'lucide-react';
+import { HighlightInput } from '../ui/HighlightInput';
 
 export const CastingCalculatorForm = () => {
   const casting = useQuotationStore((state) => state.castingInput);
@@ -33,14 +37,30 @@ export const CastingCalculatorForm = () => {
   const [showRecipeModal, setShowRecipeModal] = useState<boolean>(false);
   const [grades, setGrades] = useState<CastingGrade[]>(INITIAL_CASTING_GRADES);
   const [recipeItems, setRecipeItems] = useState<MoldingRecipeItem[]>([]);
+  const [allBomItems, setAllBomItems] = useState<CastingBomItem[]>([]);
+  const [allMaterials, setAllMaterials] = useState<Material[]>([]);
 
   useEffect(() => {
     const loadMasterData = async () => {
-      const [fetchedGrades, fetchedRecipe, fetchedSettings] = await Promise.all([
+      const [fetchedGrades, fetchedRecipe, fetchedSettings, fetchedBom, fetchedMat] = await Promise.all([
         fetchCastingGrades(),
         fetchMoldingRecipe(),
         fetchCastingSettings(),
+        fetchCastingBomItems(),
+        fetchMaterials(),
       ]);
+
+      if (fetchedBom) setAllBomItems(fetchedBom);
+      if (fetchedMat) {
+        setAllMaterials(fetchedMat);
+        const scrapMat = fetchedMat.find((m) => m.name.toLowerCase() === 'gang phế liệu');
+        if (scrapMat && scrapMat.latest_price) {
+          setCastingField('DG_cast_scrap', scrapMat.latest_price);
+        } else {
+          console.warn("Không tìm thấy vật tư 'Gang phế liệu' trong master data, dùng mặc định 10000");
+          setCastingField('DG_cast_scrap', 10000);
+        }
+      }
 
       if (fetchedRecipe && fetchedRecipe.length > 0) {
         setRecipeItems(fetchedRecipe);
@@ -61,22 +81,39 @@ export const CastingCalculatorForm = () => {
 
       if (fetchedGrades && fetchedGrades.length > 0) {
         setGrades(fetchedGrades);
-        if (!casting.selected_casting_grade_id || !fetchedGrades.some((g) => g.id === casting.selected_casting_grade_id)) {
-          selectGrade(fetchedGrades[0].id);
+        let selectedId = casting.selected_casting_grade_id;
+        if (!selectedId || !fetchedGrades.some((g) => g.id === selectedId)) {
+          selectedId = fetchedGrades[0].id;
+          selectGrade(selectedId);
         } else {
-          selectGrade(casting.selected_casting_grade_id);
+          selectGrade(selectedId);
+        }
+        
+        // Cập nhật giá gang lỏng ban đầu
+        if (fetchedBom && fetchedMat && selectedId) {
+          const liqCost = getLiquidMetalCostPerKg(selectedId, fetchedBom, fetchedMat);
+          if (liqCost > 0) setCastingField('DG_liquid', liqCost);
         }
       }
     };
     loadMasterData();
   }, []);
 
+  useEffect(() => {
+    if (casting.selected_casting_grade_id && allBomItems.length > 0 && allMaterials.length > 0) {
+      const liqCost = getLiquidMetalCostPerKg(casting.selected_casting_grade_id, allBomItems, allMaterials);
+      if (liqCost > 0) {
+        setCastingField('DG_liquid', liqCost);
+      }
+    }
+  }, [casting.selected_casting_grade_id, allBomItems, allMaterials, setCastingField]);
+
   const res = getCastingResult();
   
   // Section 1/2 variables
   const yield_ratio = Math.max(0.01, (casting.Y_yield || 60)) / 100;
   const burn_ratio = (casting.k_burn_loss !== undefined ? casting.k_burn_loss : 2.15) / 100;
-  const m_cast = casting.m_cast || 0;
+  const m_cast = (casting.m_cast || 0) || 0;
   const cost_metal_1000 = 1000 * (casting.DG_liquid || 0);
   const scrap_kg_1000 = Math.max(0, 1000 - (1000 * yield_ratio) - (1000 * burn_ratio));
   const cost_scrap_1000 = scrap_kg_1000 * (casting.DG_cast_scrap || 0);
@@ -130,13 +167,12 @@ export const CastingCalculatorForm = () => {
                     <label className="text-[10px] font-bold text-[#787774] uppercase tracking-wider">
                       1. KHỐI LƯỢNG VẬT ĐÚC (KG):
                     </label>
-                    <input
+                    <HighlightInput
                       type="number"
                       step="0.1"
                       min="0"
-                      value={casting.m_cast ?? ''}
+                      value={(casting.m_cast || 0)}
                       onChange={(e) => setCastingField('m_cast', Math.max(0, Number(e.target.value)))}
-                      className="w-20 px-2.5 py-1 border border-[#EAEAEA] rounded-[4px] font-mono text-xs font-bold text-[#111111] bg-white text-right focus:outline-none focus:border-[#111111]"
                     />
                   </div>
 
@@ -144,13 +180,12 @@ export const CastingCalculatorForm = () => {
                     <label className="text-[10px] font-bold text-[#787774] uppercase tracking-wider">
                       2. TỶ LỆ THU HỒI KIM LOẠI (%):
                     </label>
-                    <input
+                    <HighlightInput
                       type="number"
                       step="1"
                       min="0"
-                      value={casting.Y_yield ?? ''}
+                      value={casting.Y_yield}
                       onChange={(e) => setCastingField('Y_yield', Math.max(0, Number(e.target.value)))}
-                      className="w-20 px-2.5 py-1 border border-[#EAEAEA] rounded-[4px] font-mono text-xs font-bold text-[#111111] bg-white text-right focus:outline-none focus:border-[#111111]"
                     />
                   </div>
 
@@ -158,13 +193,12 @@ export const CastingCalculatorForm = () => {
                     <label className="text-[10px] font-bold text-[#787774] uppercase tracking-wider">
                       3. % HAO HỤT HỒI LIỆU:
                     </label>
-                    <input
+                    <HighlightInput
                       type="number"
                       step="0.05"
                       min="0"
-                      value={casting.k_burn_loss !== undefined ? casting.k_burn_loss : 2.15}
+                      value={casting.k_burn_loss !== undefined ? casting.k_burn_loss : 5.0}
                       onChange={(e) => setCastingField('k_burn_loss', Math.max(0, Number(e.target.value)))}
-                      className="w-20 px-2.5 py-1 border border-[#EAEAEA] rounded-[4px] font-mono text-xs font-bold text-[#111111] bg-white text-right focus:outline-none focus:border-[#111111]"
                     />
                   </div>
 
@@ -189,13 +223,12 @@ export const CastingCalculatorForm = () => {
                     <label className="text-[10px] font-bold text-[#787774] uppercase tracking-wider">
                       5. TRỌNG LƯỢNG THAO NHỰA (KG):
                     </label>
-                    <input
+                    <HighlightInput
                       type="number"
                       step="0.1"
                       min="0"
-                      value={casting.m_resin_core ?? 0}
+                      value={casting.m_resin_core}
                       onChange={(e) => setCastingField('m_resin_core', Math.max(0, Number(e.target.value)))}
-                      className="w-20 px-2.5 py-1 border border-[#EAEAEA] rounded-[4px] font-mono text-xs font-bold text-[#111111] bg-white text-right focus:outline-none focus:border-[#111111]"
                     />
                   </div>
                 </div>

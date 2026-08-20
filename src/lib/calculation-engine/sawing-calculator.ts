@@ -6,8 +6,8 @@ import type { SawingInput, SawingResult } from './types';
 export function calculateSawingPrice(input: SawingInput): SawingResult {
   const {
     m_tinh,
-    m_phoi,
-    m_chi,
+    m_phoi = 0,
+    m_chi = 0,
     k_loss,
     DG_steel,
     DG_scrap,

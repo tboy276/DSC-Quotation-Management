@@ -6,8 +6,8 @@ import type { ForgingInput, ForgingResult } from './types';
 export function calculateForgingPrice(input: ForgingInput): ForgingResult {
   const {
     m_tinh,
-    m_phoi,
-    m_chi,
+    m_phoi = 0,
+    m_chi = 0,
     k_loss,
     DG_steel,
     DG_scrap,
@@ -127,7 +127,7 @@ export function calculateForgingPrice(input: ForgingInput): ForgingResult {
   const P_FORGING = Math.round(pre_profit_price + C_profit_val);
 
   return {
-    m_phoi: m_chi, // Legacy mapping in result (Trọng lượng chi)
+    m_phoi: m_chi || 0, // Legacy mapping in result (Trọng lượng chi)
     m_bavia,
     m_bavia_forging,
     m_bavia_cnc,

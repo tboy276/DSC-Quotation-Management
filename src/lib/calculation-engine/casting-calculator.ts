@@ -7,7 +7,7 @@ import type { CastingInput, CastingResult } from './types';
 export function calculateCastingPrice(input: CastingInput): CastingResult {
   const {
     m_tinh,
-    m_cast,
+    m_cast = 0,
     Y_yield,
     k_burn_loss = 0,
     DG_liquid,
@@ -55,7 +55,7 @@ export function calculateCastingPrice(input: CastingInput): CastingResult {
   // ----------------------------------------------------------------------
   // Section 1 & 2 — Part A (Kim loại lỏng + Khuôn cát) theo chuẩn 1000kg
   // ----------------------------------------------------------------------
-  const validYield = Math.max(0.01, Y_yield);
+  const validYield = Math.max(0.01, Y_yield || 60);
   const yield_ratio = validYield / 100;
   const burn_ratio = k_burn_loss / 100;
 

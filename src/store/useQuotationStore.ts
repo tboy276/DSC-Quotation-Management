@@ -164,9 +164,9 @@ export const useQuotationStore = create<QuotationStoreState>((set, get) => ({
 
   // 2. Forging Initial Input State
   forgingInput: {
-    m_phoi: 1.2,
-    m_chi: 1.531,
-    k_loss: 5.0,
+    m_phoi: undefined,
+    m_chi: undefined,
+    k_loss: 3.0,
     k_mgmt_mat: 0,
     use_m_tinh: false,
     selected_material_id: defaultForgingMaterial.id,
@@ -197,8 +197,8 @@ export const useQuotationStore = create<QuotationStoreState>((set, get) => ({
 
     k_mgmt: 8,
     DG_trans_kg: defaultTransRate,
-    DG_pack_kg: 0,
-    k_profit_forging: 15,
+    DG_pack_kg: 1000,
+    k_profit_forging: 7,
   },
 
   // 3. Casting Initial Input State
@@ -207,16 +207,16 @@ export const useQuotationStore = create<QuotationStoreState>((set, get) => ({
     DG_liquid: 13500,
     DG_cast_scrap: 10000,
 
-    m_cast: 4.5,
-    Y_yield: 60,
-    k_burn_loss: 2.15,
+    m_cast: undefined,
+    Y_yield: undefined,
+    k_burn_loss: 5.0,
 
     // Section 2 & Part B Workshop Costs
     C_furnace_ladle_per_1000kg: 120000,
     C_molding_recipe_total_1000kg: 1302200,
     m_resin_core: 0,
     DG_resin_core_per_kg: 12500,
-    m_core: 1.2,
+    m_core: undefined,
     DG_core_sand_kg: 3500,
 
     // 5 Part B Unit Rates
@@ -241,17 +241,17 @@ export const useQuotationStore = create<QuotationStoreState>((set, get) => ({
     N_order: 20000,
     pattern_cost_treatment: 'separate',
 
-    k_mgmt_cast: 10,
+    k_mgmt_cast: 8,
     DG_trans_kg: defaultTransRate,
-    DG_pack_kg: 0,
-    k_profit_casting: 12,
+    DG_pack_kg: 1000,
+    k_profit_casting: 7,
   },
 
   // 4. Sawing Initial Input State
   sawingInput: {
-    m_phoi: 1.2,
-    m_chi: 1.531,
-    k_loss: 2.0,
+    m_phoi: undefined,
+    m_chi: undefined,
+    k_loss: 0,
     k_mgmt_mat: 0,
     use_m_tinh: false,
     selected_material_id: defaultForgingMaterial.id,
@@ -270,8 +270,8 @@ export const useQuotationStore = create<QuotationStoreState>((set, get) => ({
     N_order: 20000,
     k_mgmt: 8,
     DG_trans_kg: defaultTransRate,
-    DG_pack_kg: 0,
-    k_profit_sawing: 15,
+    DG_pack_kg: 1000,
+    k_profit_sawing: 7,
   },
 
   // 5. Machining Initial Input State
@@ -283,8 +283,8 @@ export const useQuotationStore = create<QuotationStoreState>((set, get) => ({
 
     k_mgmt: 8,
     DG_trans_kg: defaultTransRate,
-    DG_pack_kg: 0,
-    k_profit_machining: 15,
+    DG_pack_kg: 1000,
+    k_profit_machining: 7,
   },
 
   // Actions
@@ -374,9 +374,9 @@ export const useQuotationStore = create<QuotationStoreState>((set, get) => ({
     if (seg === 'forging') {
       set({
         forgingInput: {
-          m_phoi: 1.2,
-          m_chi: 1.531,
-          k_loss: 5.0,
+          m_phoi: undefined,
+          m_chi: undefined,
+          k_loss: 3.0,
           k_mgmt_mat: 0,
           use_m_tinh: false,
           selected_material_id: defaultForgingMaterial.id,
@@ -403,8 +403,8 @@ export const useQuotationStore = create<QuotationStoreState>((set, get) => ({
           die_cost_treatment: 'separate',
           k_mgmt: 8,
           DG_trans_kg: defaultTransRate,
-          DG_pack_kg: 0,
-          k_profit_forging: 15,
+          DG_pack_kg: 1000,
+          k_profit_forging: 7,
         },
       });
     } else if (seg === 'casting') {
@@ -413,14 +413,14 @@ export const useQuotationStore = create<QuotationStoreState>((set, get) => ({
           selected_casting_grade_id: defaultCastingGrade.id,
           DG_liquid: 13500,
           DG_cast_scrap: 10000,
-          m_cast: 4.5,
-          Y_yield: 60,
-          k_burn_loss: 2.15,
+          m_cast: undefined,
+          Y_yield: undefined,
+          k_burn_loss: 5.0,
           C_furnace_ladle_per_1000kg: 120000,
           C_molding_recipe_total_1000kg: 1302200,
           m_resin_core: 0,
           DG_resin_core_per_kg: 12500,
-          m_core: 1.2,
+          m_core: undefined,
           DG_core_sand_kg: 3500,
           DG_finishing_per_kg: 771.82,
           DG_utility_per_kg: 3687.6,
@@ -438,18 +438,18 @@ export const useQuotationStore = create<QuotationStoreState>((set, get) => ({
           L_pattern_life: 20000,
           N_order: 20000,
           pattern_cost_treatment: 'separate',
-          k_mgmt_cast: 10,
+          k_mgmt_cast: 8,
           DG_trans_kg: defaultTransRate,
-          DG_pack_kg: 0,
-          k_profit_casting: 12,
+          DG_pack_kg: 1000,
+          k_profit_casting: 7,
         },
       });
     } else if (seg === 'sawing') {
       set({
         sawingInput: {
-          m_phoi: 1.2,
-          m_chi: 1.531,
-          k_loss: 2.0,
+          m_phoi: undefined,
+          m_chi: undefined,
+          k_loss: 0,
           k_mgmt_mat: 0,
           use_m_tinh: false,
           selected_material_id: defaultForgingMaterial.id,
@@ -465,8 +465,8 @@ export const useQuotationStore = create<QuotationStoreState>((set, get) => ({
           N_order: 20000,
           k_mgmt: 8,
           DG_trans_kg: defaultTransRate,
-          DG_pack_kg: 0,
-          k_profit_sawing: 15,
+          DG_pack_kg: 1000,
+          k_profit_sawing: 7,
         },
       });
     } else if (seg === 'machining') {
@@ -478,8 +478,8 @@ export const useQuotationStore = create<QuotationStoreState>((set, get) => ({
           machining_notes: '',
           k_mgmt: 8,
           DG_trans_kg: defaultTransRate,
-          DG_pack_kg: 0,
-          k_profit_machining: 15,
+          DG_pack_kg: 1000,
+          k_profit_machining: 7,
         },
       });
     }

@@ -39,8 +39,8 @@ export interface ToolingComponent {
 export interface ForgingInput {
   // Section 1 — Material (Vật liệu)
   m_tinh?: number;     // Trọng lượng tinh sau gia công (kg) - Mới
-  m_phoi: number;      // Trọng lượng phôi rèn (kg) - Cũ là m_tinh
-  m_chi: number;       // Trọng lượng chi phôi đầu vào (kg) - Cũ là m_phoi/m_bavia
+  m_phoi?: number;      // Trọng lượng phôi rèn (kg) - Cũ là m_tinh
+  m_chi?: number;       // Trọng lượng chi phôi đầu vào (kg) - Cũ là m_phoi/m_bavia
   d_cut?: number;      // Đường kính cắt (mm)
   l_cut?: number;      // Chiều dài cắt (mm)
   k_loss: number;      // Phần trăm cháy hao % (VD: 2.0 = 2%)
@@ -123,8 +123,8 @@ export interface ForgingResult {
 export interface CastingInput {
   m_tinh?: number;           // Trọng lượng tinh sau gia công (kg) - Mới
   // Section 1 — Cast Metal (Vật đúc & Hao hụt)
-  m_cast: number;            // Khối lượng vật đúc tinh (kg)
-  Y_yield: number;           // Thu hồi kim loại % (VD: 57 = 57%)
+  m_cast?: number;            // Khối lượng vật đúc tinh (kg)
+  Y_yield?: number;           // Thu hồi kim loại % (VD: 57 = 57%)
   k_burn_loss?: number;      // Hao hụt cháy % khi nấu không thu hồi (VD: 2.15 = 2.15%)
   DG_liquid: number;         // Đơn giá nước gang lỏng (VNĐ/kg)
   DG_cast_scrap: number;     // Đơn giá thu hồi gang phế (VNĐ/kg)
@@ -223,8 +223,8 @@ export interface CastingResult {
 
 export interface SawingInput {
   m_tinh?: number;     // Trọng lượng tinh sau gia công (kg)
-  m_phoi: number;      // Trọng lượng phôi cắt (kg)
-  m_chi: number;       // Trọng lượng chi phôi đầu vào (kg)
+  m_phoi?: number;      // Trọng lượng phôi cắt (kg)
+  m_chi?: number;       // Trọng lượng chi phôi đầu vào (kg)
   d_cut?: number;      // Đường kính cắt (mm)
   l_cut?: number;      // Chiều dài cắt (mm)
   k_loss: number;      // Phần trăm cháy hao %
