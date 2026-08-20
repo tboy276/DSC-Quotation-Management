@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
 import { useToast } from '../../context/ToastContext';
-import type { CastingFactorySettings, MoldingRecipeItem } from '../../types/master-data';
+import type { CastingFactorySettings, MoldingRecipeItem, Material } from '../../types/master-data';
 import {
   fetchCastingSettings,
   saveCastingSettings,
   fetchMoldingRecipe,
+  fetchMaterials,
   saveMoldingRecipeItem,
   deleteMoldingRecipeItem,
   getMoldingRecipeTotalCost1000kg,
@@ -44,6 +45,7 @@ export const CastingOperationsRatesManager = () => {
 
   // State 2: Molding recipe items (1000kg liquid metal)
   const [recipeItems, setRecipeItems] = useState<MoldingRecipeItem[]>([]);
+  const [materials, setMaterials] = useState<Material[]>([]);
 
   const [loading, setLoading] = useState<boolean>(true);
   const [savingSettings, setSavingSettings] = useState<boolean>(false);
@@ -56,12 +58,16 @@ export const CastingOperationsRatesManager = () => {
 
   const loadData = async () => {
     setLoading(true);
-    const [fetchedSettings, fetchedRecipe] = await Promise.all([
+    const [fetchedSettings, fetchedRecipe, fetchedMaterials] = await Promise.all([
       fetchCastingSettings(),
       fetchMoldingRecipe(),
+      fetchMaterials(),
     ]);
     setSettings(fetchedSettings);
     setRecipeItems(fetchedRecipe);
+    if (fetchedMaterials) {
+      setMaterials(fetchedMaterials);
+    }
     setLoading(false);
   };
 
@@ -141,9 +147,18 @@ export const CastingOperationsRatesManager = () => {
   };
 
   const handleSaveRecipe = async () => {
-    if (!editingRecipeItem || !editingRecipeItem.material_name?.trim()) {
-      toast.error('Vui lòng nhập tên vật tư khuôn!');
-      return;
+    if (!editingRecipeItem) return;
+    
+    if (editingRecipeItem.is_outsourced) {
+      if (!editingRecipeItem.material_name?.trim()) {
+        toast.error('Vui lòng nhập tên dịch vụ thuê ngoài!');
+        return;
+      }
+    } else {
+      if (!editingRecipeItem.material_id) {
+        toast.error('Vui lòng chọn vật tư từ danh mục!');
+        return;
+      }
     }
     setSavingRecipe(true);
     try {
@@ -353,9 +368,10 @@ export const CastingOperationsRatesManager = () => {
                         </tr>
                       ) : (
                         recipeItems.map((item, index) => {
+                          const effectivePrice = item.material?.latest_price ?? item.unit_price;
                           const itemTotal = item.is_outsourced
                             ? item.outsourced_cost_per_1000kg
-                            : item.quantity_per_1000kg * item.unit_price;
+                            : item.quantity_per_1000kg * effectivePrice;
 
                           return (
                             <tr key={item.id} className="group hover:bg-[#F9F9F8] transition-colors">
@@ -376,7 +392,7 @@ export const CastingOperationsRatesManager = () => {
                               <td className="py-2 px-3 text-right font-mono text-[#787774]">
                                 {item.is_outsourced
                                   ? '—'
-                                  : `${item.unit_price.toLocaleString('vi-VN')} đ`}
+                                  : `${effectivePrice.toLocaleString('vi-VN')} đ`}
                               </td>
                               <td className="py-2 px-3 text-right font-mono font-bold text-[#111111]">
                                 {itemTotal.toLocaleString('vi-VN')} đ
@@ -629,20 +645,47 @@ export const CastingOperationsRatesManager = () => {
       >
         {editingRecipeItem && (
           <div className="space-y-3 text-xs">
-            <div>
-              <label className="block font-semibold text-[#111111] mb-1">
-                Tên Vật Tư / Dịch Vụ Thuê Ngoài *
-              </label>
-              <input
-                type="text"
-                value={editingRecipeItem.material_name || ''}
-                onChange={(e) =>
-                  setEditingRecipeItem({ ...editingRecipeItem, material_name: e.target.value })
-                }
-                placeholder="VD: Bột đất sét, Cát đúc, Sơn khuôn, Xỉ tạo xỉ..."
-                className="w-full px-3 py-1.5 border border-[#EAEAEA] rounded-[6px] font-medium"
-              />
-            </div>
+            {editingRecipeItem.is_outsourced ? (
+              <div>
+                <label className="block font-semibold text-[#111111] mb-1">
+                  Tên Dịch Vụ Thuê Ngoài *
+                </label>
+                <input
+                  type="text"
+                  value={editingRecipeItem.material_name || ''}
+                  onChange={(e) =>
+                    setEditingRecipeItem({ ...editingRecipeItem, material_name: e.target.value })
+                  }
+                  placeholder="VD: Thuê ngoài rửa, sơn..."
+                  className="w-full px-3 py-1.5 border border-[#EAEAEA] rounded-[6px] font-medium"
+                />
+              </div>
+            ) : (
+              <div>
+                <label className="block font-semibold text-[#111111] mb-1">
+                  Tên Vật Tư *
+                </label>
+                <select
+                  value={editingRecipeItem.material_id || ''}
+                  onChange={(e) => {
+                    const selMat = materials.find((m) => m.id === e.target.value);
+                    setEditingRecipeItem({
+                      ...editingRecipeItem,
+                      material_id: selMat?.id,
+                      material_name: selMat?.name || '',
+                    });
+                  }}
+                  className="w-full px-3 py-1.5 border border-[#EAEAEA] rounded-[6px] font-medium"
+                >
+                  <option value="">-- Chọn vật tư từ danh mục --</option>
+                  {materials.map((m) => (
+                    <option key={m.id} value={m.id}>
+                      {m.name} ({m.category}) — {m.latest_price?.toLocaleString('vi-VN')} {m.unit}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
 
             <div className="flex items-center space-x-2 pt-1">
               <input
@@ -709,16 +752,17 @@ export const CastingOperationsRatesManager = () => {
                 <div>
                   <label className="block font-semibold text-[#111111] mb-1">Đơn Giá (VNĐ/kg)</label>
                   <input
-                    type="number"
-                    value={editingRecipeItem.unit_price || ''}
-                    onChange={(e) =>
-                      setEditingRecipeItem({
-                        ...editingRecipeItem,
-                        unit_price: Number(e.target.value),
-                      })
+                    type="text"
+                    value={
+                      editingRecipeItem.material_id
+                        ? materials.find((m) => m.id === editingRecipeItem.material_id)?.latest_price?.toLocaleString('vi-VN') || ''
+                        : editingRecipeItem.unit_price?.toLocaleString('vi-VN') || ''
                     }
-                    className="w-full px-3 py-1.5 border border-[#EAEAEA] rounded-[6px] font-mono"
+                    readOnly
+                    disabled
+                    className="w-full px-3 py-1.5 border border-[#EAEAEA] bg-[#F9F9F8] text-[#787774] rounded-[6px] font-mono cursor-not-allowed"
                   />
+                  <p className="text-[10px] text-[#787774] mt-1 leading-tight">Giá tự động cập nhật theo Tab 1 — Danh mục Vật tư</p>
                 </div>
               </div>
             )}

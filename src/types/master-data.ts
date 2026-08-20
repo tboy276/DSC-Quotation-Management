@@ -91,6 +91,7 @@ export interface LiquidMetalPriceResult {
 export interface MoldingRecipeItem {
   id: string;
   material_id?: string;
+  material?: Material;
   material_name: string;
   unit: string;
   category: string;

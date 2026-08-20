@@ -499,7 +499,12 @@ export async function fetchMoldingRecipe(): Promise<MoldingRecipeItem[]> {
   } catch (e) {
     // Graceful fallback to localMoldingRecipe
   }
-  return localMoldingRecipe;
+  
+  const materials = await fetchMaterials();
+  return localMoldingRecipe.map((r) => ({
+    ...r,
+    material: r.material_id ? materials.find((m) => m.id === r.material_id) : undefined,
+  }));
 }
 
 export async function saveMoldingRecipeItem(item: Partial<MoldingRecipeItem>): Promise<MoldingRecipeItem> {
@@ -510,6 +515,7 @@ export async function saveMoldingRecipeItem(item: Partial<MoldingRecipeItem>): P
   } else {
     newItem = {
       id: `rec-${Date.now()}`,
+      material_id: item.material_id,
       material_name: item.material_name || 'Vật tư khuôn mới',
       unit: item.unit || 'kg',
       category: item.category || 'Vật tư khuôn',
@@ -551,7 +557,8 @@ export function getMoldingRecipeTotalCost1000kg(items: MoldingRecipeItem[] = loc
     if (item.is_outsourced) {
       return sum + (item.outsourced_cost_per_1000kg || 0);
     }
-    return sum + (item.quantity_per_1000kg || 0) * (item.unit_price || 0);
+    const effectivePrice = item.material?.latest_price ?? item.unit_price ?? 0;
+    return sum + (item.quantity_per_1000kg || 0) * effectivePrice;
   }, 0);
 }
 
