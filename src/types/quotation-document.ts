@@ -8,6 +8,7 @@ export interface DocumentRemarkLine {
 }
 
 export interface DocumentDisplayConfig {
+  templateType?: 'disoco_standard' | 'astemo_detail';
   language: 'vi' | 'en' | 'both';
   layoutOrientation?: 'portrait' | 'landscape';
   showWeightChi: boolean;

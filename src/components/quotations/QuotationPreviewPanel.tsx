@@ -233,10 +233,51 @@ export const QuotationPreviewPanel: React.FC<QuotationPreviewPanelProps> = ({
             </div>
           </div>
 
-          {/* Section 1: Language */}
+          {/* Section 1: Mẫu Báo Giá */}
           <div className="space-y-1.5">
             <label className="block text-[10px] font-bold text-[#787774] uppercase tracking-wider">
-              1. Ngôn Ngữ Hiển Thị
+              1. Mẫu Báo Giá
+            </label>
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                disabled={readOnly}
+                onClick={() => setConfig((prev) => ({ ...prev, templateType: 'disoco_standard' }))}
+                className={`py-1.5 px-2 rounded-[6px] border text-[11px] font-semibold cursor-pointer transition-all ${
+                  (config.templateType || 'disoco_standard') === 'disoco_standard'
+                    ? 'bg-[#111111] text-white border-[#111111]'
+                    : 'bg-white text-[#111111] border-[#EAEAEA] hover:border-[#CCCCCC]'
+                }`}
+              >
+                DISOCO (Chuẩn)
+              </button>
+              
+              <div 
+                className="relative w-full"
+                title={document.items?.every(item => item.quote?.segment === 'forging') ? '' : 'Mẫu Astemo hiện tại chỉ hỗ trợ báo giá Rèn Dập (100% các mặt hàng trong báo giá phải là Rèn Dập).'}
+              >
+                <button
+                  type="button"
+                  disabled={readOnly || !(document.items?.every(item => item.quote?.segment === 'forging'))}
+                  onClick={() => setConfig((prev) => ({ ...prev, templateType: 'astemo_detail' }))}
+                  className={`w-full py-1.5 px-2 rounded-[6px] border text-[11px] font-semibold transition-all ${
+                    !(document.items?.every(item => item.quote?.segment === 'forging'))
+                      ? 'bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed'
+                      : config.templateType === 'astemo_detail'
+                        ? 'bg-[#111111] text-white border-[#111111] cursor-pointer'
+                        : 'bg-white text-[#111111] border-[#EAEAEA] hover:border-[#CCCCCC] cursor-pointer'
+                  }`}
+                >
+                  Astemo (Chi tiết công đoạn)
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* Section 1b: Language */}
+          <div className="space-y-1.5">
+            <label className="block text-[10px] font-bold text-[#787774] uppercase tracking-wider">
+              2. Ngôn Ngữ Hiển Thị
             </label>
             <div className="grid grid-cols-3 gap-2">
               {[
