@@ -147,8 +147,8 @@ export default function SawingCalculatorForm() {
       <div className="flex items-center justify-between gap-1">
         <div className="flex flex-col">
           <label className="text-[10px] font-bold text-[#787774] uppercase tracking-wider">7. Trọng lượng phôi cắt (m_phoi - kg):<span className="text-amber-600 ml-0.5">*</span></label>
-          {(sawing.m_chi || 0) > 0 && (sawing.m_phoi || 0) < (sawing.m_chi || 0) && (
-            <span className="text-[10px] text-red-500 font-normal">⚠️ Phôi cắt không được nhỏ hơn TL Chi ({(sawing.m_chi || 0)}kg)</span>
+          {(sawing.m_chi || 0) > 0 && (sawing.m_phoi || 0) > (sawing.m_chi || 0) && (
+            <span className="text-[10px] text-red-500 font-normal">⚠️ Phôi cắt không được lớn hơn TL Chi ({(sawing.m_chi || 0)}kg)</span>
           )}
         </div>
         <HighlightInput
@@ -156,7 +156,7 @@ export default function SawingCalculatorForm() {
           min="0"
           step="0.01"
           value={(sawing.m_phoi || 0)}
-          hasError={(sawing.m_chi || 0) > 0 && (sawing.m_phoi || 0) < (sawing.m_chi || 0)}
+          hasError={(sawing.m_chi || 0) > 0 && (sawing.m_phoi || 0) > (sawing.m_chi || 0)}
           onChange={(e) => setSawingField('m_phoi', Math.max(0, Number(e.target.value)))}
         />
       </div>

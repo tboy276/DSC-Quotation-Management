@@ -157,8 +157,8 @@ export const ForgingCalculatorForm = () => {
             <div className="flex items-center justify-between gap-1">
               <div className="flex flex-col">
                 <label className="text-[10px] font-bold text-[#787774] uppercase tracking-wider">7. Trọng lượng phôi rèn (m_phoi - kg):<span className="text-amber-600 ml-0.5">*</span></label>
-                {(forging.m_chi || 0) > 0 && (forging.m_phoi || 0) < (forging.m_chi || 0) && (
-                  <span className="text-[10px] text-red-500 font-normal">⚠️ Phôi rèn không được nhỏ hơn TL Chi ({(forging.m_chi || 0)}kg)</span>
+                {(forging.m_chi || 0) > 0 && (forging.m_phoi || 0) > (forging.m_chi || 0) && (
+                  <span className="text-[10px] text-red-500 font-normal">⚠️ Phôi rèn không được lớn hơn TL Chi ({(forging.m_chi || 0)}kg)</span>
                 )}
               </div>
               <HighlightInput
@@ -166,7 +166,7 @@ export const ForgingCalculatorForm = () => {
                 min="0"
                 step="0.01"
                 value={(forging.m_phoi || 0)}
-                hasError={(forging.m_chi || 0) > 0 && (forging.m_phoi || 0) < (forging.m_chi || 0)}
+                hasError={(forging.m_chi || 0) > 0 && (forging.m_phoi || 0) > (forging.m_chi || 0)}
                 onChange={(e) => setForgingField('m_phoi', Math.max(0, Number(e.target.value)))}
               />
             </div>
