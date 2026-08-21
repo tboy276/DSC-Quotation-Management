@@ -9,6 +9,7 @@ import { AstemoQuotationPdfContent } from './AstemoQuotationPdfContent';
 import { ActionButton } from '../ui/ActionButton';
 import { ArrowLeft, Check, Plus, Trash2, ArrowUp, ArrowDown, Eye, Sliders, Download } from 'lucide-react';
 import { generateQuotationPdf } from '../../utils/generateQuotationPdf';
+import { generateAstemoQuotationPdf } from '../../utils/generateAstemoQuotationPdf';
 import { getToolingColumnFlags } from '../../utils/quotation-tooling-columns';
 import { fetchMaterials, fetchCastingGrades, INITIAL_MATERIALS, INITIAL_CASTING_GRADES } from '../../lib/master-data-service';
 
@@ -139,7 +140,12 @@ export const QuotationPreviewPanel: React.FC<QuotationPreviewPanelProps> = ({
   const handleDownloadPDF = async () => {
     setIsExportingPdf(true);
     try {
-      await generateQuotationPdf(liveDocument, materialsMap, gradesMap);
+      if (config.templateType === 'astemo_detail') {
+        const doc = await generateAstemoQuotationPdf(liveDocument, materialsMap, gradesMap);
+        doc.save(`Quotation_${liveDocument.rfq_code || 'Astemo'}.pdf`);
+      } else {
+        await generateQuotationPdf(liveDocument, materialsMap, gradesMap);
+      }
     } catch (err: any) {
       console.error('Lỗi xuất PDF:', err);
       toast.error(`❌ Không thể tạo file PDF: ${err?.message || err}`);
