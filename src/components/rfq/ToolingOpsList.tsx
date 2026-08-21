@@ -144,7 +144,7 @@ export const ToolingOpsList = ({
                   </div>
 
                   {/* Form fields grid */}
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
+                  <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 text-xs">
                     <div>
                       <label className="block text-[10px] font-bold text-[#787774] uppercase tracking-wider mb-1">Vật liệu</label>
                       <select
@@ -204,6 +204,18 @@ export const ToolingOpsList = ({
                         value={comp.machining_price_kg}
                         onChange={(e) => onUpdateComp(idx, { ...comp, machining_price_kg: Number(e.target.value) })}
                         className="w-full px-2 py-1 border border-[#EAEAEA] bg-white rounded font-mono font-bold text-xs text-[#111111]"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-[10px] font-bold text-[#787774] uppercase tracking-wider mb-1" title="Tuổi thọ riêng của chi tiết này">Tuổi thọ riêng (chi tiết)</label>
+                      <input
+                        type="number"
+                        min="1"
+                        placeholder={(life_coefficient * cavity).toLocaleString('vi-VN')}
+                        value={comp.depreciation_qty || ''}
+                        onChange={(e) => onUpdateComp(idx, { ...comp, depreciation_qty: e.target.value ? Number(e.target.value) : undefined })}
+                        className="w-full px-2 py-1 border border-[#EAEAEA] bg-white rounded font-mono font-bold text-xs text-[#111111] placeholder:font-normal placeholder:text-[#BDBDBD]"
                       />
                     </div>
                   </div>

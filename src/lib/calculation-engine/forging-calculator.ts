@@ -82,12 +82,13 @@ export function calculateForgingPrice(input: ForgingInput): ForgingResult {
   let actual_C_die_total = 0;
   let actual_L_die_life = 0;
 
+  let die_components_breakdown: any[] = [];
   if (die_components.length > 0) {
-    const totalComponentsCost = die_components.reduce((sum, comp) => {
+    const componentBreakdown = die_components.map((comp) => {
       const materialCost = comp.weight_kg * comp.material_price_kg;
       const machiningCost = comp.weight_kg * comp.machining_price_kg;
       const heatTreatmentCost = comp.needs_heat_treatment ? (comp.weight_kg * comp.heat_treatment_price_kg) : 0;
-      
+
       let reworkCost = 0;
       if (comp.needs_reworking) {
         const reworkRatio = (comp.rework_ratio ?? 30) / 100;
@@ -95,9 +96,22 @@ export function calculateForgingPrice(input: ForgingInput): ForgingResult {
         const reworkCostPerTime = reworkRatio * machiningCost;
         reworkCost = reworkCount * reworkCostPerTime;
       }
-      
-      return sum + materialCost + machiningCost + heatTreatmentCost + reworkCost;
-    }, 0);
+
+      const totalCost = materialCost + machiningCost + heatTreatmentCost + reworkCost;
+      const effectiveLife = comp.depreciation_qty && comp.depreciation_qty > 0
+        ? comp.depreciation_qty
+        : life_coefficient * cavity; // fallback — giữ đúng hành vi cũ
+
+      return {
+        name: comp.name,
+        totalCost,
+        depreciationQty: effectiveLife,
+        costPerUnit: effectiveLife > 0 ? totalCost / effectiveLife : 0,
+      };
+    });
+
+    die_components_breakdown = componentBreakdown;
+    const totalComponentsCost = componentBreakdown.reduce((sum, c) => sum + c.totalCost, 0);
     actual_C_die_total = (totalComponentsCost + C_design) * (1 + k_mgmt_die / 100);
     actual_L_die_life = life_coefficient * cavity;
   }
@@ -144,6 +158,7 @@ export function calculateForgingPrice(input: ForgingInput): ForgingResult {
     C_heat_treat,
     C_paint,
     C_die_amortization,
+    die_components_breakdown,
     COGS,
     C_mgmt: C_mgmt_val,
     C_pack: actual_C_pack,

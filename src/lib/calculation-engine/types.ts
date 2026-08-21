@@ -19,6 +19,7 @@ export interface MachiningOperation {
 
 export interface ToolingComponent {
   name: string; // Tên thành phần
+  depreciation_qty?: number; // Tuổi thọ riêng của thành phần này (số chi tiết)
   material_id?: string; // Liên kết tới Material ở Tab 1
   material: string; // Mác vật liệu
   weight_kg: number; // Trọng lượng sử dụng
@@ -109,6 +110,7 @@ export interface ForgingResult {
   C_heat_treat: number;       // Chi phí xử lý nhiệt (VNĐ)
   C_paint: number;            // Chi phí sơn (VNĐ)
   C_die_amortization: number; // Chi phí khấu hao khuôn (/chi tiết) (VNĐ)
+  die_components_breakdown?: any[]; // Chi tiết khấu hao từng phần của khuôn (Astemo form)
   COGS: number;               // Giá vốn hàng bán (VNĐ)
   C_mgmt: number;             // Chi phí quản lý (VNĐ)
   C_pack: number;             // Chi phí bao gói (VNĐ)
