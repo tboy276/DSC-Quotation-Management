@@ -162,7 +162,7 @@ export const ToolingOpsList = ({
                       >
                         <option value="">-- Chọn vật tư --</option>
                         {materials
-                          .filter((m) => m.category === 'Vật liệu làm khuôn mẫu' || m.id === comp.material_id)
+                          .filter((m) => m.category === 'Vật liệu làm khuôn mẫu')
                           .map((m) => (
                           <option key={m.id} value={m.id}>
                             {m.name} — {m.latest_price?.toLocaleString('vi-VN')} VNĐ/kg
