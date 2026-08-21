@@ -1,9 +1,11 @@
 import type { ToolingComponent } from '../../lib/calculation-engine/types';
+import type { Material } from '../../types/master-data';
 import { Plus, Trash2, Layers } from 'lucide-react';
 import { ActionButton } from '../ui/ActionButton';
 
 interface ToolingOpsListProps {
   isForging: boolean;
+  materials?: Material[];
   
   components: ToolingComponent[];
   C_design: number;
@@ -20,6 +22,7 @@ interface ToolingOpsListProps {
 
 export const ToolingOpsList = ({
   isForging,
+  materials = [],
   components,
   C_design,
   k_mgmt_die,
@@ -143,13 +146,27 @@ export const ToolingOpsList = ({
                   {/* Form fields grid */}
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
                     <div>
-                      <label className="block text-[10px] font-bold text-[#787774] uppercase tracking-wider mb-1">Mác thép/Vật liệu</label>
-                      <input
-                        type="text"
-                        value={comp.material}
-                        onChange={(e) => onUpdateComp(idx, { ...comp, material: e.target.value })}
+                      <label className="block text-[10px] font-bold text-[#787774] uppercase tracking-wider mb-1">Vật liệu</label>
+                      <select
+                        value={comp.material_id || ''}
+                        onChange={(e) => {
+                          const selMat = materials.find((m) => m.id === e.target.value);
+                          onUpdateComp(idx, {
+                            ...comp,
+                            material_id: selMat?.id,
+                            material: selMat?.name || comp.material,
+                            material_price_kg: selMat?.latest_price ?? comp.material_price_kg,
+                          });
+                        }}
                         className="w-full px-2 py-1 border border-[#EAEAEA] bg-white rounded font-mono text-xs text-[#111111]"
-                      />
+                      >
+                        <option value="">-- Chọn vật tư --</option>
+                        {materials.map((m) => (
+                          <option key={m.id} value={m.id}>
+                            {m.name} — {m.latest_price?.toLocaleString('vi-VN')} VNĐ/kg
+                          </option>
+                        ))}
+                      </select>
                     </div>
 
                     <div>
@@ -171,8 +188,10 @@ export const ToolingOpsList = ({
                         step="1000"
                         value={comp.material_price_kg}
                         onChange={(e) => onUpdateComp(idx, { ...comp, material_price_kg: Number(e.target.value) })}
-                        className="w-full px-2 py-1 border border-[#EAEAEA] bg-white rounded font-mono font-bold text-xs text-[#111111]"
+                        disabled={!!comp.material_id}
+                        className={`w-full px-2 py-1 border border-[#EAEAEA] rounded font-mono font-bold text-xs text-[#111111] ${comp.material_id ? 'bg-[#F9F9F8] text-[#787774] cursor-not-allowed' : 'bg-white'}`}
                       />
+                      {comp.material_id && <div className="text-[9px] text-[#787774] mt-0.5">Giá tự động theo Tab 1</div>}
                     </div>
 
                     <div>

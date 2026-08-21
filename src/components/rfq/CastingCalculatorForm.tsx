@@ -408,6 +408,7 @@ export const CastingCalculatorForm = () => {
       {/* 4A. Bóc Tách Chi Phí Mẫu */}
       <ToolingOpsList
         isForging={false}
+        materials={allMaterials}
         components={casting.pattern_components || []}
         C_design={casting.C_design ?? 15000000}
         k_mgmt_die={casting.k_mgmt_die ?? 10}

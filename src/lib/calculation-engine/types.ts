@@ -19,6 +19,7 @@ export interface MachiningOperation {
 
 export interface ToolingComponent {
   name: string; // Tên thành phần
+  material_id?: string; // Liên kết tới Material ở Tab 1
   material: string; // Mác vật liệu
   weight_kg: number; // Trọng lượng sử dụng
   material_price_kg: number; // Đơn giá vật tư
@@ -63,6 +64,7 @@ export interface ForgingInput {
   DG_heat_treat_per_kg?: number;   // Đơn giá nhiệt luyện (VNĐ/kg) - Alias mới
   DG_paint_per_kg?: number;        // Đơn giá sơn (VNĐ/kg)
   DG_clean_kg?: number;            // Đơn giá làm sạch/phun bi (VNĐ/kg)
+  C_coining_per_unit?: number;     // Chi phí Nắn phẳng (Coining) — nhập tay, VNĐ/sản phẩm
 
 
 
@@ -97,7 +99,12 @@ export interface ForgingResult {
   m_bavia_forging?: number;   // Khối lượng ba-via rèn thu hồi (kg)
   m_bavia_cnc?: number;       // Khối lượng phoi CNC thu hồi (kg)
   C_mat_forging: number;      // Chi phí vật liệu rèn (VNĐ)
-  C_ops_forging: number;      // Chi phí công nghệ rèn (VNĐ)
+  C_cut: number;
+  C_heat_induction: number;
+  C_forging_op: number;
+  C_clean: number;
+  C_coining: number;
+  C_ops_forging: number;      // Chi phí công nghệ rèn tổng (VNĐ)
   C_machining: number;        // Chi phí gia công cơ khí (VNĐ)
   C_heat_treat: number;       // Chi phí xử lý nhiệt (VNĐ)
   C_paint: number;            // Chi phí sơn (VNĐ)

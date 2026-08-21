@@ -23,6 +23,7 @@ export function calculateForgingPrice(input: ForgingInput): ForgingResult {
     DG_heat_treat_per_kg = 0,
     DG_paint_per_kg = 0,
     DG_clean_kg = 1000,
+    C_coining_per_unit = 1000,
     machining_operations = [],
     die_components = [],
     C_design = 15000000,
@@ -67,8 +68,9 @@ export function calculateForgingPrice(input: ForgingInput): ForgingResult {
   const safeProductivity = expected_productivity > 0 ? expected_productivity : 1;
   const C_forging_op = (8 * DG_forging_machine_hour) / safeProductivity;
   const C_clean = m_chi * DG_clean_kg;
+  const C_coining = C_coining_per_unit;
 
-  const C_ops_forging = C_cut + C_heat_induction + C_forging_op + C_clean;
+  const C_ops_forging = C_cut + C_heat_induction + C_forging_op + C_clean + C_coining;
 
   // Section 3 — Gia công cơ khí
   const C_machining = machining_operations.reduce((total, op) => {
@@ -132,6 +134,11 @@ export function calculateForgingPrice(input: ForgingInput): ForgingResult {
     m_bavia_forging,
     m_bavia_cnc,
     C_mat_forging,
+    C_cut,
+    C_heat_induction,
+    C_forging_op,
+    C_clean,
+    C_coining,
     C_ops_forging,
     C_machining,
     C_heat_treat,

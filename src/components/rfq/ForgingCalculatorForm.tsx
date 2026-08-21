@@ -370,6 +370,18 @@ export const ForgingCalculatorForm = () => {
                 className="w-20 px-2 py-1 border border-[#EAEAEA] rounded-[4px] font-mono text-xs font-bold text-[#111111] text-right"
               />
             </div>
+
+            {/* 6. Đơn giá Nắn phẳng (Coining) */}
+            <div className="flex items-center justify-between gap-1">
+              <label className="text-[10px] font-bold text-[#787774] uppercase tracking-wider">6. Đơn giá nắn phẳng (VNĐ/sp):</label>
+              <input
+                type="number"
+                min="0"
+                value={forging.C_coining_per_unit ?? 1000}
+                onChange={(e) => setForgingField('C_coining_per_unit', Math.max(0, Number(e.target.value)))}
+                className="w-20 px-2 py-1 border border-[#EAEAEA] rounded-[4px] font-mono text-xs font-bold text-[#111111] text-right"
+              />
+            </div>
           </div>
         }
         mainRightContent={
@@ -410,10 +422,19 @@ export const ForgingCalculatorForm = () => {
               <div className="font-bold text-[#111111]">{Math.round(C_clean).toLocaleString('vi-VN')} VNĐ</div>
             </div>
 
-            {/* 5. Tổng chi phí rèn */}
+            {/* 5. Chi phí nắn phẳng (Coining) */}
+            <div className="flex justify-between items-center py-0.5 border-b border-[#EAEAEA]">
+              <div>
+                <div className="text-[11px] font-bold text-[#111111] font-sans">5. Chi phí nắn phẳng (Coining):</div>
+                <div className="text-[9px] font-mono text-[#787774]">Nhập tay / sản phẩm</div>
+              </div>
+              <div className="font-bold text-[#111111]">{Math.round(res.C_coining).toLocaleString('vi-VN')} VNĐ</div>
+            </div>
+
+            {/* 6. Tổng chi phí rèn */}
             <div className="flex justify-between items-center py-0.5">
               <div>
-                <div className="text-[11px] font-bold text-[#111111] font-sans">5. Tổng chi phí rèn & XLB:</div>
+                <div className="text-[11px] font-bold text-[#111111] font-sans">6. Tổng chi phí rèn & XLB:</div>
                 <div className="text-[9px] font-mono text-[#787774]">Tổng các công đoạn rèn</div>
               </div>
               <div className="font-bold text-[#111111]">{res.C_ops_forging.toLocaleString('vi-VN')} VNĐ</div>
@@ -441,6 +462,7 @@ export const ForgingCalculatorForm = () => {
       {/* 4A. Bóc Tách Chi Phí Khuôn */}
       <ToolingOpsList
         isForging={true}
+        materials={activeMaterials}
         components={forging.die_components || []}
         C_design={forging.C_design ?? 15000000}
         k_mgmt_die={forging.k_mgmt_die ?? 10}
