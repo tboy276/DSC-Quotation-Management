@@ -161,7 +161,9 @@ export const ToolingOpsList = ({
                         className="w-full px-2 py-1 border border-[#EAEAEA] bg-white rounded font-mono text-xs text-[#111111]"
                       >
                         <option value="">-- Chọn vật tư --</option>
-                        {materials.map((m) => (
+                        {materials
+                          .filter((m) => m.category === 'Vật liệu làm khuôn mẫu' || m.id === comp.material_id)
+                          .map((m) => (
                           <option key={m.id} value={m.id}>
                             {m.name} — {m.latest_price?.toLocaleString('vi-VN')} VNĐ/kg
                           </option>
