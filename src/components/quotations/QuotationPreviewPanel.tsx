@@ -5,6 +5,7 @@ import type { CurrencyType } from '../../types/quote';
 import type { TradeTermType } from '../../store/useQuotationStore';
 import { useToast } from '../../context/ToastContext';
 import { QuotationPdfContent } from './QuotationPdfContent';
+import { AstemoQuotationPdfContent } from './AstemoQuotationPdfContent';
 import { ActionButton } from '../ui/ActionButton';
 import { ArrowLeft, Check, Plus, Trash2, ArrowUp, ArrowDown, Eye, Sliders, Download } from 'lucide-react';
 import { generateQuotationPdf } from '../../utils/generateQuotationPdf';
@@ -521,7 +522,11 @@ export const QuotationPreviewPanel: React.FC<QuotationPreviewPanelProps> = ({
         </div>
 
         <div className="flex-1 overflow-y-auto max-h-[calc(100vh-200px)] p-4">
-          <QuotationPdfContent document={liveDocument} config={config} materialsMap={materialsMap} gradesMap={gradesMap} />
+          {config.templateType === 'astemo_detail' ? (
+            <AstemoQuotationPdfContent document={liveDocument} config={config} materialsMap={materialsMap} gradesMap={gradesMap} />
+          ) : (
+            <QuotationPdfContent document={liveDocument} config={config} materialsMap={materialsMap} gradesMap={gradesMap} />
+          )}
         </div>
       </div>
     </div>
