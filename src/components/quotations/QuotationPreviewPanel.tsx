@@ -74,6 +74,14 @@ export const QuotationPreviewPanel: React.FC<QuotationPreviewPanelProps> = ({
     };
   }, []);
 
+  const isAllForging = (document.items && document.items.length > 0) ? document.items.every(item => item.quote?.segment === 'forging') : false;
+
+  useEffect(() => {
+    if (config.templateType === 'astemo_detail' && !isAllForging) {
+      setConfig((prev) => ({ ...prev, templateType: 'disoco_standard' }));
+    }
+  }, [document.items, config.templateType, isAllForging]);
+
   const { hasSeparateDieItem } = getToolingColumnFlags(document.items, config);
 
   const toggleColumn = (key: keyof Omit<DocumentDisplayConfig, 'language' | 'remarks'>) => {
@@ -141,8 +149,7 @@ export const QuotationPreviewPanel: React.FC<QuotationPreviewPanelProps> = ({
     setIsExportingPdf(true);
     try {
       if (config.templateType === 'astemo_detail') {
-        const doc = await generateAstemoQuotationPdf(liveDocument, materialsMap, gradesMap);
-        doc.save(`Quotation_${liveDocument.rfq_code || 'Astemo'}.pdf`);
+        await generateAstemoQuotationPdf(liveDocument, materialsMap, gradesMap);
       } else {
         await generateQuotationPdf(liveDocument, materialsMap, gradesMap);
       }
@@ -248,7 +255,6 @@ export const QuotationPreviewPanel: React.FC<QuotationPreviewPanelProps> = ({
             <div className="grid grid-cols-2 gap-2">
               <button
                 type="button"
-                disabled={readOnly}
                 onClick={() => setConfig((prev) => ({ ...prev, templateType: 'disoco_standard' }))}
                 className={`py-1.5 px-2 rounded-[6px] border text-[11px] font-semibold cursor-pointer transition-all ${
                   (config.templateType || 'disoco_standard') === 'disoco_standard'
@@ -261,18 +267,18 @@ export const QuotationPreviewPanel: React.FC<QuotationPreviewPanelProps> = ({
               
               <div 
                 className="relative w-full"
-                title={document.items?.every(item => item.quote?.segment === 'forging') ? '' : 'Mẫu Astemo hiện tại chỉ hỗ trợ báo giá Rèn Dập (100% các mặt hàng trong báo giá phải là Rèn Dập).'}
+                title={isAllForging ? '' : 'Mẫu Astemo hiện tại chỉ hỗ trợ báo giá Rèn Dập (100% các mặt hàng trong báo giá phải là Rèn Dập).'}
               >
                 <button
                   type="button"
-                  disabled={readOnly || !(document.items?.every(item => item.quote?.segment === 'forging'))}
+                  disabled={!isAllForging}
                   onClick={() => setConfig((prev) => ({ ...prev, templateType: 'astemo_detail' }))}
                   className={`w-full py-1.5 px-2 rounded-[6px] border text-[11px] font-semibold transition-all ${
-                    !(document.items?.every(item => item.quote?.segment === 'forging'))
+                    !isAllForging
                       ? 'bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed'
                       : config.templateType === 'astemo_detail'
-                        ? 'bg-[#111111] text-white border-[#111111] cursor-pointer'
-                        : 'bg-white text-[#111111] border-[#EAEAEA] hover:border-[#CCCCCC] cursor-pointer'
+                        ? 'bg-[#111111] text-white border-[#111111]'
+                        : 'bg-white text-[#111111] border-[#EAEAEA] hover:border-[#CCCCCC]'
                   }`}
                 >
                   Astemo (Chi tiết công đoạn)

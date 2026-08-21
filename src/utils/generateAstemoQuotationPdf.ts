@@ -76,10 +76,35 @@ export const generateAstemoQuotationPdf = async (
 
     let currentY = (doc as any).lastAutoTable.finalY + 10;
 
-    // 1. Processing Cost Breakdown
+    
+    // 1. Material Cost Breakdown
     doc.setFontSize(12);
     doc.setFont("helvetica", "bold");
-    doc.text("1. Processing Cost Breakdown", 14, currentY);
+    doc.text("1. Material Cost Breakdown", 14, currentY);
+
+    autoTable(doc, {
+      startY: currentY + 4,
+      theme: "grid",
+      head: [["Input Weight (g)", "Output Weight (g)", "Scrap Weight (g)", `Material Cost (${currency})`]],
+      body: [
+        [
+          Math.round((Number(inp.m_chi) || 0) * 1000).toLocaleString("en-US"),
+          Math.round((Number(inp.m_phoi) || 0) * 1000).toLocaleString("en-US"),
+          Math.round((Number(res.m_bavia_forging) || 0) * 1000).toLocaleString("en-US"),
+          Math.round(materialCostVnd).toLocaleString("en-US")
+        ]
+      ],
+      styles: { fontSize: 10, cellPadding: 3 },
+      headStyles: { fillColor: [240, 240, 240] }
+    });
+
+    currentY = (doc as any).lastAutoTable.finalY + 10;
+
+    // 2. Processing Cost Breakdown
+
+    doc.setFontSize(12);
+    doc.setFont("helvetica", "bold");
+    doc.text("2. Processing Cost Breakdown", 14, currentY);
 
     autoTable(doc, {
       startY: currentY + 4,
@@ -98,10 +123,10 @@ export const generateAstemoQuotationPdf = async (
 
     currentY = (doc as any).lastAutoTable.finalY + 10;
 
-    // 2. Tooling Amortization Breakdown
+    // 3. Tooling Amortization Breakdown
     doc.setFontSize(12);
     doc.setFont("helvetica", "bold");
-    doc.text("2. Tooling Amortization Breakdown", 14, currentY);
+    doc.text("3. Tooling Amortization Breakdown", 14, currentY);
 
     const toolingBody = breakdown.length > 0 
       ? breakdown.map((b: any) => [
@@ -127,10 +152,10 @@ export const generateAstemoQuotationPdf = async (
 
     currentY = (doc as any).lastAutoTable.finalY + 10;
 
-    // 3. Agreed Cost
+    // 4. Agreed Cost
     doc.setFontSize(12);
     doc.setFont("helvetica", "bold");
-    doc.text("3. Agreed Cost", 14, currentY);
+    doc.text("4. Agreed Cost", 14, currentY);
 
     autoTable(doc, {
       startY: currentY + 4,
@@ -149,5 +174,6 @@ export const generateAstemoQuotationPdf = async (
     });
   });
 
+  doc.save(`Quotation_${document.rfq_code || 'Astemo'}.pdf`);
   return doc;
 };
