@@ -131,9 +131,9 @@ export const generateAstemoQuotationPdf = async (
     const toolingBody = breakdown.length > 0 
       ? breakdown.map((b: any) => [
           b.name,
-          Math.round(b.cost).toLocaleString("en-US"),
-          Math.round(b.life).toLocaleString("en-US"),
-          Math.round(b.amortization_per_unit).toLocaleString("en-US")
+          Math.round(b.totalCost).toLocaleString("en-US"),
+          Math.round(b.depreciationQty).toLocaleString("en-US"),
+          Math.round(b.costPerUnit).toLocaleString("en-US")
         ])
       : [[{ content: "No tooling breakdown available", colSpan: 4, styles: { fontStyle: "italic", halign: "center" } }]];
 
