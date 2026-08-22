@@ -13,6 +13,8 @@ import { Modal } from '../ui/Modal';
 import { ActionButton } from '../ui/ActionButton';
 import { useConfirm } from '../../context/ConfirmDialogContext';
 import { Workflow, Plus, Trash2, Shield, Hammer } from 'lucide-react';
+import { NumberTextInput } from '../../components/ui/NumberTextInput';
+
 
 export const ForgingRatesManager = () => {
   const { profile } = useAuth();
@@ -318,23 +320,21 @@ export const ForgingRatesManager = () => {
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="block font-bold text-[#787774] text-[10px] uppercase mb-1">Tải Trọng Từ (Tấn)</label>
-              <input
-                type="number"
+              <NumberTextInput
                 required
                 min="1"
                 value={pressMin}
-                onChange={(e) => setPressMin(Number(e.target.value))}
+                onChange={(e) => setPressMin(e)}
                 className="w-full px-3 py-1.5 border border-[#EAEAEA] rounded-[6px] text-[#111111] font-mono font-bold"
               />
             </div>
             <div>
               <label className="block font-bold text-[#787774] text-[10px] uppercase mb-1">Tải Trọng Đến (Tấn)</label>
-              <input
-                type="number"
+              <NumberTextInput
                 required
                 min="1"
                 value={pressMax}
-                onChange={(e) => setPressMax(Number(e.target.value))}
+                onChange={(e) => setPressMax(e)}
                 className="w-full px-3 py-1.5 border border-[#EAEAEA] rounded-[6px] text-[#111111] font-mono font-bold"
               />
             </div>
@@ -342,13 +342,12 @@ export const ForgingRatesManager = () => {
 
           <div>
             <label className="block font-bold text-[#787774] text-[10px] uppercase mb-1">Đơn Giá Giờ Máy (VNĐ / Giờ)</label>
-            <input
-              type="number"
+            <NumberTextInput
               required
               min="1"
               step="10000"
               value={pressRate}
-              onChange={(e) => setPressRate(Number(e.target.value))}
+              onChange={(e) => setPressRate(e)}
               className="w-full px-3 py-1.5 border border-[#EAEAEA] rounded-[6px] text-[#111111] font-mono font-bold text-sm"
             />
           </div>
@@ -381,23 +380,21 @@ export const ForgingRatesManager = () => {
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="block font-bold text-[#787774] text-[10px] uppercase mb-1">Năng Lượng Từ (kJ)</label>
-              <input
-                type="number"
+              <NumberTextInput
                 required
                 min="1"
                 value={hammerMin}
-                onChange={(e) => setHammerMin(Number(e.target.value))}
+                onChange={(e) => setHammerMin(e)}
                 className="w-full px-3 py-1.5 border border-[#EAEAEA] rounded-[6px] text-[#111111] font-mono font-bold"
               />
             </div>
             <div>
               <label className="block font-bold text-[#787774] text-[10px] uppercase mb-1">Năng Lượng Đến (kJ)</label>
-              <input
-                type="number"
+              <NumberTextInput
                 required
                 min="1"
                 value={hammerMax}
-                onChange={(e) => setHammerMax(Number(e.target.value))}
+                onChange={(e) => setHammerMax(e)}
                 className="w-full px-3 py-1.5 border border-[#EAEAEA] rounded-[6px] text-[#111111] font-mono font-bold"
               />
             </div>
@@ -405,13 +402,12 @@ export const ForgingRatesManager = () => {
 
           <div>
             <label className="block font-bold text-[#787774] text-[10px] uppercase mb-1">Đơn Giá Giờ Máy (VNĐ / Giờ)</label>
-            <input
-              type="number"
+            <NumberTextInput
               required
               min="1"
               step="10000"
               value={hammerRate}
-              onChange={(e) => setHammerRate(Number(e.target.value))}
+              onChange={(e) => setHammerRate(e)}
               className="w-full px-3 py-1.5 border border-[#EAEAEA] rounded-[6px] text-[#111111] font-mono font-bold text-sm"
             />
           </div>

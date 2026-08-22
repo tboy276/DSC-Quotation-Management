@@ -6,6 +6,8 @@ import { DataTable, type DataTableColumn, type DataTableAction } from '../ui/Dat
 import { Modal } from '../ui/Modal';
 import { ActionButton } from '../ui/ActionButton';
 import { Cpu, Edit2, Zap, Truck, Layers, Check } from 'lucide-react';
+import { NumberTextInput } from '../../components/ui/NumberTextInput';
+
 
 export const SystemRatesManager = () => {
   const { profile } = useAuth();
@@ -237,13 +239,12 @@ export const SystemRatesManager = () => {
             <label className="block text-[10px] font-bold text-[#787774] uppercase mb-1">
               Đơn Giá Áp Dụng Mới ({editingRate?.unit})
             </label>
-            <input
-              type="number"
+            <NumberTextInput
               required
               min="0"
               step="10"
               value={editValue}
-              onChange={(e) => setEditValue(Number(e.target.value))}
+              onChange={(e) => setEditValue(e)}
               className="w-full px-3 py-1.5 border border-[#EAEAEA] rounded-[6px] font-mono font-bold text-base text-[#111111]"
             />
           </div>

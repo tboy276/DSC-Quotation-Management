@@ -19,7 +19,9 @@ import type { CastingGrade, MoldingRecipeItem, CastingBomItem, Material } from '
 import { ActionButton } from '../ui/ActionButton';
 import { Modal } from '../ui/Modal';
 import { FileText, Eye } from 'lucide-react';
-import { HighlightInput } from '../ui/HighlightInput';
+import { NumberTextInput } from '../../components/ui/NumberTextInput';
+import { HighlightNumberInput } from '../../components/ui/HighlightNumberInput';
+
 
 export const CastingCalculatorForm = () => {
   const casting = useQuotationStore((state) => state.castingInput);
@@ -166,12 +168,11 @@ export const CastingCalculatorForm = () => {
                     <label className="text-[10px] font-bold text-[#787774] uppercase tracking-wider">
                       1. KHỐI LƯỢNG VẬT ĐÚC (KG):<span className="text-amber-600 ml-0.5">*</span>
                     </label>
-                    <HighlightInput
-                      type="number"
+                    <HighlightNumberInput
                       step="0.1"
                       min="0"
                       value={casting.m_cast}
-                      onChange={(e) => setCastingField('m_cast', Math.max(0, Number(e.target.value)))}
+                      onChange={(e) => setCastingField('m_cast', Math.max(0, e))}
                     />
                   </div>
 
@@ -179,12 +180,11 @@ export const CastingCalculatorForm = () => {
                     <label className="text-[10px] font-bold text-[#787774] uppercase tracking-wider">
                       2. TỶ LỆ THU HỒI KIM LOẠI (%):<span className="text-amber-600 ml-0.5">*</span>
                     </label>
-                    <HighlightInput
-                      type="number"
+                    <HighlightNumberInput
                       step="1"
                       min="0"
                       value={casting.Y_yield}
-                      onChange={(e) => setCastingField('Y_yield', Math.max(0, Number(e.target.value)))}
+                      onChange={(e) => setCastingField('Y_yield', Math.max(0, e))}
                     />
                   </div>
 
@@ -192,12 +192,11 @@ export const CastingCalculatorForm = () => {
                     <label className="text-[10px] font-bold text-[#787774] uppercase tracking-wider">
                       3. % HAO HỤT HỒI LIỆU:
                     </label>
-                    <HighlightInput
-                      type="number"
+                    <HighlightNumberInput
                       step="0.05"
                       min="0"
                       value={casting.k_burn_loss !== undefined ? casting.k_burn_loss : 5.0}
-                      onChange={(e) => setCastingField('k_burn_loss', Math.max(0, Number(e.target.value)))}
+                      onChange={(e) => setCastingField('k_burn_loss', Math.max(0, e))}
                     />
                   </div>
 
@@ -222,12 +221,11 @@ export const CastingCalculatorForm = () => {
                     <label className="text-[10px] font-bold text-[#787774] uppercase tracking-wider">
                       5. TRỌNG LƯỢNG THAO CÁT NHỰA (KG):
                     </label>
-                    <input
-                      type="number"
+                    <NumberTextInput
                       step="0.1"
                       min="0"
-                      value={casting.m_resin_core ?? ''}
-                      onChange={(e) => setCastingField('m_resin_core', Math.max(0, Number(e.target.value)))}
+                      value={casting.m_resin_core }
+                      onChange={(e) => setCastingField('m_resin_core', Math.max(0, e))}
                       className="w-20 px-2.5 py-1 border border-[#EAEAEA] rounded-[4px] font-mono text-xs font-bold text-[#111111] bg-white text-right focus:outline-none focus:border-[#111111]"
                     />
                   </div>

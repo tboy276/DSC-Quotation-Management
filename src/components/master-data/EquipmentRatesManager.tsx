@@ -15,6 +15,8 @@ import {
 import { useAuth } from '../../context/AuthContext';
 import { Modal } from '../ui/Modal';
 import { ActionButton } from '../ui/ActionButton';
+import { NumberTextInput } from '../../components/ui/NumberTextInput';
+
 import {
   Cpu,
   Edit2,
@@ -358,12 +360,11 @@ export const EquipmentRatesManager = ({ isAdmin: propIsAdmin }: EquipmentRatesMa
               <label className="block text-xs font-bold text-[#111111] uppercase tracking-wider mb-1">
                 Đơn Giá Giờ Máy (VNĐ/giờ) <span className="text-red-500">*</span>
               </label>
-              <input
-                type="number"
+              <NumberTextInput
                 min="0"
                 step="1000"
                 value={editRatePerHour}
-                onChange={(e) => setEditRatePerHour(Number(e.target.value))}
+                onChange={(e) => setEditRatePerHour(e)}
                 className="w-full px-3 py-2 border border-[#EAEAEA] rounded-[4px] text-sm font-mono font-bold text-[#111111] focus:outline-none focus:border-[#111111] transition-colors"
                 autoFocus
               />

@@ -18,6 +18,8 @@ import { Modal } from '../ui/Modal';
 import { ActionButton } from '../ui/ActionButton';
 import { useConfirm } from '../../context/ConfirmDialogContext';
 import { Plus, Edit2, Trash2, Check, AlertCircle } from 'lucide-react';
+import { NumberTextInput } from '../../components/ui/NumberTextInput';
+
 
 interface CastingBomManagerProps {
   isAdmin: boolean;
@@ -524,13 +526,12 @@ export const CastingBomManager = ({ isAdmin }: CastingBomManagerProps) => {
             <label className="block text-[10px] font-bold text-[#787774] uppercase mb-1">
               Khối Lượng Phối Trộn (kg / 1000kg)
             </label>
-            <input
-              type="number"
+            <NumberTextInput
               required
               min="0.1"
               step="0.1"
               value={addWeightKg}
-              onChange={(e) => setAddWeightKg(Number(e.target.value))}
+              onChange={(e) => setAddWeightKg(e)}
               className="w-full px-3 py-1.5 border border-[#EAEAEA] rounded-[6px] font-mono font-bold text-sm text-[#111111]"
             />
           </div>
@@ -567,13 +568,12 @@ export const CastingBomManager = ({ isAdmin }: CastingBomManagerProps) => {
             <label className="block text-[10px] font-bold text-[#787774] uppercase mb-1">
               Khối Lượng Mới (kg / 1000kg mẻ nấu)
             </label>
-            <input
-              type="number"
+            <NumberTextInput
               required
               min="0.1"
               step="0.1"
               value={editWeightKg}
-              onChange={(e) => setEditWeightKg(Number(e.target.value))}
+              onChange={(e) => setEditWeightKg(e)}
               className="w-full px-3 py-1.5 border border-[#EAEAEA] rounded-[6px] font-mono font-bold text-base text-[#111111]"
             />
             <p className="text-[10px] text-[#787774] pt-1">

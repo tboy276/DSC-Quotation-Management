@@ -2,6 +2,8 @@ import type { ToolingComponent } from '../../lib/calculation-engine/types';
 import type { Material } from '../../types/master-data';
 import { Plus, Trash2, Layers } from 'lucide-react';
 import { ActionButton } from '../ui/ActionButton';
+import { NumberTextInput } from '../../components/ui/NumberTextInput';
+
 
 interface ToolingOpsListProps {
   isForging: boolean;
@@ -176,23 +178,21 @@ export const ToolingOpsList = ({
 
                     <div>
                       <label className="block text-[10px] font-bold text-[#787774] uppercase tracking-wider mb-1">Trọng lượng (kg)</label>
-                      <input
-                        type="number"
+                      <NumberTextInput
                         min="0.1"
                         step="0.1"
                         value={comp.weight_kg}
-                        onChange={(e) => onUpdateComp(idx, { ...comp, weight_kg: Number(e.target.value) })}
+                        onChange={(e) => onUpdateComp(idx, { ...comp, weight_kg: e })}
                         className="w-full px-2 py-1 border border-[#EAEAEA] bg-white rounded font-mono font-bold text-xs text-[#111111]"
                       />
                     </div>
 
                     <div>
                       <label className="block text-[10px] font-bold text-[#787774] uppercase tracking-wider mb-1">Giá vật liệu (VNĐ/kg)</label>
-                      <input
-                        type="number"
+                      <NumberTextInput
                         step="1000"
                         value={comp.material_price_kg}
-                        onChange={(e) => onUpdateComp(idx, { ...comp, material_price_kg: Number(e.target.value) })}
+                        onChange={(e) => onUpdateComp(idx, { ...comp, material_price_kg: e })}
                         disabled={!!comp.material_id}
                         className={`w-full px-2 py-1 border border-[#EAEAEA] rounded font-mono font-bold text-xs text-[#111111] ${comp.material_id ? 'bg-[#F9F9F8] text-[#787774] cursor-not-allowed' : 'bg-white'}`}
                       />
@@ -201,23 +201,21 @@ export const ToolingOpsList = ({
 
                     <div>
                       <label className="block text-[10px] font-bold text-[#787774] uppercase tracking-wider mb-1">Giá gia công (VNĐ/kg)</label>
-                      <input
-                        type="number"
+                      <NumberTextInput
                         step="1000"
                         value={comp.machining_price_kg}
-                        onChange={(e) => onUpdateComp(idx, { ...comp, machining_price_kg: Number(e.target.value) })}
+                        onChange={(e) => onUpdateComp(idx, { ...comp, machining_price_kg: e })}
                         className="w-full px-2 py-1 border border-[#EAEAEA] bg-white rounded font-mono font-bold text-xs text-[#111111]"
                       />
                     </div>
 
                     <div>
                       <label className="block text-[10px] font-bold text-[#787774] uppercase tracking-wider mb-1" title="Tuổi thọ riêng của chi tiết này">Tuổi thọ riêng (chi tiết)</label>
-                      <input
-                        type="number"
+                      <NumberTextInput
                         min="1"
                         placeholder={(isForging ? DEFAULT_DIE_LIFE : life_coefficient * cavity).toLocaleString('vi-VN')}
-                        value={comp.depreciation_qty || ''}
-                        onChange={(e) => onUpdateComp(idx, { ...comp, depreciation_qty: e.target.value ? Number(e.target.value) : undefined })}
+                        value={comp.depreciation_qty }
+                        onChange={(e) => onUpdateComp(idx, { ...comp, depreciation_qty: e })}
                         className="w-full px-2 py-1 border border-[#EAEAEA] bg-white rounded font-mono font-bold text-xs text-[#111111] placeholder:font-normal placeholder:text-[#BDBDBD]"
                       />
                     </div>
@@ -238,10 +236,9 @@ export const ToolingOpsList = ({
                     {comp.needs_heat_treatment && (
                       <div className="flex items-center space-x-1">
                         <span className="text-[10px] text-[#787774] uppercase font-bold">Đơn giá NL:</span>
-                        <input
-                          type="number"
+                        <NumberTextInput
                           value={comp.heat_treatment_price_kg}
-                          onChange={(e) => onUpdateComp(idx, { ...comp, heat_treatment_price_kg: Number(e.target.value) })}
+                          onChange={(e) => onUpdateComp(idx, { ...comp, heat_treatment_price_kg: e })}
                           className="w-24 px-2 py-0.5 border border-[#EAEAEA] bg-white rounded font-mono text-xs text-[#111111]"
                         />
                         <span className="text-[10px] text-[#787774] font-mono">VNĐ/kg</span>
@@ -279,11 +276,10 @@ export const ToolingOpsList = ({
             <div>
               <label className="block text-[10px] font-bold text-[#787774] uppercase tracking-wider mb-1">Số lòng khuôn (Cavity):</label>
               <div className="flex items-center">
-                <input
-                  type="number"
+                <NumberTextInput
                   min="1"
                   value={cavity}
-                  onChange={(e) => onUpdateField('cavity', Math.max(1, Number(e.target.value)))}
+                  onChange={(e) => onUpdateField('cavity', Math.max(1, e))}
                   className="w-full px-2.5 py-1.5 border border-[#EAEAEA] rounded-[4px] font-mono font-bold text-xs text-[#111111] bg-white"
                 />
                 <span className="px-2.5 py-1.5 bg-white border-l-0 border border-[#EAEAEA] text-[10px] font-bold text-[#787774] uppercase">Lòng</span>
@@ -294,12 +290,11 @@ export const ToolingOpsList = ({
               <div>
                 <label className="block text-[10px] font-bold text-[#787774] uppercase tracking-wider mb-1">Hệ số sản lượng / 1 lòng:</label>
                 <div className="flex items-center">
-                  <input
-                    type="number"
+                  <NumberTextInput
                     min="1000"
                     step="1000"
                     value={life_coefficient}
-                    onChange={(e) => onUpdateField('life_coefficient', Math.max(0, Number(e.target.value)))}
+                    onChange={(e) => onUpdateField('life_coefficient', Math.max(0, e))}
                     className="w-full px-2.5 py-1.5 border border-[#EAEAEA] rounded-[4px] font-mono font-bold text-xs text-[#111111] bg-white"
                   />
                   <span className="px-2.5 py-1.5 bg-white border-l-0 border border-[#EAEAEA] text-[10px] font-bold text-[#787774] uppercase">PCS</span>
@@ -331,11 +326,10 @@ export const ToolingOpsList = ({
             <div className="flex justify-between items-center py-1 border-b border-[#EAEAEA]">
               <span className="text-[#787774] font-sans">+ Phí thiết kế:</span>
               <div className="flex items-center gap-1.5">
-                <input 
-                  type="number" 
+                <NumberTextInput 
                   min="0"
                   value={C_design}
-                  onChange={(e) => onUpdateField('C_design', Number(e.target.value))}
+                  onChange={(e) => onUpdateField('C_design', e)}
                   className="w-[110px] px-2 py-1 border border-[#EAEAEA] rounded bg-white text-xs font-mono font-bold text-[#111111] text-right" 
                 />
                 <span className="text-xs text-[#787774] font-sans">VNĐ</span>
@@ -345,11 +339,10 @@ export const ToolingOpsList = ({
             <div className="flex justify-between items-center py-1 border-b border-[#EAEAEA]">
               <span className="text-[#787774] font-sans">+ Phí quản lý (%):</span>
               <div className="flex items-center gap-2">
-                <input 
-                  type="number" 
+                <NumberTextInput 
                   min="0" max="100"
                   value={k_mgmt_die}
-                  onChange={(e) => onUpdateField('k_mgmt_die', Number(e.target.value))}
+                  onChange={(e) => onUpdateField('k_mgmt_die', e)}
                   className="w-[50px] px-2 py-1 border border-[#EAEAEA] rounded bg-white text-xs font-mono font-bold text-[#111111] text-center" 
                 />
                 <span className="text-xs text-[#787774] font-sans">%</span>

@@ -4,6 +4,8 @@ import { createRfqDossierWithItems } from '../../lib/quotation-service';
 import { useAuth } from '../../context/AuthContext';
 import { User, Package, Globe, Plus, Trash2, Calendar, Clock, Check } from 'lucide-react';
 import { ActionButton } from '../ui/ActionButton';
+import { NumberTextInput } from '../../components/ui/NumberTextInput';
+
 
 export const RfqHeaderForm = () => {
   const rfq = useQuotationStore((state) => state.rfq);
@@ -294,15 +296,14 @@ export const RfqHeaderForm = () => {
                   <label className="block text-[10px] font-bold text-[#787774] uppercase mb-1">
                     Sản Lượng (Pcs/năm)
                   </label>
-                  <input
-                    type="number"
+                  <NumberTextInput
                     min="1"
                     value={item.annual_volume}
                     onChange={(e) => {
                       const updated = [...dossierItems];
-                      updated[idx].annual_volume = Number(e.target.value);
+                      updated[idx].annual_volume = e;
                       setDossierItems(updated);
-                      if (idx === 0) setRfqField('annual_volume', Number(e.target.value));
+                      if (idx === 0) setRfqField('annual_volume', e);
                     }}
                     className="w-full px-2.5 py-1.5 border border-[#EAEAEA] rounded-[6px] font-mono text-xs font-bold text-[#111111]"
                   />
@@ -313,16 +314,15 @@ export const RfqHeaderForm = () => {
                   <label className="block text-[10px] font-bold text-[#787774] uppercase mb-1">
                     Target Price (VNĐ)
                   </label>
-                  <input
-                    type="number"
+                  <NumberTextInput
                     min="0"
                     step="1000"
                     value={item.target_price}
                     onChange={(e) => {
                       const updated = [...dossierItems];
-                      updated[idx].target_price = Number(e.target.value);
+                      updated[idx].target_price = e;
                       setDossierItems(updated);
-                      if (idx === 0) setRfqField('target_price', Number(e.target.value));
+                      if (idx === 0) setRfqField('target_price', e);
                     }}
                     className="w-full px-2.5 py-1.5 border border-[#EAEAEA] rounded-[6px] font-mono text-xs font-extrabold text-[#111111]"
                   />

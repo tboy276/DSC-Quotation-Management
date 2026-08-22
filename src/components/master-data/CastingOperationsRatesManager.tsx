@@ -25,6 +25,8 @@ import {
   Sparkles,
 } from 'lucide-react';
 import { useConfirm } from '../../context/ConfirmDialogContext';
+import { NumberTextInput } from '../../components/ui/NumberTextInput';
+
 
 export const CastingOperationsRatesManager = () => {
   const confirm = useConfirm();
@@ -252,11 +254,10 @@ export const CastingOperationsRatesManager = () => {
                         <label className="block text-[10px] text-[#787774] font-semibold uppercase mb-1">
                           Chi phí lót lò (VNĐ/lần)
                         </label>
-                        <input
-                          type="number"
+                        <NumberTextInput
                           value={settings.furnace_lining_cost}
                           onChange={(e) =>
-                            setSettings({ ...settings, furnace_lining_cost: Number(e.target.value) })
+                            setSettings({ ...settings, furnace_lining_cost: e })
                           }
                           className="w-full px-2.5 py-1.5 border border-[#EAEAEA] bg-white rounded font-mono font-bold text-[#111111] text-xs focus:outline-none focus:border-[#111111]"
                         />
@@ -265,13 +266,12 @@ export const CastingOperationsRatesManager = () => {
                         <label className="block text-[10px] text-[#787774] font-semibold uppercase mb-1">
                           Tuổi thọ lò (mẻ/lần)
                         </label>
-                        <input
-                          type="number"
+                        <NumberTextInput
                           value={settings.furnace_lifespan_batches}
                           onChange={(e) =>
                             setSettings({
                               ...settings,
-                              furnace_lifespan_batches: Number(e.target.value),
+                              furnace_lifespan_batches: e,
                             })
                           }
                           className="w-full px-2.5 py-1.5 border border-[#EAEAEA] bg-white rounded font-mono font-bold text-[#111111] text-xs focus:outline-none focus:border-[#111111]"
@@ -293,11 +293,10 @@ export const CastingOperationsRatesManager = () => {
                         <label className="block text-[10px] text-[#787774] font-semibold uppercase mb-1">
                           Chi phí lót gầu (VNĐ/lần)
                         </label>
-                        <input
-                          type="number"
+                        <NumberTextInput
                           value={settings.ladle_lining_cost}
                           onChange={(e) =>
-                            setSettings({ ...settings, ladle_lining_cost: Number(e.target.value) })
+                            setSettings({ ...settings, ladle_lining_cost: e })
                           }
                           className="w-full px-2.5 py-1.5 border border-[#EAEAEA] bg-white rounded font-mono font-bold text-[#111111] text-xs focus:outline-none focus:border-[#111111]"
                         />
@@ -306,13 +305,12 @@ export const CastingOperationsRatesManager = () => {
                         <label className="block text-[10px] text-[#787774] font-semibold uppercase mb-1">
                           Tuổi thọ gầu (mẻ/lần)
                         </label>
-                        <input
-                          type="number"
+                        <NumberTextInput
                           value={settings.ladle_lifespan_batches}
                           onChange={(e) =>
                             setSettings({
                               ...settings,
-                              ladle_lifespan_batches: Number(e.target.value),
+                              ladle_lifespan_batches: e,
                             })
                           }
                           className="w-full px-2.5 py-1.5 border border-[#EAEAEA] bg-white rounded font-mono font-bold text-[#111111] text-xs focus:outline-none focus:border-[#111111]"
@@ -477,14 +475,13 @@ export const CastingOperationsRatesManager = () => {
                       1. Vật Tư HTSP (Bi, đá mài...)
                     </label>
                     <div className="flex items-center space-x-1">
-                      <input
-                        type="number"
+                      <NumberTextInput
                         step="0.01"
                         value={settings.finishing_material_rate}
                         onChange={(e) =>
                           setSettings({
                             ...settings,
-                            finishing_material_rate: Number(e.target.value),
+                            finishing_material_rate: e,
                           })
                         }
                         className="w-full px-2 py-1.5 border border-[#EAEAEA] bg-white rounded font-mono font-bold text-[#111111] text-xs focus:outline-none focus:border-[#111111]"
@@ -498,12 +495,11 @@ export const CastingOperationsRatesManager = () => {
                       2. Điện + Nước Tiêu Hao Xưởng
                     </label>
                     <div className="flex items-center space-x-1">
-                      <input
-                        type="number"
+                      <NumberTextInput
                         step="0.01"
                         value={settings.utility_rate}
                         onChange={(e) =>
-                          setSettings({ ...settings, utility_rate: Number(e.target.value) })
+                          setSettings({ ...settings, utility_rate: e })
                         }
                         className="w-full px-2 py-1.5 border border-[#EAEAEA] bg-white rounded font-mono font-bold text-[#111111] text-xs focus:outline-none focus:border-[#111111]"
                       />
@@ -516,12 +512,11 @@ export const CastingOperationsRatesManager = () => {
                       3. Lương Trực Tiếp & Gián Tiếp
                     </label>
                     <div className="flex items-center space-x-1">
-                      <input
-                        type="number"
+                      <NumberTextInput
                         step="0.01"
                         value={settings.labor_rate}
                         onChange={(e) =>
-                          setSettings({ ...settings, labor_rate: Number(e.target.value) })
+                          setSettings({ ...settings, labor_rate: e })
                         }
                         className="w-full px-2 py-1.5 border border-[#EAEAEA] bg-white rounded font-mono font-bold text-[#111111] text-xs focus:outline-none focus:border-[#111111]"
                       />
@@ -534,12 +529,11 @@ export const CastingOperationsRatesManager = () => {
                       4. Quản Lý Phân Xưởng
                     </label>
                     <div className="flex items-center space-x-1">
-                      <input
-                        type="number"
+                      <NumberTextInput
                         step="0.01"
                         value={settings.workshop_mgmt_rate}
                         onChange={(e) =>
-                          setSettings({ ...settings, workshop_mgmt_rate: Number(e.target.value) })
+                          setSettings({ ...settings, workshop_mgmt_rate: e })
                         }
                         className="w-full px-2 py-1.5 border border-[#EAEAEA] bg-white rounded font-mono font-bold text-[#111111] text-xs focus:outline-none focus:border-[#111111]"
                       />
@@ -552,14 +546,13 @@ export const CastingOperationsRatesManager = () => {
                       5. Khấu Hao Thiết Bị Xưởng
                     </label>
                     <div className="flex items-center space-x-1">
-                      <input
-                        type="number"
+                      <NumberTextInput
                         step="0.01"
                         value={settings.equipment_depreciation_rate}
                         onChange={(e) =>
                           setSettings({
                             ...settings,
-                            equipment_depreciation_rate: Number(e.target.value),
+                            equipment_depreciation_rate: e,
                           })
                         }
                         className="w-full px-2 py-1.5 border border-[#EAEAEA] bg-white rounded font-mono font-bold text-[#111111] text-xs focus:outline-none focus:border-[#111111]"
@@ -587,13 +580,12 @@ export const CastingOperationsRatesManager = () => {
                     <label className="text-xs font-bold text-[#111111] whitespace-nowrap">
                       Đơn giá:
                     </label>
-                    <input
-                      type="number"
+                    <NumberTextInput
                       value={settings.resin_core_sand_rate_per_kg || 12500}
                       onChange={(e) =>
                         setSettings({
                           ...settings,
-                          resin_core_sand_rate_per_kg: Number(e.target.value),
+                          resin_core_sand_rate_per_kg: e,
                         })
                       }
                       className="w-32 px-2.5 py-1 border border-[#EAEAEA] bg-white rounded font-mono font-bold text-xs text-[#111111] focus:outline-none focus:border-[#111111]"
@@ -707,13 +699,12 @@ export const CastingOperationsRatesManager = () => {
                 <label className="block font-semibold text-[#111111] mb-1">
                   Chi Phí Thuê Ngoài Cho 1,000kg (VNĐ) *
                 </label>
-                <input
-                  type="number"
-                  value={editingRecipeItem.outsourced_cost_per_1000kg || ''}
+                <NumberTextInput
+                  value={editingRecipeItem.outsourced_cost_per_1000kg }
                   onChange={(e) =>
                     setEditingRecipeItem({
                       ...editingRecipeItem,
-                      outsourced_cost_per_1000kg: Number(e.target.value),
+                      outsourced_cost_per_1000kg: e,
                     })
                   }
                   placeholder="3709831"
@@ -737,13 +728,12 @@ export const CastingOperationsRatesManager = () => {
                   <label className="block font-semibold text-[#111111] mb-1">
                     Định Mức (kg/1000kg)
                   </label>
-                  <input
-                    type="number"
-                    value={editingRecipeItem.quantity_per_1000kg || ''}
+                  <NumberTextInput
+                    value={editingRecipeItem.quantity_per_1000kg }
                     onChange={(e) =>
                       setEditingRecipeItem({
                         ...editingRecipeItem,
-                        quantity_per_1000kg: Number(e.target.value),
+                        quantity_per_1000kg: e,
                       })
                     }
                     className="w-full px-3 py-1.5 border border-[#EAEAEA] rounded-[6px] font-mono"

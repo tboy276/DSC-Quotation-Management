@@ -61,6 +61,8 @@ import {
   Edit2,
 } from 'lucide-react';
 import { canManageRecord } from '../../lib/permission-utils';
+import { NumberTextInput } from '../../components/ui/NumberTextInput';
+
 
 interface ColumnDef {
   key: string;
@@ -1597,10 +1599,9 @@ export const QuotationsManager = () => {
                 <label className="block font-bold text-[#787774] mb-1 uppercase text-[10px] tracking-wider">
                   Sản Lượng Nhu Cầu
                 </label>
-                <input
-                  type="number"
-                  value={editAnnualVolume || ''}
-                  onChange={(e) => setEditAnnualVolume(Number(e.target.value) || 0)}
+                <NumberTextInput
+                  value={editAnnualVolume }
+                  onChange={(e) => setEditAnnualVolume(e || 0)}
                   className="w-full px-3 py-2 border border-[#EAEAEA] rounded-[6px] font-mono text-[#111111] focus:outline-none focus:border-[#111111]"
                 />
               </div>
@@ -1609,10 +1610,9 @@ export const QuotationsManager = () => {
                 <label className="block font-bold text-[#787774] mb-1 uppercase text-[10px] tracking-wider">
                   Giá Target KH (VNĐ)
                 </label>
-                <input
-                  type="number"
-                  value={editTargetPrice || ''}
-                  onChange={(e) => setEditTargetPrice(Number(e.target.value) || 0)}
+                <NumberTextInput
+                  value={editTargetPrice }
+                  onChange={(e) => setEditTargetPrice(e || 0)}
                   className="w-full px-3 py-2 border border-[#EAEAEA] rounded-[6px] font-mono text-[#111111] focus:outline-none focus:border-[#111111]"
                 />
               </div>
@@ -1864,11 +1864,10 @@ export const QuotationsManager = () => {
                       </div>
 
                       <div className="col-span-1">
-                        <input
-                          type="number"
-                          value={item.annual_volume || ''}
+                        <NumberTextInput
+                          value={item.annual_volume }
                           onChange={(e) => {
-                            const val = Number(e.target.value) || 0;
+                            const val = e || 0;
                             setNewMultiItems((rows) =>
                               rows.map((r) => (r.id === item.id ? { ...r, annual_volume: val } : r))
                             );
@@ -1879,11 +1878,10 @@ export const QuotationsManager = () => {
                       </div>
 
                       <div className="col-span-1">
-                        <input
-                          type="number"
-                          value={item.target_price || ''}
+                        <NumberTextInput
+                          value={item.target_price }
                           onChange={(e) => {
-                            const val = Number(e.target.value) || 0;
+                            const val = e || 0;
                             setNewMultiItems((rows) =>
                               rows.map((r) => (r.id === item.id ? { ...r, target_price: val } : r))
                             );

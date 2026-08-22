@@ -1,3 +1,4 @@
+﻿import { NumberTextInput } from './NumberTextInput';
 interface SliderInputProps {
   label: string;
   value: number;
@@ -26,13 +27,12 @@ export const SliderInput = ({
           {label}
         </label>
         <div className="flex items-center space-x-1">
-          <input
-            type="number"
+          <NumberTextInput
             min={min}
             max={max}
             step={step}
             value={value}
-            onChange={(e) => onChange(Number(e.target.value))}
+            onChange={(e) => onChange(e)}
             className="w-16 px-2 py-0.5 border border-[#EAEAEA] rounded-[4px] text-right font-mono font-bold text-xs text-[#111111] focus:outline-none focus:border-[#111111]"
           />
           <span className="text-xs font-mono text-[#787774]">{unit}</span>

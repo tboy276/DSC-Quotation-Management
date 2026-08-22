@@ -2,6 +2,8 @@ import { useQuotationStore } from '../../store/useQuotationStore';
 import type { CastingResult } from '../../lib/calculation-engine/types';
 import type { CurrencyType } from '../../types/quote';
 import { Calculator, Globe } from 'lucide-react';
+import { NumberTextInput } from '../../components/ui/NumberTextInput';
+
 
 export const formatCurrencyValue = (
   amountVnd: number,
@@ -271,12 +273,11 @@ export const RealtimeSummaryPanel = () => {
           <div className="pt-2 border-t border-[#EAEAEA] flex items-center justify-between text-xs">
             <span className="font-semibold text-[#787774]">Tỷ giá quy đổi (1 {currency} = ? VNĐ):</span>
             <div className="flex items-center space-x-1">
-              <input
-                type="number"
+              <NumberTextInput
                 min="0.001"
                 step="1"
                 value={exchangeRate}
-                onChange={(e) => setExchangeRate(Number(e.target.value))}
+                onChange={(e) => setExchangeRate(e)}
                 className="w-24 px-2 py-0.5 border border-[#EAEAEA] bg-white rounded-[4px] font-mono font-bold text-xs text-right text-[#111111] focus:outline-none"
               />
               <span className="text-[10px] font-mono text-[#787774]">VNĐ</span>

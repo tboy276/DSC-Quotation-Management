@@ -4,6 +4,8 @@ import type { SystemUnitRate } from '../../types/master-data';
 import { Plus, Trash2, Cpu, Lock } from 'lucide-react';
 import { CostSectionCard } from '../ui/CostSectionCard';
 import { ActionButton } from '../ui/ActionButton';
+import { NumberTextInput } from '../../components/ui/NumberTextInput';
+
 
 export interface SawingOpProps {
   t_cut_sec: number;
@@ -127,11 +129,10 @@ export const MachiningOpsList = ({
               <label className="block text-[9px] font-bold text-[#787774] uppercase tracking-wider mb-1.5">
                 Thời Gian Cắt (Giây)
               </label>
-              <input
-                type="number"
+              <NumberTextInput
                 min="0"
                 value={sawingOpProps.t_cut_sec}
-                onChange={(e) => sawingOpProps.onUpdateSawingOp(Math.max(0, Number(e.target.value)), sawingOpProps.DG_sawing_machine_hour, currentSawingMachineType)}
+                onChange={(e) => sawingOpProps.onUpdateSawingOp(Math.max(0, e), sawingOpProps.DG_sawing_machine_hour, currentSawingMachineType)}
                 className="w-full px-2.5 py-1.5 border border-[#EAEAEA] rounded-[4px] bg-white font-mono text-[#111111] font-bold text-xs focus:outline-none focus:border-[#111111]"
               />
             </div>
@@ -223,12 +224,11 @@ export const MachiningOpsList = ({
                   Gia Công (Phút)
                 </label>
                 <div className="flex items-center">
-                  <input
-                    type="number"
+                  <NumberTextInput
                     min="0.1"
                     step="0.1"
                     value={op.t_man_min}
-                    onChange={(e) => onUpdateOp(idx, { ...op, t_man_min: Number(e.target.value) })}
+                    onChange={(e) => onUpdateOp(idx, { ...op, t_man_min: e })}
                     className="w-full px-2.5 py-1.5 border border-[#EAEAEA] rounded-[4px] bg-white font-mono text-[#111111] text-xs focus:outline-none focus:border-[#111111] transition-colors"
                   />
                 </div>
@@ -240,12 +240,11 @@ export const MachiningOpsList = ({
                   Gá Lắp (Phút)
                 </label>
                 <div className="flex items-center">
-                  <input
-                    type="number"
+                  <NumberTextInput
                     min="0"
                     step="0.5"
                     value={op.t_prep_min}
-                    onChange={(e) => onUpdateOp(idx, { ...op, t_prep_min: Number(e.target.value) })}
+                    onChange={(e) => onUpdateOp(idx, { ...op, t_prep_min: e })}
                     className="w-full px-2.5 py-1.5 border border-[#EAEAEA] rounded-[4px] bg-white font-mono text-[#111111] text-xs focus:outline-none focus:border-[#111111] transition-colors"
                   />
                 </div>

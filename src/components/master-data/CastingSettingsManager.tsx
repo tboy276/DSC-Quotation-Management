@@ -8,6 +8,8 @@ import {
 } from '../../lib/master-data-service';
 import { Settings, Save, Check, Flame, Factory } from 'lucide-react';
 import { ActionButton } from '../ui/ActionButton';
+import { NumberTextInput } from '../../components/ui/NumberTextInput';
+
 
 export const CastingSettingsManager = () => {
   const toast = useToast();
@@ -116,19 +118,17 @@ export const CastingSettingsManager = () => {
                 <div className="grid grid-cols-2 gap-3">
                   <div>
                     <label className="block text-[11px] text-[#787774] mb-1">Chi phí lót lò (VNĐ/lần)</label>
-                    <input
-                      type="number"
+                    <NumberTextInput
                       value={settings.furnace_lining_cost}
-                      onChange={(e) => setSettings({ ...settings, furnace_lining_cost: Number(e.target.value) })}
+                      onChange={(e) => setSettings({ ...settings, furnace_lining_cost: e })}
                       className="w-full px-2.5 py-1.5 border border-[#EAEAEA] bg-white rounded font-mono font-bold"
                     />
                   </div>
                   <div>
                     <label className="block text-[11px] text-[#787774] mb-1">Tuổi thọ lò (số mẻ/lần)</label>
-                    <input
-                      type="number"
+                    <NumberTextInput
                       value={settings.furnace_lifespan_batches}
-                      onChange={(e) => setSettings({ ...settings, furnace_lifespan_batches: Number(e.target.value) })}
+                      onChange={(e) => setSettings({ ...settings, furnace_lifespan_batches: e })}
                       className="w-full px-2.5 py-1.5 border border-[#EAEAEA] bg-white rounded font-mono font-bold"
                     />
                   </div>
@@ -144,19 +144,17 @@ export const CastingSettingsManager = () => {
                 <div className="grid grid-cols-2 gap-3">
                   <div>
                     <label className="block text-[11px] text-[#787774] mb-1">Chi phí lót gầu (VNĐ/lần)</label>
-                    <input
-                      type="number"
+                    <NumberTextInput
                       value={settings.ladle_lining_cost}
-                      onChange={(e) => setSettings({ ...settings, ladle_lining_cost: Number(e.target.value) })}
+                      onChange={(e) => setSettings({ ...settings, ladle_lining_cost: e })}
                       className="w-full px-2.5 py-1.5 border border-[#EAEAEA] bg-white rounded font-mono font-bold"
                     />
                   </div>
                   <div>
                     <label className="block text-[11px] text-[#787774] mb-1">Tuổi thọ gầu (số mẻ/lần)</label>
-                    <input
-                      type="number"
+                    <NumberTextInput
                       value={settings.ladle_lifespan_batches}
-                      onChange={(e) => setSettings({ ...settings, ladle_lifespan_batches: Number(e.target.value) })}
+                      onChange={(e) => setSettings({ ...settings, ladle_lifespan_batches: e })}
                       className="w-full px-2.5 py-1.5 border border-[#EAEAEA] bg-white rounded font-mono font-bold"
                     />
                   </div>
@@ -172,10 +170,9 @@ export const CastingSettingsManager = () => {
                   Đơn Giá Thao / Xử Lý Cát Nhựa (Hằng số chung nhà máy):
                 </label>
                 <div className="flex items-center space-x-2">
-                  <input
-                    type="number"
+                  <NumberTextInput
                     value={settings.resin_core_sand_rate_per_kg || 12500}
-                    onChange={(e) => setSettings({ ...settings, resin_core_sand_rate_per_kg: Number(e.target.value) })}
+                    onChange={(e) => setSettings({ ...settings, resin_core_sand_rate_per_kg: e })}
                     className="w-full px-2.5 py-1.5 border border-[#EAEAEA] bg-white rounded font-mono font-bold text-xs"
                   />
                   <span className="text-xs font-mono font-semibold text-[#787774] whitespace-nowrap">VNĐ / kg</span>
@@ -209,11 +206,10 @@ export const CastingSettingsManager = () => {
                 <label className="block font-semibold text-[#111111] mb-1">
                   1. Đơn giá Vật tư HTSP (Bi phun, đá mài, vật tư khác) (VNĐ/kg)
                 </label>
-                <input
-                  type="number"
+                <NumberTextInput
                   step="0.01"
                   value={settings.finishing_material_rate}
-                  onChange={(e) => setSettings({ ...settings, finishing_material_rate: Number(e.target.value) })}
+                  onChange={(e) => setSettings({ ...settings, finishing_material_rate: e })}
                   className="w-full px-3 py-1.5 border border-[#EAEAEA] rounded font-mono font-bold text-[#111111]"
                 />
               </div>
@@ -222,11 +218,10 @@ export const CastingSettingsManager = () => {
                 <label className="block font-semibold text-[#111111] mb-1">
                   2. Đơn giá Điện + Nước tiêu hao xưởng (VNĐ/kg)
                 </label>
-                <input
-                  type="number"
+                <NumberTextInput
                   step="0.01"
                   value={settings.utility_rate}
-                  onChange={(e) => setSettings({ ...settings, utility_rate: Number(e.target.value) })}
+                  onChange={(e) => setSettings({ ...settings, utility_rate: e })}
                   className="w-full px-3 py-1.5 border border-[#EAEAEA] rounded font-mono font-bold text-[#111111]"
                 />
               </div>
@@ -235,11 +230,10 @@ export const CastingSettingsManager = () => {
                 <label className="block font-semibold text-[#111111] mb-1">
                   3. Đơn giá Lương trực tiếp & gián tiếp (VNĐ/kg)
                 </label>
-                <input
-                  type="number"
+                <NumberTextInput
                   step="0.01"
                   value={settings.labor_rate}
-                  onChange={(e) => setSettings({ ...settings, labor_rate: Number(e.target.value) })}
+                  onChange={(e) => setSettings({ ...settings, labor_rate: e })}
                   className="w-full px-3 py-1.5 border border-[#EAEAEA] rounded font-mono font-bold text-[#111111]"
                 />
               </div>
@@ -248,11 +242,10 @@ export const CastingSettingsManager = () => {
                 <label className="block font-semibold text-[#111111] mb-1">
                   4. Đơn giá Quản lý Phân xưởng (VNĐ/kg)
                 </label>
-                <input
-                  type="number"
+                <NumberTextInput
                   step="0.01"
                   value={settings.workshop_mgmt_rate}
-                  onChange={(e) => setSettings({ ...settings, workshop_mgmt_rate: Number(e.target.value) })}
+                  onChange={(e) => setSettings({ ...settings, workshop_mgmt_rate: e })}
                   className="w-full px-3 py-1.5 border border-[#EAEAEA] rounded font-mono font-bold text-[#111111]"
                 />
               </div>
@@ -261,11 +254,10 @@ export const CastingSettingsManager = () => {
                 <label className="block font-semibold text-[#111111] mb-1">
                   5. Đơn giá Khấu hao Thiết bị xưởng (Lò, dây chuyền) (VNĐ/kg)
                 </label>
-                <input
-                  type="number"
+                <NumberTextInput
                   step="0.01"
                   value={settings.equipment_depreciation_rate}
-                  onChange={(e) => setSettings({ ...settings, equipment_depreciation_rate: Number(e.target.value) })}
+                  onChange={(e) => setSettings({ ...settings, equipment_depreciation_rate: e })}
                   className="w-full px-3 py-1.5 border border-[#EAEAEA] rounded font-mono font-bold text-[#111111]"
                 />
               </div>

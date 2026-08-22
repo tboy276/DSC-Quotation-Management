@@ -1,5 +1,7 @@
 import React from 'react';
 import { PlusCircle } from 'lucide-react';
+import { NumberTextInput } from '../../components/ui/NumberTextInput';
+
 
 interface SliderCardProps {
   label: string;
@@ -30,13 +32,12 @@ const SliderCard: React.FC<SliderCardProps> = ({
           {label}
         </label>
         <div className="flex items-center gap-1">
-          <input
-            type="number"
+          <NumberTextInput
             min={min}
             max={max}
             step={step}
             value={value}
-            onChange={(e) => onChange(Number(e.target.value))}
+            onChange={(e) => onChange(e)}
             className="w-20 px-2 py-0.5 border border-[#EAEAEA] rounded-[4px] text-right font-mono font-bold text-xs text-[#111111] bg-white outline-none focus:border-[#111111]"
           />
           <span className="text-[10px] font-bold text-[#787774] min-w-[32px] uppercase">
@@ -140,12 +141,11 @@ export const Section5SummaryCard: React.FC<Section5SummaryCardProps> = ({
                   MOQ BÁO GIÁ (CÁI/LÔ)
                 </label>
                 <div className="flex items-center gap-1">
-                  <input
-                    type="number"
+                  <NumberTextInput
                     min={0}
-                    value={quoted_moq || ''}
+                    value={quoted_moq }
                     placeholder="-"
-                    onChange={(e) => onMoqChange(Math.max(0, Number(e.target.value)))}
+                    onChange={(e) => onMoqChange(Math.max(0, e))}
                     className="w-24 px-2 py-1 border border-[#EAEAEA] rounded-[4px] text-right font-mono font-bold text-xs text-[#111111] bg-white outline-none focus:border-[#111111]"
                   />
                 </div>
@@ -165,12 +165,11 @@ export const Section5SummaryCard: React.FC<Section5SummaryCardProps> = ({
                     ĐƠN GIÁ NHIỆT LUYỆN
                   </label>
                   <div className="flex items-center gap-1">
-                    <input
-                      type="number"
+                    <NumberTextInput
                       min={0}
-                      value={DG_heat_treat_per_kg || ''}
+                      value={DG_heat_treat_per_kg }
                       placeholder="0"
-                      onChange={(e) => onDGHeatTreatChange(Math.max(0, Number(e.target.value)))}
+                      onChange={(e) => onDGHeatTreatChange(Math.max(0, e))}
                       className="w-full px-2 py-1 border border-[#EAEAEA] rounded-[4px] text-right font-mono font-bold text-xs text-[#111111] bg-white outline-none focus:border-[#111111]"
                     />
                     <span className="text-[9px] font-bold text-[#787774]">VNĐ/KG</span>
@@ -183,12 +182,11 @@ export const Section5SummaryCard: React.FC<Section5SummaryCardProps> = ({
                     ĐƠN GIÁ SƠN
                   </label>
                   <div className="flex items-center gap-1">
-                    <input
-                      type="number"
+                    <NumberTextInput
                       min={0}
-                      value={DG_paint_per_kg || ''}
+                      value={DG_paint_per_kg }
                       placeholder="0"
-                      onChange={(e) => onDGPaintChange(Math.max(0, Number(e.target.value)))}
+                      onChange={(e) => onDGPaintChange(Math.max(0, e))}
                       className="w-full px-2 py-1 border border-[#EAEAEA] rounded-[4px] text-right font-mono font-bold text-xs text-[#111111] bg-white outline-none focus:border-[#111111]"
                     />
                     <span className="text-[9px] font-bold text-[#787774]">VNĐ/KG</span>

@@ -1,5 +1,7 @@
 import React from 'react';
 import { Info, Calculator } from 'lucide-react';
+import { NumberTextInput } from '../../components/ui/NumberTextInput';
+
 
 interface ToolingAmortizationSectionProps {
   isForging: boolean;
@@ -70,11 +72,10 @@ export const ToolingAmortizationSection: React.FC<ToolingAmortizationSectionProp
             <div className="flex flex-wrap items-center gap-2">
               <span className="text-xs text-[#555555] font-medium">Số lượng SP phân bổ:</span>
             <div className="flex items-center">
-              <input
-                type="number"
+              <NumberTextInput
                 min="1"
                 value={currentQuantity}
-                onChange={(e) => onNOrderChange(Math.max(1, Number(e.target.value)))}
+                onChange={(e) => onNOrderChange(Math.max(1, e))}
                 className="w-28 px-2.5 py-1.5 border border-[#EAEAEA] rounded-l-[4px] font-mono text-xs font-bold text-[#111111] outline-none focus:border-[#111111] bg-white text-right"
               />
               <span className="bg-[#F7F7F6] px-2.5 py-1.5 border border-l-0 border-[#EAEAEA] rounded-r-[4px] text-[10px] font-bold text-[#787774] uppercase">

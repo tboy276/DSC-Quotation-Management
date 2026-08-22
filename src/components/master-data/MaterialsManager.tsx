@@ -17,6 +17,8 @@ import { Modal } from '../ui/Modal';
 import { ActionButton } from '../ui/ActionButton';
 import { useConfirm } from '../../context/ConfirmDialogContext';
 import { Plus, Edit2, Trash2, TrendingUp, History, Check, AlertTriangle , Upload } from 'lucide-react';
+import { NumberTextInput } from '../../components/ui/NumberTextInput';
+
 
 interface MaterialsManagerProps {
   isAdmin: boolean;
@@ -570,12 +572,11 @@ export const MaterialsManager = ({ isAdmin, isSales = false }: MaterialsManagerP
             <label className="block text-[10px] font-bold text-[#787774] uppercase mb-1">
               Đơn Giá Mới (VNĐ / {selectedMaterialForPrice?.unit})
             </label>
-            <input
-              type="number"
+            <NumberTextInput
               required
               min="0"
               value={newPrice}
-              onChange={(e) => setNewPrice(Number(e.target.value))}
+              onChange={(e) => setNewPrice(e)}
               className="w-full px-3 py-1.5 border border-[#EAEAEA] rounded-[6px] font-mono font-bold text-sm text-[#111111]"
             />
           </div>
@@ -586,12 +587,11 @@ export const MaterialsManager = ({ isAdmin, isSales = false }: MaterialsManagerP
               <label className="block text-[10px] font-bold text-[#956400] uppercase">
                 Giá Phế Liệu Kèm Theo (VNĐ / {selectedMaterialForPrice?.unit}) *
               </label>
-              <input
-                type="number"
+              <NumberTextInput
                 required
                 min="0"
                 value={newScrapPrice}
-                onChange={(e) => setNewScrapPrice(Number(e.target.value))}
+                onChange={(e) => setNewScrapPrice(e)}
                 className="w-full px-3 py-1.5 border border-[#EAEAEA] bg-white rounded-[6px] font-mono font-bold text-xs text-[#111111]"
               />
               <p className="text-[9px] text-[#787774]">

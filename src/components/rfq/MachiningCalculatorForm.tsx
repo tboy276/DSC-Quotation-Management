@@ -3,7 +3,8 @@ import { MachiningOpsList } from './MachiningOpsList';
 import { Section5SummaryCard } from './Section5SummaryCard';
 import { Wrench } from 'lucide-react';
 import { CostSectionCard } from '../ui/CostSectionCard';
-import { HighlightInput } from '../ui/HighlightInput';
+import { HighlightNumberInput } from '../../components/ui/HighlightNumberInput';
+
 
 export default function MachiningCalculatorForm() {
   const machining = useQuotationStore((state) => state.machiningInput);
@@ -32,12 +33,11 @@ export default function MachiningCalculatorForm() {
                 </label>
                 <span className="text-[10px] text-gray-500">Dùng tính phí bao gói, vận chuyển</span>
               </div>
-              <HighlightInput
-                type="number"
+              <HighlightNumberInput
                 step="0.001"
                 min="0"
                 value={machining.m_tinh}
-                onChange={(e) => setMachiningField('m_tinh', parseFloat(e.target.value) || 0)}
+                onChange={(e) => setMachiningField('m_tinh', e || 0)}
               />
             </div>
           </div>

@@ -12,6 +12,8 @@ import { generateQuotationPdf } from '../../utils/generateQuotationPdf';
 import { generateAstemoQuotationPdf } from '../../utils/generateAstemoQuotationPdf';
 import { getToolingColumnFlags } from '../../utils/quotation-tooling-columns';
 import { fetchMaterials, fetchCastingGrades, INITIAL_MATERIALS, INITIAL_CASTING_GRADES } from '../../lib/master-data-service';
+import { NumberTextInput } from '../../components/ui/NumberTextInput';
+
 
 export interface DocFields {
   contact_person: string;
@@ -231,12 +233,11 @@ export const QuotationPreviewPanel: React.FC<QuotationPreviewPanelProps> = ({
                       ))}
                     </select>
                     {docFields.currency !== 'VND' && (
-                      <input
-                        type="number"
+                      <NumberTextInput
                         min="1"
                         disabled={readOnly}
                         value={docFields.exchange_rate}
-                        onChange={(e) => setDocFields(prev => ({ ...prev, exchange_rate: Number(e.target.value) }))}
+                        onChange={(e) => setDocFields(prev => ({ ...prev, exchange_rate: e }))}
                         className="w-2/3 p-1.5 border border-[#EAEAEA] bg-white rounded-[4px] font-mono text-[11px] text-[#111111]"
                         placeholder="Tỷ giá"
                       />
