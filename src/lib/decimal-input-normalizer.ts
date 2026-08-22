@@ -22,19 +22,15 @@ export function initDecimalInputNormalizer() {
   };
 
   const insertTextAtCursor = (input: HTMLInputElement, text: string) => {
-    let start = 0;
-    let end = 0;
-    
-    try {
-      start = input.selectionStart || 0;
-      end = input.selectionEnd || 0;
-    } catch (err) {
-      const originalType = input.type;
-      input.type = "text";
-      start = input.selectionStart || 0;
-      end = input.selectionEnd || 0;
-      input.type = originalType;
-    }
+    const originalType = input.type;
+
+    // Luôn toggle sang "text" để đọc vị trí con trỏ chính xác —
+    // KHÔNG dựa vào try/catch vì input[type=number] có thể trả về null
+    // thay vì throw exception, tuỳ trình duyệt/phiên bản.
+    input.type = "text";
+    const start = input.selectionStart ?? input.value.length;
+    const end = input.selectionEnd ?? input.value.length;
+    input.type = originalType;
 
     const currentValue = input.value;
     const newValue = currentValue.substring(0, start) + text + currentValue.substring(end);
@@ -48,15 +44,11 @@ export function initDecimalInputNormalizer() {
       nativeInputValueSetter.call(input, newValue);
       const event = new Event("input", { bubbles: true });
       input.dispatchEvent(event);
-      
-      try {
-        input.setSelectionRange(start + text.length, start + text.length);
-      } catch (err) {
-        const originalType = input.type;
-        input.type = "text";
-        input.setSelectionRange(start + text.length, start + text.length);
-        input.type = originalType;
-      }
+
+      const newCursorPos = start + text.length;
+      input.type = "text";
+      input.setSelectionRange(newCursorPos, newCursorPos);
+      input.type = originalType;
     }
   };
 
