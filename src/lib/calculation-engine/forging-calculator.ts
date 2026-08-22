@@ -1,5 +1,7 @@
 import type { ForgingInput, ForgingResult } from './types';
 
+const DEFAULT_DIE_LIFE = 20000;
+
 /**
  * Pure Calculation Engine function for Forging (Rèn Dập)
  */
@@ -28,8 +30,6 @@ export function calculateForgingPrice(input: ForgingInput): ForgingResult {
     die_components = [],
     C_design = 15000000,
     k_mgmt_die = 10,
-    cavity = 1,
-    life_coefficient = 20000,
     die_cost_treatment,
     C_die_amortization_override,
     N_order = 1,
@@ -84,6 +84,9 @@ export function calculateForgingPrice(input: ForgingInput): ForgingResult {
 
   let die_components_breakdown: any[] = [];
   if (die_components.length > 0) {
+    const N = die_components.length;
+    const designShare = (C_design * (1 + k_mgmt_die / 100)) / N;
+
     const componentBreakdown = die_components.map((comp) => {
       const materialCost = comp.weight_kg * comp.material_price_kg;
       const machiningCost = comp.weight_kg * comp.machining_price_kg;
@@ -97,36 +100,38 @@ export function calculateForgingPrice(input: ForgingInput): ForgingResult {
         reworkCost = reworkCount * reworkCostPerTime;
       }
 
-      const totalCost = materialCost + machiningCost + heatTreatmentCost + reworkCost;
-      const effectiveLife = comp.depreciation_qty && comp.depreciation_qty > 0
-        ? comp.depreciation_qty
-        : life_coefficient * cavity; // fallback — giữ đúng hành vi cũ
+      const componentManufacturingCost = materialCost + machiningCost + heatTreatmentCost + reworkCost;
+      const lineItemCost = componentManufacturingCost + designShare;
+      
+      let effectiveLife = comp.depreciation_qty && comp.depreciation_qty > 0 ? comp.depreciation_qty : DEFAULT_DIE_LIFE;
+      effectiveLife = Math.min(effectiveLife, Math.max(1, N_order));
 
       return {
         name: comp.name,
-        totalCost,
+        lineItemCost,
         depreciationQty: effectiveLife,
-        costPerUnit: effectiveLife > 0 ? totalCost / effectiveLife : 0,
+        costPerUnit: effectiveLife > 0 ? lineItemCost / effectiveLife : 0,
       };
     });
 
     die_components_breakdown = componentBreakdown;
-    const totalComponentsCost = componentBreakdown.reduce((sum, c) => sum + c.totalCost, 0);
-    actual_C_die_total = (totalComponentsCost + C_design) * (1 + k_mgmt_die / 100);
-    actual_L_die_life = life_coefficient * cavity;
+    const totalDieCost = componentBreakdown.reduce((sum, c) => sum + c.lineItemCost, 0);
+    actual_C_die_total = totalDieCost;
+    actual_L_die_life = componentBreakdown.length > 0
+      ? Math.min(...componentBreakdown.map((c) => c.depreciationQty))
+      : 0;
   }
 
   let C_die_amortization = 0;
   if (C_die_amortization_override !== undefined) {
     C_die_amortization = C_die_amortization_override;
-  } else if (actual_C_die_total > 0 && actual_L_die_life > 0) {
-    const denominator = Math.min(actual_L_die_life, Math.max(1, N_order));
-    C_die_amortization = actual_C_die_total / denominator;
+  } else {
+    C_die_amortization = die_components_breakdown.reduce((sum, c) => sum + c.costPerUnit, 0);
   }
 
   // Section 5 — Tổng hợp
   const dieInCogs = die_cost_treatment === 'amortized' ? C_die_amortization : 0;
-  const separate_die_cost = die_cost_treatment === 'separate' ? C_die_amortization : undefined;
+  const separate_die_cost = die_cost_treatment === 'separate' ? actual_C_die_total : undefined;
 
   const C_heat_treat = m_phoi * (DG_heat_treat_per_kg || (input as any).DG_heat_treat_kg || 0);
   const C_paint = m_phoi * (DG_paint_per_kg || 0);

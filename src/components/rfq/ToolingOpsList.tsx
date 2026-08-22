@@ -64,7 +64,10 @@ export const ToolingOpsList = ({
     return sum + materialCost + machiningCost + heatTreatmentCost + reworkCost;
   }, 0);
 
-  const autoLife = life_coefficient * cavity;
+  const DEFAULT_DIE_LIFE = 20000;
+  const autoLife = isForging
+    ? (components.length > 0 ? Math.min(...components.map(c => c.depreciation_qty && c.depreciation_qty > 0 ? c.depreciation_qty : DEFAULT_DIE_LIFE)) : 0)
+    : life_coefficient * cavity;
   
   // Chi phí khuôn phải = 0 khi danh sách chi tiết rỗng
   const mgmtCost = components.length > 0 ? (totalComponentsCost + C_design) * (k_mgmt_die / 100) : 0;
@@ -212,7 +215,7 @@ export const ToolingOpsList = ({
                       <input
                         type="number"
                         min="1"
-                        placeholder={(life_coefficient * cavity).toLocaleString('vi-VN')}
+                        placeholder={(isForging ? DEFAULT_DIE_LIFE : life_coefficient * cavity).toLocaleString('vi-VN')}
                         value={comp.depreciation_qty || ''}
                         onChange={(e) => onUpdateComp(idx, { ...comp, depreciation_qty: e.target.value ? Number(e.target.value) : undefined })}
                         className="w-full px-2 py-1 border border-[#EAEAEA] bg-white rounded font-mono font-bold text-xs text-[#111111] placeholder:font-normal placeholder:text-[#BDBDBD]"
@@ -287,20 +290,22 @@ export const ToolingOpsList = ({
               </div>
             </div>
 
-            <div>
-              <label className="block text-[10px] font-bold text-[#787774] uppercase tracking-wider mb-1">Hệ số sản lượng / 1 lòng:</label>
-              <div className="flex items-center">
-                <input
-                  type="number"
-                  min="1000"
-                  step="1000"
-                  value={life_coefficient}
-                  onChange={(e) => onUpdateField('life_coefficient', Math.max(0, Number(e.target.value)))}
-                  className="w-full px-2.5 py-1.5 border border-[#EAEAEA] rounded-[4px] font-mono font-bold text-xs text-[#111111] bg-white"
-                />
-                <span className="px-2.5 py-1.5 bg-white border-l-0 border border-[#EAEAEA] text-[10px] font-bold text-[#787774] uppercase">PCS</span>
+            {!isForging && (
+              <div>
+                <label className="block text-[10px] font-bold text-[#787774] uppercase tracking-wider mb-1">Hệ số sản lượng / 1 lòng:</label>
+                <div className="flex items-center">
+                  <input
+                    type="number"
+                    min="1000"
+                    step="1000"
+                    value={life_coefficient}
+                    onChange={(e) => onUpdateField('life_coefficient', Math.max(0, Number(e.target.value)))}
+                    className="w-full px-2.5 py-1.5 border border-[#EAEAEA] rounded-[4px] font-mono font-bold text-xs text-[#111111] bg-white"
+                  />
+                  <span className="px-2.5 py-1.5 bg-white border-l-0 border border-[#EAEAEA] text-[10px] font-bold text-[#787774] uppercase">PCS</span>
+                </div>
               </div>
-            </div>
+            )}
             
             <div className="pt-2 border-t border-[#EAEAEA]">
               <span className="block text-[10px] font-bold text-[#787774] uppercase tracking-wider mb-0.5">Tuổi thọ bộ {isForging ? 'khuôn' : 'mẫu'} (Tự động):</span>

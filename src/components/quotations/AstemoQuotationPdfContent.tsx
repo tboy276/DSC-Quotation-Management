@@ -146,6 +146,11 @@ export const AstemoQuotationPdfContent: React.FC<AstemoQuotationPdfContentProps>
                   <td style={{ border: '1px solid black', padding: '4px' }}>{formatNum(res.C_clean || 0)}</td>
                 </tr>
                 <tr>
+                  <td style={{ border: '1px solid black', padding: '4px', textAlign: 'left' }}>Coining</td>
+                  <td style={{ border: '1px solid black', padding: '4px' }}>-</td>
+                  <td style={{ border: '1px solid black', padding: '4px' }}>{formatNum(res.C_coining || 0)}</td>
+                </tr>
+                <tr>
                   <td style={{ border: '1px solid black', padding: '4px', textAlign: 'left' }}>Machining (CNC)</td>
                   <td style={{ border: '1px solid black', padding: '4px' }}>{formatNum((inp.machining_ops || []).reduce((sum: number, op: any) => sum + (Number(op.t_prep_min) || 0) + (Number(op.t_man_min) || 0), 0) * 60)}</td>
                   <td style={{ border: '1px solid black', padding: '4px' }}>{formatNum(machiningCostVnd)}</td>
@@ -172,7 +177,7 @@ export const AstemoQuotationPdfContent: React.FC<AstemoQuotationPdfContentProps>
                 {breakdown.map((b: any, i: number) => (
                   <tr key={i}>
                     <td style={{ border: '1px solid black', padding: '4px', textAlign: 'left' }}>{b.name}</td>
-                    <td style={{ border: '1px solid black', padding: '4px' }}>{formatNum(b.totalCost)}</td>
+                    <td style={{ border: '1px solid black', padding: '4px' }}>{formatNum(b.lineItemCost)}</td>
                     <td style={{ border: '1px solid black', padding: '4px' }}>{formatNum(b.depreciationQty)}</td>
                     <td style={{ border: '1px solid black', padding: '4px' }}>{formatNum(b.costPerUnit)}</td>
                   </tr>
