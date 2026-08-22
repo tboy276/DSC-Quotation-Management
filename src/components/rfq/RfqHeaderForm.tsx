@@ -300,11 +300,13 @@ export const RfqHeaderForm = () => {
                     min="1"
                     value={item.annual_volume}
                     onChange={(e) => {
-                      const updated = [...dossierItems];
-                      updated[idx].annual_volume = e;
-                      setDossierItems(updated);
-                      if (idx === 0) setRfqField('annual_volume', e);
-                    }}
+                        const parsed = Number.isNaN(e) ? undefined : Math.max(1, e) as any;
+                        const updated = [...dossierItems];
+                        updated[idx].annual_volume = parsed;
+                        setDossierItems(updated);
+                        if (idx === 0) setRfqField('annual_volume', parsed);
+                      }}
+                      allowEmpty
                     className="w-full px-2.5 py-1.5 border border-[#EAEAEA] rounded-[6px] font-mono text-xs font-bold text-[#111111]"
                   />
                 </div>
@@ -319,11 +321,13 @@ export const RfqHeaderForm = () => {
                     step="1000"
                     value={item.target_price}
                     onChange={(e) => {
-                      const updated = [...dossierItems];
-                      updated[idx].target_price = e;
-                      setDossierItems(updated);
-                      if (idx === 0) setRfqField('target_price', e);
-                    }}
+                        const parsed = Number.isNaN(e) ? undefined : Math.max(0, e) as any;
+                        const updated = [...dossierItems];
+                        updated[idx].target_price = parsed;
+                        setDossierItems(updated);
+                        if (idx === 0) setRfqField('target_price', parsed);
+                      }}
+                      allowEmpty
                     className="w-full px-2.5 py-1.5 border border-[#EAEAEA] rounded-[6px] font-mono text-xs font-extrabold text-[#111111]"
                   />
                 </div>

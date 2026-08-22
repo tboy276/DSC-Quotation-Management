@@ -37,7 +37,8 @@ export default function MachiningCalculatorForm() {
                 step="0.001"
                 min="0"
                 value={machining.m_tinh}
-                onChange={(e) => setMachiningField('m_tinh', e || 0)}
+                onChange={(e) => setMachiningField('m_tinh', Number.isNaN(e) ? undefined : Math.max(0, e))}
+                allowEmpty
               />
             </div>
           </div>

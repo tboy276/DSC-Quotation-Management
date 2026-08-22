@@ -75,7 +75,8 @@ export const ToolingAmortizationSection: React.FC<ToolingAmortizationSectionProp
               <NumberTextInput
                 min="1"
                 value={currentQuantity}
-                onChange={(e) => onNOrderChange(Math.max(1, e))}
+                onChange={(e) => onNOrderChange(Number.isNaN(e) ? undefined : Math.max(1, e) as any)}
+                allowEmpty
                 className="w-28 px-2.5 py-1.5 border border-[#EAEAEA] rounded-l-[4px] font-mono text-xs font-bold text-[#111111] outline-none focus:border-[#111111] bg-white text-right"
               />
               <span className="bg-[#F7F7F6] px-2.5 py-1.5 border border-l-0 border-[#EAEAEA] rounded-r-[4px] text-[10px] font-bold text-[#787774] uppercase">

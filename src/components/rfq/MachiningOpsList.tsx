@@ -225,10 +225,11 @@ export const MachiningOpsList = ({
                 </label>
                 <div className="flex items-center">
                   <NumberTextInput
+                    allowEmpty
                     min="0.1"
                     step="0.1"
                     value={op.t_man_min}
-                    onChange={(e) => onUpdateOp(idx, { ...op, t_man_min: e })}
+                    onChange={(v) => onUpdateOp(idx, { ...op, t_man_min: Number.isNaN(v) ? undefined : Math.max(0.1, v) as any })}
                     className="w-full px-2.5 py-1.5 border border-[#EAEAEA] rounded-[4px] bg-white font-mono text-[#111111] text-xs focus:outline-none focus:border-[#111111] transition-colors"
                   />
                 </div>
@@ -244,7 +245,8 @@ export const MachiningOpsList = ({
                     min="0"
                     step="0.5"
                     value={op.t_prep_min}
-                    onChange={(e) => onUpdateOp(idx, { ...op, t_prep_min: e })}
+                    onChange={(e) => onUpdateOp(idx, { ...op, t_prep_min: Number.isNaN(e) ? undefined : Math.max(0, e) as any })}
+                    allowEmpty
                     className="w-full px-2.5 py-1.5 border border-[#EAEAEA] rounded-[4px] bg-white font-mono text-[#111111] text-xs focus:outline-none focus:border-[#111111] transition-colors"
                   />
                 </div>

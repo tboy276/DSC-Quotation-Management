@@ -172,7 +172,8 @@ export const CastingCalculatorForm = () => {
                       step="0.1"
                       min="0"
                       value={casting.m_cast}
-                      onChange={(e) => setCastingField('m_cast', Math.max(0, e))}
+                      onChange={(e) => setCastingField('m_cast', Number.isNaN(e) ? undefined : Math.max(0, e))}
+                      allowEmpty
                     />
                   </div>
 
@@ -184,7 +185,8 @@ export const CastingCalculatorForm = () => {
                       step="1"
                       min="0"
                       value={casting.Y_yield}
-                      onChange={(e) => setCastingField('Y_yield', Math.max(0, e))}
+                      onChange={(e) => setCastingField('Y_yield', Number.isNaN(e) ? undefined : Math.max(0, e))}
+                      allowEmpty
                     />
                   </div>
 
@@ -196,7 +198,8 @@ export const CastingCalculatorForm = () => {
                       step="0.05"
                       min="0"
                       value={casting.k_burn_loss !== undefined ? casting.k_burn_loss : 5.0}
-                      onChange={(e) => setCastingField('k_burn_loss', Math.max(0, e))}
+                      onChange={(e) => setCastingField('k_burn_loss', Number.isNaN(e) ? undefined : Math.max(0, e))}
+                      allowEmpty
                     />
                   </div>
 
@@ -225,7 +228,8 @@ export const CastingCalculatorForm = () => {
                       step="0.1"
                       min="0"
                       value={casting.m_resin_core }
-                      onChange={(e) => setCastingField('m_resin_core', Math.max(0, e))}
+                      onChange={(e) => setCastingField('m_resin_core', Number.isNaN(e) ? undefined : Math.max(0, e))}
+                        allowEmpty
                       className="w-20 px-2.5 py-1 border border-[#EAEAEA] rounded-[4px] font-mono text-xs font-bold text-[#111111] bg-white text-right focus:outline-none focus:border-[#111111]"
                     />
                   </div>

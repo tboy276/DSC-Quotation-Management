@@ -145,7 +145,8 @@ export const Section5SummaryCard: React.FC<Section5SummaryCardProps> = ({
                     min={0}
                     value={quoted_moq }
                     placeholder="-"
-                    onChange={(e) => onMoqChange(Math.max(0, e))}
+                    onChange={(e) => onMoqChange(Number.isNaN(e) ? undefined : Math.max(0, e) as any)}
+                    allowEmpty
                     className="w-24 px-2 py-1 border border-[#EAEAEA] rounded-[4px] text-right font-mono font-bold text-xs text-[#111111] bg-white outline-none focus:border-[#111111]"
                   />
                 </div>
@@ -169,7 +170,8 @@ export const Section5SummaryCard: React.FC<Section5SummaryCardProps> = ({
                       min={0}
                       value={DG_heat_treat_per_kg }
                       placeholder="0"
-                      onChange={(e) => onDGHeatTreatChange(Math.max(0, e))}
+                      onChange={(e) => onDGHeatTreatChange(Number.isNaN(e) ? undefined : Math.max(0, e) as any)}
+                    allowEmpty
                       className="w-full px-2 py-1 border border-[#EAEAEA] rounded-[4px] text-right font-mono font-bold text-xs text-[#111111] bg-white outline-none focus:border-[#111111]"
                     />
                     <span className="text-[9px] font-bold text-[#787774]">VNĐ/KG</span>
@@ -186,7 +188,8 @@ export const Section5SummaryCard: React.FC<Section5SummaryCardProps> = ({
                       min={0}
                       value={DG_paint_per_kg }
                       placeholder="0"
-                      onChange={(e) => onDGPaintChange(Math.max(0, e))}
+                      onChange={(e) => onDGPaintChange(Number.isNaN(e) ? undefined : Math.max(0, e) as any)}
+                    allowEmpty
                       className="w-full px-2 py-1 border border-[#EAEAEA] rounded-[4px] text-right font-mono font-bold text-xs text-[#111111] bg-white outline-none focus:border-[#111111]"
                     />
                     <span className="text-[9px] font-bold text-[#787774]">VNĐ/KG</span>
