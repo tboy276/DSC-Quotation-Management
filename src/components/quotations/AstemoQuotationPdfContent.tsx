@@ -188,6 +188,10 @@ export const AstemoQuotationPdfContent: React.FC<AstemoQuotationPdfContentProps>
                   </tr>
                 )}
                 <tr style={{ fontWeight: 'bold' }}>
+                  <td colSpan={3} style={{ border: '1px solid black', padding: '4px', textAlign: 'right' }}>Total Tooling Cost (Đầu tư trọn gói)</td>
+                  <td style={{ border: '1px solid black', padding: '4px' }}>{formatNum(res.actual_C_die_total)}</td>
+                </tr>
+                <tr style={{ fontWeight: 'bold' }}>
                   <td colSpan={3} style={{ border: '1px solid black', padding: '4px', textAlign: 'right' }}>Total Tooling Amortization</td>
                   <td style={{ border: '1px solid black', padding: '4px' }}>{formatNum(dieAmortizedVnd)}</td>
                 </tr>

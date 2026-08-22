@@ -109,14 +109,15 @@ export const generateAstemoQuotationPdf = async (
     autoTable(doc, {
       startY: currentY + 4,
       theme: "grid",
-      head: [["Process", `Cost (${currency})`]],
+      head: [["Process", "Cycle Time (s)", `Cost (${currency})`]],
       body: [
-        ["Shearing", Math.round(res.C_cut || 0).toLocaleString("en-US")],
-        ["Heating", Math.round(res.C_heat_induction || 0).toLocaleString("en-US")],
-        ["Forging", Math.round(res.C_forging_op || 0).toLocaleString("en-US")],
-        ["Shot Blast", Math.round(res.C_clean || 0).toLocaleString("en-US")],
-        ["Machining (CNC)", Math.round(machiningCostVnd).toLocaleString("en-US")],
-        [{ content: "Total Processing Cost", styles: { fontStyle: "bold", halign: "right" } }, { content: Math.round(formingCostVnd + machiningCostVnd).toLocaleString("en-US"), styles: { fontStyle: "bold" } }]
+        ["Shearing", Math.round(Number(inp.t_cut_sec) || 0).toLocaleString("en-US"), Math.round(res.C_cut || 0).toLocaleString("en-US")],
+        ["Heating", Math.round(((res.C_heat_induction || 0) / 64104) * 60).toLocaleString("en-US"), Math.round(res.C_heat_induction || 0).toLocaleString("en-US")],
+        ["Forging", Math.round(inp.expected_productivity ? (8 * 3600) / inp.expected_productivity : 0).toLocaleString("en-US"), Math.round(res.C_forging_op || 0).toLocaleString("en-US")],
+        ["Shot Blast", Math.round(((res.C_clean || 0) / 11429) * 60).toLocaleString("en-US"), Math.round(res.C_clean || 0).toLocaleString("en-US")],
+        ["Coining", "-", Math.round(res.C_coining || 0).toLocaleString("en-US")],
+        ["Machining (CNC)", Math.round((inp.machining_ops || []).reduce((sum: number, op: any) => sum + (Number(op.t_prep_min) || 0) + (Number(op.t_man_min) || 0), 0) * 60).toLocaleString("en-US"), Math.round(machiningCostVnd).toLocaleString("en-US")],
+        [{ content: "Total Processing Cost", colSpan: 2, styles: { fontStyle: "bold", halign: "right" } }, { content: Math.round(formingCostVnd + machiningCostVnd).toLocaleString("en-US"), styles: { fontStyle: "bold" } }]
       ],
       styles: { fontSize: 10, cellPadding: 3 }
     });
@@ -137,6 +138,10 @@ export const generateAstemoQuotationPdf = async (
         ])
       : [[{ content: "No tooling breakdown available", colSpan: 4, styles: { fontStyle: "italic", halign: "center" } }]];
 
+    toolingBody.push([
+      { content: "Total Tooling Cost (Đầu tư trọn gói)", colSpan: 3, styles: { fontStyle: "bold", halign: "right" } },
+      { content: Math.round(res.actual_C_die_total).toLocaleString("en-US"), styles: { fontStyle: "bold" } }
+    ]);
     toolingBody.push([
       { content: "Total Tooling Amortization", colSpan: 3, styles: { fontStyle: "bold", halign: "right" } },
       { content: Math.round(dieAmortizedVnd).toLocaleString("en-US"), styles: { fontStyle: "bold" } }

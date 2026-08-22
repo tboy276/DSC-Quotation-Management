@@ -70,7 +70,7 @@ export const ToolingOpsList = ({
     : life_coefficient * cavity;
   
   // Chi phí khuôn phải = 0 khi danh sách chi tiết rỗng
-  const mgmtCost = components.length > 0 ? (totalComponentsCost + C_design) * (k_mgmt_die / 100) : 0;
+  const mgmtCost = components.length > 0 ? (isForging ? C_design * (k_mgmt_die / 100) : (totalComponentsCost + C_design) * (k_mgmt_die / 100)) : 0;
   const totalDieCost = components.length > 0 ? (totalComponentsCost + C_design + mgmtCost) : 0;
 
   return (
