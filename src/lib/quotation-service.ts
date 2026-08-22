@@ -518,9 +518,9 @@ export const createRfqDossierWithItems = async (
   items: Array<{
     product_name: string;
     part_number?: string;
-    annual_volume: number;
+    annual_volume?: number;
     quantity_unit?: any;
-    target_price: number;
+    target_price?: number;
     technology_requirement?: any;
     is_feasible: boolean;
     cancel_reason?: string;
@@ -654,8 +654,8 @@ export const saveQuoteDraft = async (
   rfqItem: {
     id?: string;
     product_name: string;
-    annual_volume: number;
-    target_price: number;
+    annual_volume?: number;
+    target_price?: number;
     customer_name: string;
   },
   segment: SegmentType,
@@ -796,8 +796,8 @@ export const sendQuote = async (
   rfqItem: {
     id?: string;
     product_name: string;
-    annual_volume: number;
-    target_price: number;
+    annual_volume?: number;
+    target_price?: number;
     customer_name: string;
   },
   segment: SegmentType,
@@ -963,8 +963,8 @@ export const cancelRfqImmediately = async (
   rfqHeader: {
     customer_name: string;
     product_name: string;
-    annual_volume: number;
-    target_price: number;
+    annual_volume?: number;
+    target_price?: number;
   },
   cancelReason: string,
   userEmail: string = 'sales@disoco.vn'

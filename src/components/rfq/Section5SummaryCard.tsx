@@ -80,11 +80,11 @@ interface Section5SummaryCardProps {
   onKProfitChange: (val: number) => void;
 
   quoted_moq?: number;
-  onMoqChange?: (val: number) => void;
+  onMoqChange?: (val: number | undefined) => void;
   DG_heat_treat_per_kg?: number;
-  onDGHeatTreatChange?: (val: number) => void;
+  onDGHeatTreatChange?: (val: number | undefined) => void;
   DG_paint_per_kg?: number;
-  onDGPaintChange?: (val: number) => void;
+  onDGPaintChange?: (val: number | undefined) => void;
 
   // Breakdown values
   COGS: number;
@@ -145,7 +145,7 @@ export const Section5SummaryCard: React.FC<Section5SummaryCardProps> = ({
                     min={0}
                     value={quoted_moq }
                     placeholder="-"
-                    onChange={(e) => onMoqChange(Number.isNaN(e) ? undefined : Math.max(0, e) as any)}
+                    onChange={(e) => onMoqChange(Number.isNaN(e) ? undefined : Math.max(0, e))}
                     allowEmpty
                     className="w-24 px-2 py-1 border border-[#EAEAEA] rounded-[4px] text-right font-mono font-bold text-xs text-[#111111] bg-white outline-none focus:border-[#111111]"
                   />
@@ -170,7 +170,7 @@ export const Section5SummaryCard: React.FC<Section5SummaryCardProps> = ({
                       min={0}
                       value={DG_heat_treat_per_kg }
                       placeholder="0"
-                      onChange={(e) => onDGHeatTreatChange(Number.isNaN(e) ? undefined : Math.max(0, e) as any)}
+                      onChange={(e) => onDGHeatTreatChange(Number.isNaN(e) ? undefined : Math.max(0, e))}
                     allowEmpty
                       className="w-full px-2 py-1 border border-[#EAEAEA] rounded-[4px] text-right font-mono font-bold text-xs text-[#111111] bg-white outline-none focus:border-[#111111]"
                     />
@@ -188,7 +188,7 @@ export const Section5SummaryCard: React.FC<Section5SummaryCardProps> = ({
                       min={0}
                       value={DG_paint_per_kg }
                       placeholder="0"
-                      onChange={(e) => onDGPaintChange(Number.isNaN(e) ? undefined : Math.max(0, e) as any)}
+                      onChange={(e) => onDGPaintChange(Number.isNaN(e) ? undefined : Math.max(0, e))}
                     allowEmpty
                       className="w-full px-2 py-1 border border-[#EAEAEA] rounded-[4px] text-right font-mono font-bold text-xs text-[#111111] bg-white outline-none focus:border-[#111111]"
                     />

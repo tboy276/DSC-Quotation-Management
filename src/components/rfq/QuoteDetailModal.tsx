@@ -108,7 +108,7 @@ export const QuoteDetailModal = ({ quote, onClose }: QuoteDetailModalProps) => {
         { name: 'Số lượng công đoạn CNC:', val: `${ops.length} công đoạn` },
         ...ops.map((op: any, i: number) => ({
           name: `CD ${i + 1}: ${op.name}`,
-          val: `t_prep=${op.t_prep_min}m | t_man=${op.t_man_min}m | Cước=${op.DG_machine_hour?.toLocaleString('vi-VN')}đ/h | Tool=${op.C_tooling}đ`,
+          val: `t_prep=${op.t_prep_min || 0}m | t_man=${op.t_man_min || 0}m | Cước=${op.DG_machine_hour?.toLocaleString('vi-VN')}đ/h | Tool=${op.C_tooling}đ`,
         })),
         { name: 'Tổng chi phí gia công CNC (VNĐ/cái)', val: formatCurrencyValue(C_machining || 0, currency, exchangeRate) },
       ],

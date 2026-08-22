@@ -254,7 +254,7 @@ export const exportDocumentToExcel = async (document: QuotationDocument) => {
     ops.forEach((op: any, opIdx: number) => {
       sheetData.push([
         `Công đoạn ${opIdx + 1}: ${op.name}`,
-        `t_prep=${op.t_prep_min}m | t_man=${op.t_man_min}m | Cước=${op.DG_machine_hour}đ/h | Dao=${op.C_tooling}đ`,
+        `t_prep=${op.t_prep_min || 0}m | t_man=${op.t_man_min || 0}m | Cước=${op.DG_machine_hour}đ/h | Dao=${op.C_tooling}đ`,
       ]);
     });
     const C_machining = isForging ? res.C_machining : res.C_machining_casting;

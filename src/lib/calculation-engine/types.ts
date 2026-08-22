@@ -12,8 +12,8 @@ export type ForgingMachineType = 'press' | 'hammer';
  */
 export interface MachiningOperation {
   name?: string;
-  t_prep_min: number;      // Thời gian gá đặt/chuẩn bị (phút) - t_prep_i
-  t_man_min: number;       // Thời gian công đoạn/chi tiết (phút) - t_man_i
+  t_prep_min?: number;      // Thời gian gá đặt/chuẩn bị (phút) - t_prep_i
+  t_man_min?: number;       // Thời gian công đoạn/chi tiết (phút) - t_man_i
   DG_machine_hour: number; // Đơn giá máy (/giờ) - DG_machine_i
 }
 

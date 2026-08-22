@@ -31,9 +31,9 @@ export type TradeTermType = 'EXW' | 'FOB' | 'CIF' | 'DAP';
 export interface RfqHeaderState {
   customer_name: string;
   product_name: string;
-  annual_volume: number;
+  annual_volume?: number;
   trade_terms: TradeTermType;
-  target_price: number;
+  target_price?: number;
 }
 
 export interface QuotationStoreState {

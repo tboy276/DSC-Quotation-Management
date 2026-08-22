@@ -171,7 +171,7 @@ export const MachiningOpsList = ({
         const ratePerMin = actualRatePerMin >= 1000 ? `${Math.round(actualRatePerMin / 1000)}k` : Math.round(actualRatePerMin);
 
         // Calculate cost for this specific op
-        const opCost = (op.t_prep_min + op.t_man_min) * (op.DG_machine_hour / 60);
+        const opCost = ((op.t_prep_min || 0) + (op.t_man_min || 0)) * (op.DG_machine_hour / 60);
         const opDisplayNum = sawingOpProps ? idx + 2 : idx + 1;
 
         return (
@@ -229,7 +229,7 @@ export const MachiningOpsList = ({
                     min="0.1"
                     step="0.1"
                     value={op.t_man_min}
-                    onChange={(v) => onUpdateOp(idx, { ...op, t_man_min: Number.isNaN(v) ? undefined : Math.max(0.1, v) as any })}
+                    onChange={(v) => onUpdateOp(idx, { ...op, t_man_min: Number.isNaN(v) ? undefined : Math.max(0.1, v) })}
                     className="w-full px-2.5 py-1.5 border border-[#EAEAEA] rounded-[4px] bg-white font-mono text-[#111111] text-xs focus:outline-none focus:border-[#111111] transition-colors"
                   />
                 </div>
@@ -245,7 +245,7 @@ export const MachiningOpsList = ({
                     min="0"
                     step="0.5"
                     value={op.t_prep_min}
-                    onChange={(e) => onUpdateOp(idx, { ...op, t_prep_min: Number.isNaN(e) ? undefined : Math.max(0, e) as any })}
+                    onChange={(e) => onUpdateOp(idx, { ...op, t_prep_min: Number.isNaN(e) ? undefined : Math.max(0, e) })}
                     allowEmpty
                     className="w-full px-2.5 py-1.5 border border-[#EAEAEA] rounded-[4px] bg-white font-mono text-[#111111] text-xs focus:outline-none focus:border-[#111111] transition-colors"
                   />

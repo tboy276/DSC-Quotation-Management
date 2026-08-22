@@ -25,8 +25,8 @@ export const RfqHeaderForm = () => {
       id: string;
       product_name: string;
       part_number: string;
-      annual_volume: number;
-      target_price: number;
+      annual_volume?: number;
+      target_price?: number;
       is_feasible: boolean;
       cancel_reason?: string;
     }>
@@ -300,7 +300,7 @@ export const RfqHeaderForm = () => {
                     min="1"
                     value={item.annual_volume}
                     onChange={(e) => {
-                        const parsed = Number.isNaN(e) ? undefined : Math.max(1, e) as any;
+                        const parsed = Number.isNaN(e) ? undefined : Math.max(1, e);
                         const updated = [...dossierItems];
                         updated[idx].annual_volume = parsed;
                         setDossierItems(updated);
@@ -321,7 +321,7 @@ export const RfqHeaderForm = () => {
                     step="1000"
                     value={item.target_price}
                     onChange={(e) => {
-                        const parsed = Number.isNaN(e) ? undefined : Math.max(0, e) as any;
+                        const parsed = Number.isNaN(e) ? undefined : Math.max(0, e);
                         const updated = [...dossierItems];
                         updated[idx].target_price = parsed;
                         setDossierItems(updated);

@@ -74,7 +74,7 @@ export function calculateForgingPrice(input: ForgingInput): ForgingResult {
 
   // Section 3 — Gia công cơ khí
   const C_machining = machining_operations.reduce((total, op) => {
-    const C_machining_i = (op.t_prep_min + op.t_man_min) * (op.DG_machine_hour / 60);
+    const C_machining_i = ((op.t_prep_min || 0) + (op.t_man_min || 0)) * (op.DG_machine_hour / 60);
     return total + C_machining_i;
   }, 0);
 

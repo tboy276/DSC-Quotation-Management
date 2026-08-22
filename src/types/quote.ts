@@ -56,9 +56,9 @@ export interface RfqItemRecord {
   item_code?: string; // Auto-generated unique item code e.g. 20260803-001-01
   product_name: string;
   part_number: string;
-  annual_volume: number;
+  annual_volume?: number;
   quantity_unit?: QuantityUnitType;
-  target_price: number;
+  target_price?: number;
   technology_requirement?: TechnologyRequirementType;
   status: RfqItemStatus;
   cancel_reason?: string;

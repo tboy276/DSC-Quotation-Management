@@ -7,8 +7,8 @@ interface ToolingAmortizationSectionProps {
   isForging: boolean;
   treatment: 'amortized' | 'separate';
   onTreatmentChange: (treatment: 'amortized' | 'separate') => void;
-  N_order: number;
-  onNOrderChange: (value: number) => void;
+  N_order?: number;
+  onNOrderChange: (value: number | undefined) => void;
   totalToolingCost: number;
   autoToolLife: number;
   amortizationCostPerUnit: number;
@@ -75,7 +75,7 @@ export const ToolingAmortizationSection: React.FC<ToolingAmortizationSectionProp
               <NumberTextInput
                 min="1"
                 value={currentQuantity}
-                onChange={(e) => onNOrderChange(Number.isNaN(e) ? undefined : Math.max(1, e) as any)}
+                onChange={(e) => onNOrderChange(Number.isNaN(e) ? undefined : Math.max(1, e))}
                 allowEmpty
                 className="w-28 px-2.5 py-1.5 border border-[#EAEAEA] rounded-l-[4px] font-mono text-xs font-bold text-[#111111] outline-none focus:border-[#111111] bg-white text-right"
               />
@@ -128,11 +128,11 @@ export const ToolingAmortizationSection: React.FC<ToolingAmortizationSectionProp
               Toàn bộ chi phí {toolName} ({Math.round(totalToolingCost).toLocaleString('vi-VN')} đ) được tách riêng 1 lần, không cộng dồn vào giá thành từng sản phẩm.
             </span>
           </div>
-          {N_order > autoToolLife && autoToolLife > 0 && (
+          {(N_order || 0) > autoToolLife && autoToolLife > 0 && (
             <div className="text-amber-600 font-medium bg-amber-50 p-1.5 rounded flex items-start gap-1.5 border border-amber-200/50 mt-1">
               <span className="text-[12px] leading-none">⚠️</span>
               <span className="leading-tight">
-                Số lượng đặt hàng ({N_order.toLocaleString('vi-VN')}) vượt tuổi thọ {toolName} ({autoToolLife.toLocaleString('vi-VN')}) — cần thu thêm tiền {toolName} lần 2 ngoài phạm vi báo giá này khi đến ngưỡng.
+                Số lượng đặt hàng ({(N_order || 0).toLocaleString('vi-VN')}) vượt tuổi thọ {toolName} ({autoToolLife.toLocaleString('vi-VN')}) — cần thu thêm tiền {toolName} lần 2 ngoài phạm vi báo giá này khi đến ngưỡng.
               </span>
             </div>
           )}
