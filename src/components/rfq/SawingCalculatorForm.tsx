@@ -213,10 +213,11 @@ export default function SawingCalculatorForm() {
         <div className="flex items-center justify-between gap-1 bg-amber-50/40 p-2 rounded">
           <label className="text-[10px] font-bold text-amber-900 uppercase tracking-wider">11. Đơn giá thu hồi phoi CNC (VNĐ/kg):</label>
           <NumberTextInput
+            allowEmpty
             min="0"
             placeholder="Mặc định = ĐG phoi cưa"
-            value={sawing.DG_scrap_cnc }
-            onChange={(v) => setSawingField('DG_scrap_cnc', v ? Math.max(0, v)  : undefined)}
+            value={sawing.DG_scrap_cnc}
+            onChange={(v) => setSawingField('DG_scrap_cnc', Number.isNaN(v) ? undefined : Math.max(0, v))}
             className="w-24 px-2 py-1 border border-amber-300 rounded-[4px] font-mono text-xs font-bold text-amber-950 bg-white text-right"
           />
         </div>

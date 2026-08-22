@@ -212,10 +212,11 @@ export const ToolingOpsList = ({
                     <div>
                       <label className="block text-[10px] font-bold text-[#787774] uppercase tracking-wider mb-1" title="Tuổi thọ riêng của chi tiết này">Tuổi thọ riêng (chi tiết)</label>
                       <NumberTextInput
-                        min="1"
-                        placeholder={(isForging ? DEFAULT_DIE_LIFE : life_coefficient * cavity).toLocaleString('vi-VN')}
-                        value={comp.depreciation_qty }
-                        onChange={(e) => onUpdateComp(idx, { ...comp, depreciation_qty: e })}
+                          allowEmpty
+                          min="1"
+                          placeholder={(isForging ? DEFAULT_DIE_LIFE : life_coefficient * cavity).toLocaleString('vi-VN')}
+                          value={comp.depreciation_qty}
+                          onChange={(v) => onUpdateComp(idx, { ...comp, depreciation_qty: Number.isNaN(v) ? undefined : Math.max(1, v) })}
                         className="w-full px-2 py-1 border border-[#EAEAEA] bg-white rounded font-mono font-bold text-xs text-[#111111] placeholder:font-normal placeholder:text-[#BDBDBD]"
                       />
                     </div>

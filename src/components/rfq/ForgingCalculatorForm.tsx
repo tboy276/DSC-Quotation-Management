@@ -210,9 +210,10 @@ export const ForgingCalculatorForm = () => {
             <div className="flex items-center justify-between gap-1">
               <label className="text-[10px] font-bold text-[#787774] uppercase tracking-wider">10. Đơn giá thu hồi ba-via rèn (VNĐ/kg):</label>
               <NumberTextInput
+                allowEmpty
                 min="0"
                 value={forging.DG_scrap}
-                onChange={(v) => setForgingField('DG_scrap', Math.max(0, v))}
+                onChange={(v) => setForgingField('DG_scrap', Number.isNaN(v) ? undefined : Math.max(0, v))}
                 className="w-20 px-2 py-1 border border-[#EAEAEA] rounded-[4px] font-mono text-xs font-bold text-[#111111] text-right"
               />
             </div>
@@ -227,10 +228,11 @@ export const ForgingCalculatorForm = () => {
                   )}
                 </div>
                 <NumberTextInput
-                  min="0"
-                  placeholder="Nhập đơn giá"
-                  value={forging.DG_scrap_cnc}
-                  onChange={(v) => setForgingField('DG_scrap_cnc', v)}
+                    allowEmpty
+                    min="0"
+                    placeholder="Nhập đơn giá"
+                    value={forging.DG_scrap_cnc}
+                    onChange={(v) => setForgingField('DG_scrap_cnc', Number.isNaN(v) ? undefined : Math.max(0, v))}
                   className={`w-24 px-2 py-1 border rounded-[4px] font-mono text-xs font-bold text-right ${res.m_bavia_cnc && res.m_bavia_cnc > 0 && !forging.DG_scrap_cnc ? 'border-amber-500 bg-amber-100 text-amber-900' : 'border-[#EAEAEA] bg-white text-[#111111]'}`}
                 />
               </div>
@@ -316,9 +318,10 @@ export const ForgingCalculatorForm = () => {
             <div className="flex items-center justify-between gap-1">
               <label className="text-[10px] font-bold text-[#787774] uppercase tracking-wider">2. Thời gian cắt phôi (giây):</label>
               <NumberTextInput
+                allowEmpty
                 min="0"
                 value={forging.t_cut_sec}
-                onChange={(v) => setForgingField('t_cut_sec', Math.max(0, v))}
+                onChange={(v) => setForgingField('t_cut_sec', Number.isNaN(v) ? undefined : Math.max(0, v))}
                 className="w-20 px-2 py-1 border border-[#EAEAEA] rounded-[4px] font-mono text-xs font-bold text-[#111111] text-right"
               />
             </div>
@@ -342,9 +345,10 @@ export const ForgingCalculatorForm = () => {
             <div className="flex items-center justify-between gap-1">
               <label className="text-[10px] font-bold text-[#787774] uppercase tracking-wider">4. Năng suất dự kiến (Cái/ca):</label>
               <NumberTextInput
+                allowEmpty
                 min="0"
                 value={forging.expected_productivity}
-                onChange={(v) => setForgingField('expected_productivity', Math.max(0, v))}
+                onChange={(v) => setForgingField('expected_productivity', Number.isNaN(v) ? undefined : Math.max(0, v))}
                 className="w-20 px-2 py-1 border border-[#EAEAEA] rounded-[4px] font-mono text-xs font-bold text-[#111111] text-right"
               />
             </div>
@@ -353,9 +357,10 @@ export const ForgingCalculatorForm = () => {
             <div className="flex items-center justify-between gap-1">
               <label className="text-[10px] font-bold text-[#787774] uppercase tracking-wider">5. Đơn giá phun bi (VNĐ/kg):</label>
               <NumberTextInput
+                allowEmpty
                 min="0"
                 value={forging.DG_clean_kg}
-                onChange={(v) => setForgingField('DG_clean_kg', Math.max(0, v))}
+                onChange={(v) => setForgingField('DG_clean_kg', Number.isNaN(v) ? undefined : Math.max(0, v))}
                 className="w-20 px-2 py-1 border border-[#EAEAEA] rounded-[4px] font-mono text-xs font-bold text-[#111111] text-right"
               />
             </div>
