@@ -405,10 +405,10 @@ export const AstemoQuotationPdfContent: React.FC<AstemoQuotationPdfContentProps>
                     </td>
                     <td style={{ padding: '4px', width: '50%' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginBottom: '4px' }}>
-                        <span style={{ fontSize: '14px' }}>{document.trade_terms === 'EXW' ? '☑' : '☐'}</span> VNHN's WAREHOUSE
+                        <span style={{ fontSize: '14px' }}>{document.trade_terms === 'DAP' ? '☑' : '☐'}</span> VNHN's WAREHOUSE
                       </div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                        <span style={{ fontSize: '14px' }}>{!['FOB', 'CIF', 'EXW'].includes(document.trade_terms) ? '☑' : '☐'}</span> OTHERS
+                        <span style={{ fontSize: '14px' }}>{!['FOB', 'CIF', 'DAP'].includes(document.trade_terms) ? '☑' : '☐'}</span> OTHERS
                       </div>
                     </td>
                   </tr>
