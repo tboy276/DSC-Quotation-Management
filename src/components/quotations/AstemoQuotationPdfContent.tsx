@@ -163,7 +163,7 @@ export const AstemoQuotationPdfContent: React.FC<AstemoQuotationPdfContentProps>
             <table style={{ width: '100%', borderCollapse: 'collapse', border: '2px solid black', textAlign: 'center', marginBottom: '8px' }}>
               <thead>
                 <tr>
-                  <th colSpan={9} style={{ backgroundColor: '#f0f0f0', borderBottom: '1px solid black', padding: '4px', textAlign: 'left', fontWeight: 'bold' }}>MATERIAL COST</th>
+                  <th colSpan={10} style={{ backgroundColor: '#f0f0f0', borderBottom: '1px solid black', padding: '4px', textAlign: 'left', fontWeight: 'bold' }}>MATERIAL COST</th>
                 </tr>
                 <tr>
                   <th rowSpan={2} style={{ borderRight: '1px solid black', borderBottom: '1px solid black', padding: '4px' }}>MATERIAL<br/>NAME</th>
