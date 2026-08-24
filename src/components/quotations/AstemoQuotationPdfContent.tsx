@@ -64,11 +64,11 @@ export const AstemoQuotationPdfContent: React.FC<AstemoQuotationPdfContentProps>
             boxSizing: 'border-box',
             pageBreakAfter: idx < items.length - 1 ? 'always' : 'auto', 
             position: 'relative',
-            fontSize: '10px'
+            fontSize: '12px'
           }}>
-            {/* 1. HEADER 3 CỘT */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-              <div style={{ width: '30%', visibility: config?.astemoShowLogo !== false ? 'visible' : 'hidden' }}>
+                        {/* 1. HEADER 3 CỘT */}
+            <div style={{ display: config?.astemoShowLogo !== false ? 'flex' : 'none', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+              <div style={{ width: '30%' }}>
                 <span style={{ color: '#D31145', fontSize: '32px', fontWeight: 'bold', fontFamily: 'Arial Black, Impact, sans-serif', letterSpacing: '-1px' }}>Astemo</span>
               </div>
               <div style={{ width: '40%', textAlign: 'center' }}>
@@ -90,13 +90,13 @@ export const AstemoQuotationPdfContent: React.FC<AstemoQuotationPdfContentProps>
               {/* Maker Name */}
               <table style={{ flex: '1', borderCollapse: 'collapse', border: '2px solid black', textAlign: 'center' }}>
                 <tbody>
-                  <tr><td style={{ fontWeight: 'bold', borderBottom: '1px solid black', padding: '4px', fontSize: '11px' }}>MAKER NAME</td></tr>
-                  <tr><td style={{ fontWeight: 'bold', padding: '20px 4px', fontSize: '11px' }}>{DISOCO_COMPANY_CONFIG.name}</td></tr>
+                  <tr><td style={{ fontWeight: 'bold', borderBottom: '1px solid black', padding: '4px', fontSize: '13px' }}>MAKER NAME</td></tr>
+                  <tr><td style={{ fontWeight: 'bold', padding: '20px 4px', fontSize: '13px' }}>{DISOCO_COMPANY_CONFIG.name}</td></tr>
                 </tbody>
               </table>
 
               {/* Exchange Rate */}
-              <table style={{ width: '150px', borderCollapse: 'collapse', border: '2px solid black', textAlign: 'center', fontSize: '9px' }}>
+              <table style={{ width: '150px', borderCollapse: 'collapse', border: '2px solid black', textAlign: 'center', fontSize: '13px' }}>
                 <tbody>
                   <tr>
                     <td rowSpan={3} style={{ borderRight: '1px solid black', padding: '2px', width: '50px' }}>EXCHANGE<br/>RATE</td>
@@ -116,7 +116,7 @@ export const AstemoQuotationPdfContent: React.FC<AstemoQuotationPdfContentProps>
 
               {/* Date & Signature */}
               <div style={{ width: '220px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                <table style={{ width: '100%', borderCollapse: 'collapse', border: '2px solid black', textAlign: 'center', fontSize: '9px' }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse', border: '2px solid black', textAlign: 'center', fontSize: '13px' }}>
                   <tbody>
                     <tr>
                       <td style={{ borderRight: '1px solid black', padding: '4px', width: '50%' }}>DATE OF ISSUE</td>
@@ -124,7 +124,7 @@ export const AstemoQuotationPdfContent: React.FC<AstemoQuotationPdfContentProps>
                     </tr>
                   </tbody>
                 </table>
-                <table style={{ width: '100%', flex: '1', borderCollapse: 'collapse', border: '2px solid black', textAlign: 'center', fontSize: '9px' }}>
+                <table style={{ width: '100%', flex: '1', borderCollapse: 'collapse', border: '2px solid black', textAlign: 'center', fontSize: '13px' }}>
                   <tbody>
                     <tr>
                       <td rowSpan={2} style={{ borderRight: '1px solid black', padding: '4px', width: '30%' }}>SIGNATURE<br/>QUOTED</td>
@@ -140,24 +140,24 @@ export const AstemoQuotationPdfContent: React.FC<AstemoQuotationPdfContentProps>
             <div style={{ display: 'flex', gap: '8px', marginBottom: '2px' }}>
               <table style={{ flex: '2', borderCollapse: 'collapse', border: '2px solid black', textAlign: 'center' }}>
                 <tbody>
-                  <tr><td style={{ fontWeight: 'bold', borderBottom: '1px solid black', padding: '4px', fontSize: '11px' }}>PART NAME</td></tr>
-                  <tr><td style={{ padding: '4px', fontSize: '11px' }}>{q.rfqItem?.product_name}</td></tr>
+                  <tr><td style={{ fontWeight: 'bold', borderBottom: '1px solid black', padding: '4px', fontSize: '13px' }}>PART NAME</td></tr>
+                  <tr><td style={{ padding: '4px', fontSize: '13px' }}>{q.rfqItem?.product_name}</td></tr>
                 </tbody>
               </table>
               <table style={{ flex: '2', borderCollapse: 'collapse', border: '2px solid black', textAlign: 'center' }}>
                 <tbody>
-                  <tr><td style={{ fontWeight: 'bold', borderBottom: '1px solid black', padding: '4px', fontSize: '11px' }}>PART NO</td></tr>
-                  <tr><td style={{ padding: '4px', fontSize: '11px' }}>{q.rfqItem?.part_number}</td></tr>
+                  <tr><td style={{ fontWeight: 'bold', borderBottom: '1px solid black', padding: '4px', fontSize: '13px' }}>PART NO</td></tr>
+                  <tr><td style={{ padding: '4px', fontSize: '13px' }}>{q.rfqItem?.part_number}</td></tr>
                 </tbody>
               </table>
               <table style={{ flex: '1.5', borderCollapse: 'collapse', border: '2px solid black', textAlign: 'center' }}>
                 <tbody>
-                  <tr><td style={{ fontWeight: 'bold', borderBottom: '1px solid black', padding: '4px', fontSize: '11px' }}>DESIGN CHANGE NO</td></tr>
-                  <tr><td style={{ padding: '4px', fontSize: '11px' }}></td></tr>
+                  <tr><td style={{ fontWeight: 'bold', borderBottom: '1px solid black', padding: '4px', fontSize: '13px' }}>DESIGN CHANGE NO</td></tr>
+                  <tr><td style={{ padding: '4px', fontSize: '13px' }}></td></tr>
                 </tbody>
               </table>
             </div>
-            <div style={{ textAlign: 'right', fontSize: '9px', marginBottom: '4px' }}>* CURRENCY UNIT: {currency}</div>
+            <div style={{ textAlign: 'right', fontSize: '13px', marginBottom: '4px' }}>* CURRENCY UNIT: {currency}</div>
 
             {/* 4. MATERIAL COST */}
             <table style={{ width: '100%', borderCollapse: 'collapse', border: '2px solid black', textAlign: 'center', marginBottom: '8px' }}>
@@ -177,15 +177,15 @@ export const AstemoQuotationPdfContent: React.FC<AstemoQuotationPdfContentProps>
                 </tr>
                 <tr>
                   <th style={{ borderRight: '1px solid black', borderBottom: '1px solid black', padding: '4px' }}>NAME</th>
-                  <th colSpan={2} style={{ borderRight: '1px solid black', borderBottom: '1px solid black', padding: '4px' }}>STATUS<br/><span style={{fontSize:'8px', fontWeight:'normal'}}>CURRENT &nbsp; NEW</span></th>
+                  <th colSpan={2} style={{ borderRight: '1px solid black', borderBottom: '1px solid black', padding: '4px' }}>STATUS<br/><span style={{fontSize:'10px', fontWeight:'normal'}}>CURRENT &nbsp; NEW</span></th>
                 </tr>
               </thead>
               <tbody>
                 <tr>
                   <td style={{ borderRight: '1px solid black', borderBottom: '1px solid black', padding: '4px' }}>{materialName}</td>
                   <td style={{ borderRight: '1px solid black', borderBottom: '1px solid black', padding: '4px' }}>{origin}</td>
-                  <td style={{ borderRight: '1px solid black', borderBottom: '1px solid black', padding: '4px', width: '30px' }}></td>
-                  <td style={{ borderRight: '1px solid black', borderBottom: '1px solid black', padding: '4px', width: '30px' }}></td>
+                  <td style={{ borderRight: '1px solid black', borderBottom: '1px solid black', padding: '4px' }}></td>
+                  <td style={{ borderRight: '1px solid black', borderBottom: '1px solid black', padding: '4px' }}></td>
                   <td style={{ borderRight: '1px solid black', borderBottom: '1px solid black', padding: '4px' }}>{formatNum(Number(inp.m_chi) * 1000, 'vi-VN', 0)}</td>
                   <td style={{ borderRight: '1px solid black', borderBottom: '1px solid black', padding: '4px' }}>{formatNum(Number(inp.m_phoi) * 1000, 'vi-VN', 0)}</td>
                   <td style={{ borderRight: '1px solid black', borderBottom: '1px solid black', padding: '4px' }}>{formatNum(Number(res.m_bavia_forging) * 1000, 'vi-VN', 0)}</td>
@@ -204,7 +204,7 @@ export const AstemoQuotationPdfContent: React.FC<AstemoQuotationPdfContentProps>
             <table style={{ width: '100%', borderCollapse: 'collapse', border: '2px solid black', textAlign: 'center', marginBottom: '8px' }}>
               <thead>
                 <tr>
-                  <th colSpan={7} style={{ backgroundColor: '#f0f0f0', borderBottom: '1px solid black', padding: '4px', textAlign: 'left', fontWeight: 'bold', width: '35%' }}>OUT- SOURCE PARTS COST</th>
+                  <th colSpan={7} style={{ backgroundColor: '#f0f0f0', borderBottom: '1px solid black', padding: '4px', textAlign: 'left', fontWeight: 'bold', width: '35%' }}>OUT-SOURCE PARTS COST</th>
                   <th colSpan={5} style={{ borderBottom: '1px solid black', padding: '4px', width: '65%' }}></th>
                 </tr>
                 <tr>
@@ -217,7 +217,7 @@ export const AstemoQuotationPdfContent: React.FC<AstemoQuotationPdfContentProps>
                 </tr>
                 <tr>
                   <th colSpan={2} style={{ borderRight: '1px solid black', borderBottom: '1px solid black', padding: '4px' }}>NAME</th>
-                  <th colSpan={2} style={{ borderRight: '1px solid black', borderBottom: '1px solid black', padding: '4px' }}>STATUS<br/><span style={{fontSize:'8px', fontWeight:'normal'}}>CURRENT &nbsp; NEW</span></th>
+                  <th colSpan={2} style={{ borderRight: '1px solid black', borderBottom: '1px solid black', padding: '4px' }}>STATUS<br/><span style={{fontSize:'10px', fontWeight:'normal'}}>CURRENT &nbsp; NEW</span></th>
                 </tr>
               </thead>
               <tbody>
@@ -242,17 +242,17 @@ export const AstemoQuotationPdfContent: React.FC<AstemoQuotationPdfContentProps>
                   <td style={{ borderBottom: '1px solid black', padding: '8px' }}></td>
                 </tr>
                 <tr>
-                  <td colSpan={11} style={{ borderRight: '1px solid black', borderBottom: '2px solid black', padding: '4px', textAlign: 'left', fontWeight: 'bold' }}>OUT- SOURCE PARTS  COST TOTAL</td>
+                  <td colSpan={11} style={{ borderRight: '1px solid black', borderBottom: '2px solid black', padding: '4px', textAlign: 'left', fontWeight: 'bold' }}>OUT-SOURCE PARTS  COST TOTAL</td>
                   <td style={{ borderBottom: '2px solid black', padding: '4px', fontWeight: 'bold' }}></td>
                 </tr>
               </tbody>
             </table>
 
-            {/* 6. PROCESSSING COST */}
+            {/* 6. PROCESSING COST */}
             <table style={{ width: '100%', borderCollapse: 'collapse', border: '2px solid black', textAlign: 'center', marginBottom: '8px' }}>
               <thead>
                 <tr>
-                  <th colSpan={2} style={{ backgroundColor: '#f0f0f0', borderBottom: '1px solid black', padding: '4px', textAlign: 'left', fontWeight: 'bold', width: '35%' }}>PROCESSSING COST</th>
+                  <th colSpan={2} style={{ backgroundColor: '#f0f0f0', borderBottom: '1px solid black', padding: '4px', textAlign: 'left', fontWeight: 'bold', width: '35%' }}>PROCESSING COST</th>
                   <th colSpan={3} style={{ borderBottom: '1px solid black', padding: '4px', width: '65%' }}></th>
                 </tr>
                 <tr>
@@ -317,7 +317,7 @@ export const AstemoQuotationPdfContent: React.FC<AstemoQuotationPdfContentProps>
                     <td style={{ borderRight: '1px solid black', borderBottom: '1px solid black', padding: '4px', textAlign: 'left' }}>{b.name}</td>
                     <td style={{ borderRight: '1px solid black', borderBottom: '1px solid black', padding: '4px' }}>1</td>
                     <td style={{ borderRight: '1px solid black', borderBottom: '1px solid black', padding: '4px', textAlign: 'right' }}>{formatNum(b.lineItemCost, 'vi-VN', 0)}</td>
-                    <td style={{ borderRight: '1px solid black', borderBottom: '1px solid black', padding: '4px', textAlign: 'right' }}>{formatNum(b.depreciationQty, 'vi-VN', 0)}</td>
+                    <td style={{ borderRight: '1px solid black', borderBottom: '1px solid black', padding: '4px', textAlign: 'right' }}>{formatNum(b.trueDepreciationQty || b.depreciationQty, 'vi-VN', 0)}</td>
                     <td style={{ borderBottom: '1px solid black', padding: '4px', textAlign: 'right' }}>{formatNum(b.costPerUnit, 'vi-VN', 0)}</td>
                   </tr>
                 ))}
@@ -333,7 +333,7 @@ export const AstemoQuotationPdfContent: React.FC<AstemoQuotationPdfContentProps>
               <thead>
                 <tr>
                   <th style={{ borderRight: '1px solid black', borderBottom: '1px solid black', width: '20%', position: 'relative' }}>
-                    <div style={{ position: 'absolute', top: 0, right: 0, padding: '2px', fontSize: '9px' }}>AGREED COST</div>
+                    <div style={{ position: 'absolute', top: 0, right: 0, padding: '2px', fontSize: '13px' }}>AGREED COST</div>
                     <svg style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' }}>
                       <line x1="0" y1="0" x2="100%" y2="100%" stroke="black" strokeWidth="1" />
                     </svg>
@@ -386,29 +386,29 @@ export const AstemoQuotationPdfContent: React.FC<AstemoQuotationPdfContentProps>
               {/* Effective Date */}
               <table style={{ width: '150px', borderCollapse: 'collapse', border: '2px solid black', textAlign: 'center' }}>
                 <tbody>
-                  <tr><td style={{ fontWeight: 'bold', borderBottom: '1px solid black', padding: '4px', fontSize: '11px' }}>EFFECTIVE DATE</td></tr>
+                  <tr><td style={{ fontWeight: 'bold', borderBottom: '1px solid black', padding: '4px', fontSize: '13px' }}>EFFECTIVE DATE</td></tr>
                   <tr><td style={{ padding: '8px' }}></td></tr>
                 </tbody>
               </table>
               {/* Trade Term */}
               <table style={{ flex: '1', borderCollapse: 'collapse', border: '2px solid black' }}>
                 <tbody>
-                  <tr><td colSpan={2} style={{ fontWeight: 'bold', borderBottom: '1px solid black', padding: '4px', fontSize: '11px', textAlign: 'center' }}>TRADE TERM</td></tr>
+                  <tr><td colSpan={2} style={{ fontWeight: 'bold', borderBottom: '1px solid black', padding: '4px', fontSize: '13px', textAlign: 'center' }}>TRADE TERM</td></tr>
                   <tr>
                     <td style={{ padding: '4px', borderRight: '1px solid black', width: '50%' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginBottom: '4px' }}>
-                        <span style={{ fontSize: '14px' }}>{document.trade_terms === 'FOB' ? '☑' : '☐'}</span> FOB (PORT NAME)
+                        <span style={{ fontSize: '16px' }}>{document.trade_terms === 'FOB' ? '☑' : '☐'}</span> FOB (PORT NAME)
                       </div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                        <span style={{ fontSize: '14px' }}>{document.trade_terms === 'CIF' ? '☑' : '☐'}</span> CIF HAI PHONG
+                        <span style={{ fontSize: '16px' }}>{document.trade_terms === 'CIF' ? '☑' : '☐'}</span> CIF HAI PHONG
                       </div>
                     </td>
                     <td style={{ padding: '4px', width: '50%' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginBottom: '4px' }}>
-                        <span style={{ fontSize: '14px' }}>{document.trade_terms === 'DAP' ? '☑' : '☐'}</span> VNHN's WAREHOUSE
+                        <span style={{ fontSize: '16px' }}>{document.trade_terms === 'DAP' ? '☑' : '☐'}</span> VNHN's WAREHOUSE
                       </div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                        <span style={{ fontSize: '14px' }}>{!['FOB', 'CIF', 'DAP'].includes(document.trade_terms) ? '☑' : '☐'}</span> OTHERS
+                        <span style={{ fontSize: '16px' }}>{!['FOB', 'CIF', 'DAP'].includes(document.trade_terms) ? '☑' : '☐'}</span> OTHERS
                       </div>
                     </td>
                   </tr>
@@ -417,9 +417,9 @@ export const AstemoQuotationPdfContent: React.FC<AstemoQuotationPdfContentProps>
               {/* Lead Time Condition */}
               <table style={{ width: '220px', borderCollapse: 'collapse', border: '2px solid black' }}>
                 <tbody>
-                  <tr><td colSpan={2} style={{ fontWeight: 'bold', borderBottom: '1px solid black', padding: '4px', fontSize: '11px', textAlign: 'center' }}>LEAD TIME CONDITION</td></tr>
+                  <tr><td colSpan={2} style={{ fontWeight: 'bold', borderBottom: '1px solid black', padding: '4px', fontSize: '13px', textAlign: 'center' }}>LEAD TIME CONDITION</td></tr>
                   <tr>
-                    <td style={{ padding: '4px 4px 4px 8px', width: '100%', fontSize: '10px' }}>
+                    <td style={{ padding: '4px 4px 4px 8px', width: '100%', fontSize: '12px' }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
                         <span>SAMPLE ORDER:</span>
                         <span>{config?.astemoLeadTimeSampleDays ?? ''} days</span>

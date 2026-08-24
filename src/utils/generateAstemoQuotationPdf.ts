@@ -31,17 +31,29 @@ export const generateAstemoQuotationPdf = async (
       logging: false,
     });
 
-    const imgData = canvas.toDataURL("image/jpeg", 0.98);
+        const imgData = canvas.toDataURL("image/jpeg", 0.98);
 
     // Calculate dimensions
     const pdfWidth = doc.internal.pageSize.getWidth();
-    const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+    const pdfPageHeight = doc.internal.pageSize.getHeight();
+    const totalPdfHeight = (canvas.height * pdfWidth) / canvas.width;
 
     if (i > 0) {
       doc.addPage();
     }
 
-    doc.addImage(imgData, "JPEG", 0, 0, pdfWidth, pdfHeight);
+    let heightLeft = totalPdfHeight;
+    let position = 0;
+
+    doc.addImage(imgData, "JPEG", 0, position, pdfWidth, totalPdfHeight);
+    heightLeft -= pdfPageHeight;
+
+    while (heightLeft > 0) {
+      position = position - pdfPageHeight;
+      doc.addPage();
+      doc.addImage(imgData, "JPEG", 0, position, pdfWidth, totalPdfHeight);
+      heightLeft -= pdfPageHeight;
+    }
   }
 
   // Save the PDF

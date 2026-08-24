@@ -1,4 +1,4 @@
-import type { ForgingInput, ForgingResult } from './types';
+﻿import type { ForgingInput, ForgingResult } from './types';
 
 const DEFAULT_DIE_LIFE = 20000;
 
@@ -103,13 +103,15 @@ export function calculateForgingPrice(input: ForgingInput): ForgingResult {
       const componentManufacturingCost = materialCost + machiningCost + heatTreatmentCost + reworkCost;
       const lineItemCost = componentManufacturingCost + designShare;
       
-      let effectiveLife = comp.depreciation_qty && comp.depreciation_qty > 0 ? comp.depreciation_qty : DEFAULT_DIE_LIFE;
+            const trueLife = comp.depreciation_qty && comp.depreciation_qty > 0 ? comp.depreciation_qty : DEFAULT_DIE_LIFE;
+      let effectiveLife = trueLife;
       effectiveLife = Math.min(effectiveLife, Math.max(1, N_order));
 
       return {
         name: comp.name,
         lineItemCost,
         depreciationQty: effectiveLife,
+        trueDepreciationQty: trueLife,
         costPerUnit: effectiveLife > 0 ? lineItemCost / effectiveLife : 0,
       };
     });
