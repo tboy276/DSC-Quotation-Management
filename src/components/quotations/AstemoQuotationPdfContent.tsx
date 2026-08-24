@@ -18,6 +18,7 @@ interface AstemoQuotationPdfContentProps {
 
 export const AstemoQuotationPdfContent: React.FC<AstemoQuotationPdfContentProps> = ({
   document,
+  config,
   
   materialsMap = new Map(),
 }) => {
@@ -69,7 +70,9 @@ export const AstemoQuotationPdfContent: React.FC<AstemoQuotationPdfContentProps>
               <div>
                 <h1 style={{ fontSize: '18px', fontWeight: 'bold' }}>QUOTATION SHEET</h1>
                 <p>Date: {document.quotation_date}</p>
-                <p>To: {document.customer_name}</p>
+                {config?.astemoShowLogo !== false && <p>To: {document.customer_name}</p>}
+                <p>Exchange Rate: 1 {currency} = {document.exchange_rate} VND</p>
+                <p>Trade Terms: {document.trade_terms}</p>
               </div>
               <div style={{ textAlign: 'right' }}>
                 <p>{DISOCO_COMPANY_CONFIG.name}</p>
@@ -99,6 +102,7 @@ export const AstemoQuotationPdfContent: React.FC<AstemoQuotationPdfContentProps>
             <table style={{ width: "100%", borderCollapse: "collapse", marginBottom: "20px", fontSize: "12px", textAlign: "center" }}>
               <thead>
                 <tr style={{ backgroundColor: "#f0f0f0" }}>
+                  <th style={{ border: "1px solid black", padding: "4px" }}>Origin</th>
                   <th style={{ border: "1px solid black", padding: "4px" }}>Input Weight (g)</th>
                   <th style={{ border: "1px solid black", padding: "4px" }}>Output Weight (g)</th>
                   <th style={{ border: "1px solid black", padding: "4px" }}>Scrap Weight (g)</th>
@@ -107,6 +111,7 @@ export const AstemoQuotationPdfContent: React.FC<AstemoQuotationPdfContentProps>
               </thead>
               <tbody>
                 <tr>
+                  <td style={{ border: "1px solid black", padding: "4px" }}>{config?.astemoMaterialOrigin?.[item.id || item.quote?.id || ''] || '-'}</td>
                   <td style={{ border: "1px solid black", padding: "4px" }}>{formatNum((Number(inp.m_chi) || 0) * 1000)}</td>
                   <td style={{ border: "1px solid black", padding: "4px" }}>{formatNum((Number(inp.m_phoi) || 0) * 1000)}</td>
                   <td style={{ border: "1px solid black", padding: "4px" }}>{formatNum((Number(res.m_bavia_forging) || 0) * 1000)}</td>
@@ -231,10 +236,39 @@ export const AstemoQuotationPdfContent: React.FC<AstemoQuotationPdfContentProps>
                 </tr>
               </tbody>
             </table>
+
+            <table style={{ width: '100%', borderCollapse: 'collapse', marginBottom: '20px', fontSize: '12px' }}>
+              <tbody>
+                <tr style={{ backgroundColor: '#f0f0f0', fontWeight: 'bold' }}>
+                  <td style={{ border: '1px solid black', padding: '4px', width: '33%' }}>TRADE TERM</td>
+                  <td style={{ border: '1px solid black', padding: '4px', width: '33%' }}>LEAD TIME CONDITION</td>
+                  <td style={{ border: '1px solid black', padding: '4px', width: '34%' }}>DESIGN CHANGE NO</td>
+                </tr>
+                <tr>
+                  <td style={{ border: '1px solid black', padding: '4px' }}>{document.trade_terms || '-'}</td>
+                  <td style={{ border: '1px solid black', padding: '4px' }}>
+                    Sample: {config?.astemoLeadTimeSampleDays ?? '-'} days<br/>
+                    MP: {config?.astemoLeadTimeMpDays ?? '-'} days
+                  </td>
+                  <td style={{ border: '1px solid black', padding: '4px' }}></td>
+                </tr>
+              </tbody>
+            </table>
+
+            <h3 style={{ fontSize: '14px', fontWeight: 'bold', marginBottom: '8px' }}>OTHER CONDITIONS:</h3>
+            <div style={{ fontSize: '12px', border: '1px solid black', padding: '8px', marginBottom: '20px' }}>
+              {(config?.remarks || []).map((remark: any, rIdx: number) => (
+                <div key={remark.id}>
+                  {rIdx + 1}. {remark.vi}
+                </div>
+              ))}
+              {(!config?.remarks || config.remarks.length === 0) && (
+                <div>No other conditions.</div>
+              )}
+            </div>
           </div>
         );
       })}
     </div>
   );
 };
-

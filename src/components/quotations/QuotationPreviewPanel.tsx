@@ -151,7 +151,7 @@ export const QuotationPreviewPanel: React.FC<QuotationPreviewPanelProps> = ({
     setIsExportingPdf(true);
     try {
       if (config.templateType === 'astemo_detail') {
-        await generateAstemoQuotationPdf(liveDocument, materialsMap, gradesMap);
+        await generateAstemoQuotationPdf(liveDocument, config, materialsMap, gradesMap);
       } else {
         await generateQuotationPdf(liveDocument, materialsMap, gradesMap);
       }
@@ -316,7 +316,87 @@ export const QuotationPreviewPanel: React.FC<QuotationPreviewPanelProps> = ({
             </div>
           </div>
 
-          {/* Section 2: Form Layout Orientation (Dọc vs Ngang) */}
+          {/* Section 5: Tuỳ Chỉnh Riêng Mẫu Astemo */}
+          {config.templateType === 'astemo_detail' && (
+            <div className="space-y-3 bg-[#FAFAFA] p-3 border border-[#EAEAEA] rounded-[8px]">
+              <label className="block text-[10px] font-bold text-[#787774] uppercase tracking-wider">
+                5. Tuỳ Chỉnh Riêng Mẫu Astemo
+              </label>
+
+              {/* Checkbox Hiện Logo/Tên Astemo */}
+              <label className="flex items-center space-x-2 text-[11px] font-medium text-[#111111] cursor-pointer hover:text-black">
+                <input
+                  type="checkbox"
+                  checked={config.astemoShowLogo !== false}
+                  onChange={(e) => setConfig((prev) => ({ ...prev, astemoShowLogo: e.target.checked }))}
+                  className="rounded accent-[#111111] w-3.5 h-3.5 cursor-pointer"
+                />
+                <span>Hiện Logo/Tên Astemo</span>
+              </label>
+
+              {/* Điều Kiện Giao Hàng */}
+              <div className="space-y-1.5">
+                <label className="block text-[11px] font-semibold text-[#111111]">Điều Kiện Giao Hàng (Lead Time)</label>
+                <div className="grid grid-cols-2 gap-2">
+                  <div className="flex flex-col space-y-1">
+                    <span className="text-[10px] text-[#787774]">Sample (Ngày)</span>
+                    <NumberTextInput
+                      allowEmpty
+                      min="0"
+                      value={config.astemoLeadTimeSampleDays}
+                      onChange={(v) => setConfig((prev) => ({ ...prev, astemoLeadTimeSampleDays: Number.isNaN(v) ? undefined : v }))}
+                      className="w-full px-2 py-1.5 border border-[#EAEAEA] rounded-[4px] font-mono text-xs focus:outline-none focus:border-[#111111]"
+                    />
+                  </div>
+                  <div className="flex flex-col space-y-1">
+                    <span className="text-[10px] text-[#787774]">MP (Ngày)</span>
+                    <NumberTextInput
+                      allowEmpty
+                      min="0"
+                      value={config.astemoLeadTimeMpDays}
+                      onChange={(v) => setConfig((prev) => ({ ...prev, astemoLeadTimeMpDays: Number.isNaN(v) ? undefined : v }))}
+                      className="w-full px-2 py-1.5 border border-[#EAEAEA] rounded-[4px] font-mono text-xs focus:outline-none focus:border-[#111111]"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Xuất Xứ Vật Liệu Theo Từng Mặt Hàng */}
+              <div className="space-y-1.5">
+                <label className="block text-[11px] font-semibold text-[#111111]">Xuất Xứ Vật Liệu Theo Từng Mặt Hàng</label>
+                <div className="space-y-2">
+                  {(document.items || []).map((item) => {
+                    const itemId = item.id || item.quote?.id || '';
+                    if (!itemId) return null;
+                    return (
+                      <div key={itemId} className="flex flex-col space-y-1">
+                        <span className="text-[10px] font-medium text-[#787774] truncate">{item.quote?.rfqItem?.product_name || item.quote?.rfqItem?.part_number || 'Sản phẩm chưa rõ'}</span>
+                        <input
+                          type="text"
+                          value={config.astemoMaterialOrigin?.[itemId] || ''}
+                          onChange={(e) => setConfig((prev) => ({
+                            ...prev,
+                            astemoMaterialOrigin: {
+                              ...(prev.astemoMaterialOrigin || {}),
+                              [itemId]: e.target.value
+                            }
+                          }))}
+                          placeholder="VD: Shíjiāzhuāng-China"
+                          className="w-full px-2 py-1.5 border border-[#EAEAEA] rounded-[4px] text-xs focus:outline-none focus:border-[#111111]"
+                        />
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+            </div>
+          )}
+
+          
+
+          {config.templateType !== 'astemo_detail' && (
+          <>{/* Section 2: Form Layout Orientation (Dọc vs Ngang) */}
           <div className="space-y-1.5">
             <label className="block text-[10px] font-bold text-[#787774] uppercase tracking-wider">
               2. Định Dạng Form Báo Giá (Dọc / Ngang)
@@ -387,6 +467,9 @@ export const QuotationPreviewPanel: React.FC<QuotationPreviewPanelProps> = ({
               ))}
             </div>
           </div>
+
+                    </>
+          )}
 
           {/* Section 4: Custom Remarks / Notes */}
           <div className="space-y-2">

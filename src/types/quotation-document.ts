@@ -26,6 +26,11 @@ export interface DocumentDisplayConfig {
   showToolingPrice: boolean;
   showToolingUsage: boolean;
   remarks: DocumentRemarkLine[];
+  // Astemo specific fields
+  astemoShowLogo?: boolean;
+  astemoLeadTimeSampleDays?: number;
+  astemoLeadTimeMpDays?: number;
+  astemoMaterialOrigin?: Record<string, string>;
 }
 
 export const DEFAULT_DISPLAY_CONFIG: DocumentDisplayConfig = {
@@ -45,6 +50,10 @@ export const DEFAULT_DISPLAY_CONFIG: DocumentDisplayConfig = {
   showSgaP: true,
   showToolingPrice: true,
   showToolingUsage: true,
+  astemoShowLogo: true,
+  astemoLeadTimeSampleDays: undefined,
+  astemoLeadTimeMpDays: undefined,
+  astemoMaterialOrigin: {},
   remarks: [
     {
       id: 'remark-1',

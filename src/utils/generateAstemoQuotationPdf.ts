@@ -2,8 +2,11 @@ import type { QuotationDocument } from "../types/quotation-document";
 import { DISOCO_COMPANY_CONFIG } from "../config/company-config";
 import { mapQuoteToDisplayCosts } from "../lib/quotation-cost-mapper";
 
+import type { DocumentDisplayConfig } from "../types/quotation-document";
+
 export const generateAstemoQuotationPdf = async (
   document: QuotationDocument,
+  config?: DocumentDisplayConfig,
   materialsMap?: Map<string, string>,
   gradesMap?: Map<string, string>
 ) => {
@@ -69,14 +72,18 @@ export const generateAstemoQuotationPdf = async (
     doc.setFontSize(10);
     doc.setFont("Roboto", "normal");
     doc.text(`Date: ${document.quotation_date}`, 14, 30);
-    doc.text(`To: ${document.customer_name}`, 14, 36);
+    if (config?.astemoShowLogo !== false) {
+      doc.text(`To: ${document.customer_name}`, 14, 36);
+    }
+    doc.text(`Exchange Rate: 1 ${currency} = ${document.exchange_rate} VND`, 14, 42);
+    doc.text(`Trade Terms: ${document.trade_terms}`, 14, 48);
 
     doc.text(DISOCO_COMPANY_CONFIG.name, 196, 30, { align: "right" });
     doc.text(DISOCO_COMPANY_CONFIG.address.substring(0, 50), 196, 36, { align: "right" });
 
     // Part Info Table
     autoTable(doc, {
-      startY: 45,
+      startY: 55,
       theme: "grid",
       head: [],
       body: [
@@ -101,9 +108,10 @@ export const generateAstemoQuotationPdf = async (
     autoTable(doc, {
       startY: currentY + 4,
       theme: "grid",
-      head: [["Input Weight (g)", "Output Weight (g)", "Scrap Weight (g)", `Material Cost (${currency})`]],
+      head: [["Origin", "Input Weight (g)", "Output Weight (g)", "Scrap Weight (g)", `Material Cost (${currency})`]],
       body: [
         [
+          config?.astemoMaterialOrigin?.[item.id || q.id || ''] || '-',
           Math.round((Number(inp.m_chi) || 0) * 1000).toLocaleString("en-US"),
           Math.round((Number(inp.m_phoi) || 0) * 1000).toLocaleString("en-US"),
           Math.round((Number(res.m_bavia_forging) || 0) * 1000).toLocaleString("en-US"),
