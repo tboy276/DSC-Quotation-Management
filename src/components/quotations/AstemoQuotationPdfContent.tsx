@@ -1,4 +1,4 @@
-﻿import React from 'react';
+import React from 'react';
 import type { QuotationDocument, DocumentDisplayConfig } from '../../types/quotation-document';
 import type { CurrencyType } from '../../types/quote';
 import { DISOCO_COMPANY_CONFIG } from '../../config/company-config';
@@ -31,6 +31,12 @@ export const AstemoQuotationPdfContent: React.FC<AstemoQuotationPdfContentProps>
 
   return (
     <div className="astemo-pdf-container" style={{ fontFamily: 'Arial, sans-serif', width: '210mm', margin: '0 auto', backgroundColor: 'white' }}>
+      <style>{`
+        .astemo-pdf-page td,
+        .astemo-pdf-page th {
+          vertical-align: middle !important;
+        }
+      `}</style>
       {items.map((item, idx) => {
         if (!item.quote) return null;
         
@@ -96,7 +102,7 @@ export const AstemoQuotationPdfContent: React.FC<AstemoQuotationPdfContentProps>
               </table>
 
               {/* Exchange Rate */}
-              <table style={{ width: '150px', borderCollapse: 'collapse', border: '2px solid black', textAlign: 'center', fontSize: '13px' }}>
+              <table style={{ width: '150px', borderCollapse: 'collapse', border: '2px solid black', textAlign: 'center', fontSize: '11px' }}>
                 <tbody>
                   <tr>
                     <td rowSpan={3} style={{ borderRight: '1px solid black', padding: '2px', width: '50px' }}>EXCHANGE<br/>RATE</td>
@@ -116,7 +122,7 @@ export const AstemoQuotationPdfContent: React.FC<AstemoQuotationPdfContentProps>
 
               {/* Date & Signature */}
               <div style={{ width: '220px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                <table style={{ width: '100%', borderCollapse: 'collapse', border: '2px solid black', textAlign: 'center', fontSize: '13px' }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse', border: '2px solid black', textAlign: 'center', fontSize: '11px' }}>
                   <tbody>
                     <tr>
                       <td style={{ borderRight: '1px solid black', padding: '4px', width: '50%' }}>DATE OF ISSUE</td>
@@ -124,7 +130,7 @@ export const AstemoQuotationPdfContent: React.FC<AstemoQuotationPdfContentProps>
                     </tr>
                   </tbody>
                 </table>
-                <table style={{ width: '100%', flex: '1', borderCollapse: 'collapse', border: '2px solid black', textAlign: 'center', fontSize: '13px' }}>
+                <table style={{ width: '100%', flex: '1', borderCollapse: 'collapse', border: '2px solid black', textAlign: 'center', fontSize: '11px' }}>
                   <tbody>
                     <tr>
                       <td rowSpan={2} style={{ borderRight: '1px solid black', padding: '4px', width: '30%' }}>SIGNATURE<br/>QUOTED</td>
@@ -333,7 +339,7 @@ export const AstemoQuotationPdfContent: React.FC<AstemoQuotationPdfContentProps>
               <thead>
                 <tr>
                   <th style={{ borderRight: '1px solid black', borderBottom: '1px solid black', width: '20%', position: 'relative' }}>
-                    <div style={{ position: 'absolute', top: 0, right: 0, padding: '2px', fontSize: '13px' }}>AGREED COST</div>
+                    <div style={{ position: 'absolute', top: 0, right: 0, padding: '2px', fontSize: '11px' }}>AGREED COST</div>
                     <svg style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' }}>
                       <line x1="0" y1="0" x2="100%" y2="100%" stroke="black" strokeWidth="1" />
                     </svg>
