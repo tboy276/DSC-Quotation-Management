@@ -53,8 +53,8 @@ export const Sidebar = ({
       {/* Sidebar Header */}
       <div className="h-16 px-3.5 flex items-center space-x-3 border-b border-[#1E293B] flex-shrink-0 overflow-hidden">
         {/* Logo icon */}
-        <div className="w-10 h-7 bg-white rounded-md flex items-center justify-center p-0.5 flex-shrink-0 shadow-sm">
-          <img src="/disoco-logo.png" alt="DISOCO Logo" className="w-full h-full object-contain" />
+        <div className="w-12 h-9 flex items-center justify-center flex-shrink-0">
+          <img src="/disoco-logo.png" alt="DISOCO Logo" className="w-full h-full object-contain filter brightness-0 invert" />
         </div>
         {isHovered && (
           <div className="truncate">

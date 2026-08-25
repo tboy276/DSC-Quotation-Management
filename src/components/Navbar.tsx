@@ -13,8 +13,8 @@ export const Navbar = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
         {/* Brand Logo & Name */}
         <div className="flex items-center space-x-3">
-          <div className="w-12 h-8 bg-white rounded-md flex items-center justify-center p-0.5 shadow-sm">
-            <img src="/disoco-logo.png" alt="DISOCO Logo" className="w-full h-full object-contain" />
+          <div className="w-16 h-10 flex items-center justify-center">
+            <img src="/disoco-logo.png" alt="DISOCO Logo" className="w-full h-full object-contain filter brightness-0 invert" />
           </div>
           <div>
             <h1 className="text-lg font-bold text-white tracking-wide leading-tight">
