@@ -61,7 +61,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     localStorage.setItem('dsc_demo_user', JSON.stringify(mockUser));
   };
 
-  const fetchProfile = async (userId: string, email: string) => {
+  const fetchProfile = async (userId: string) => {
     try {
       const { data, error } = await supabase
         .from('user_profiles')
@@ -76,58 +76,52 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       if (data) {
         setProfile(data as UserProfile);
       } else {
-        // Fallback mặc định role sales nếu chưa trigger tạo kịp
-        setProfile({
-          id: userId,
-          email: email,
-          role: 'admin',
-        });
+        setProfile(null);
       }
     } catch (err) {
       console.error('Lỗi kết nối user_profiles:', err);
-      setProfile({
-        id: userId,
-        email: email,
-        role: 'admin',
-      });
+      setProfile(null);
     }
   };
 
   const refreshProfile = async () => {
-    if (user?.id && user?.email) {
-      await fetchProfile(user.id, user.email);
+    if (user?.id) {
+      await fetchProfile(user.id);
     }
   };
 
   useEffect(() => {
-    if (!isSupabaseConfigured) {
-      setLoading(false);
-      return;
-    }
-
-    // Check active session on initial load
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      const currentUser = session?.user ?? null;
-      if (currentUser) {
-        setUser(currentUser);
-        fetchProfile(currentUser.id, currentUser.email || '');
+    let mounted = true;
+    
+    const initAuth = async () => {
+      try {
+        const { data: { user: currentUser } } = await supabase.auth.getUser();
+        if (mounted && currentUser) {
+          setUser(currentUser);
+          fetchProfile(currentUser.id);
+        }
+        setLoading(false);
+      } catch (error) {
+        setLoading(false);
       }
-      setLoading(false);
-    }).catch(() => {
-      setLoading(false);
-    });
+    };
+    
+    initAuth();
 
-    // Listen to changes on auth state
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
-      const currentUser = session?.user ?? null;
-      if (currentUser) {
+      if (mounted) {
+        const currentUser = session?.user || null;
         setUser(currentUser);
-        await fetchProfile(currentUser.id, currentUser.email || '');
+        
+        if (currentUser) {
+          await fetchProfile(currentUser.id);
+        }
+        setLoading(false);
       }
-      setLoading(false);
     });
 
     return () => {
+      mounted = false;
       subscription.unsubscribe();
     };
   }, []);
