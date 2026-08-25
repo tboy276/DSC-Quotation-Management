@@ -54,7 +54,7 @@ export const Sidebar = ({
       <div className="h-16 px-3.5 flex items-center space-x-3 border-b border-[#1E293B] flex-shrink-0 overflow-hidden">
         {/* Logo icon */}
         <div className="w-12 h-9 flex items-center justify-center flex-shrink-0">
-          <img src="/disoco-logo.png" alt="DISOCO Logo" className="w-full h-full object-contain filter brightness-0 invert" />
+          <img src="/disoco-logo.png" alt="DISOCO Logo" className="w-full h-full object-contain" />
         </div>
         {isHovered && (
           <div className="truncate">

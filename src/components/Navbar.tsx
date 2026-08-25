@@ -14,7 +14,7 @@ export const Navbar = () => {
         {/* Brand Logo & Name */}
         <div className="flex items-center space-x-3">
           <div className="w-16 h-10 flex items-center justify-center">
-            <img src="/disoco-logo.png" alt="DISOCO Logo" className="w-full h-full object-contain filter brightness-0 invert" />
+            <img src="/disoco-logo.png" alt="DISOCO Logo" className="w-full h-full object-contain" />
           </div>
           <div>
             <h1 className="text-lg font-bold text-white tracking-wide leading-tight">
