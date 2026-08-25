@@ -52,17 +52,17 @@ export const Sidebar = ({
     >
       {/* Sidebar Header */}
       <div className="h-16 px-3.5 flex items-center space-x-3 border-b border-[#1E293B] flex-shrink-0 overflow-hidden">
-        {/* Logo icon 'D' */}
-        <div className="w-8 h-8 rounded-[6px] bg-white text-[#0F172A] flex items-center justify-center flex-shrink-0 font-black text-base shadow-sm">
-          D
+        {/* Logo icon */}
+        <div className="w-10 h-7 bg-white rounded-md flex items-center justify-center p-0.5 flex-shrink-0 shadow-sm">
+          <img src="/disoco-logo.png" alt="DISOCO Logo" className="w-full h-full object-contain" />
         </div>
         {isHovered && (
           <div className="truncate">
             <span className="font-extrabold text-white text-sm tracking-tight block leading-tight truncate">
-              DSC Quotation
+              RFQ management system
             </span>
             <span className="text-[10px] text-slate-400 font-semibold uppercase tracking-widest block truncate">
-              DISOCO WORKSPACE
+              Sale Department of DISOCO
             </span>
           </div>
         )}

@@ -1,5 +1,5 @@
 import { useAuth } from '../context/AuthContext';
-import { LogOut, User, ShieldCheck, Factory } from 'lucide-react';
+import { LogOut, User, ShieldCheck } from 'lucide-react';
 
 export const Navbar = () => {
   const { user, profile, signOut } = useAuth();
@@ -13,14 +13,14 @@ export const Navbar = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
         {/* Brand Logo & Name */}
         <div className="flex items-center space-x-3">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-500 flex items-center justify-center text-white shadow-lg shadow-blue-500/20">
-            <Factory className="w-5 h-5" />
+          <div className="w-12 h-8 bg-white rounded-md flex items-center justify-center p-0.5 shadow-sm">
+            <img src="/disoco-logo.png" alt="DISOCO Logo" className="w-full h-full object-contain" />
           </div>
           <div>
             <h1 className="text-lg font-bold text-white tracking-wide leading-tight">
-              DISOCO <span className="text-blue-400 text-sm font-normal">| DSC Quotation</span>
+              RFQ management system
             </h1>
-            <p className="text-xs text-slate-400">Ứng dụng Tính giá Rèn Dập & Đúc Gang</p>
+            <p className="text-xs text-slate-400">Sale Department of DISOCO</p>
           </div>
         </div>
 
