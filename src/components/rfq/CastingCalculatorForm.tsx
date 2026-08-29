@@ -113,7 +113,8 @@ export const CastingCalculatorForm = () => {
   const res = getCastingResult();
   
   // Section 1/2 variables
-  const yield_ratio = Math.max(0.01, (casting.Y_yield || 60)) / 100;
+  const hasYield = casting.Y_yield !== undefined;
+  const yield_ratio = Math.max(0.01, (casting.Y_yield ?? 0.01)) / 100;
   const burn_ratio = (casting.k_burn_loss !== undefined ? casting.k_burn_loss : 2.15) / 100;
   const m_cast = (casting.m_cast || 0) || 0;
   const cost_metal_1000 = 1000 * (casting.DG_liquid || 0);
@@ -250,7 +251,7 @@ export const CastingCalculatorForm = () => {
                       <div className="text-[11px] font-bold text-[#111111] font-sans">II. Hồi liệu thu hồi (-):</div>
                       <div className="text-[9px] font-mono text-[#787774]">SCRAP_KG × DG_SCRAP</div>
                     </div>
-                    <div className="font-bold text-[#00A651]">- {cost_scrap_1000.toLocaleString('vi-VN')} VNĐ</div>
+                    <div className="font-bold text-[#00A651]">{hasYield ? `- ${cost_scrap_1000.toLocaleString('vi-VN')} VNĐ` : '—'}</div>
                   </div>
 
                   <div className="flex justify-between items-center py-0.5">
@@ -274,7 +275,7 @@ export const CastingCalculatorForm = () => {
                       <div className="text-[11px] font-bold text-[#111111] font-sans">V. Đơn giá thành phẩm:</div>
                       <div className="text-[9px] font-mono text-[#787774]">CHI PHÍ MẺ ÷ (1000KG × TỶ LỆ THU HỒI)</div>
                     </div>
-                    <div className="font-bold text-[#111111]">{Math.round(dg_liquid_final / yield_ratio).toLocaleString('vi-VN')} VNĐ/kg</div>
+                    <div className="font-bold text-[#111111]">{hasYield ? `${Math.round(dg_liquid_final / yield_ratio).toLocaleString('vi-VN')} VNĐ/kg` : 'Nhập % thu hồi để xem'}</div>
                   </div>
 
                   <div className="flex justify-between items-center py-0.5">
@@ -295,7 +296,7 @@ export const CastingCalculatorForm = () => {
               </p>
               <div className="flex items-baseline justify-end gap-2">
                 <span className="font-mono font-extrabold text-2xl text-emerald-400 leading-none">
-                  {Math.round(partA_per_kg * m_cast).toLocaleString('vi-VN')}
+                  {hasYield ? Math.round(partA_per_kg * m_cast).toLocaleString('vi-VN') : '—'}
                 </span>
                 <span className="font-mono font-bold text-xs text-white uppercase">
                   VNĐ / CHI TIẾT

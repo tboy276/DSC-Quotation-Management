@@ -225,7 +225,6 @@ export const useQuotationStore = create<QuotationStoreState>((set, get) => ({
 
     // Deprecated legacy fields
     n_cavity_per_mold: 2,
-    DG_finish_kg: 1800,
 
     machining_operations: [
       { name: 'Tiá»‡n máº·t Ä‘Ãºc CNC', t_prep_min: 2.0, t_man_min: 3.0, DG_machine_hour: 234000 },
@@ -422,7 +421,6 @@ export const useQuotationStore = create<QuotationStoreState>((set, get) => ({
           DG_workshop_mgmt_per_kg: 0,
           DG_equipment_depr_per_kg: 4000,
           n_cavity_per_mold: 2,
-          DG_finish_kg: 1800,
           machining_operations: [
             { name: 'Tiá»‡n máº·t Ä‘Ãºc CNC', t_prep_min: 2.0, t_man_min: 3.0, DG_machine_hour: 234000 },
             { name: 'Khoan lá»— gÃ¡ CNC', t_prep_min: 1.0, t_man_min: 1.5, DG_machine_hour: 182000 },

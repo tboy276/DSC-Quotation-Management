@@ -12,6 +12,8 @@ interface CostingPageToolbarProps {
   itemRecord: any;
   dossierRecord: any;
   rfqRecord: any;
+  disableSave?: boolean;
+  disableSaveReason?: string;
 }
 
 export const CostingPageToolbar = ({
@@ -23,6 +25,8 @@ export const CostingPageToolbar = ({
   itemRecord,
   dossierRecord,
   rfqRecord,
+  disableSave,
+  disableSaveReason,
 }: CostingPageToolbarProps) => {
   return (
     <div className="bg-[#FBFBFA] p-3 rounded-[10px] border border-[#EAEAEA] shadow-[0_2px_8px_rgba(0,0,0,0.03)] flex flex-wrap items-center justify-between gap-3 text-xs">
@@ -75,8 +79,8 @@ export const CostingPageToolbar = ({
           icon={Save}
           label="Lưu nháp"
           onClick={onSaveDraft}
-          disabled={saving}
-          title="Lưu bản nháp tính giá (Save Draft)"
+          disabled={saving || disableSave}
+          title={disableSave ? disableSaveReason : "Lưu bản nháp tính giá (Save Draft)"}
         />
 
         <ActionButton
@@ -84,8 +88,8 @@ export const CostingPageToolbar = ({
           icon={Check}
           label="Hoàn thành"
           onClick={onComplete}
-          disabled={saving}
-          title="Hoàn thành tính giá"
+          disabled={saving || disableSave}
+          title={disableSave ? disableSaveReason : "Hoàn thành tính giá"}
         />
       </div>
     </div>

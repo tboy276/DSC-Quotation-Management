@@ -201,6 +201,7 @@ export const RealtimeSummaryPanel = () => {
   }
 
   const isForging = segment === 'forging';
+  const isCastingInputValid = segment !== 'casting' || (castingInput.Y_yield !== undefined && castingInput.Y_yield > 0);
   const castingRes = segment === 'casting' ? getCastingResult() : null;
   const targetPriceVnd = rfq.target_price || 0;
   const deltaPriceVnd = finalPriceVnd - targetPriceVnd;
@@ -286,6 +287,12 @@ export const RealtimeSummaryPanel = () => {
         )}
       </div>
 
+      {!isCastingInputValid ? (
+        <div className="p-4 rounded-[10px] bg-amber-50 border border-amber-200 text-amber-800 text-xs font-semibold flex items-center space-x-2">
+          <span>⚠️ Vui lòng nhập đầy đủ Tỷ lệ thu hồi kim loại (%) để xem giá</span>
+        </div>
+      ) : (
+        <>
       {/* Target Price vs Quoted Price Side-by-Side Comparison */}
       <div className="p-4 rounded-[10px] bg-[#FBFBFA] border border-[#EAEAEA] space-y-3">
         <div className="flex items-center justify-between">
@@ -542,6 +549,8 @@ export const RealtimeSummaryPanel = () => {
           <span>Doanh số: {formatCurrencyValue((rfq.annual_volume || 0) * finalPriceVnd, currency, exchangeRate)}</span>
         </div>
       </div>
+            </>
+      )}
     </div>
   );
-};
+}

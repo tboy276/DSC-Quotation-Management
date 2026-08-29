@@ -37,6 +37,8 @@ export default function CastingCostingPage() {
   }, [isDirty, setIsChildDirty]);
 
   const rfq = useQuotationStore(state => state.rfq);
+  const castingInput = useQuotationStore(state => state.castingInput);
+  const isCastingInputValid = castingInput.Y_yield !== undefined && castingInput.Y_yield > 0;
 
   if (!activeRfqItemId && !activeItemRecord) {
     return (
@@ -71,6 +73,8 @@ export default function CastingCostingPage() {
         onComplete={handleCompleteCosting}
         saving={saving}
         itemRecord={activeItemRecord}
+        disableSave={!isCastingInputValid}
+        disableSaveReason="Vui lòng nhập Tỷ lệ thu hồi kim loại trước khi lưu báo giá"
         dossierRecord={activeDossierRecord}
         rfqRecord={rfq}
       />

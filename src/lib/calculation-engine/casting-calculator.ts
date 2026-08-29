@@ -53,7 +53,7 @@ export function calculateCastingPrice(input: CastingInput): CastingResult {
   // ----------------------------------------------------------------------
   // Section 1 & 2 — Part A (Kim loại lỏng + Khuôn cát) theo chuẩn 1000kg
   // ----------------------------------------------------------------------
-  const validYield = Math.max(0.01, Y_yield || 60);
+  const validYield = Math.max(0.01, Y_yield ?? 0.01);
   const yield_ratio = validYield / 100;
   const burn_ratio = k_burn_loss / 100;
 
