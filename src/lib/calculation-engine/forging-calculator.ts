@@ -1,4 +1,4 @@
-﻿import type { ForgingInput, ForgingResult } from './types';
+import type { ForgingInput, ForgingResult } from './types';
 
 const DEFAULT_DIE_LIFE = 20000;
 
@@ -135,7 +135,7 @@ export function calculateForgingPrice(input: ForgingInput): ForgingResult {
   const dieInCogs = die_cost_treatment === 'amortized' ? C_die_amortization : 0;
   const separate_die_cost = die_cost_treatment === 'separate' ? actual_C_die_total : undefined;
 
-  const C_heat_treat = m_phoi * (DG_heat_treat_per_kg || (input as any).DG_heat_treat_kg || 0);
+  const C_heat_treat = m_phoi * (DG_heat_treat_per_kg ?? 0);
   const C_paint = m_phoi * (DG_paint_per_kg || 0);
 
   const COGS = C_mat_forging + C_ops_forging + C_machining + C_heat_treat + C_paint + dieInCogs;

@@ -61,7 +61,6 @@ export interface ForgingInput {
   forging_line?: '1000T' | '1600T' | '63kJ' | '80kJ'; // Dây chuyền rèn
   expected_productivity?: number;  // Năng suất dự kiến (Cái/ca)
   DG_forging_machine_hour?: number;// Đơn giá máy dập/búa (VNĐ/giờ)
-  DG_heat_treat_kg?: number;       // Đơn giá nhiệt luyện (VNĐ/kg)
   DG_heat_treat_per_kg?: number;   // Đơn giá nhiệt luyện (VNĐ/kg) - Alias mới
   DG_paint_per_kg?: number;        // Đơn giá sơn (VNĐ/kg)
   DG_clean_kg?: number;            // Đơn giá làm sạch/phun bi (VNĐ/kg)

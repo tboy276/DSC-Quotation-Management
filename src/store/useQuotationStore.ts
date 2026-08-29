@@ -1,4 +1,4 @@
-import { isSteelCategory } from '../utils/material-categories';
+﻿import { isSteelCategory } from '../utils/material-categories';
 import { create } from 'zustand';
 import type { ForgingInput, CastingInput, SawingInput, MachiningInput, MachiningOperation } from '../lib/calculation-engine/types';
 import type { CurrencyType, QuoteRecord } from '../types/quote';
@@ -127,7 +127,7 @@ export interface QuotationStoreState {
 const defaultForgingMaterial = INITIAL_MATERIALS.find((m) => isSteelCategory(m.category)) || INITIAL_MATERIALS[5];
 const defaultPressRate = INITIAL_PRESSING_RATES[0]; // 1000T
 const defaultSawingRate = INITIAL_SYSTEM_RATES.find((r) => r.rate_key === 'sawing_machine')?.value || 120000;
-const defaultElecRate = INITIAL_MATERIALS.find((m) => m.name === 'Điện năng')?.latest_price || 2200;
+const defaultElecRate = INITIAL_MATERIALS.find((m) => m.name === 'Äiá»‡n nÄƒng')?.latest_price || 2200;
 const defaultTransRate = 1500;
 
 // Initial Casting Defaults
@@ -143,8 +143,8 @@ const DEFAULT_EXCHANGE_RATES: Record<CurrencyType, number> = {
 export const useQuotationStore = create<QuotationStoreState>((set, get) => ({
   // 1. RFQ Initial State
   rfq: {
-    customer_name: 'Công ty Cổ phần Cơ khí DISOCO',
-    product_name: 'Bánh Răng Truyền Động D450',
+    customer_name: 'CÃ´ng ty Cá»• pháº§n CÆ¡ khÃ­ DISOCO',
+    product_name: 'BÃ¡nh RÄƒng Truyá»n Äá»™ng D450',
     annual_volume: 12000,
     trade_terms: 'FOB',
     target_price: 95000,
@@ -181,12 +181,11 @@ export const useQuotationStore = create<QuotationStoreState>((set, get) => ({
     DG_forging_machine_hour: defaultPressRate.rate_per_hour,
     w_elec_kwh_per_kg: 0.8,
     DG_elec_kwh: defaultElecRate,
-    DG_heat_treat_kg: 4500,
     DG_clean_kg: 1000,
 
     machining_operations: [
-      { name: 'Tiện thô CNC mặt đầu & đường kính', t_prep_min: 2.0, t_man_min: 2.5, DG_machine_hour: 234000 },
-      { name: 'Phay rãnh then CNC', t_prep_min: 1.5, t_man_min: 1.8, DG_machine_hour: 234000 },
+      { name: 'Tiá»‡n thÃ´ CNC máº·t Ä‘áº§u & Ä‘Æ°á»ng kÃ­nh', t_prep_min: 2.0, t_man_min: 2.5, DG_machine_hour: 234000 },
+      { name: 'Phay rÃ£nh then CNC', t_prep_min: 1.5, t_man_min: 1.8, DG_machine_hour: 234000 },
     ],
     machining_notes: '',
 
@@ -229,8 +228,8 @@ export const useQuotationStore = create<QuotationStoreState>((set, get) => ({
     DG_finish_kg: 1800,
 
     machining_operations: [
-      { name: 'Tiện mặt đúc CNC', t_prep_min: 2.0, t_man_min: 3.0, DG_machine_hour: 234000 },
-      { name: 'Khoan lỗ gá CNC', t_prep_min: 1.0, t_man_min: 1.5, DG_machine_hour: 182000 },
+      { name: 'Tiá»‡n máº·t Ä‘Ãºc CNC', t_prep_min: 2.0, t_man_min: 3.0, DG_machine_hour: 234000 },
+      { name: 'Khoan lá»— gÃ¡ CNC', t_prep_min: 1.0, t_man_min: 1.5, DG_machine_hour: 182000 },
     ],
     machining_notes: '',
 
@@ -261,7 +260,7 @@ export const useQuotationStore = create<QuotationStoreState>((set, get) => ({
     DG_sawing_machine_hour: defaultSawingRate,
 
     machining_operations: [
-      { name: 'Phay rãnh then CNC', t_prep_min: 1.5, t_man_min: 1.8, DG_machine_hour: 234000 },
+      { name: 'Phay rÃ£nh then CNC', t_prep_min: 1.5, t_man_min: 1.8, DG_machine_hour: 234000 },
     ],
     machining_notes: '',
 
@@ -275,7 +274,7 @@ export const useQuotationStore = create<QuotationStoreState>((set, get) => ({
   // 5. Machining Initial Input State
   machiningInput: {
     machining_operations: [
-      { name: 'Tiện CNC', t_prep_min: 2.0, t_man_min: 3.5, DG_machine_hour: 234000 },
+      { name: 'Tiá»‡n CNC', t_prep_min: 2.0, t_man_min: 3.5, DG_machine_hour: 234000 },
     ],
     machining_notes: '',
 
@@ -308,7 +307,7 @@ export const useQuotationStore = create<QuotationStoreState>((set, get) => ({
           isFetchingMasterData: false,
         });
       } catch (e) {
-        console.error('Lỗi tải master data', e);
+        console.error('Lá»—i táº£i master data', e);
         set({ isFetchingMasterData: false });
         return;
       }
@@ -323,7 +322,7 @@ export const useQuotationStore = create<QuotationStoreState>((set, get) => ({
         const fMat = materials.find((m) => m.id === state.forgingInput.selected_material_id) || materials.find((m) => isSteelCategory(m.category)) || materials[0];
         const fPress = pressingRates.find((r) => r.tonnage_min === 1000) || pressingRates[0];
         const fSaw = systemRates.find((r) => r.rate_key === 'sawing_machine');
-        const fElec = materials.find((m) => m.name === 'Điện năng');
+        const fElec = materials.find((m) => m.name === 'Äiá»‡n nÄƒng');
 
         // Sawing defaults
         const sMat = materials.find((m) => m.id === state.sawingInput.selected_material_id) || materials.find((m) => isSteelCategory(m.category)) || materials[0];
@@ -388,11 +387,10 @@ export const useQuotationStore = create<QuotationStoreState>((set, get) => ({
           DG_forging_machine_hour: defaultPressRate.rate_per_hour,
           w_elec_kwh_per_kg: 0.8,
           DG_elec_kwh: defaultElecRate,
-          DG_heat_treat_kg: 4500,
           DG_clean_kg: 1000,
           machining_operations: [
-            { name: 'Tiện thô CNC mặt đầu & đường kính', t_prep_min: 2.0, t_man_min: 2.5, DG_machine_hour: 234000 },
-            { name: 'Phay rãnh then CNC', t_prep_min: 1.5, t_man_min: 1.8, DG_machine_hour: 234000 },
+            { name: 'Tiá»‡n thÃ´ CNC máº·t Ä‘áº§u & Ä‘Æ°á»ng kÃ­nh', t_prep_min: 2.0, t_man_min: 2.5, DG_machine_hour: 234000 },
+            { name: 'Phay rÃ£nh then CNC', t_prep_min: 1.5, t_man_min: 1.8, DG_machine_hour: 234000 },
           ],
           machining_notes: '',
           C_die_total: 85000000,
@@ -426,8 +424,8 @@ export const useQuotationStore = create<QuotationStoreState>((set, get) => ({
           n_cavity_per_mold: 2,
           DG_finish_kg: 1800,
           machining_operations: [
-            { name: 'Tiện mặt đúc CNC', t_prep_min: 2.0, t_man_min: 3.0, DG_machine_hour: 234000 },
-            { name: 'Khoan lỗ gá CNC', t_prep_min: 1.0, t_man_min: 1.5, DG_machine_hour: 182000 },
+            { name: 'Tiá»‡n máº·t Ä‘Ãºc CNC', t_prep_min: 2.0, t_man_min: 3.0, DG_machine_hour: 234000 },
+            { name: 'Khoan lá»— gÃ¡ CNC', t_prep_min: 1.0, t_man_min: 1.5, DG_machine_hour: 182000 },
           ],
           machining_notes: '',
           C_pattern_total: 45000000,
@@ -455,7 +453,7 @@ export const useQuotationStore = create<QuotationStoreState>((set, get) => ({
           t_cut_sec: 15,
           DG_sawing_machine_hour: defaultSawingRate,
           machining_operations: [
-            { name: 'Phay rãnh then CNC', t_prep_min: 1.5, t_man_min: 1.8, DG_machine_hour: 234000 },
+            { name: 'Phay rÃ£nh then CNC', t_prep_min: 1.5, t_man_min: 1.8, DG_machine_hour: 234000 },
           ],
           machining_notes: '',
           N_order: 20000,
@@ -469,7 +467,7 @@ export const useQuotationStore = create<QuotationStoreState>((set, get) => ({
       set({
         machiningInput: {
           machining_operations: [
-            { name: 'Tiện CNC', t_prep_min: 2.0, t_man_min: 3.5, DG_machine_hour: 234000 },
+            { name: 'Tiá»‡n CNC', t_prep_min: 2.0, t_man_min: 3.5, DG_machine_hour: 234000 },
           ],
           machining_notes: '',
           k_mgmt: 8,
