@@ -177,7 +177,8 @@ export interface CastingInput {
   C_pack?: number;            // Chi phí­ đóng gói (VNĐ/chi tiết)
   DG_pack_kg?: number;        // ÄÆ¡n giÃ¡ đóng gói (VNĐ/kg)
   DG_trans_kg: number;        // ÄÆ¡n giÃ¡ vận chuyển (VNĐ/kg váº­t đúc)
-  k_profit_casting: number;   // Phần trăm lợi nhuận đúc % (VD: 12 = 12%)
+  k_profit_casting: number;
+  k_casting_price_adjustment?: number;   // Phần trăm lợi nhuận đúc % (VD: 12 = 12%)
 }
 
 export interface CastingResult {
@@ -190,7 +191,10 @@ export interface CastingResult {
   C_resin_core: number;          // Chi phí­ thao tác nhựa cho 1 sản phẩm (VNĐ)
   C_molding_materials: number;   // Chi phí­ Vật tư khuôn tá»•ng (3 váº­t tÆ° cá»‘ Ä‘á»‹nh + Thao tác nhựa) (VNĐ)
   C_ops_casting: number;         // Chi phí­ công nghệ đúc tá»•ng (VNĐ)
-  partA_per_kg: number;          // ÄÆ¡n giÃ¡ Phần A / kg thành phẩm (C_metal + C_ops / m_cast) (VNĐ/kg)
+  partA_per_kg: number;
+  partA_total_calculated: number;
+  partA_total_quoted: number;
+  partA_per_kg_calculated: number;          // ÄÆ¡n giÃ¡ Phần A / kg thành phẩm (C_metal + C_ops / m_cast) (VNĐ/kg)
 
   // Part B Breakdowns (Phần B â€” Chi phí­ sau đúc / kg thành phẩm)
   C_finishing: number;           // Chi phí­ váº­t tÆ° HTSP (VNĐ)

@@ -127,7 +127,9 @@ export const CastingCalculatorForm = () => {
   const resinCoreCost = (casting.m_resin_core || 0) * (casting.DG_resin_core_per_kg || 12500);
   const totalCoreCostPerProduct = resinCoreCost;
   const coreCostPerKg = m_cast > 0 ? totalCoreCostPerProduct / m_cast : 0;
-  const partA_per_kg = (dg_liquid_final / yield_ratio) + coreCostPerKg;
+  const partA_per_kg_calculated = (dg_liquid_final / yield_ratio) + coreCostPerKg;
+    const k_adj = (casting.k_casting_price_adjustment !== undefined ? casting.k_casting_price_adjustment : 100) / 100;
+    const partA_per_kg = partA_per_kg_calculated * k_adj;
 
   return (
     <div className="space-y-4 animate-fade-in-up">
@@ -233,6 +235,29 @@ export const CastingCalculatorForm = () => {
                         allowEmpty
                       className="w-20 px-2.5 py-1 border border-[#EAEAEA] rounded-[4px] font-mono text-xs font-bold text-[#111111] bg-white text-right focus:outline-none focus:border-[#111111]"
                     />
+                  </div>
+                  <div className="flex flex-col gap-1 mt-2 p-2 bg-emerald-50 border border-emerald-100 rounded">
+                    <div className="flex items-center justify-between gap-1">
+                      <label className="text-[10px] font-bold text-[#787774] uppercase tracking-wider">
+                        6. HỆ SỐ ĐIỀU CHỈNH GIÁ ĐÚC (%):
+                      </label>
+                      <NumberTextInput
+                        step="0.1"
+                        min="0"
+                        value={casting.k_casting_price_adjustment !== undefined ? casting.k_casting_price_adjustment : 100}
+                        onChange={(e) => setCastingField('k_casting_price_adjustment', Number.isNaN(e) ? undefined : Math.max(0, e))}
+                        allowEmpty
+                        className="w-20 px-2.5 py-1 border border-[#EAEAEA] rounded-[4px] font-mono text-xs font-bold text-[#111111] bg-white text-right focus:outline-none focus:border-[#111111]"
+                      />
+                    </div>
+                    <div className="flex justify-between items-center text-[10px]">
+                      <span className="text-slate-500">Giá đúc tính toán (giá vốn):</span>
+                      <span className="font-mono text-slate-500">{hasYield ? Math.round(partA_per_kg_calculated).toLocaleString('vi-VN') : '—'} đ/kg</span>
+                    </div>
+                    <div className="flex justify-between items-center text-[10px]">
+                      <span className="font-bold text-[#111111]">Giá đúc báo giá (đã điều chỉnh):</span>
+                      <span className="font-mono font-bold text-emerald-600">{hasYield ? Math.round(partA_per_kg).toLocaleString('vi-VN') : '—'} đ/kg</span>
+                    </div>
                   </div>
                 </div>
 

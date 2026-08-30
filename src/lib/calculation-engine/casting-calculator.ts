@@ -48,6 +48,7 @@ export function calculateCastingPrice(input: CastingInput): CastingResult {
     DG_pack_kg,
     DG_trans_kg,
     k_profit_casting,
+    k_casting_price_adjustment = 100,
   } = input;
 
   // ----------------------------------------------------------------------
@@ -84,7 +85,10 @@ export function calculateCastingPrice(input: CastingInput): CastingResult {
   // Hợp nhất kết quả: tổng Part A cho đơn hàng rồi chia ngược ra cho 1 kg m_cast (dùng hiển thị UI)
   const validMCast = Math.max(0.0001, m_cast);
   const partA_total = C_metal_casting + C_ops_casting;
-  const partA_per_kg = partA_total / validMCast;
+  const partA_total_calculated = partA_total;
+  const partA_total_quoted = partA_total_calculated * (k_casting_price_adjustment / 100);
+  const partA_per_kg_calculated = partA_total_calculated / validMCast;
+  const partA_per_kg = partA_total_quoted / validMCast;
 
   // ----------------------------------------------------------------------
   // Part B — Post-Casting Workshop Costs per kg Cast Product (Phần B)
@@ -143,7 +147,7 @@ export function calculateCastingPrice(input: CastingInput): CastingResult {
   const separate_pattern_cost = pattern_cost_treatment === 'separate' ? C_pattern_amortization : undefined;
 
   // Updated COGS includes Part A + Part B + Machining + Heat Treat + Paint + Pattern Amortization
-  const COGS = C_metal_casting + C_ops_casting + C_machining_casting + C_heat_treat + C_paint + C_part_b_total + patternInCogs;
+  const COGS = partA_total_quoted + C_machining_casting + C_heat_treat + C_paint + C_part_b_total + patternInCogs;
 
   const C_admin = COGS * (k_mgmt_cast / 100);
   const final_weight = m_tinh || m_cast || 0;
@@ -163,6 +167,9 @@ export function calculateCastingPrice(input: CastingInput): CastingResult {
     C_molding_materials,
     C_ops_casting,
     partA_per_kg,
+    partA_total_calculated,
+    partA_total_quoted,
+    partA_per_kg_calculated,
     C_finishing,
     C_utility,
     C_labor,

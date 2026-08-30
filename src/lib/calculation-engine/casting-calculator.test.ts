@@ -61,4 +61,77 @@ describe('Casting Calculation Engine (Đúc Gang FC200 Test Case)', () => {
     expect(res.workshop_cost_per_kg).toBeCloseTo(35523.56, 1);
     expect(Math.round(res.workshop_cost_per_kg)).toBe(35524);
   });
+
+  it('k_casting_price_adjustment undefined (or 100) -> behaves exactly like original pricing', () => {
+    const input = {
+      m_cast: 570,
+      Y_yield: 57,
+      k_burn_loss: 2.15,
+      DG_liquid: 11138.51,
+      DG_cast_scrap: 5500,
+      C_furnace_ladle_per_1000kg: 120000,
+      C_molding_recipe_total_1000kg: 1302200,
+      m_resin_core: 296.78648,
+      DG_resin_core_per_kg: 12500,
+      DG_finishing_per_kg: 771.82,
+      DG_utility_per_kg: 3687.6,
+      DG_labor_per_kg: 2461,
+      DG_workshop_mgmt_per_kg: 0,
+      DG_equipment_depr_per_kg: 4000,
+      pattern_cost_treatment: 'amortized' as const,
+      k_mgmt_cast: 0,
+      C_pack: 0,
+      DG_trans_kg: 0,
+      k_profit_casting: 0,
+    };
+
+    const res = calculateCastingPrice(input);
+    expect(res.partA_total_calculated).toBeCloseTo(8891760 + 5132031, 0); 
+    expect(res.partA_total_quoted).toBe(res.partA_total_calculated); 
+    expect(res.partA_per_kg_calculated).toBeCloseTo(24603.14, 1);
+    expect(res.partA_per_kg).toBe(res.partA_per_kg_calculated);
+    expect(res.COGS).toBe(res.partA_total_quoted + res.C_finishing + res.C_utility + res.C_labor + res.C_workshop_mgmt + res.C_equipment_depreciation);
+  });
+
+  it('k_casting_price_adjustment = 125 -> partA and COGS correctly inflated by 25%', () => {
+    const input = {
+      m_cast: 570,
+      Y_yield: 57,
+      k_burn_loss: 2.15,
+      DG_liquid: 11138.51,
+      DG_cast_scrap: 5500,
+      C_furnace_ladle_per_1000kg: 120000,
+      C_molding_recipe_total_1000kg: 1302200,
+      m_resin_core: 296.78648,
+      DG_resin_core_per_kg: 12500,
+      DG_finishing_per_kg: 771.82,
+      DG_utility_per_kg: 3687.6,
+      DG_labor_per_kg: 2461,
+      DG_workshop_mgmt_per_kg: 0,
+      DG_equipment_depr_per_kg: 4000,
+      pattern_cost_treatment: 'amortized' as const,
+      k_mgmt_cast: 10,
+      C_pack: 0,
+      DG_trans_kg: 0,
+      k_profit_casting: 10,
+      k_casting_price_adjustment: 125,
+    };
+
+    const res = calculateCastingPrice(input);
+    const expectedOriginalPartA = 8891760 + 5132031; 
+    expect(res.partA_total_calculated).toBeCloseTo(expectedOriginalPartA, 0);
+    
+    const expectedQuotedPartA = expectedOriginalPartA * 1.25; 
+    expect(res.partA_total_quoted).toBeCloseTo(expectedQuotedPartA, 0);
+    
+    const partBTotal = res.C_finishing + res.C_utility + res.C_labor + res.C_workshop_mgmt + res.C_equipment_depreciation; 
+    const expectedCOGS = expectedQuotedPartA + partBTotal;
+    expect(res.COGS).toBeCloseTo(expectedCOGS, 0);
+    
+    const expectedAdmin = expectedCOGS * 0.10;
+    const expectedPreProfit = expectedCOGS + expectedAdmin;
+    const expectedProfit = expectedPreProfit * 0.10;
+    const expectedPrice = Math.round(expectedPreProfit + expectedProfit);
+    expect(res.P_CASTING).toBe(expectedPrice);
+  });
 });
