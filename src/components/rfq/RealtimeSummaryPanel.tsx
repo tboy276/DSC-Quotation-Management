@@ -421,7 +421,7 @@ export const RealtimeSummaryPanel = () => {
           )}
 
           {/* Section 4 */}
-          {(segment === 'forging' || segment === 'casting') && (
+          {(segment === 'forging' || segment === 'casting') && !isSeparateTooling && (
             <div className="flex justify-between items-center py-1 border-b border-[#F0F0EE]">
               <span className="text-[#2F3437] font-sans">
                 {idxAmort}. Khấu hao {isForging ? 'Khuôn' : 'Mẫu'}:
